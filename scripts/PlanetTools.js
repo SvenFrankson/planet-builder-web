@@ -1,6 +1,5 @@
 var PlanetTools = (function () {
     function PlanetTools() {
-        this.CHUNCKSIZE = 32;
     }
     PlanetTools.EvaluateVertex = function (size, i, j) {
         var xRad = 45.0;
@@ -13,3 +12,4 @@ var PlanetTools = (function () {
     };
     return PlanetTools;
 }());
+PlanetTools.CHUNCKSIZE = 32;
