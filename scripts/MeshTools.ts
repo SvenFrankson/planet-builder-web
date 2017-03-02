@@ -2,7 +2,6 @@
 // get shared VertexData from exposed arrays.
 // obviously not the easiest way to get shapes: mostly an attempt at complete procedural generation.
 class MeshTools {
-
   // tool method to add a mesh triangle.
   public static PushTriangle(vertices: Array<Array<number>>,
                           a: number, b: number, c: number,
