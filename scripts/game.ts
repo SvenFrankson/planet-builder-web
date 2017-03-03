@@ -31,7 +31,7 @@ class Game {
   createScene(): void {
     this._scene = new BABYLON.Scene(this._engine);
 
-    this._camera = new BABYLON.ArcRotateCamera("camera", 1, 0.8, 10, new BABYLON.Vector3(0, 0, 0), this._scene);
+    this._camera = new BABYLON.ArcRotateCamera("camera", 1, 0.8, 45, new BABYLON.Vector3(0, 0, 0), this._scene);
     this._camera.setTarget(Game.Instance._cameraTarget);
     this._camera.attachControl(this._canvas, false);
     this._camera.wheelPrecision = 10;
@@ -53,7 +53,18 @@ class Game {
 }
 
 window.addEventListener("DOMContentLoaded", () => {
-  let game : Game = new Game("renderCanvas");
+  let game: Game = new Game("renderCanvas");
   game.createScene();
   game.animate();
+
+  let planetChunckTest: PlanetChunck = new PlanetChunck(16, 0, 0, 0);
+  planetChunckTest.Initialize();
+  planetChunckTest = new PlanetChunck(16, 1, 0, 0);
+  planetChunckTest.Initialize();
+  planetChunckTest = new PlanetChunck(16, 0, 1, 0);
+  planetChunckTest.Initialize();
+  planetChunckTest = new PlanetChunck(16, 1, 1, 0);
+  planetChunckTest.Initialize();
+  planetChunckTest = new PlanetChunck(16, 1, 1, 1);
+  planetChunckTest.Initialize();
 });

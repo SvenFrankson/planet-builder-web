@@ -1,6 +1,6 @@
 /// <reference path="../lib/babylon.2.4.d.ts"/>
 class PlanetTools {
-  public static readonly CHUNCKSIZE = 32;
+  public static readonly CHUNCKSIZE = 8;
 
   public static EvaluateVertex(size: number, i: number, j: number): BABYLON.Vector3 {
     let xRad: number = 45.0;

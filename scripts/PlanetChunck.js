@@ -5,10 +5,34 @@ var __extends = (this && this.__extends) || function (d, b) {
 };
 var PlanetChunck = (function (_super) {
     __extends(PlanetChunck, _super);
-    function PlanetChunck() {
-        return _super !== null && _super.apply(this, arguments) || this;
+    function PlanetChunck(size, iPos, jPos, kPos) {
+        var _this = this;
+        var name = "chunck-" + iPos + "-" + jPos + "-" + kPos;
+        _this = _super.call(this, name, Game.Instance.getScene()) || this;
+        _this.size = size;
+        _this.iPos = iPos;
+        _this.jPos = jPos;
+        _this.kPos = kPos;
+        _this.data = new Array();
+        for (var i = 0; i < PlanetTools.CHUNCKSIZE; i++) {
+            _this.data[i] = new Array();
+            for (var j = 0; j < PlanetTools.CHUNCKSIZE; j++) {
+                _this.data[i][j] = new Array();
+                for (var k = 1; k < PlanetTools.CHUNCKSIZE; k++) {
+                    _this.data[i][j][k] = 0;
+                }
+                _this.data[i][j][0] = 1;
+                if ((i * j + i * i / j) % 2 === 0) {
+                    _this.data[i][j][1] = 1;
+                }
+            }
+        }
+        return _this;
     }
     PlanetChunck.prototype.Initialize = function () {
+        var data = PlanetChunckMeshBuilder
+            .BuildVertexData(this.size, this.iPos, this.jPos, this.kPos, 15, this.data);
+        data.applyToMesh(this);
     };
     return PlanetChunck;
 }(BABYLON.Mesh));
