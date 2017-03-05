@@ -43,12 +43,5 @@ window.addEventListener("DOMContentLoaded", function () {
     var game = new Game("renderCanvas");
     game.createScene();
     game.animate();
-    var planetChunckTest = new PlanetChunck(16, 0, 0, 1);
-    planetChunckTest.Initialize();
-    planetChunckTest = new PlanetChunck(16, 1, 0, 1);
-    planetChunckTest.Initialize();
-    planetChunckTest = new PlanetChunck(16, 0, 1, 1);
-    planetChunckTest.Initialize();
-    planetChunckTest = new PlanetChunck(16, 1, 1, 1);
-    planetChunckTest.Initialize();
+    var planetChunckTest = new PlanetSide(Side.Right, 16);
 });
