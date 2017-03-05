@@ -22,8 +22,9 @@ var PlanetChunck = (function (_super) {
                     _this.data[i][j][k] = 0;
                 }
                 _this.data[i][j][0] = 1;
-                if ((i * j + i * i / j) % 2 === 0) {
-                    _this.data[i][j][1] = 1;
+                var h = Math.floor(Math.random() * 4);
+                for (var k = 0; k < h; k++) {
+                    _this.data[i][j][k] = 1;
                 }
             }
         }
@@ -31,7 +32,7 @@ var PlanetChunck = (function (_super) {
     }
     PlanetChunck.prototype.Initialize = function () {
         var data = PlanetChunckMeshBuilder
-            .BuildVertexData(this.size, this.iPos, this.jPos, this.kPos, 15, this.data);
+            .BuildVertexData(this.size, this.iPos, this.jPos, this.kPos, 5, this.data);
         data.applyToMesh(this);
     };
     return PlanetChunck;

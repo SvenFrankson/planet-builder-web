@@ -27,8 +27,9 @@ class PlanetChunck extends BABYLON.Mesh {
           this.data[i][j][k] = 0;
         }
         this.data[i][j][0] = 1;
-        if ((i * j + i * i / j) % 2 === 0) {
-          this.data[i][j][1] = 1;
+        let h: number = Math.floor(Math.random() * 4);
+        for (let k: number = 0; k < h; k++) {
+          this.data[i][j][k] = 1;
         }
       }
     }
@@ -41,7 +42,7 @@ class PlanetChunck extends BABYLON.Mesh {
       this.iPos,
       this.jPos,
       this.kPos,
-      15,
+      5,
       this.data
     );
     data.applyToMesh(this);

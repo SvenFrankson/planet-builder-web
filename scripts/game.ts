@@ -57,13 +57,11 @@ window.addEventListener("DOMContentLoaded", () => {
   game.createScene();
   game.animate();
 
-  let planetChunckTest: PlanetChunck = new PlanetChunck(16, 0, 0, 0);
+  let planetChunckTest: PlanetChunck = new PlanetChunck(16, 0, 0, 1);
   planetChunckTest.Initialize();
-  planetChunckTest = new PlanetChunck(16, 1, 0, 0);
+  planetChunckTest = new PlanetChunck(16, 1, 0, 1);
   planetChunckTest.Initialize();
-  planetChunckTest = new PlanetChunck(16, 0, 1, 0);
-  planetChunckTest.Initialize();
-  planetChunckTest = new PlanetChunck(16, 1, 1, 0);
+  planetChunckTest = new PlanetChunck(16, 0, 1, 1);
   planetChunckTest.Initialize();
   planetChunckTest = new PlanetChunck(16, 1, 1, 1);
   planetChunckTest.Initialize();
