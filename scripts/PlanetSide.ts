@@ -21,7 +21,7 @@ class PlanetSide extends BABYLON.Mesh {
     this.side = side;
     this.size = size;
     this.chuncksLength = this.size / PlanetTools.CHUNCKSIZE;
-    console.log(this.chuncksLength);
+    this.rotationQuaternion = PlanetTools.QuaternionForSide(this.side);
 
     this.chuncks = new Array<Array<Array<PlanetChunck>>>();
     for (let i: number = 0; i < this.chuncksLength; i++) {

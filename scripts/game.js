@@ -44,4 +44,17 @@ window.addEventListener("DOMContentLoaded", function () {
     game.createScene();
     game.animate();
     var planetChunckTest = new PlanetSide(Side.Right, 16);
+    planetChunckTest = new PlanetSide(Side.Left, 16);
+    planetChunckTest = new PlanetSide(Side.Front, 16);
+    planetChunckTest = new PlanetSide(Side.Back, 16);
+    planetChunckTest = new PlanetSide(Side.Top, 16);
+    planetChunckTest = new PlanetSide(Side.Bottom, 16);
+    var center = BABYLON.Mesh.CreateBox("box", 1, Game.Instance.getScene());
+    center.position = new BABYLON.Vector3(0, 0, 0);
+    var right = BABYLON.Mesh.CreateBox("box1", 1, Game.Instance.getScene());
+    right.position = new BABYLON.Vector3(3, 0, 0);
+    var front = BABYLON.Mesh.CreateBox("box2", 1, Game.Instance.getScene());
+    front.position = new BABYLON.Vector3(0, 0, 3);
+    var top = BABYLON.Mesh.CreateBox("box3", 1, Game.Instance.getScene());
+    top.position = new BABYLON.Vector3(0, 3, 0);
 });

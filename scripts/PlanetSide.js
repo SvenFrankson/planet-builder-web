@@ -21,7 +21,7 @@ var PlanetSide = (function (_super) {
         _this.side = side;
         _this.size = size;
         _this.chuncksLength = _this.size / PlanetTools.CHUNCKSIZE;
-        console.log(_this.chuncksLength);
+        _this.rotationQuaternion = PlanetTools.QuaternionForSide(_this.side);
         _this.chuncks = new Array();
         for (var i = 0; i < _this.chuncksLength; i++) {
             _this.chuncks[i] = new Array();
