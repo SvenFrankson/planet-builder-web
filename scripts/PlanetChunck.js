@@ -34,6 +34,7 @@ var PlanetChunck = (function (_super) {
         var data = PlanetChunckMeshBuilder
             .BuildVertexData(this.size, this.iPos, this.jPos, this.kPos, 5, this.data);
         data.applyToMesh(this);
+        this.material = SharedMaterials.MainMaterial();
     };
     return PlanetChunck;
 }(BABYLON.Mesh));

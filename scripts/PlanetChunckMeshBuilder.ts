@@ -13,6 +13,7 @@ class PlanetChunckMeshBuilder {
     let vertices: Array<BABYLON.Vector3> = new Array<BABYLON.Vector3>();
     let positions: Array<number> = new Array<number>();
     let indices: Array<number> = new Array<number>();
+    let uvs: Array<number> = new Array<number>();
 
     for (let i: number = 0; i < PlanetTools.CHUNCKSIZE; i++) {
       for (let j: number = 0; j < PlanetTools.CHUNCKSIZE; j++) {
@@ -37,22 +38,22 @@ class PlanetChunckMeshBuilder {
 
           if (data[i][j][k] !== 0) {
             if (i - 1 < 0 || data[i - 1][j][k] === 0) {
-              MeshTools.PushQuad(vertices, 0, 2, 6, 4, positions, indices);
+              MeshTools.PushQuad(vertices, 0, 2, 6, 4, positions, indices, uvs);
             }
             if (j - 1 < 0 || data[i][j - 1][k] === 0) {
-              MeshTools.PushQuad(vertices, 0, 4, 5, 1, positions, indices);
+              MeshTools.PushQuad(vertices, 0, 4, 5, 1, positions, indices, uvs);
             }
             if (k - 1 < 0 || data[i][j][k - 1] === 0) {
-              MeshTools.PushQuad(vertices, 0, 1, 3, 2, positions, indices);
+              MeshTools.PushQuad(vertices, 0, 1, 3, 2, positions, indices, uvs);
             }
             if (i + 1 >= PlanetTools.CHUNCKSIZE || data[i + 1][j][k] === 0) {
-              MeshTools.PushQuad(vertices, 1, 5, 7, 3, positions, indices);
+              MeshTools.PushQuad(vertices, 1, 5, 7, 3, positions, indices, uvs);
             }
             if (j + 1 >= PlanetTools.CHUNCKSIZE || data[i][j + 1][k] === 0) {
-              MeshTools.PushQuad(vertices, 2, 3, 7, 6, positions, indices);
+              MeshTools.PushQuad(vertices, 2, 3, 7, 6, positions, indices, uvs);
             }
             if (k + 1 >= PlanetTools.CHUNCKSIZE || data[i][j][k + 1] === 0) {
-              MeshTools.PushQuad(vertices, 4, 6, 7, 5, positions, indices);
+              MeshTools.PushQuad(vertices, 4, 6, 7, 5, positions, indices, uvs);
             }
           }
         }
@@ -63,6 +64,7 @@ class PlanetChunckMeshBuilder {
     vertexData.positions = positions;
     vertexData.indices = indices;
     vertexData.normals = normals;
+    vertexData.uvs = uvs;
 
     return vertexData;
   }

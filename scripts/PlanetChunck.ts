@@ -46,5 +46,6 @@ class PlanetChunck extends BABYLON.Mesh {
       this.data
     );
     data.applyToMesh(this);
+    this.material = SharedMaterials.MainMaterial();
   }
 }

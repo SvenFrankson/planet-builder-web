@@ -6,6 +6,7 @@ var PlanetChunckMeshBuilder = (function () {
         var vertices = new Array();
         var positions = new Array();
         var indices = new Array();
+        var uvs = new Array();
         for (var i = 0; i < PlanetTools.CHUNCKSIZE; i++) {
             for (var j = 0; j < PlanetTools.CHUNCKSIZE; j++) {
                 for (var k = 0; k < PlanetTools.CHUNCKSIZE; k++) {
@@ -25,22 +26,22 @@ var PlanetChunckMeshBuilder = (function () {
                     vertices[3].multiplyInPlace(MeshTools.FloatVector(r + k + kPos * PlanetTools.CHUNCKSIZE));
                     if (data[i][j][k] !== 0) {
                         if (i - 1 < 0 || data[i - 1][j][k] === 0) {
-                            MeshTools.PushQuad(vertices, 0, 2, 6, 4, positions, indices);
+                            MeshTools.PushQuad(vertices, 0, 2, 6, 4, positions, indices, uvs);
                         }
                         if (j - 1 < 0 || data[i][j - 1][k] === 0) {
-                            MeshTools.PushQuad(vertices, 0, 4, 5, 1, positions, indices);
+                            MeshTools.PushQuad(vertices, 0, 4, 5, 1, positions, indices, uvs);
                         }
                         if (k - 1 < 0 || data[i][j][k - 1] === 0) {
-                            MeshTools.PushQuad(vertices, 0, 1, 3, 2, positions, indices);
+                            MeshTools.PushQuad(vertices, 0, 1, 3, 2, positions, indices, uvs);
                         }
                         if (i + 1 >= PlanetTools.CHUNCKSIZE || data[i + 1][j][k] === 0) {
-                            MeshTools.PushQuad(vertices, 1, 5, 7, 3, positions, indices);
+                            MeshTools.PushQuad(vertices, 1, 5, 7, 3, positions, indices, uvs);
                         }
                         if (j + 1 >= PlanetTools.CHUNCKSIZE || data[i][j + 1][k] === 0) {
-                            MeshTools.PushQuad(vertices, 2, 3, 7, 6, positions, indices);
+                            MeshTools.PushQuad(vertices, 2, 3, 7, 6, positions, indices, uvs);
                         }
                         if (k + 1 >= PlanetTools.CHUNCKSIZE || data[i][j][k + 1] === 0) {
-                            MeshTools.PushQuad(vertices, 4, 6, 7, 5, positions, indices);
+                            MeshTools.PushQuad(vertices, 4, 6, 7, 5, positions, indices, uvs);
                         }
                     }
                 }
@@ -51,6 +52,7 @@ var PlanetChunckMeshBuilder = (function () {
         vertexData.positions = positions;
         vertexData.indices = indices;
         vertexData.normals = normals;
+        vertexData.uvs = uvs;
         return vertexData;
     };
     return PlanetChunckMeshBuilder;

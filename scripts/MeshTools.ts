@@ -35,7 +35,8 @@ class MeshTools {
   public static PushQuad(vertices: Array<BABYLON.Vector3>,
                           a: number, b: number, c: number, d: number,
                           positions: Array<number>,
-                          indices: Array<number>): void {
+                          indices: Array<number>,
+                          uvs: Array<number>): void {
     let index: number = positions.length / 3;
 
     positions.push(vertices[a].x);
@@ -57,5 +58,21 @@ class MeshTools {
     indices.push(index + 3);
     indices.push(index + 2);
     indices.push(index);
+
+    MeshTools.PushQuadUvs(uvs);
+  }
+
+  public static PushQuadUvs(uvs: Array<number>): void {
+    uvs.push(0);
+    uvs.push(0);
+
+    uvs.push(0);
+    uvs.push(1);
+
+    uvs.push(1);
+    uvs.push(1);
+
+    uvs.push(1);
+    uvs.push(0);
   }
 }

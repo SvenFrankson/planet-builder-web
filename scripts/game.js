@@ -43,12 +43,12 @@ window.addEventListener("DOMContentLoaded", function () {
     var game = new Game("renderCanvas");
     game.createScene();
     game.animate();
-    var planetChunckTest = new PlanetSide(Side.Right, 16);
-    planetChunckTest = new PlanetSide(Side.Left, 16);
-    planetChunckTest = new PlanetSide(Side.Front, 16);
-    planetChunckTest = new PlanetSide(Side.Back, 16);
-    planetChunckTest = new PlanetSide(Side.Top, 16);
-    planetChunckTest = new PlanetSide(Side.Bottom, 16);
+    var planetChunckTest = new PlanetSide(Side.Right, 32);
+    planetChunckTest = new PlanetSide(Side.Left, 32);
+    planetChunckTest = new PlanetSide(Side.Front, 32);
+    planetChunckTest = new PlanetSide(Side.Back, 32);
+    planetChunckTest = new PlanetSide(Side.Top, 32);
+    planetChunckTest = new PlanetSide(Side.Bottom, 32);
     var center = BABYLON.Mesh.CreateBox("box", 1, Game.Instance.getScene());
     center.position = new BABYLON.Vector3(0, 0, 0);
     var right = BABYLON.Mesh.CreateBox("box1", 1, Game.Instance.getScene());

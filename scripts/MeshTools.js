@@ -25,7 +25,7 @@ var MeshTools = (function () {
         indices.push(index + 1);
         indices.push(index + 2);
     };
-    MeshTools.PushQuad = function (vertices, a, b, c, d, positions, indices) {
+    MeshTools.PushQuad = function (vertices, a, b, c, d, positions, indices, uvs) {
         var index = positions.length / 3;
         positions.push(vertices[a].x);
         positions.push(vertices[a].y);
@@ -45,6 +45,17 @@ var MeshTools = (function () {
         indices.push(index + 3);
         indices.push(index + 2);
         indices.push(index);
+        MeshTools.PushQuadUvs(uvs);
+    };
+    MeshTools.PushQuadUvs = function (uvs) {
+        uvs.push(0);
+        uvs.push(0);
+        uvs.push(0);
+        uvs.push(1);
+        uvs.push(1);
+        uvs.push(1);
+        uvs.push(1);
+        uvs.push(0);
     };
     return MeshTools;
 }());
