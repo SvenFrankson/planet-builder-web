@@ -57,18 +57,6 @@ window.addEventListener("DOMContentLoaded", () => {
   game.createScene();
   game.animate();
 
-  let planetChunckTest: PlanetSide = new PlanetSide(Side.Right, 32);
-  planetChunckTest = new PlanetSide(Side.Left, 32);
-  planetChunckTest = new PlanetSide(Side.Front, 32);
-  planetChunckTest = new PlanetSide(Side.Back, 32);
-  planetChunckTest = new PlanetSide(Side.Top, 32);
-  planetChunckTest = new PlanetSide(Side.Bottom, 32);
-  let center: BABYLON.Mesh = BABYLON.Mesh.CreateBox("box", 1, Game.Instance.getScene());
-  center.position = new BABYLON.Vector3(0, 0, 0);
-  let right: BABYLON.Mesh = BABYLON.Mesh.CreateBox("box1", 1, Game.Instance.getScene());
-  right.position = new BABYLON.Vector3(3, 0, 0);
-  let front: BABYLON.Mesh = BABYLON.Mesh.CreateBox("box2", 1, Game.Instance.getScene());
-  front.position = new BABYLON.Vector3(0, 0, 3);
-  let top: BABYLON.Mesh = BABYLON.Mesh.CreateBox("box3", 1, Game.Instance.getScene());
-  top.position = new BABYLON.Vector3(0, 3, 0);
+  let planetTest: Planet = new Planet("Test", 16);
+  planetTest.Initialize();
 });

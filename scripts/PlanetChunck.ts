@@ -1,20 +1,23 @@
 /// <reference path="../lib/babylon.2.4.d.ts"/>
 class PlanetChunck extends BABYLON.Mesh {
-  public size: number;
-  public iPos: number;
-  public jPos: number;
-  public kPos: number;
-  public data: Array<Array<Array<number>>>;
+  private planetSide: PlanetSide;
+  public GetSize(): number {
+    return this.planetSide.GetSize();
+  }
+  private iPos: number;
+  private jPos: number;
+  private kPos: number;
+  private data: Array<Array<Array<number>>>;
 
   constructor(
-    size: number,
     iPos: number,
     jPos: number,
-    kPos: number
+    kPos: number,
+    planetSide: PlanetSide
   ) {
     let name: string = "chunck-" + iPos + "-" + jPos + "-" + kPos;
     super(name, Game.Instance.getScene());
-    this.size = size;
+    this.planetSide = planetSide;
     this.iPos = iPos;
     this.jPos = jPos;
     this.kPos = kPos;
@@ -38,7 +41,7 @@ class PlanetChunck extends BABYLON.Mesh {
   public Initialize(): void {
     let data: BABYLON.VertexData = PlanetChunckMeshBuilder
     .BuildVertexData(
-      this.size,
+      this.GetSize(),
       this.iPos,
       this.jPos,
       this.kPos,
