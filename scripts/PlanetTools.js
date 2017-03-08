@@ -32,4 +32,4 @@ var PlanetTools = (function () {
     };
     return PlanetTools;
 }());
-PlanetTools.CHUNCKSIZE = 8;
+PlanetTools.CHUNCKSIZE = 64;

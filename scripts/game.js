@@ -43,6 +43,6 @@ window.addEventListener("DOMContentLoaded", function () {
     var game = new Game("renderCanvas");
     game.createScene();
     game.animate();
-    var planetTest = new Planet("Test", 16);
+    var planetTest = new Planet("Test", 128);
     planetTest.Initialize();
 });

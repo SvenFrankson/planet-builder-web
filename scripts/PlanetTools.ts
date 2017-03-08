@@ -1,6 +1,6 @@
 /// <reference path="../lib/babylon.2.4.d.ts"/>
 class PlanetTools {
-  public static readonly CHUNCKSIZE = 8;
+  public static readonly CHUNCKSIZE = 64;
 
   public static QuaternionForSide(side: Side): BABYLON.Quaternion {
     if (side === Side.Right) {
