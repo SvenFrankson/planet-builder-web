@@ -31,7 +31,7 @@ class PlanetSide extends BABYLON.Mesh {
       this.chuncks[i] = new Array<Array<PlanetChunck>>();
       for (let j: number = 0; j < this.chuncksLength; j++) {
         this.chuncks[i][j] = new Array<PlanetChunck>();
-        for (let k: number = 0; k < this.chuncksLength; k++) {
+        for (let k: number = 0; k < this.chuncksLength / 2; k++) {
           this.chuncks[i][j][k] = new PlanetChunck(i, j, k, this);
           this.chuncks[i][j][k].parent = this;
         }
@@ -42,7 +42,7 @@ class PlanetSide extends BABYLON.Mesh {
   public Initialize(): void {
     for (let i: number = 0; i < this.chuncksLength; i++) {
       for (let j: number = 0; j < this.chuncksLength; j++) {
-        for (let k: number = 0; k < this.chuncksLength; k++) {
+        for (let k: number = 0; k < this.chuncksLength / 2; k++) {
           this.chuncks[i][j][k].Initialize();
         }
       }

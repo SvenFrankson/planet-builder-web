@@ -18,13 +18,11 @@ var PlanetChunck = (function (_super) {
             _this.data[i] = new Array();
             for (var j = 0; j < PlanetTools.CHUNCKSIZE; j++) {
                 _this.data[i][j] = new Array();
-                for (var k = 1; k < PlanetTools.CHUNCKSIZE; k++) {
+                for (var k = 0; k < PlanetTools.CHUNCKSIZE; k++) {
                     _this.data[i][j][k] = 0;
-                }
-                _this.data[i][j][0] = 1;
-                var h = Math.floor(Math.random() * 4);
-                for (var k = 0; k < h; k++) {
-                    _this.data[i][j][k] = Math.floor(Math.random() * 4) + 1;
+                    if (Math.random() > 0.5) {
+                        _this.data[i][j][k] = Math.floor(Math.random() * 4 + 1);
+                    }
                 }
             }
         }

@@ -1,6 +1,6 @@
 /// <reference path="../lib/babylon.2.4.d.ts"/>
 class PlanetTools {
-  public static readonly CHUNCKSIZE = 32;
+  public static readonly CHUNCKSIZE = 16;
 
   public static QuaternionForSide(side: Side): BABYLON.Quaternion {
     if (side === Side.Right) {
@@ -32,5 +32,37 @@ class PlanetTools {
       Math.sin(yRad) / Math.cos(yRad),
       Math.sin(zRad) / Math.cos(zRad)
     ).normalize();
+  }
+
+  public static DataFromHexString(hexString : string): Array<Array<Array<number>>> {
+    if (hexString.length !== PlanetTools.CHUNCKSIZE * PlanetTools.CHUNCKSIZE * PlanetTools.CHUNCKSIZE * 2) {
+      console.log("Invalid HexString. Length is =" + hexString.length +
+                  ". Expected length is = " + (PlanetTools.CHUNCKSIZE * PlanetTools.CHUNCKSIZE * PlanetTools.CHUNCKSIZE * 2) + ".");
+      return null;
+    }
+    let data: Array<Array<Array<number>>> = new Array<Array<Array<number>>>();
+    for (let i: number = 0; i < PlanetTools.CHUNCKSIZE; i++) {
+      data[i] = new Array<Array<number>>();
+      for (let j: number = 0; j < PlanetTools.CHUNCKSIZE; j++) {
+        data[i][j] = new Array<number>();
+        for (let k: number = 0; k < PlanetTools.CHUNCKSIZE; k++) {
+          let index: number = 2 * (i * PlanetTools.CHUNCKSIZE * PlanetTools.CHUNCKSIZE + j * PlanetTools.CHUNCKSIZE + k);
+          data[i][j][k] = parseInt(hexString.slice(index, index + 2), 16);
+        }
+      }
+    }
+    return data;
+  }
+
+  public static HexStringFromData(data: Array<Array<Array<number>>>): string {
+    let hexString: string = "";
+    for (let i: number = 0; i < PlanetTools.CHUNCKSIZE; i++) {
+      for (let j: number = 0; j < PlanetTools.CHUNCKSIZE; j++) {
+        for (let k: number = 0; k < PlanetTools.CHUNCKSIZE; k++) {
+          hexString += data[i][j][k].toString(16);
+        }
+      }
+    }
+    return hexString;
   }
 }

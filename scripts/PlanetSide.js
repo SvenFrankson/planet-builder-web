@@ -27,7 +27,7 @@ var PlanetSide = (function (_super) {
             _this.chuncks[i] = new Array();
             for (var j = 0; j < _this.chuncksLength; j++) {
                 _this.chuncks[i][j] = new Array();
-                for (var k = 0; k < _this.chuncksLength; k++) {
+                for (var k = 0; k < _this.chuncksLength / 2; k++) {
                     _this.chuncks[i][j][k] = new PlanetChunck(i, j, k, _this);
                     _this.chuncks[i][j][k].parent = _this;
                 }
@@ -41,7 +41,7 @@ var PlanetSide = (function (_super) {
     PlanetSide.prototype.Initialize = function () {
         for (var i = 0; i < this.chuncksLength; i++) {
             for (var j = 0; j < this.chuncksLength; j++) {
-                for (var k = 0; k < this.chuncksLength; k++) {
+                for (var k = 0; k < this.chuncksLength / 2; k++) {
                     this.chuncks[i][j][k].Initialize();
                 }
             }

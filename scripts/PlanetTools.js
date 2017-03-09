@@ -30,6 +30,36 @@ var PlanetTools = (function () {
         zRad = zRad / 180.0 * Math.PI;
         return new BABYLON.Vector3(Math.sin(xRad) / Math.cos(xRad), Math.sin(yRad) / Math.cos(yRad), Math.sin(zRad) / Math.cos(zRad)).normalize();
     };
+    PlanetTools.DataFromHexString = function (hexString) {
+        if (hexString.length !== PlanetTools.CHUNCKSIZE * PlanetTools.CHUNCKSIZE * PlanetTools.CHUNCKSIZE * 2) {
+            console.log("Invalid HexString. Length is =" + hexString.length +
+                ". Expected length is = " + (PlanetTools.CHUNCKSIZE * PlanetTools.CHUNCKSIZE * PlanetTools.CHUNCKSIZE * 2) + ".");
+            return null;
+        }
+        var data = new Array();
+        for (var i = 0; i < PlanetTools.CHUNCKSIZE; i++) {
+            data[i] = new Array();
+            for (var j = 0; j < PlanetTools.CHUNCKSIZE; j++) {
+                data[i][j] = new Array();
+                for (var k = 0; k < PlanetTools.CHUNCKSIZE; k++) {
+                    var index = 2 * (i * PlanetTools.CHUNCKSIZE * PlanetTools.CHUNCKSIZE + j * PlanetTools.CHUNCKSIZE + k);
+                    data[i][j][k] = parseInt(hexString.slice(index, index + 2), 16);
+                }
+            }
+        }
+        return data;
+    };
+    PlanetTools.HexStringFromData = function (data) {
+        var hexString = "";
+        for (var i = 0; i < PlanetTools.CHUNCKSIZE; i++) {
+            for (var j = 0; j < PlanetTools.CHUNCKSIZE; j++) {
+                for (var k = 0; k < PlanetTools.CHUNCKSIZE; k++) {
+                    hexString += data[i][j][k].toString(16);
+                }
+            }
+        }
+        return hexString;
+    };
     return PlanetTools;
 }());
-PlanetTools.CHUNCKSIZE = 32;
+PlanetTools.CHUNCKSIZE = 16;
