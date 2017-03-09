@@ -39,27 +39,27 @@ class PlanetChunckMeshBuilder {
           if (data[i][j][k] !== 0) {
             if (i - 1 < 0 || data[i - 1][j][k] === 0) {
               MeshTools.PushQuad(vertices, 2, 6, 4, 0, positions, indices);
-              MeshTools.PushSideQuadUvs(uvs);
+              MeshTools.PushSideQuadUvs(data[i][j][k], uvs);
             }
             if (j - 1 < 0 || data[i][j - 1][k] === 0) {
               MeshTools.PushQuad(vertices, 0, 4, 5, 1, positions, indices);
-              MeshTools.PushSideQuadUvs(uvs);
+              MeshTools.PushSideQuadUvs(data[i][j][k], uvs);
             }
             if (k - 1 < 0 || data[i][j][k - 1] === 0) {
               MeshTools.PushQuad(vertices, 0, 1, 3, 2, positions, indices);
-              MeshTools.PushTopQuadUvs(uvs);
+              MeshTools.PushTopQuadUvs(data[i][j][k], uvs);
             }
             if (i + 1 >= PlanetTools.CHUNCKSIZE || data[i + 1][j][k] === 0) {
               MeshTools.PushQuad(vertices, 1, 5, 7, 3, positions, indices);
-              MeshTools.PushSideQuadUvs(uvs);
+              MeshTools.PushSideQuadUvs(data[i][j][k], uvs);
             }
             if (j + 1 >= PlanetTools.CHUNCKSIZE || data[i][j + 1][k] === 0) {
               MeshTools.PushQuad(vertices, 3, 7, 6, 2, positions, indices);
-              MeshTools.PushSideQuadUvs(uvs);
+              MeshTools.PushSideQuadUvs(data[i][j][k], uvs);
             }
             if (k + 1 >= PlanetTools.CHUNCKSIZE || data[i][j][k + 1] === 0) {
               MeshTools.PushQuad(vertices, 4, 6, 7, 5, positions, indices);
-              MeshTools.PushTopQuadUvs(uvs);
+              MeshTools.PushTopQuadUvs(data[i][j][k], uvs);
             }
           }
         }

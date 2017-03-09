@@ -46,25 +46,25 @@ var MeshTools = (function () {
         indices.push(index + 2);
         indices.push(index);
     };
-    MeshTools.PushTopQuadUvs = function (uvs) {
-        uvs.push(0);
-        uvs.push(0.5);
-        uvs.push(0);
+    MeshTools.PushTopQuadUvs = function (block, uvs) {
+        uvs.push(0 + (block - 1) * 0.25);
+        uvs.push(0.75);
+        uvs.push(0 + (block - 1) * 0.25);
         uvs.push(1);
-        uvs.push(0.5);
+        uvs.push(0.25 + (block - 1) * 0.25);
         uvs.push(1);
-        uvs.push(0.5);
-        uvs.push(0.5);
+        uvs.push(0.25 + (block - 1) * 0.25);
+        uvs.push(0.75);
     };
-    MeshTools.PushSideQuadUvs = function (uvs) {
+    MeshTools.PushSideQuadUvs = function (block, uvs) {
+        uvs.push(0 + (block - 1) * 0.25);
+        uvs.push(0.25);
+        uvs.push(0 + (block - 1) * 0.25);
         uvs.push(0.5);
+        uvs.push(0.25 + (block - 1) * 0.25);
         uvs.push(0.5);
-        uvs.push(0.5);
-        uvs.push(1);
-        uvs.push(1);
-        uvs.push(1);
-        uvs.push(1);
-        uvs.push(0.5);
+        uvs.push(0.25 + (block - 1) * 0.25);
+        uvs.push(0.25);
     };
     return MeshTools;
 }());

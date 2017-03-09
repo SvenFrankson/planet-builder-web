@@ -59,31 +59,31 @@ class MeshTools {
     indices.push(index);
   }
 
-  public static PushTopQuadUvs(uvs: Array<number>): void {
-    uvs.push(0);
-    uvs.push(0.5);
+  public static PushTopQuadUvs(block: number, uvs: Array<number>): void {
+    uvs.push(0 + (block - 1) * 0.25);
+    uvs.push(0.75);
 
-    uvs.push(0);
+    uvs.push(0 + (block - 1) * 0.25);
     uvs.push(1);
 
-    uvs.push(0.5);
+    uvs.push(0.25 + (block - 1) * 0.25);
     uvs.push(1);
 
-    uvs.push(0.5);
-    uvs.push(0.5);
+    uvs.push(0.25 + (block - 1) * 0.25);
+    uvs.push(0.75);
   }
 
-  public static PushSideQuadUvs(uvs: Array<number>): void {
-    uvs.push(0.5);
+  public static PushSideQuadUvs(block: number, uvs: Array<number>): void {
+    uvs.push(0 + (block - 1) * 0.25);
+    uvs.push(0.25);
+
+    uvs.push(0 + (block - 1) * 0.25);
     uvs.push(0.5);
 
+    uvs.push(0.25 + (block - 1) * 0.25);
     uvs.push(0.5);
-    uvs.push(1);
 
-    uvs.push(1);
-    uvs.push(1);
-
-    uvs.push(1);
-    uvs.push(0.5);
+    uvs.push(0.25 + (block - 1) * 0.25);
+    uvs.push(0.25);
   }
 }

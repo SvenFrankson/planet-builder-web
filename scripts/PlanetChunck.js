@@ -24,7 +24,7 @@ var PlanetChunck = (function (_super) {
                 _this.data[i][j][0] = 1;
                 var h = Math.floor(Math.random() * 4);
                 for (var k = 0; k < h; k++) {
-                    _this.data[i][j][k] = 1;
+                    _this.data[i][j][k] = Math.floor(Math.random() * 4) + 1;
                 }
             }
         }
