@@ -57,6 +57,6 @@ window.addEventListener("DOMContentLoaded", () => {
   game.createScene();
   game.animate();
 
-  let planetTest: Planet = new Planet("Test", 128);
+  let planetTest: Planet = new Planet("Test", 64);
   planetTest.Initialize();
 });
