@@ -8,6 +8,7 @@ var Planet = (function (_super) {
     function Planet(name, size) {
         var _this = _super.call(this, name, Game.Instance.getScene()) || this;
         _this.size = size;
+        _this.radiusZero = Math.floor((2 / Math.PI - 1 / 8) * _this.size);
         _this.sides = new Array();
         _this.sides[Side.Right] = new PlanetSide(Side.Right, _this);
         _this.sides[Side.Left] = new PlanetSide(Side.Left, _this);
@@ -19,6 +20,9 @@ var Planet = (function (_super) {
     }
     Planet.prototype.GetSize = function () {
         return this.size;
+    };
+    Planet.prototype.GetRadiusZero = function () {
+        return this.radiusZero;
     };
     Planet.prototype.GetPlanetName = function () {
         return this.name;

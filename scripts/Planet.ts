@@ -5,6 +5,10 @@ class Planet extends BABYLON.Mesh {
   public GetSize(): number {
     return this.size;
   }
+  private radiusZero: number;
+  public GetRadiusZero(): number {
+    return this.radiusZero;
+  }
   public GetPlanetName(): string {
     return this.name;
   }
@@ -15,6 +19,7 @@ class Planet extends BABYLON.Mesh {
   ) {
     super(name, Game.Instance.getScene());
     this.size = size;
+    this.radiusZero = Math.floor((2 / Math.PI - 1 / 8) * this.size);
     this.sides = new Array<PlanetSide>();
     this.sides[Side.Right] = new PlanetSide(Side.Right, this);
     this.sides[Side.Left] = new PlanetSide(Side.Left, this);

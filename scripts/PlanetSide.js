@@ -44,6 +44,9 @@ var PlanetSide = (function (_super) {
     PlanetSide.prototype.GetPlanetName = function () {
         return this.planet.GetPlanetName();
     };
+    PlanetSide.prototype.GetRadiusZero = function () {
+        return this.planet.GetRadiusZero();
+    };
     PlanetSide.prototype.Initialize = function () {
         for (var i = 0; i < this.chuncksLength; i++) {
             for (var j = 0; j < this.chuncksLength; j++) {

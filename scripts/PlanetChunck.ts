@@ -10,6 +10,9 @@ class PlanetChunck extends BABYLON.Mesh {
   public GetPlanetName(): string {
     return this.planetSide.GetPlanetName();
   }
+  public GetRadiusZero(): number {
+    return this.planetSide.GetRadiusZero();
+  }
   private iPos: number;
   private jPos: number;
   private kPos: number;
@@ -49,7 +52,7 @@ class PlanetChunck extends BABYLON.Mesh {
       this.iPos,
       this.jPos,
       this.kPos,
-      5,
+      this.GetRadiusZero(),
       this.data
     );
     data.applyToMesh(this);

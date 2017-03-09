@@ -35,9 +35,12 @@ var PlanetChunck = (function (_super) {
     PlanetChunck.prototype.GetPlanetName = function () {
         return this.planetSide.GetPlanetName();
     };
+    PlanetChunck.prototype.GetRadiusZero = function () {
+        return this.planetSide.GetRadiusZero();
+    };
     PlanetChunck.prototype.Initialize = function () {
         var data = PlanetChunckMeshBuilder
-            .BuildVertexData(this.GetSize(), this.iPos, this.jPos, this.kPos, 5, this.data);
+            .BuildVertexData(this.GetSize(), this.iPos, this.jPos, this.kPos, this.GetRadiusZero(), this.data);
         data.applyToMesh(this);
         this.material = SharedMaterials.MainMaterial();
     };

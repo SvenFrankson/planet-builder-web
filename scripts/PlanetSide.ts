@@ -20,6 +20,9 @@ class PlanetSide extends BABYLON.Mesh {
   public GetPlanetName(): string {
     return this.planet.GetPlanetName();
   }
+  public GetRadiusZero(): number {
+    return this.planet.GetRadiusZero();
+  }
   private chuncksLength: number;
   private chuncks: Array<Array<Array<PlanetChunck>>>;
 
