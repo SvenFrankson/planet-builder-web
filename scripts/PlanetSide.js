@@ -35,8 +35,14 @@ var PlanetSide = (function (_super) {
         }
         return _this;
     }
+    PlanetSide.prototype.GetSide = function () {
+        return this.side;
+    };
     PlanetSide.prototype.GetSize = function () {
         return this.planet.GetSize();
+    };
+    PlanetSide.prototype.GetPlanetName = function () {
+        return this.planet.GetPlanetName();
     };
     PlanetSide.prototype.Initialize = function () {
         for (var i = 0; i < this.chuncksLength; i++) {

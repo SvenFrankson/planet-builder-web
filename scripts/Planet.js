@@ -20,6 +20,9 @@ var Planet = (function (_super) {
     Planet.prototype.GetSize = function () {
         return this.size;
     };
+    Planet.prototype.GetPlanetName = function () {
+        return this.name;
+    };
     Planet.prototype.Initialize = function () {
         for (var i = 0; i < this.sides.length; i++) {
             this.sides[i].Initialize();

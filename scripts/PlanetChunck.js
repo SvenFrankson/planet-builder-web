@@ -13,23 +13,27 @@ var PlanetChunck = (function (_super) {
         _this.iPos = iPos;
         _this.jPos = jPos;
         _this.kPos = kPos;
-        _this.data = new Array();
-        for (var i = 0; i < PlanetTools.CHUNCKSIZE; i++) {
-            _this.data[i] = new Array();
-            for (var j = 0; j < PlanetTools.CHUNCKSIZE; j++) {
-                _this.data[i][j] = new Array();
-                for (var k = 0; k < PlanetTools.CHUNCKSIZE; k++) {
-                    _this.data[i][j][k] = 0;
-                    if (Math.random() > 0.5) {
-                        _this.data[i][j][k] = Math.floor(Math.random() * 4 + 1);
-                    }
-                }
-            }
-        }
+        var dataUrl = "./chunck" +
+            "/" + _this.GetPlanetName() +
+            "/" + Side[_this.GetSide()] +
+            "/" + _this.iPos +
+            "/" + _this.jPos +
+            "/" + _this.kPos +
+            "/data.txt";
+        $.get(dataUrl, function (data) {
+            _this.data = PlanetTools.DataFromHexString(data);
+            _this.Initialize();
+        });
         return _this;
     }
+    PlanetChunck.prototype.GetSide = function () {
+        return this.planetSide.GetSide();
+    };
     PlanetChunck.prototype.GetSize = function () {
         return this.planetSide.GetSize();
+    };
+    PlanetChunck.prototype.GetPlanetName = function () {
+        return this.planetSide.GetPlanetName();
     };
     PlanetChunck.prototype.Initialize = function () {
         var data = PlanetChunckMeshBuilder

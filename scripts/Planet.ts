@@ -5,6 +5,9 @@ class Planet extends BABYLON.Mesh {
   public GetSize(): number {
     return this.size;
   }
+  public GetPlanetName(): string {
+    return this.name;
+  }
 
   constructor(
     name: string,

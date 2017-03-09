@@ -10,9 +10,15 @@ enum Side {
 
 class PlanetSide extends BABYLON.Mesh {
   private side: Side;
+  public GetSide(): Side {
+    return this.side;
+  }
   private planet: Planet;
   public GetSize(): number {
     return this.planet.GetSize();
+  }
+  public GetPlanetName(): string {
+    return this.planet.GetPlanetName();
   }
   private chuncksLength: number;
   private chuncks: Array<Array<Array<PlanetChunck>>>;
