@@ -13,17 +13,6 @@ var PlanetChunck = (function (_super) {
         _this.iPos = iPos;
         _this.jPos = jPos;
         _this.kPos = kPos;
-        var dataUrl = "./chunck" +
-            "/" + _this.GetPlanetName() +
-            "/" + Side[_this.GetSide()] +
-            "/" + _this.iPos +
-            "/" + _this.jPos +
-            "/" + _this.kPos +
-            "/data.txt";
-        $.get(dataUrl, function (data) {
-            _this.data = PlanetTools.DataFromHexString(data);
-            _this.Initialize();
-        });
         return _this;
     }
     PlanetChunck.prototype.GetSide = function () {
@@ -39,10 +28,24 @@ var PlanetChunck = (function (_super) {
         return this.planetSide.GetRadiusZero();
     };
     PlanetChunck.prototype.Initialize = function () {
-        var data = PlanetChunckMeshBuilder
+        var _this = this;
+        var dataUrl = "./chunck" +
+            "/" + this.GetPlanetName() +
+            "/" + Side[this.GetSide()] +
+            "/" + this.iPos +
+            "/" + this.jPos +
+            "/" + this.kPos +
+            "/data.txt";
+        $.get(dataUrl, function (data) {
+            _this.data = PlanetTools.DataFromHexString(data);
+            _this.SetMesh();
+        });
+    };
+    PlanetChunck.prototype.SetMesh = function () {
+        var vertexData = PlanetChunckMeshBuilder
             .BuildVertexData(this.GetSize(), this.iPos, this.jPos, this.kPos, this.GetRadiusZero(), this.data);
-        data.applyToMesh(this);
-        this.material = SharedMaterials.MainMaterial();
+        vertexData.applyToMesh(this);
+        SharedMaterials.AsyncSetMainMaterial(this);
     };
     return PlanetChunck;
 }(BABYLON.Mesh));

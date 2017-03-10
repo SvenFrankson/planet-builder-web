@@ -43,4 +43,5 @@ window.addEventListener("DOMContentLoaded", function () {
     game.createScene();
     game.animate();
     var planetTest = new Planet("paulita", 64);
+    planetTest.Initialize();
 });

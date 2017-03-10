@@ -30,6 +30,9 @@ class PlanetChunck extends BABYLON.Mesh {
     this.iPos = iPos;
     this.jPos = jPos;
     this.kPos = kPos;
+  }
+
+  public Initialize(): void {
     let dataUrl: string = "./chunck" +
                           "/" + this.GetPlanetName() +
                           "/" + Side[this.GetSide()] +
@@ -40,13 +43,13 @@ class PlanetChunck extends BABYLON.Mesh {
     $.get(dataUrl,
       (data: string) => {
         this.data = PlanetTools.DataFromHexString(data);
-        this.Initialize();
+        this.SetMesh();
       }
     );
   }
 
-  public Initialize(): void {
-    let data: BABYLON.VertexData = PlanetChunckMeshBuilder
+  private SetMesh(): void {
+    let vertexData: BABYLON.VertexData = PlanetChunckMeshBuilder
     .BuildVertexData(
       this.GetSize(),
       this.iPos,
@@ -55,7 +58,7 @@ class PlanetChunck extends BABYLON.Mesh {
       this.GetRadiusZero(),
       this.data
     );
-    data.applyToMesh(this);
-    this.material = SharedMaterials.MainMaterial();
+    vertexData.applyToMesh(this);
+    SharedMaterials.AsyncSetMainMaterial(this);
   }
 }
