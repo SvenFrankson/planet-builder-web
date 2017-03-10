@@ -56,5 +56,14 @@ var PlanetSide = (function (_super) {
             }
         }
     };
+    PlanetSide.prototype.AsyncInitialize = function () {
+        for (var i = 0; i < this.chuncksLength; i++) {
+            for (var j = 0; j < this.chuncksLength; j++) {
+                for (var k = 0; k < this.chuncksLength / 2; k++) {
+                    this.chuncks[i][j][k].AsyncInitialize();
+                }
+            }
+        }
+    };
     return PlanetSide;
 }(BABYLON.Mesh));

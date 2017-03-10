@@ -1,5 +1,6 @@
 /// <reference path="../lib/babylon.2.4.d.ts"/>
 class PlanetChunck extends BABYLON.Mesh {
+  private static initializationBuffer: Array<PlanetChunck> = new Array<PlanetChunck>();
   private planetSide: PlanetSide;
   public GetSide(): Side {
     return this.planetSide.GetSide();
@@ -32,6 +33,10 @@ class PlanetChunck extends BABYLON.Mesh {
     this.kPos = kPos;
   }
 
+  public AsyncInitialize(): void {
+    PlanetChunck.initializationBuffer.push(this);
+  }
+
   public Initialize(): void {
     let dataUrl: string = "./chunck" +
                           "/" + this.GetPlanetName() +
@@ -60,5 +65,12 @@ class PlanetChunck extends BABYLON.Mesh {
     );
     vertexData.applyToMesh(this);
     SharedMaterials.AsyncSetMainMaterial(this);
+  }
+
+  public static InitializeLoop(): void {
+    let chunck: PlanetChunck = PlanetChunck.initializationBuffer.pop();
+    if (chunck) {
+      chunck.Initialize();
+    }
   }
 }

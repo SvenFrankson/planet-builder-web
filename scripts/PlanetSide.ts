@@ -57,4 +57,14 @@ class PlanetSide extends BABYLON.Mesh {
       }
     }
   }
+
+  public AsyncInitialize(): void {
+    for (let i: number = 0; i < this.chuncksLength; i++) {
+      for (let j: number = 0; j < this.chuncksLength; j++) {
+        for (let k: number = 0; k < this.chuncksLength / 2; k++) {
+          this.chuncks[i][j][k].AsyncInitialize();
+        }
+      }
+    }
+  }
 }

@@ -34,4 +34,10 @@ class Planet extends BABYLON.Mesh {
       this.sides[i].Initialize();
     }
   }
+
+  public AsyncInitialize(): void {
+    for (let i: number = 0; i < this.sides.length; i++) {
+      this.sides[i].AsyncInitialize();
+    }
+  }
 }

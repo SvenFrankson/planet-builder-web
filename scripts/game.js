@@ -31,6 +31,7 @@ var Game = (function () {
         var _this = this;
         this._engine.runRenderLoop(function () {
             _this._scene.render();
+            PlanetChunck.InitializeLoop();
         });
         window.addEventListener("resize", function () {
             _this._engine.resize();
@@ -43,5 +44,5 @@ window.addEventListener("DOMContentLoaded", function () {
     game.createScene();
     game.animate();
     var planetTest = new Planet("paulita", 64);
-    planetTest.Initialize();
+    planetTest.AsyncInitialize();
 });

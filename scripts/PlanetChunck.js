@@ -27,6 +27,9 @@ var PlanetChunck = (function (_super) {
     PlanetChunck.prototype.GetRadiusZero = function () {
         return this.planetSide.GetRadiusZero();
     };
+    PlanetChunck.prototype.AsyncInitialize = function () {
+        PlanetChunck.initializationBuffer.push(this);
+    };
     PlanetChunck.prototype.Initialize = function () {
         var _this = this;
         var dataUrl = "./chunck" +
@@ -47,5 +50,12 @@ var PlanetChunck = (function (_super) {
         vertexData.applyToMesh(this);
         SharedMaterials.AsyncSetMainMaterial(this);
     };
+    PlanetChunck.InitializeLoop = function () {
+        var chunck = PlanetChunck.initializationBuffer.pop();
+        if (chunck) {
+            chunck.Initialize();
+        }
+    };
     return PlanetChunck;
 }(BABYLON.Mesh));
+PlanetChunck.initializationBuffer = new Array();

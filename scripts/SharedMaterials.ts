@@ -12,7 +12,7 @@ class SharedMaterials {
 
   private static TrySetMainMaterial(planetChunck: PlanetChunck): void {
     if (!SharedMaterials.mainMaterialTexturesLoaded) {
-      setTimeout(SharedMaterials.TrySetMainMaterial, 500, planetChunck);
+      setTimeout(SharedMaterials.TrySetMainMaterial, 1000, planetChunck);
     } else {
       planetChunck.material = SharedMaterials.mainMaterial;
     }

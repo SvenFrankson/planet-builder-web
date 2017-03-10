@@ -43,6 +43,7 @@ class Game {
   animate(): void {
     this._engine.runRenderLoop(() => {
       this._scene.render();
+      PlanetChunck.InitializeLoop();
     });
 
     window.addEventListener("resize", () => {
@@ -57,5 +58,5 @@ window.addEventListener("DOMContentLoaded", () => {
   game.animate();
 
   let planetTest: Planet = new Planet("paulita", 64);
-  planetTest.Initialize();
+  planetTest.AsyncInitialize();
 });

@@ -32,5 +32,10 @@ var Planet = (function (_super) {
             this.sides[i].Initialize();
         }
     };
+    Planet.prototype.AsyncInitialize = function () {
+        for (var i = 0; i < this.sides.length; i++) {
+            this.sides[i].AsyncInitialize();
+        }
+    };
     return Planet;
 }(BABYLON.Mesh));
