@@ -21,8 +21,8 @@ class PlanetTools {
 
   public static EvaluateVertex(size: number, i: number, j: number): BABYLON.Vector3 {
     let xRad: number = 45.0;
-    let yRad: number = -45.0 + 90.0 * (i / size);
-    let zRad: number = -45.0 + 90.0 * (j / size);
+    let yRad: number = -45.0 + 90.0 * (j / size);
+    let zRad: number = -45.0 + 90.0 * (i / size);
 
     xRad = xRad / 180.0 * Math.PI;
     yRad = yRad / 180.0 * Math.PI;

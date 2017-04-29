@@ -66,5 +66,15 @@ var MeshTools = (function () {
         uvs.push(0.25 + (block - 1) * 0.25);
         uvs.push(0.25);
     };
+    MeshTools.VertexDataFromJSON = function (jsonData) {
+        var tmp = JSON.parse(jsonData);
+        var vertexData = new BABYLON.VertexData();
+        vertexData.positions = tmp.positions;
+        vertexData.normals = tmp.normals;
+        vertexData.matricesIndices = tmp.matricesIndices;
+        vertexData.matricesWeights = tmp.matricesWeights;
+        vertexData.indices = tmp.indices;
+        return vertexData;
+    };
     return MeshTools;
 }());

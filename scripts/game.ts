@@ -14,12 +14,9 @@ class Game {
   private _cameraTarget: BABYLON.Vector3 = BABYLON.Vector3.Zero();
   public CameraTargetAdd(vector: BABYLON.Vector3): void {
     this._cameraTarget = this._cameraTarget.add(vector);
-    this._camera.setTarget(this._cameraTarget);
+    Game.Camera.setTarget(this._cameraTarget);
   }
-  private _camera: BABYLON.ArcRotateCamera;
-  getCamera(): BABYLON.ArcRotateCamera {
-    return this._camera;
-  }
+  public static Camera: BABYLON.ArcRotateCamera;
   private _light: BABYLON.Light;
 
   constructor(canvasElement: string) {
@@ -31,9 +28,9 @@ class Game {
   createScene(): void {
     this._scene = new BABYLON.Scene(this._engine);
 
-    this._camera = new BABYLON.ArcRotateCamera("camera", 1, 0.8, 45, new BABYLON.Vector3(0, 0, 0), this._scene);
-    this._camera.attachControl(this._canvas, false);
-    this._camera.wheelPrecision = 10;
+    Game.Camera = new BABYLON.ArcRotateCamera("camera", 0, Math.PI, 150, new BABYLON.Vector3(0, 0, 0), this._scene);
+    Game.Camera.attachControl(this._canvas, false);
+    Game.Camera.wheelPrecision = 10;
 
     this._light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), this._scene);
     this._light.diffuse = new BABYLON.Color3(1, 1, 1);
@@ -57,6 +54,6 @@ window.addEventListener("DOMContentLoaded", () => {
   game.createScene();
   game.animate();
 
-  let planetTest: Planet = new Planet("paulina", 128);
+  let planetTest: Planet = new Planet("paulita", 64);
   planetTest.AsyncInitialize();
 });

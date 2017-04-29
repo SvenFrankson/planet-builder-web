@@ -86,4 +86,15 @@ class MeshTools {
     uvs.push(0.25 + (block - 1) * 0.25);
     uvs.push(0.25);
   }
+
+  public static VertexDataFromJSON(jsonData: string): BABYLON.VertexData {
+    let tmp: BABYLON.VertexData = JSON.parse(jsonData);
+    let vertexData: BABYLON.VertexData = new BABYLON.VertexData();
+    vertexData.positions = tmp.positions;
+    vertexData.normals = tmp.normals;
+    vertexData.matricesIndices = tmp.matricesIndices;
+    vertexData.matricesWeights = tmp.matricesWeights;
+    vertexData.indices = tmp.indices;
+    return vertexData;
+  }
 }

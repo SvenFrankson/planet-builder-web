@@ -13,6 +13,8 @@ var PlanetChunck = (function (_super) {
         _this.iPos = iPos;
         _this.jPos = jPos;
         _this.kPos = kPos;
+        _this.barycenter = PlanetTools.EvaluateVertex(_this.GetSize(), PlanetTools.CHUNCKSIZE * _this.iPos + PlanetTools.CHUNCKSIZE / 2, PlanetTools.CHUNCKSIZE * _this.jPos + PlanetTools.CHUNCKSIZE / 2).multiply(MeshTools.FloatVector(_this.GetRadiusZero() + PlanetTools.CHUNCKSIZE * _this.kPos + PlanetTools.CHUNCKSIZE / 2));
+        _this.barycenter = BABYLON.Vector3.TransformCoordinates(_this.barycenter, planetSide.computeWorldMatrix());
         return _this;
     }
     PlanetChunck.prototype.GetSide = function () {
@@ -27,7 +29,21 @@ var PlanetChunck = (function (_super) {
     PlanetChunck.prototype.GetRadiusZero = function () {
         return this.planetSide.GetRadiusZero();
     };
+    PlanetChunck.prototype.GetBaryCenter = function () {
+        return this.barycenter;
+    };
     PlanetChunck.prototype.AsyncInitialize = function () {
+        var thisDistance = Player.Position().subtract(this.barycenter).lengthSquared();
+        var lastIDistance = -1;
+        for (var i = 0; i < PlanetChunck.initializationBuffer.length; i++) {
+            var iDistance = Player.Position().subtract(PlanetChunck.initializationBuffer[i].GetBaryCenter()).lengthSquared();
+            if (thisDistance > iDistance) {
+                PlanetChunck.initializationBuffer.splice(i, 0, this);
+                return;
+            }
+            lastIDistance = iDistance;
+        }
+        console.log("Insert last ! " + thisDistance);
         PlanetChunck.initializationBuffer.push(this);
     };
     PlanetChunck.prototype.Initialize = function () {
@@ -40,6 +56,7 @@ var PlanetChunck = (function (_super) {
             "/" + this.kPos +
             "/data.txt";
         $.get(dataUrl, function (data) {
+            console.log(Player.Position().subtract(_this.barycenter).lengthSquared().toPrecision(4));
             _this.data = PlanetTools.DataFromHexString(data);
             _this.SetMesh();
         });

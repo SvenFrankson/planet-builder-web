@@ -23,8 +23,8 @@ var PlanetTools = (function () {
     };
     PlanetTools.EvaluateVertex = function (size, i, j) {
         var xRad = 45.0;
-        var yRad = -45.0 + 90.0 * (i / size);
-        var zRad = -45.0 + 90.0 * (j / size);
+        var yRad = -45.0 + 90.0 * (j / size);
+        var zRad = -45.0 + 90.0 * (i / size);
         xRad = xRad / 180.0 * Math.PI;
         yRad = yRad / 180.0 * Math.PI;
         zRad = zRad / 180.0 * Math.PI;
