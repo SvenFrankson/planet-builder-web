@@ -2,6 +2,11 @@
 // get shared VertexData from exposed arrays.
 // obviously not the easiest way to get shapes: mostly an attempt at complete procedural generation.
 class MeshTools {
+  public static Angle(v1: BABYLON.Vector3, v2: BABYLON.Vector3): number {
+    return Math.acos(
+      BABYLON.Vector3.Dot(BABYLON.Vector3.Normalize(v1), BABYLON.Vector3.Normalize(v2))
+    );
+  }
   public static FloatVector(size: number): BABYLON.Vector3 {
     return new BABYLON.Vector3(size, size, size);
   }

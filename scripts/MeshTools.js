@@ -1,6 +1,9 @@
 var MeshTools = (function () {
     function MeshTools() {
     }
+    MeshTools.Angle = function (v1, v2) {
+        return Math.acos(BABYLON.Vector3.Dot(BABYLON.Vector3.Normalize(v1), BABYLON.Vector3.Normalize(v2)));
+    };
     MeshTools.FloatVector = function (size) {
         return new BABYLON.Vector3(size, size, size);
     };

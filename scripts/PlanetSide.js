@@ -17,7 +17,7 @@ var PlanetSide = (function (_super) {
     function PlanetSide(side, planet) {
         var _this = this;
         var name = "side-" + side;
-        _this = _super.call(this, name, Game.Instance.getScene()) || this;
+        _this = _super.call(this, name, Game.Scene) || this;
         _this.planet = planet;
         _this.side = side;
         _this.chuncksLength = _this.GetSize() / PlanetTools.CHUNCKSIZE;
@@ -46,6 +46,9 @@ var PlanetSide = (function (_super) {
     };
     PlanetSide.prototype.GetRadiusZero = function () {
         return this.planet.GetRadiusZero();
+    };
+    PlanetSide.prototype.GetChunck = function (i, j, k) {
+        return this.chuncks[i][j][k];
     };
     PlanetSide.prototype.Initialize = function () {
         for (var i = 0; i < this.chuncksLength; i++) {

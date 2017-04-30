@@ -17,7 +17,17 @@ class PlanetChunck extends BABYLON.Mesh {
   private iPos: number;
   private jPos: number;
   private kPos: number;
+  public Position(): {i: number, j: number, k: number} {
+    return {
+      i: this.iPos,
+      j: this.jPos,
+      k: this.kPos
+    };
+  }
   private data: Array<Array<Array<number>>>;
+  public SetData(i: number, j: number, k: number, value: number): void {
+    this.data[i][j][k] = value;
+  }
   private barycenter: BABYLON.Vector3;
   public GetBaryCenter(): BABYLON.Vector3 {
     return this.barycenter;
@@ -30,7 +40,7 @@ class PlanetChunck extends BABYLON.Mesh {
     planetSide: PlanetSide
   ) {
     let name: string = "chunck-" + iPos + "-" + jPos + "-" + kPos;
-    super(name, Game.Instance.getScene());
+    super(name, Game.Scene);
     this.planetSide = planetSide;
     this.iPos = iPos;
     this.jPos = jPos;
@@ -60,7 +70,6 @@ class PlanetChunck extends BABYLON.Mesh {
       }*/
       lastIDistance = iDistance;
     }
-    console.log("Insert last ! " + thisDistance);
     PlanetChunck.initializationBuffer.push(this);
   }
 
@@ -74,14 +83,13 @@ class PlanetChunck extends BABYLON.Mesh {
                           "/data.txt";
     $.get(dataUrl,
       (data: string) => {
-        console.log(Player.Position().subtract(this.barycenter).lengthSquared().toPrecision(4));
         this.data = PlanetTools.DataFromHexString(data);
         this.SetMesh();
       }
     );
   }
 
-  private SetMesh(): void {
+  public SetMesh(): void {
     let vertexData: BABYLON.VertexData = PlanetChunckMeshBuilder
     .BuildVertexData(
       this.GetSize(),
@@ -92,7 +100,7 @@ class PlanetChunck extends BABYLON.Mesh {
       this.data
     );
     vertexData.applyToMesh(this);
-    SharedMaterials.AsyncSetMainMaterial(this);
+    this.material = SharedMaterials.MainMaterial();
   }
 
   public static InitializeLoop(): void {

@@ -1,6 +1,9 @@
 /// <reference path="../lib/babylon.2.4.d.ts"/>
 class Planet extends BABYLON.Mesh {
   private sides: Array<PlanetSide>;
+  public GetSide(side: Side): PlanetSide {
+    return this.sides[side];
+  }
   private size: number;
   public GetSize(): number {
     return this.size;
@@ -17,7 +20,7 @@ class Planet extends BABYLON.Mesh {
     name: string,
     size: number
   ) {
-    super(name, Game.Instance.getScene());
+    super(name, Game.Scene);
     this.size = size;
     this.radiusZero = Math.floor((2 / Math.PI - 1 / 8) * this.size);
     this.sides = new Array<PlanetSide>();

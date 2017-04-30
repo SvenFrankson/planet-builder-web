@@ -60,6 +60,51 @@ var PlanetTools = (function () {
         }
         return hexString;
     };
+    PlanetTools.WorldPositionToPlanetSide = function (planet, worldPos) {
+        var angles = new Array();
+        angles[Side.Back] = MeshTools.Angle(BABYLON.Axis.Z.multiply(MeshTools.FloatVector(-1)), worldPos);
+        angles[Side.Right] = MeshTools.Angle(BABYLON.Axis.X, worldPos);
+        angles[Side.Left] = MeshTools.Angle(BABYLON.Axis.X.multiply(MeshTools.FloatVector(-1)), worldPos);
+        angles[Side.Top] = MeshTools.Angle(BABYLON.Axis.Y, worldPos);
+        angles[Side.Bottom] = MeshTools.Angle(BABYLON.Axis.Y.multiply(MeshTools.FloatVector(-1)), worldPos);
+        angles[Side.Front] = MeshTools.Angle(BABYLON.Axis.Z, worldPos);
+        var min = Math.min.apply(Math, angles);
+        var sideIndex = angles.indexOf(min);
+        return planet.GetSide(sideIndex);
+    };
+    PlanetTools.WorldPositionToGlobalIJK = function (planetSide, worldPos) {
+        var invert = new BABYLON.Matrix();
+        planetSide.getWorldMatrix().invertToRef(invert);
+        var localPos = BABYLON.Vector3.TransformCoordinates(worldPos, invert);
+        var r = localPos.length();
+        if (Math.abs(localPos.x) > 1) {
+            localPos = localPos.divide(MeshTools.FloatVector(localPos.x));
+        }
+        if (Math.abs(localPos.y) > 1) {
+            localPos = localPos.divide(MeshTools.FloatVector(localPos.y));
+        }
+        if (Math.abs(localPos.z) > 1) {
+            localPos = localPos.divide(MeshTools.FloatVector(localPos.z));
+        }
+        var yDeg = Math.atan(localPos.y) / Math.PI * 180;
+        var zDeg = Math.atan(localPos.z) / Math.PI * 180;
+        console.log("YDeg : " + yDeg);
+        console.log("ZDeg : " + zDeg);
+        var i = Math.floor((zDeg + 45) / 90 * planetSide.GetSize());
+        var j = Math.floor((yDeg + 45) / 90 * planetSide.GetSize());
+        var k = Math.floor(r - planetSide.GetRadiusZero());
+        console.log("R : " + r);
+        console.log("RadiusZero : " + planetSide.GetRadiusZero());
+        return { i: i, j: j, k: k };
+    };
+    PlanetTools.GlobalIJKToLocalIJK = function (planetSide, global) {
+        return {
+            planetChunck: planetSide.GetChunck(Math.floor(global.i / PlanetTools.CHUNCKSIZE), Math.floor(global.j / PlanetTools.CHUNCKSIZE), Math.floor(global.k / PlanetTools.CHUNCKSIZE)),
+            i: global.i % PlanetTools.CHUNCKSIZE,
+            j: global.j % PlanetTools.CHUNCKSIZE,
+            k: global.k % PlanetTools.CHUNCKSIZE
+        };
+    };
     return PlanetTools;
 }());
 PlanetTools.CHUNCKSIZE = 16;

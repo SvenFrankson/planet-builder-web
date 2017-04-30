@@ -6,7 +6,7 @@ var __extends = (this && this.__extends) || function (d, b) {
 var Planet = (function (_super) {
     __extends(Planet, _super);
     function Planet(name, size) {
-        var _this = _super.call(this, name, Game.Instance.getScene()) || this;
+        var _this = _super.call(this, name, Game.Scene) || this;
         _this.size = size;
         _this.radiusZero = Math.floor((2 / Math.PI - 1 / 8) * _this.size);
         _this.sides = new Array();
@@ -18,6 +18,9 @@ var Planet = (function (_super) {
         _this.sides[Side.Bottom] = new PlanetSide(Side.Bottom, _this);
         return _this;
     }
+    Planet.prototype.GetSide = function (side) {
+        return this.sides[side];
+    };
     Planet.prototype.GetSize = function () {
         return this.size;
     };

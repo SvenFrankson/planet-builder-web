@@ -25,10 +25,13 @@ class PlanetSide extends BABYLON.Mesh {
   }
   private chuncksLength: number;
   private chuncks: Array<Array<Array<PlanetChunck>>>;
+  public GetChunck(i: number, j: number, k: number): PlanetChunck {
+    return this.chuncks[i][j][k];
+  }
 
   constructor(side: Side, planet: Planet) {
     let name: string = "side-" + side;
-    super(name, Game.Instance.getScene());
+    super(name, Game.Scene);
 
     this.planet = planet;
     this.side = side;
