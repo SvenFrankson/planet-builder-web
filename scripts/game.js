@@ -12,6 +12,16 @@ var Game = (function () {
         this._light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), Game.Scene);
         this._light.diffuse = new BABYLON.Color3(1, 1, 1);
         this._light.specular = new BABYLON.Color3(1, 1, 1);
+        Game.CreateSky();
+    };
+    Game.CreateSky = function () {
+        Game.Sky = BABYLON.MeshBuilder.CreateBox("Sky", { size: 1000, sideOrientation: 1 }, Game.Scene);
+        Game.Sky.material = SharedMaterials.SkyMaterial();
+    };
+    Game.AnimateSky = function () {
+        Game.Sky.rotation.x += 0.0001;
+        Game.Sky.rotation.y += 0.0001;
+        Game.Sky.rotation.z += 0.0001;
     };
     Game.prototype.animate = function () {
         var _this = this;
@@ -20,6 +30,7 @@ var Game = (function () {
             PlanetChunck.InitializeLoop();
             Player.StillStanding();
             Player.GetMovin();
+            Game.AnimateSky();
         });
         window.addEventListener("resize", function () {
             _this._engine.resize();

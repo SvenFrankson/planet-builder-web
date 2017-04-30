@@ -12,4 +12,18 @@ class SharedMaterials {
     }
     return SharedMaterials.mainMaterial;
   }
+
+  private static skyMaterial: BABYLON.StandardMaterial;
+  public static SkyMaterial(): BABYLON.StandardMaterial {
+    if (!SharedMaterials.skyMaterial) {
+      SharedMaterials.skyMaterial = new BABYLON.StandardMaterial("mainMaterial", Game.Scene);
+      SharedMaterials.skyMaterial.emissiveTexture = new BABYLON.Texture(
+        "./resources/textures/sky.png",
+        Game.Scene
+      );
+      SharedMaterials.skyMaterial.diffuseColor = BABYLON.Color3.Black();
+      SharedMaterials.skyMaterial.specularColor = BABYLON.Color3.Black();
+    }
+    return SharedMaterials.skyMaterial;
+  }
 }

@@ -9,6 +9,7 @@ class Game {
   public static Scene: BABYLON.Scene;
   public static Camera: BABYLON.Camera;
   private _light: BABYLON.Light;
+  public static Sky: BABYLON.Mesh;
 
   public static LockedMouse: boolean = false;
   public static ClientXOnLock: number = -1;
@@ -30,6 +31,19 @@ class Game {
     this._light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), Game.Scene);
     this._light.diffuse = new BABYLON.Color3(1, 1, 1);
     this._light.specular = new BABYLON.Color3(1, 1, 1);
+
+    Game.CreateSky();
+  }
+
+  public static CreateSky(): void {
+    Game.Sky = BABYLON.MeshBuilder.CreateBox("Sky", {size: 1000, sideOrientation: 1}, Game.Scene);
+    Game.Sky.material = SharedMaterials.SkyMaterial();
+  }
+
+  public static AnimateSky(): void {
+    Game.Sky.rotation.x += 0.0001;
+    Game.Sky.rotation.y += 0.0001;
+    Game.Sky.rotation.z += 0.0001;
   }
 
   animate(): void {
@@ -38,6 +52,7 @@ class Game {
       PlanetChunck.InitializeLoop();
       Player.StillStanding();
       Player.GetMovin();
+      Game.AnimateSky();
     });
 
     window.addEventListener("resize", () => {
