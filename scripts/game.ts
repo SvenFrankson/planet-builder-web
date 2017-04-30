@@ -1,4 +1,6 @@
 /// <reference path="../lib/babylon.2.4.d.ts"/>
+/// <reference path="../lib/jquery.d.ts"/>
+
 class Game {
 
   public static Instance: Game;
@@ -77,6 +79,15 @@ window.addEventListener("DOMContentLoaded", () => {
   game.animate();
 
   PlanetEditor.RegisterControl();
+
+  $("#cursor").css(
+    "top",
+    $("#cursor").parent().height() / 2 - $("#cursor").height() / 2
+  );
+  $("#cursor").css(
+    "left",
+    $("#cursor").parent().width() / 2 - $("#cursor").width() / 2
+  );
 
   new Player(new BABYLON.Vector3(40, 40, 40));
 

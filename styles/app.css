@@ -7,15 +7,23 @@
     padding: 0;
   }
 
+  #canvas-container {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+  }
+
   #renderCanvas {
     width: 100%;
     height: 100%;
     touch-action: none;
+    margin: 0;
+    padding: 0;
   }
 
-  #renderCanvasEditorPreview {
-    width: 100%;
-    height: 100%;
-    touch-action: none;
+  #cursor {
+    position: absolute;
+    z-index: 42;
   }
 </style>
