@@ -76,6 +76,8 @@ window.addEventListener("DOMContentLoaded", () => {
   game.createScene();
   game.animate();
 
+  PlanetEditor.RegisterControl();
+
   new Player(new BABYLON.Vector3(40, 40, 40));
 
   let planetTest: Planet = new Planet("paulita", 64);

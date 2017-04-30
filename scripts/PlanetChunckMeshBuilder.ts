@@ -18,7 +18,6 @@ class PlanetChunckMeshBuilder {
     for (let i: number = 0; i < PlanetTools.CHUNCKSIZE; i++) {
       for (let j: number = 0; j < PlanetTools.CHUNCKSIZE; j++) {
         for (let k: number = 0; k < PlanetTools.CHUNCKSIZE; k++) {
-
           if (data[i][j][k] !== 0) {
             let y: number = i + iPos * PlanetTools.CHUNCKSIZE;
             let z: number = j + jPos * PlanetTools.CHUNCKSIZE;
@@ -55,7 +54,7 @@ class PlanetChunckMeshBuilder {
               MeshTools.PushSideQuadUvs(data[i][j][k], uvs);
             }
             if (j + 1 >= PlanetTools.CHUNCKSIZE || data[i][j + 1][k] === 0) {
-            MeshTools.PushQuad(vertices, 3, 7, 5, 1, positions, indices);
+              MeshTools.PushQuad(vertices, 3, 7, 5, 1, positions, indices);
               MeshTools.PushSideQuadUvs(data[i][j][k], uvs);
             }
             if (k + 1 >= PlanetTools.CHUNCKSIZE || data[i][j][k + 1] === 0) {
