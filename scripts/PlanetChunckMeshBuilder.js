@@ -93,5 +93,39 @@ var PlanetChunckMeshBuilder = (function () {
         vertexData.uvs = uvs;
         return vertexData;
     };
+    PlanetChunckMeshBuilder.BuildBedrockVertexData = function (size, iPos, jPos, kPos, r, data) {
+        var vertexData = new BABYLON.VertexData();
+        var vertices = new Array();
+        var positions = new Array();
+        var indices = new Array();
+        var uvs = new Array();
+        if (kPos === 0) {
+            for (var i = 0; i < PlanetTools.CHUNCKSIZE; i++) {
+                for (var j = 0; j < PlanetTools.CHUNCKSIZE; j++) {
+                    if (data[i][j][0] === 0) {
+                        var y = i + iPos * PlanetTools.CHUNCKSIZE;
+                        var z = j + jPos * PlanetTools.CHUNCKSIZE;
+                        vertices[0] = PlanetTools.EvaluateVertex(size, y, z);
+                        vertices[1] = PlanetTools.EvaluateVertex(size, y, z + 1);
+                        vertices[2] = PlanetTools.EvaluateVertex(size, y + 1, z);
+                        vertices[3] = PlanetTools.EvaluateVertex(size, y + 1, z + 1);
+                        vertices[1].multiplyInPlace(MeshTools.FloatVector(r));
+                        vertices[2].multiplyInPlace(MeshTools.FloatVector(r));
+                        vertices[3].multiplyInPlace(MeshTools.FloatVector(r));
+                        vertices[0].multiplyInPlace(MeshTools.FloatVector(r));
+                        MeshTools.PushQuad(vertices, 0, 1, 3, 2, positions, indices);
+                        MeshTools.PushWaterUvs(uvs);
+                    }
+                }
+            }
+        }
+        var normals = new Array();
+        BABYLON.VertexData.ComputeNormals(positions, indices, normals);
+        vertexData.positions = positions;
+        vertexData.indices = indices;
+        vertexData.normals = normals;
+        vertexData.uvs = uvs;
+        return vertexData;
+    };
     return PlanetChunckMeshBuilder;
 }());

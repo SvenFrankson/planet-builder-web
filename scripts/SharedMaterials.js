@@ -18,6 +18,14 @@ var SharedMaterials = (function () {
         }
         return SharedMaterials.waterMaterial;
     };
+    SharedMaterials.BedrockMaterial = function () {
+        if (!SharedMaterials.bedrockMaterial) {
+            SharedMaterials.bedrockMaterial = new BABYLON.StandardMaterial("waterMaterial", Game.Scene);
+            SharedMaterials.bedrockMaterial.diffuseTexture = new BABYLON.Texture("./resources/textures/bedrock.png", Game.Scene);
+            SharedMaterials.bedrockMaterial.specularColor = BABYLON.Color3.Black();
+        }
+        return SharedMaterials.bedrockMaterial;
+    };
     SharedMaterials.SkyMaterial = function () {
         if (!SharedMaterials.skyMaterial) {
             SharedMaterials.skyMaterial = new BABYLON.StandardMaterial("skyMaterial", Game.Scene);

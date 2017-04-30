@@ -36,6 +36,7 @@ class PlanetChunck extends BABYLON.Mesh {
   public GetRadiusWater(): number {
     return this.planetSide.GetRadiusWater();
   }
+  private bedrock: BABYLON.Mesh;
 
   constructor(
     iPos: number,
@@ -57,6 +58,8 @@ class PlanetChunck extends BABYLON.Mesh {
     this.barycenter = BABYLON.Vector3.TransformCoordinates(this.barycenter, planetSide.computeWorldMatrix());
     this.water = new Water(this.name + "-water");
     this.water.parent = this;
+    this.bedrock = new BABYLON.Mesh(this.name + "-bedrock", Game.Scene);
+    this.bedrock.parent = this;
   }
 
   public AsyncInitialize(): void {
@@ -107,6 +110,7 @@ class PlanetChunck extends BABYLON.Mesh {
     );
     vertexData.applyToMesh(this);
     this.material = SharedMaterials.MainMaterial();
+
     vertexData = PlanetChunckMeshBuilder
     .BuildWaterVertexData(
       this.GetSize(),
@@ -117,6 +121,18 @@ class PlanetChunck extends BABYLON.Mesh {
     );
     vertexData.applyToMesh(this.water);
     this.water.material = SharedMaterials.WaterMaterial();
+
+    vertexData = PlanetChunckMeshBuilder
+    .BuildBedrockVertexData(
+      this.GetSize(),
+      this.iPos,
+      this.jPos,
+      this.kPos,
+      this.GetRadiusZero(),
+      this.data
+    );
+    vertexData.applyToMesh(this.bedrock);
+    this.bedrock.material = SharedMaterials.BedrockMaterial();
   }
 
   public static InitializeLoop(): void {

@@ -17,6 +17,8 @@ var PlanetChunck = (function (_super) {
         _this.barycenter = BABYLON.Vector3.TransformCoordinates(_this.barycenter, planetSide.computeWorldMatrix());
         _this.water = new Water(_this.name + "-water");
         _this.water.parent = _this;
+        _this.bedrock = new BABYLON.Mesh(_this.name + "-bedrock", Game.Scene);
+        _this.bedrock.parent = _this;
         return _this;
     }
     PlanetChunck.prototype.GetSide = function () {
@@ -83,6 +85,10 @@ var PlanetChunck = (function (_super) {
             .BuildWaterVertexData(this.GetSize(), this.iPos, this.jPos, this.kPos, this.GetRadiusWater());
         vertexData.applyToMesh(this.water);
         this.water.material = SharedMaterials.WaterMaterial();
+        vertexData = PlanetChunckMeshBuilder
+            .BuildBedrockVertexData(this.GetSize(), this.iPos, this.jPos, this.kPos, this.GetRadiusZero(), this.data);
+        vertexData.applyToMesh(this.bedrock);
+        this.bedrock.material = SharedMaterials.BedrockMaterial();
     };
     PlanetChunck.InitializeLoop = function () {
         var chunck = PlanetChunck.initializationBuffer.pop();

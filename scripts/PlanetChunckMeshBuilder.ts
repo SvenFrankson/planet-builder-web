@@ -6,7 +6,7 @@ class PlanetChunckMeshBuilder {
     jPos: number,
     kPos: number,
     r: number,
-    data: Array<Array<Array<number>>>,
+    data: Array<Array<Array<number>>>
   ): BABYLON.VertexData {
 
     let vertexData: BABYLON.VertexData = new BABYLON.VertexData();
@@ -109,6 +109,55 @@ class PlanetChunckMeshBuilder {
 
         MeshTools.PushQuad(vertices, 0, 2, 3, 1, positions, indices);
         MeshTools.PushWaterUvs(uvs);
+      }
+    }
+
+    let normals: Array<number> = new Array<number>();
+    BABYLON.VertexData.ComputeNormals(positions, indices, normals);
+    vertexData.positions = positions;
+    vertexData.indices = indices;
+    vertexData.normals = normals;
+    vertexData.uvs = uvs;
+
+    return vertexData;
+  }
+
+  public static BuildBedrockVertexData(
+    size: number,
+    iPos: number,
+    jPos: number,
+    kPos: number,
+    r: number,
+    data: Array<Array<Array<number>>>
+  ): BABYLON.VertexData {
+
+    let vertexData: BABYLON.VertexData = new BABYLON.VertexData();
+    let vertices: Array<BABYLON.Vector3> = new Array<BABYLON.Vector3>();
+    let positions: Array<number> = new Array<number>();
+    let indices: Array<number> = new Array<number>();
+    let uvs: Array<number> = new Array<number>();
+
+    if (kPos === 0) {
+      for (let i: number = 0; i < PlanetTools.CHUNCKSIZE; i++) {
+        for (let j: number = 0; j < PlanetTools.CHUNCKSIZE; j++) {
+          if (data[i][j][0] === 0) {
+            let y: number = i + iPos * PlanetTools.CHUNCKSIZE;
+            let z: number = j + jPos * PlanetTools.CHUNCKSIZE;
+            // following vertices should be lazy-computed
+            vertices[0] = PlanetTools.EvaluateVertex(size, y, z);
+            vertices[1] = PlanetTools.EvaluateVertex(size, y, z + 1);
+            vertices[2] = PlanetTools.EvaluateVertex(size, y + 1, z);
+            vertices[3] = PlanetTools.EvaluateVertex(size, y + 1, z + 1);
+
+            vertices[1].multiplyInPlace(MeshTools.FloatVector(r));
+            vertices[2].multiplyInPlace(MeshTools.FloatVector(r));
+            vertices[3].multiplyInPlace(MeshTools.FloatVector(r));
+            vertices[0].multiplyInPlace(MeshTools.FloatVector(r));
+
+            MeshTools.PushQuad(vertices, 0, 1, 3, 2, positions, indices);
+            MeshTools.PushWaterUvs(uvs);
+          }
+        }
       }
     }
 

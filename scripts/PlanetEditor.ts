@@ -31,16 +31,20 @@ class PlanetEditor extends BABYLON.Mesh {
     let worldPos: BABYLON.Vector3 = PlanetEditor.GetHitWorldPos(removeMode);
     console.log("WorldPos : " + worldPos);
     if (worldPos) {
-      let planetSide: PlanetSide = PlanetTools.WorldPositionToPlanetSide(planet, worldPos);
-      console.log("PlanetSide : " + Side[planetSide.GetSide()]);
-      if (planetSide) {
-        let global: {i: number, j: number, k: number} = PlanetTools.WorldPositionToGlobalIJK(planetSide, worldPos);
-        console.log("Globals : " + JSON.stringify(global));
-        let local: {planetChunck: PlanetChunck, i: number, j: number, k: number} = PlanetTools.GlobalIJKToLocalIJK(planetSide, global);
-        console.log("Chunck : " + JSON.stringify(local.planetChunck.Position()));
-        console.log("Block : I=" + local.i + " , J=" + local.j + " , K=" + local.k);
-        local.planetChunck.SetData(local.i, local.j, local.k, PlanetEditor.data);
-        local.planetChunck.SetMesh();
+      if (PlanetEditor.data === 0 || worldPos.subtract(Player.Instance.PositionHead()).lengthSquared() < 1) {
+        if (PlanetEditor.data === 0 || worldPos.subtract(Player.Instance.PositionLeg()).lengthSquared() < 1) {
+          let planetSide: PlanetSide = PlanetTools.WorldPositionToPlanetSide(planet, worldPos);
+          console.log("PlanetSide : " + Side[planetSide.GetSide()]);
+          if (planetSide) {
+            let global: {i: number, j: number, k: number} = PlanetTools.WorldPositionToGlobalIJK(planetSide, worldPos);
+            console.log("Globals : " + JSON.stringify(global));
+            let local: {planetChunck: PlanetChunck, i: number, j: number, k: number} = PlanetTools.GlobalIJKToLocalIJK(planetSide, global);
+            console.log("Chunck : " + JSON.stringify(local.planetChunck.Position()));
+            console.log("Block : I=" + local.i + " , J=" + local.j + " , K=" + local.k);
+            local.planetChunck.SetData(local.i, local.j, local.k, PlanetEditor.data);
+            local.planetChunck.SetMesh();
+          }
+        }
       }
     }
   }
