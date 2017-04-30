@@ -65,31 +65,37 @@ class MeshTools {
   }
 
   public static PushTopQuadUvs(block: number, uvs: Array<number>): void {
-    uvs.push(0 + (block - 1) * 0.25);
-    uvs.push(0.75);
+    let i: number = (block - 128 - 1) % 4;
+    let j: number = Math.floor((block - 128 - 1) / 4);
 
-    uvs.push(0 + (block - 1) * 0.25);
-    uvs.push(1);
+    uvs.push(0 + i * 0.25);
+    uvs.push(0.75 - j * 0.25);
 
-    uvs.push(0.25 + (block - 1) * 0.25);
-    uvs.push(1);
+    uvs.push(0 + i * 0.25);
+    uvs.push(1 - j * 0.25);
 
-    uvs.push(0.25 + (block - 1) * 0.25);
-    uvs.push(0.75);
+    uvs.push(0.25 + i * 0.25);
+    uvs.push(1 - j * 0.25);
+
+    uvs.push(0.25 + i * 0.25);
+    uvs.push(0.75 - j * 0.25);
   }
 
   public static PushSideQuadUvs(block: number, uvs: Array<number>): void {
-    uvs.push(0 + (block - 1) * 0.25);
-    uvs.push(0.25);
+    let i: number = (block - 128 - 1) % 4;
+    let j: number = Math.floor((block - 128 - 1) / 4);
 
-    uvs.push(0 + (block - 1) * 0.25);
-    uvs.push(0.5);
+    uvs.push(0 + i * 0.25);
+    uvs.push(0.25 - j * 0.25);
 
-    uvs.push(0.25 + (block - 1) * 0.25);
-    uvs.push(0.5);
+    uvs.push(0 + i * 0.25);
+    uvs.push(0.5 - j * 0.25);
 
-    uvs.push(0.25 + (block - 1) * 0.25);
-    uvs.push(0.25);
+    uvs.push(0.25 + i * 0.25);
+    uvs.push(0.5 - j * 0.25);
+
+    uvs.push(0.25 + i * 0.25);
+    uvs.push(0.25 - j * 0.25);
   }
 
   public static PushWaterUvs(uvs: Array<number>): void {

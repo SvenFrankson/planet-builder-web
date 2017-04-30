@@ -50,24 +50,28 @@ var MeshTools = (function () {
         indices.push(index);
     };
     MeshTools.PushTopQuadUvs = function (block, uvs) {
-        uvs.push(0 + (block - 1) * 0.25);
-        uvs.push(0.75);
-        uvs.push(0 + (block - 1) * 0.25);
-        uvs.push(1);
-        uvs.push(0.25 + (block - 1) * 0.25);
-        uvs.push(1);
-        uvs.push(0.25 + (block - 1) * 0.25);
-        uvs.push(0.75);
+        var i = (block - 128 - 1) % 4;
+        var j = Math.floor((block - 128 - 1) / 4);
+        uvs.push(0 + i * 0.25);
+        uvs.push(0.75 - j * 0.25);
+        uvs.push(0 + i * 0.25);
+        uvs.push(1 - j * 0.25);
+        uvs.push(0.25 + i * 0.25);
+        uvs.push(1 - j * 0.25);
+        uvs.push(0.25 + i * 0.25);
+        uvs.push(0.75 - j * 0.25);
     };
     MeshTools.PushSideQuadUvs = function (block, uvs) {
-        uvs.push(0 + (block - 1) * 0.25);
-        uvs.push(0.25);
-        uvs.push(0 + (block - 1) * 0.25);
-        uvs.push(0.5);
-        uvs.push(0.25 + (block - 1) * 0.25);
-        uvs.push(0.5);
-        uvs.push(0.25 + (block - 1) * 0.25);
-        uvs.push(0.25);
+        var i = (block - 128 - 1) % 4;
+        var j = Math.floor((block - 128 - 1) / 4);
+        uvs.push(0 + i * 0.25);
+        uvs.push(0.25 - j * 0.25);
+        uvs.push(0 + i * 0.25);
+        uvs.push(0.5 - j * 0.25);
+        uvs.push(0.25 + i * 0.25);
+        uvs.push(0.5 - j * 0.25);
+        uvs.push(0.25 + i * 0.25);
+        uvs.push(0.25 - j * 0.25);
     };
     MeshTools.PushWaterUvs = function (uvs) {
         uvs.push(0);

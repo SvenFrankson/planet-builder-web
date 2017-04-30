@@ -13,7 +13,7 @@ class Planet extends BABYLON.Mesh {
     return this.radiusZero;
   }
   public GetRadiusWater(): number {
-    return this.GetRadiusZero() + this.GetSize() / 4 - 3 - 0.2;
+    return this.GetRadiusZero() + this.GetSize() / 4 - 1 - 0.2;
   }
   private totalRadiusWaterSquared: number;
   public GetTotalRadiusWaterSquared(): number {

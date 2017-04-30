@@ -30,7 +30,7 @@ var Planet = (function (_super) {
         return this.radiusZero;
     };
     Planet.prototype.GetRadiusWater = function () {
-        return this.GetRadiusZero() + this.GetSize() / 4 - 3 - 0.2;
+        return this.GetRadiusZero() + this.GetSize() / 4 - 1 - 0.2;
     };
     Planet.prototype.GetTotalRadiusWaterSquared = function () {
         return this.totalRadiusWaterSquared;
