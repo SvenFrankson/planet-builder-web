@@ -23,6 +23,13 @@ var Player = (function (_super) {
     Player.Position = function () {
         return Player.Instance.position;
     };
+    Player.prototype.PositionLeg = function () {
+        var posLeg = this.position.add(BABYLON.Vector3.TransformNormal(BABYLON.Axis.Y, this.getWorldMatrix()).multiply(MeshTools.FloatVector(-1)));
+        return posLeg;
+    };
+    Player.prototype.PositionHead = function () {
+        return this.position;
+    };
     Player.prototype.RegisterControl = function () {
         var _this = this;
         var scene = Game.Scene;
@@ -90,22 +97,28 @@ var Player = (function (_super) {
             return;
         }
         if (Player.Instance.forward) {
-            if (Player.CanForward()) {
+            if (Player.CanGoSide(BABYLON.Axis.Z)) {
                 var localZ = BABYLON.Vector3.TransformNormal(BABYLON.Axis.Z, Player.Instance.getWorldMatrix());
-                Player.Instance.position.addInPlace(localZ.multiply(MeshTools.FloatVector(0.05)));
+                Player.Instance.position.addInPlace(localZ.multiply(MeshTools.FloatVector(0.1)));
             }
         }
         if (Player.Instance.back) {
-            var localZ = BABYLON.Vector3.TransformNormal(BABYLON.Axis.Z, Player.Instance.getWorldMatrix());
-            Player.Instance.position.addInPlace(localZ.multiply(MeshTools.FloatVector(-0.05)));
+            if (Player.CanGoSide(BABYLON.Axis.Z.multiply(MeshTools.FloatVector(-1)))) {
+                var localZ = BABYLON.Vector3.TransformNormal(BABYLON.Axis.Z, Player.Instance.getWorldMatrix());
+                Player.Instance.position.addInPlace(localZ.multiply(MeshTools.FloatVector(-0.1)));
+            }
         }
         if (Player.Instance.right) {
-            var localX = BABYLON.Vector3.TransformNormal(BABYLON.Axis.X, Player.Instance.getWorldMatrix());
-            Player.Instance.position.addInPlace(localX.multiply(MeshTools.FloatVector(0.05)));
+            if (Player.CanGoSide(BABYLON.Axis.X)) {
+                var localX = BABYLON.Vector3.TransformNormal(BABYLON.Axis.X, Player.Instance.getWorldMatrix());
+                Player.Instance.position.addInPlace(localX.multiply(MeshTools.FloatVector(0.1)));
+            }
         }
         if (Player.Instance.left) {
-            var localX = BABYLON.Vector3.TransformNormal(BABYLON.Axis.X, Player.Instance.getWorldMatrix());
-            Player.Instance.position.addInPlace(localX.multiply(MeshTools.FloatVector(-0.05)));
+            if (Player.CanGoSide(BABYLON.Axis.X.multiply(MeshTools.FloatVector(-1)))) {
+                var localX = BABYLON.Vector3.TransformNormal(BABYLON.Axis.X, Player.Instance.getWorldMatrix());
+                Player.Instance.position.addInPlace(localX.multiply(MeshTools.FloatVector(-0.1)));
+            }
         }
     };
     Player.StillStanding = function () {
@@ -117,12 +130,14 @@ var Player = (function (_super) {
         var correctionAxis = BABYLON.Vector3.Cross(currentUp, targetUp);
         var correctionAngle = Math.abs(Math.asin(correctionAxis.length()));
         if (Player.Instance.fly) {
-            Player.Instance.position.addInPlace(targetUp.multiply(MeshTools.FloatVector(0.05)));
+            if (Player.CanGoUp()) {
+                Player.Instance.position.addInPlace(targetUp.multiply(MeshTools.FloatVector(0.05)));
+            }
         }
         else {
             var gravity = Player.DownRayCast();
             if (gravity !== 0) {
-                Player.Instance.position.addInPlace(targetUp.multiply(MeshTools.FloatVector(gravity * 0.05)));
+                Player.Instance.position.addInPlace(targetUp.multiply(MeshTools.FloatVector(gravity * 0.1)));
             }
         }
         if (correctionAngle > 0.001) {
@@ -146,10 +161,27 @@ var Player = (function (_super) {
         }
         return 0;
     };
-    Player.CanForward = function () {
-        var pos = Player.Instance.position;
-        var localZ = BABYLON.Vector3.TransformNormal(BABYLON.Axis.Z, Player.Instance.getWorldMatrix());
-        var ray = new BABYLON.Ray(pos, localZ, 1);
+    Player.CanGoSide = function (axis) {
+        var localAxis = BABYLON.Vector3.TransformNormal(axis, Player.Instance.getWorldMatrix());
+        var ray = new BABYLON.Ray(Player.Instance.PositionLeg(), localAxis, 0.6);
+        var hit = Game.Scene.pickWithRay(ray, function (mesh) {
+            return mesh !== Player.Instance.model;
+        });
+        if (hit.pickedPoint) {
+            return false;
+        }
+        ray = new BABYLON.Ray(Player.Instance.PositionHead(), localAxis, 0.6);
+        hit = Game.Scene.pickWithRay(ray, function (mesh) {
+            return mesh !== Player.Instance.model;
+        });
+        if (hit.pickedPoint) {
+            return false;
+        }
+        return true;
+    };
+    Player.CanGoUp = function () {
+        var localAxis = BABYLON.Vector3.TransformNormal(BABYLON.Axis.Y, Player.Instance.getWorldMatrix());
+        var ray = new BABYLON.Ray(Player.Instance.PositionHead(), localAxis, 0.6);
         var hit = Game.Scene.pickWithRay(ray, function (mesh) {
             return mesh !== Player.Instance.model;
         });

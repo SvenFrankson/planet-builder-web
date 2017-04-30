@@ -25,6 +25,7 @@ class Game {
     Game.Scene.actionManager = new BABYLON.ActionManager(Game.Scene);
 
     Game.Camera = new BABYLON.FreeCamera("Camera", BABYLON.Vector3.Zero(), Game.Scene);
+    Game.Camera.minZ = 0.1;
 
     this._light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), Game.Scene);
     this._light.diffuse = new BABYLON.Color3(1, 1, 1);
