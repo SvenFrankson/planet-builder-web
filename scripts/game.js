@@ -34,7 +34,7 @@ var Game = (function () {
         Game.Light.direction = Player.Instance.position;
     };
     Game.UpdateFPS = function () {
-        $("#fps-count").text(Game.Engine.getFps().toString());
+        $("#fps-count").text(Game.Engine.getFps().toPrecision(2));
     };
     Game.prototype.animate = function () {
         Game.Engine.runRenderLoop(function () {

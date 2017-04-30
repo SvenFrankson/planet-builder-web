@@ -59,7 +59,7 @@ class Game {
   }
 
   public static UpdateFPS(): void {
-    $("#fps-count").text(Game.Engine.getFps().toString());
+    $("#fps-count").text(Game.Engine.getFps().toPrecision(2));
   }
 
   animate(): void {

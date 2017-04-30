@@ -45,25 +45,30 @@ var PlanetEditor = (function (_super) {
     PlanetEditor.RegisterControl = function () {
         var scene = Game.Scene;
         scene.actionManager.registerAction(new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnKeyDownTrigger, function (event) {
-            if (event.sourceEvent.keyCode === 48) {
+            if ((event.sourceEvent.keyCode === 48) || (event.sourceEvent.keyCode === 88)) {
                 PlanetEditor.data = 0;
-                console.log("Remove");
+                $(".inventory-item").attr("disabled", true);
+                $("#remove").attr("disabled", false);
             }
             if (event.sourceEvent.keyCode === 49) {
-                PlanetEditor.data = 128;
-                console.log("Rock");
+                PlanetEditor.data = 129;
+                $(".inventory-item").attr("disabled", true);
+                $("#grass").attr("disabled", false);
             }
             if (event.sourceEvent.keyCode === 50) {
-                PlanetEditor.data = 129;
-                console.log("Grass");
+                PlanetEditor.data = 130;
+                $(".inventory-item").attr("disabled", true);
+                $("#dirt").attr("disabled", false);
             }
             if (event.sourceEvent.keyCode === 51) {
-                PlanetEditor.data = 130;
-                console.log("Dirt");
+                PlanetEditor.data = 131;
+                $(".inventory-item").attr("disabled", true);
+                $("#sand").attr("disabled", false);
             }
             if (event.sourceEvent.keyCode === 52) {
-                PlanetEditor.data = 131;
-                console.log("Sand");
+                PlanetEditor.data = 132;
+                $(".inventory-item").attr("disabled", true);
+                $("#rock").attr("disabled", false);
             }
         }));
     };

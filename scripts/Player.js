@@ -35,13 +35,13 @@ var Player = (function (_super) {
         var _this = this;
         var scene = Game.Scene;
         scene.actionManager.registerAction(new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnKeyDownTrigger, function (event) {
-            if (event.sourceEvent.key === "z") {
+            if ((event.sourceEvent.key === "z") || (event.sourceEvent.key === "w")) {
                 _this.forward = true;
             }
             if (event.sourceEvent.key === "s") {
                 _this.back = true;
             }
-            if (event.sourceEvent.key === "q") {
+            if ((event.sourceEvent.key === "q") || (event.sourceEvent.key === "a")) {
                 _this.left = true;
             }
             if (event.sourceEvent.key === "d") {
@@ -52,13 +52,13 @@ var Player = (function (_super) {
             }
         }));
         scene.actionManager.registerAction(new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnKeyUpTrigger, function (event) {
-            if (event.sourceEvent.key === "z") {
+            if ((event.sourceEvent.key === "z") || (event.sourceEvent.key === "w")) {
                 _this.forward = false;
             }
             if (event.sourceEvent.key === "s") {
                 _this.back = false;
             }
-            if (event.sourceEvent.key === "q") {
+            if ((event.sourceEvent.key === "q") || (event.sourceEvent.key === "a")) {
                 _this.left = false;
             }
             if (event.sourceEvent.key === "d") {
@@ -112,25 +112,25 @@ var Player = (function (_super) {
         if (Player.Instance.forward) {
             if (Player.CanGoSide(BABYLON.Axis.Z)) {
                 var localZ = BABYLON.Vector3.TransformNormal(BABYLON.Axis.Z, Player.Instance.getWorldMatrix());
-                Player.Instance.position.addInPlace(localZ.multiply(MeshTools.FloatVector(0.1)));
+                Player.Instance.position.addInPlace(localZ.multiply(MeshTools.FloatVector(0.05)));
             }
         }
         if (Player.Instance.back) {
             if (Player.CanGoSide(BABYLON.Axis.Z.multiply(MeshTools.FloatVector(-1)))) {
                 var localZ = BABYLON.Vector3.TransformNormal(BABYLON.Axis.Z, Player.Instance.getWorldMatrix());
-                Player.Instance.position.addInPlace(localZ.multiply(MeshTools.FloatVector(-0.1)));
+                Player.Instance.position.addInPlace(localZ.multiply(MeshTools.FloatVector(-0.05)));
             }
         }
         if (Player.Instance.right) {
             if (Player.CanGoSide(BABYLON.Axis.X)) {
                 var localX = BABYLON.Vector3.TransformNormal(BABYLON.Axis.X, Player.Instance.getWorldMatrix());
-                Player.Instance.position.addInPlace(localX.multiply(MeshTools.FloatVector(0.1)));
+                Player.Instance.position.addInPlace(localX.multiply(MeshTools.FloatVector(0.05)));
             }
         }
         if (Player.Instance.left) {
             if (Player.CanGoSide(BABYLON.Axis.X.multiply(MeshTools.FloatVector(-1)))) {
                 var localX = BABYLON.Vector3.TransformNormal(BABYLON.Axis.X, Player.Instance.getWorldMatrix());
-                Player.Instance.position.addInPlace(localX.multiply(MeshTools.FloatVector(-0.1)));
+                Player.Instance.position.addInPlace(localX.multiply(MeshTools.FloatVector(-0.05)));
             }
         }
     };

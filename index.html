@@ -34,12 +34,66 @@
       <div id="canvas-container" >
         <canvas id="renderCanvas"></canvas>
         <img id="cursor" src="./img/cursor.png">
+        <div id="inventory">
+          <intput id="remove" class="btn btn-primary inventory-item">
+            <img class="inventory-picture" src="./img/remove.png">
+            <div>[0] [X]</div>
+          </intput>
+          <intput id="grass" class="btn btn-primary inventory-item" disabled>
+            <img class="inventory-picture" src="./img/grass.png">
+            <div>[1]</div>
+          </intput>
+          <intput id="dirt" class="btn btn-primary inventory-item" disabled>
+            <img class="inventory-picture" src="./img/dirt.png">
+            <div>[2]</div>
+          </intput>
+          <intput id="sand" class="btn btn-primary inventory-item" disabled>
+            <img class="inventory-picture" src="./img/sand.png">
+            <div>[3]</div>
+          </intput>
+          <intput id="rock" class="btn btn-primary inventory-item" disabled>
+            <img class="inventory-picture" src="./img/rock.png">
+            <div>[4]</div>
+          </intput>
+        </div>
       </div>
     </div>
 
     <div class="col-xs-2">
-      <div class="row">
-        FPS : <span id="fps-count"></span>
+      <div class="panel panel-default info-menu">
+        <div class="panel-heading">
+          FPS
+        </div>
+        <div class="panel-body">
+          <span id="fps-count"></span>
+        </div>
+      </div>
+      <div class="panel panel-default info-menu">
+        <div class="panel-heading">
+          Controls
+        </div>
+        <div class="panel-body">
+          <b>[Click Canvas]</b> Take control.
+        </div>
+        <div class="panel-body">
+          <b>[Escape]</b> Drop control.
+        </div>
+        <div class="panel-body">
+          <b>[Mouse]</b> Look around.
+        </div>
+        <div class="panel-body">
+          <b>[WASD]</b> Move.</br>
+          <b>[QZSD]</b> Move.
+        </div>
+        <div class="panel-body">
+          <b>[Space]</b> Fly.</br>
+        </div>
+        <div class="panel-body">
+          <b>[0,1,2,3,4]</b> Set selected Item.
+        </div>
+        <div class="panel-body">
+          <b>[Click]</b> Use selected Item.
+        </div>
       </div>
     </div>
 
