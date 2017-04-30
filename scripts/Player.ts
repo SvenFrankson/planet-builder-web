@@ -25,14 +25,12 @@ class Player extends BABYLON.Mesh {
 
   constructor(position: BABYLON.Vector3, planet: Planet) {
     super("Player", Game.Scene);
-    console.log("Create Player");
     this.planet = planet;
     this.position = position;
     this.rotationQuaternion = BABYLON.Quaternion.Identity();
     this.camPos = new BABYLON.Mesh("Dummy", Game.Scene);
     this.camPos.parent = this;
     this.camPos.position = new BABYLON.Vector3(0, 0, 0);
-    this.camPos.rotationQuaternion = BABYLON.Quaternion.Identity();
     Game.Camera.parent = this.camPos;
     this.RegisterControl();
     Player.Instance = this;
@@ -105,7 +103,10 @@ class Player extends BABYLON.Mesh {
         let rotation: BABYLON.Quaternion = BABYLON.Quaternion.RotationAxis(localY, rotationPower);
         Player.Instance.rotationQuaternion = rotation.multiply(Player.Instance.rotationQuaternion);
         let rotationCamPower: number = movementY / 500;
-        Player.Instance.camPos.rotate(BABYLON.Axis.X, rotationCamPower, BABYLON.Space.LOCAL);
+        Player.Instance.camPos.rotation.x += rotationCamPower;
+        console.log(Player.Instance.camPos.rotation.x);
+        Player.Instance.camPos.rotation.x = Math.max(Player.Instance.camPos.rotation.x, - Math.PI / 2);
+        Player.Instance.camPos.rotation.x = Math.min(Player.Instance.camPos.rotation.x, Math.PI / 2);
       }
     });
   }
