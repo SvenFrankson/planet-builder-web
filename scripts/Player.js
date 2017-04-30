@@ -5,10 +5,11 @@ var __extends = (this && this.__extends) || function (d, b) {
 };
 var Player = (function (_super) {
     __extends(Player, _super);
-    function Player(position) {
-        var _this = this;
+    function Player(position, planet) {
+        var _this = _super.call(this, "Player", Game.Scene) || this;
+        _this.underWater = false;
         console.log("Create Player");
-        _this = _super.call(this, "Player", Game.Scene) || this;
+        _this.planet = planet;
         _this.position = position;
         _this.rotationQuaternion = BABYLON.Quaternion.Identity();
         _this.camPos = new BABYLON.Mesh("Dummy", Game.Scene);
@@ -92,6 +93,18 @@ var Player = (function (_super) {
             }
         });
     };
+    Player.WaterFilter = function () {
+        if (Player.Instance) {
+            if (Player.Instance.position.lengthSquared() < Player.Instance.planet.GetTotalRadiusWaterSquared()) {
+                Game.Light.diffuse = new BABYLON.Color3(0.5, 0.5, 1);
+                Player.Instance.underWater = true;
+            }
+            else {
+                Game.Light.diffuse = new BABYLON.Color3(1, 1, 1);
+                Player.Instance.underWater = false;
+            }
+        }
+    };
     Player.GetMovin = function () {
         if (!Player.Instance) {
             return;
@@ -137,7 +150,11 @@ var Player = (function (_super) {
         else {
             var gravity = Player.DownRayCast();
             if (gravity !== 0) {
-                Player.Instance.position.addInPlace(targetUp.multiply(MeshTools.FloatVector(gravity * 0.1)));
+                var gravityFactor = 0.1;
+                if (Player.Instance.underWater) {
+                    gravityFactor = 0.02;
+                }
+                Player.Instance.position.addInPlace(targetUp.multiply(MeshTools.FloatVector(gravity * gravityFactor)));
             }
         }
         if (correctionAngle > 0.001) {
@@ -150,7 +167,7 @@ var Player = (function (_super) {
         var dir = BABYLON.Vector3.Normalize(BABYLON.Vector3.Zero().subtract(Player.Instance.position));
         var ray = new BABYLON.Ray(pos, dir, 1.6);
         var hit = Game.Scene.pickWithRay(ray, function (mesh) {
-            return mesh !== Player.Instance.model;
+            return !(mesh instanceof Water);
         });
         if (!hit.pickedPoint) {
             return -1;
@@ -165,14 +182,14 @@ var Player = (function (_super) {
         var localAxis = BABYLON.Vector3.TransformNormal(axis, Player.Instance.getWorldMatrix());
         var ray = new BABYLON.Ray(Player.Instance.PositionLeg(), localAxis, 0.6);
         var hit = Game.Scene.pickWithRay(ray, function (mesh) {
-            return mesh !== Player.Instance.model;
+            return !(mesh instanceof Water);
         });
         if (hit.pickedPoint) {
             return false;
         }
         ray = new BABYLON.Ray(Player.Instance.PositionHead(), localAxis, 0.6);
         hit = Game.Scene.pickWithRay(ray, function (mesh) {
-            return mesh !== Player.Instance.model;
+            return !(mesh instanceof Water);
         });
         if (hit.pickedPoint) {
             return false;
@@ -183,7 +200,7 @@ var Player = (function (_super) {
         var localAxis = BABYLON.Vector3.TransformNormal(BABYLON.Axis.Y, Player.Instance.getWorldMatrix());
         var ray = new BABYLON.Ray(Player.Instance.PositionHead(), localAxis, 0.6);
         var hit = Game.Scene.pickWithRay(ray, function (mesh) {
-            return mesh !== Player.Instance.model;
+            return !(mesh instanceof Water);
         });
         if (hit.pickedPoint) {
             return false;

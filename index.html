@@ -12,6 +12,7 @@
     <script src="./scripts/MeshTools.js"></script>
     <script src="./scripts/PlanetTools.js"></script>
     <script src="./scripts/SharedMaterials.js"></script>
+    <script src="./scripts/Water.js"></script>
     <script src="./scripts/PlanetChunckMeshBuilder.js"></script>
     <script src="./scripts/PlanetChunck.js"></script>
     <script src="./scripts/PlanetSide.js"></script>
@@ -29,14 +30,17 @@
     <div class="col-xs-1">
     </div>
 
-    <div class="col-xs-10">
+    <div class="col-xs-9">
       <div id="canvas-container" >
         <canvas id="renderCanvas"></canvas>
         <img id="cursor" src="./img/cursor.png">
       </div>
     </div>
 
-    <div class="col-xs-1">
+    <div class="col-xs-2">
+      <div class="row">
+        FPS : <span id="fps-count"></span>
+      </div>
     </div>
 
   </div>

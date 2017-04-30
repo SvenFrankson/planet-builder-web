@@ -15,6 +15,8 @@ var PlanetChunck = (function (_super) {
         _this.kPos = kPos;
         _this.barycenter = PlanetTools.EvaluateVertex(_this.GetSize(), PlanetTools.CHUNCKSIZE * _this.iPos + PlanetTools.CHUNCKSIZE / 2, PlanetTools.CHUNCKSIZE * _this.jPos + PlanetTools.CHUNCKSIZE / 2).multiply(MeshTools.FloatVector(_this.GetRadiusZero() + PlanetTools.CHUNCKSIZE * _this.kPos + PlanetTools.CHUNCKSIZE / 2));
         _this.barycenter = BABYLON.Vector3.TransformCoordinates(_this.barycenter, planetSide.computeWorldMatrix());
+        _this.water = new Water(_this.name + "-water");
+        _this.water.parent = _this;
         return _this;
     }
     PlanetChunck.prototype.GetSide = function () {
@@ -41,6 +43,9 @@ var PlanetChunck = (function (_super) {
     };
     PlanetChunck.prototype.GetBaryCenter = function () {
         return this.barycenter;
+    };
+    PlanetChunck.prototype.GetRadiusWater = function () {
+        return this.planetSide.GetRadiusWater();
     };
     PlanetChunck.prototype.AsyncInitialize = function () {
         var thisDistance = Player.Position().subtract(this.barycenter).lengthSquared();
@@ -74,6 +79,10 @@ var PlanetChunck = (function (_super) {
             .BuildVertexData(this.GetSize(), this.iPos, this.jPos, this.kPos, this.GetRadiusZero(), this.data);
         vertexData.applyToMesh(this);
         this.material = SharedMaterials.MainMaterial();
+        vertexData = PlanetChunckMeshBuilder
+            .BuildWaterVertexData(this.GetSize(), this.iPos, this.jPos, this.kPos, this.GetRadiusWater());
+        vertexData.applyToMesh(this.water);
+        this.water.material = SharedMaterials.WaterMaterial();
     };
     PlanetChunck.InitializeLoop = function () {
         var chunck = PlanetChunck.initializationBuffer.pop();

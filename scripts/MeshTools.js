@@ -69,6 +69,16 @@ var MeshTools = (function () {
         uvs.push(0.25 + (block - 1) * 0.25);
         uvs.push(0.25);
     };
+    MeshTools.PushWaterUvs = function (uvs) {
+        uvs.push(0);
+        uvs.push(0);
+        uvs.push(0);
+        uvs.push(1);
+        uvs.push(1);
+        uvs.push(1);
+        uvs.push(1);
+        uvs.push(0);
+    };
     MeshTools.VertexDataFromJSON = function (jsonData) {
         var tmp = JSON.parse(jsonData);
         var vertexData = new BABYLON.VertexData();

@@ -10,7 +10,9 @@ var PlanetEditor = (function (_super) {
     }
     PlanetEditor.GetHitWorldPos = function (remove) {
         if (remove === void 0) { remove = false; }
-        var pickInfo = Game.Scene.pick(Game.Canvas.width / 2, Game.Canvas.height / 2);
+        var pickInfo = Game.Scene.pick(Game.Canvas.width / 2, Game.Canvas.height / 2, function (mesh) {
+            return !(mesh instanceof Water);
+        });
         if (pickInfo.hit) {
             if (pickInfo.pickedMesh instanceof PlanetChunck) {
                 var offset = -0.2;

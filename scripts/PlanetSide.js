@@ -47,6 +47,9 @@ var PlanetSide = (function (_super) {
     PlanetSide.prototype.GetRadiusZero = function () {
         return this.planet.GetRadiusZero();
     };
+    PlanetSide.prototype.GetRadiusWater = function () {
+        return this.planet.GetRadiusWater();
+    };
     PlanetSide.prototype.GetChunck = function (i, j, k) {
         return this.chuncks[i][j][k];
     };

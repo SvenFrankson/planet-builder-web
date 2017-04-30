@@ -23,6 +23,9 @@ class PlanetSide extends BABYLON.Mesh {
   public GetRadiusZero(): number {
     return this.planet.GetRadiusZero();
   }
+  public GetRadiusWater(): number {
+    return this.planet.GetRadiusWater();
+  }
   private chuncksLength: number;
   private chuncks: Array<Array<Array<PlanetChunck>>>;
   public GetChunck(i: number, j: number, k: number): PlanetChunck {

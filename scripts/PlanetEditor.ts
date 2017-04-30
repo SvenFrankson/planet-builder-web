@@ -5,7 +5,13 @@ class PlanetEditor extends BABYLON.Mesh {
   public static data: number = 0;
 
   public static GetHitWorldPos(remove: boolean = false): BABYLON.Vector3 {
-    let pickInfo: BABYLON.PickingInfo = Game.Scene.pick(Game.Canvas.width / 2, Game.Canvas.height / 2);
+    let pickInfo: BABYLON.PickingInfo = Game.Scene.pick(
+      Game.Canvas.width / 2,
+      Game.Canvas.height / 2,
+      (mesh: BABYLON.Mesh) => {
+        return !(mesh instanceof Water);
+      }
+    );
     if (pickInfo.hit) {
       if (pickInfo.pickedMesh instanceof PlanetChunck) {
         let offset: number = -0.2;

@@ -12,6 +12,13 @@ class Planet extends BABYLON.Mesh {
   public GetRadiusZero(): number {
     return this.radiusZero;
   }
+  public GetRadiusWater(): number {
+    return this.GetRadiusZero() + this.GetSize() / 4 - 3 - 0.2;
+  }
+  private totalRadiusWaterSquared: number;
+  public GetTotalRadiusWaterSquared(): number {
+    return this.totalRadiusWaterSquared;
+  }
   public GetPlanetName(): string {
     return this.name;
   }
@@ -23,6 +30,8 @@ class Planet extends BABYLON.Mesh {
     super(name, Game.Scene);
     this.size = size;
     this.radiusZero = Math.floor((2 / Math.PI - 1 / 8) * this.size);
+    this.totalRadiusWaterSquared = this.GetRadiusWater() * this.GetRadiusWater();
+    console.log(this.totalRadiusWaterSquared);
     this.sides = new Array<PlanetSide>();
     this.sides[Side.Right] = new PlanetSide(Side.Right, this);
     this.sides[Side.Left] = new PlanetSide(Side.Left, this);

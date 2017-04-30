@@ -92,6 +92,20 @@ class MeshTools {
     uvs.push(0.25);
   }
 
+  public static PushWaterUvs(uvs: Array<number>): void {
+    uvs.push(0);
+    uvs.push(0);
+
+    uvs.push(0);
+    uvs.push(1);
+
+    uvs.push(1);
+    uvs.push(1);
+
+    uvs.push(1);
+    uvs.push(0);
+  }
+
   public static VertexDataFromJSON(jsonData: string): BABYLON.VertexData {
     let tmp: BABYLON.VertexData = JSON.parse(jsonData);
     let vertexData: BABYLON.VertexData = new BABYLON.VertexData();

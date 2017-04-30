@@ -1,11 +1,12 @@
 /// <reference path="../lib/babylon.2.4.d.ts"/>
 class Player extends BABYLON.Mesh {
-  private static Instance: Player;
+  public static Instance: Player;
   public static Position(): BABYLON.Vector3 {
     return Player.Instance.position;
   }
 
-  public model: BABYLON.AbstractMesh;
+  private planet: Planet;
+  private underWater: boolean = false;
   public camPos: BABYLON.AbstractMesh;
   public forward: boolean;
   public back: boolean;
@@ -22,9 +23,10 @@ class Player extends BABYLON.Mesh {
     return this.position;
   }
 
-  constructor(position: BABYLON.Vector3) {
-    console.log("Create Player");
+  constructor(position: BABYLON.Vector3, planet: Planet) {
     super("Player", Game.Scene);
+    console.log("Create Player");
+    this.planet = planet;
     this.position = position;
     this.rotationQuaternion = BABYLON.Quaternion.Identity();
     this.camPos = new BABYLON.Mesh("Dummy", Game.Scene);
@@ -108,6 +110,18 @@ class Player extends BABYLON.Mesh {
     });
   }
 
+  public static WaterFilter(): void {
+    if (Player.Instance) {
+      if (Player.Instance.position.lengthSquared() < Player.Instance.planet.GetTotalRadiusWaterSquared()) {
+        Game.Light.diffuse = new BABYLON.Color3(0.5, 0.5, 1);
+        Player.Instance.underWater = true;
+      } else {
+        Game.Light.diffuse = new BABYLON.Color3(1, 1, 1);
+        Player.Instance.underWater = false;
+      }
+    }
+  }
+
   public static GetMovin(): void {
     if (!Player.Instance) {
       return;
@@ -155,7 +169,11 @@ class Player extends BABYLON.Mesh {
     } else {
       let gravity: number = Player.DownRayCast();
       if (gravity !== 0) {
-        Player.Instance.position.addInPlace(targetUp.multiply(MeshTools.FloatVector(gravity * 0.1)));
+        let gravityFactor: number = 0.1;
+        if (Player.Instance.underWater) {
+          gravityFactor = 0.02;
+        }
+        Player.Instance.position.addInPlace(targetUp.multiply(MeshTools.FloatVector(gravity * gravityFactor)));
       }
     }
     if (correctionAngle > 0.001) {
@@ -171,7 +189,7 @@ class Player extends BABYLON.Mesh {
     let hit: BABYLON.PickingInfo = Game.Scene.pickWithRay(
       ray,
       (mesh: BABYLON.Mesh) => {
-        return mesh !== Player.Instance.model;
+        return !(mesh instanceof Water);
       }
     );
     if (!hit.pickedPoint) {
@@ -190,7 +208,7 @@ class Player extends BABYLON.Mesh {
     let hit: BABYLON.PickingInfo = Game.Scene.pickWithRay(
       ray,
       (mesh: BABYLON.Mesh) => {
-        return mesh !== Player.Instance.model;
+        return !(mesh instanceof Water);
       }
     );
     if (hit.pickedPoint) {
@@ -200,7 +218,7 @@ class Player extends BABYLON.Mesh {
     hit = Game.Scene.pickWithRay(
       ray,
       (mesh: BABYLON.Mesh) => {
-        return mesh !== Player.Instance.model;
+        return !(mesh instanceof Water);
       }
     );
     if (hit.pickedPoint) {
@@ -215,7 +233,7 @@ class Player extends BABYLON.Mesh {
     let hit: BABYLON.PickingInfo = Game.Scene.pickWithRay(
       ray,
       (mesh: BABYLON.Mesh) => {
-        return mesh !== Player.Instance.model;
+        return !(mesh instanceof Water);
       }
     );
     if (hit.pickedPoint) {
