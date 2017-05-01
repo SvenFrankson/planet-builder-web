@@ -8,6 +8,7 @@ var Player = (function (_super) {
     function Player(position, planet) {
         var _this = _super.call(this, "Player", Game.Scene) || this;
         _this.underWater = false;
+        console.log("Create Player");
         _this.planet = planet;
         _this.position = position;
         _this.rotationQuaternion = BABYLON.Quaternion.Identity();
@@ -88,7 +89,6 @@ var Player = (function (_super) {
                 Player.Instance.rotationQuaternion = rotation.multiply(Player.Instance.rotationQuaternion);
                 var rotationCamPower = movementY / 500;
                 Player.Instance.camPos.rotation.x += rotationCamPower;
-                console.log(Player.Instance.camPos.rotation.x);
                 Player.Instance.camPos.rotation.x = Math.max(Player.Instance.camPos.rotation.x, -Math.PI / 2);
                 Player.Instance.camPos.rotation.x = Math.min(Player.Instance.camPos.rotation.x, Math.PI / 2);
             }
