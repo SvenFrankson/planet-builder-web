@@ -14,12 +14,12 @@ class PlanetEditor extends BABYLON.Mesh {
     );
     if (pickInfo.hit) {
       if (pickInfo.pickedMesh instanceof PlanetChunck) {
-        let offset: number = -0.2;
+        let offset: number = 0.25;
         if (remove) {
-          offset = 0.2;
+          offset = -0.25;
         }
         return pickInfo.pickedPoint.add(
-          BABYLON.Vector3.Normalize(pickInfo.pickedPoint.subtract(Player.Position())).multiply(MeshTools.FloatVector(offset))
+          pickInfo.getNormal(true, false).multiply(MeshTools.FloatVector(offset))
         );
       }
     }

@@ -15,11 +15,11 @@ var PlanetEditor = (function (_super) {
         });
         if (pickInfo.hit) {
             if (pickInfo.pickedMesh instanceof PlanetChunck) {
-                var offset = -0.2;
+                var offset = 0.25;
                 if (remove) {
-                    offset = 0.2;
+                    offset = -0.25;
                 }
-                return pickInfo.pickedPoint.add(BABYLON.Vector3.Normalize(pickInfo.pickedPoint.subtract(Player.Position())).multiply(MeshTools.FloatVector(offset)));
+                return pickInfo.pickedPoint.add(pickInfo.getNormal(true, false).multiply(MeshTools.FloatVector(offset)));
             }
         }
         return undefined;
