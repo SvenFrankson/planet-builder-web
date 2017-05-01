@@ -115,4 +115,14 @@ window.addEventListener("DOMContentLoaded", function () {
             }
         }
     });
+    $("#camera-fov").val(Game.Camera.fov.toPrecision(3));
+    $("#camera-fov").on("change", function (e) {
+        if (e.target instanceof HTMLInputElement) {
+            Game.Camera.fov = parseFloat(e.target.value);
+        }
+    });
+    $("#camera-fov-reset").on("click", function () {
+        Game.Camera.fov = 0.8;
+        $("#camera-fov").val("0.8");
+    });
 });

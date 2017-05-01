@@ -14,6 +14,10 @@
     bottom: 30px;
   }
 
+  .inline {
+    display: inline-block;
+  }
+
   .inventory-item {
     display: inline-block;
     text-align: center;
