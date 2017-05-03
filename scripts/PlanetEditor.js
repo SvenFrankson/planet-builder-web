@@ -10,6 +10,8 @@ var PlanetEditor = (function (_super) {
     }
     PlanetEditor.GetHitWorldPos = function (remove) {
         if (remove === void 0) { remove = false; }
+        console.log("Canvas Width : " + Game.Canvas.width);
+        console.log("Canvas Height : " + Game.Canvas.height);
         var pickInfo = Game.Scene.pick(Game.Canvas.width / 2, Game.Canvas.height / 2, function (mesh) {
             return !(mesh instanceof Water);
         });

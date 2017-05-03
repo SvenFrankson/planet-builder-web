@@ -5,6 +5,8 @@ class PlanetEditor extends BABYLON.Mesh {
   public static data: number = 0;
 
   public static GetHitWorldPos(remove: boolean = false): BABYLON.Vector3 {
+    console.log("Canvas Width : " + Game.Canvas.width);
+    console.log("Canvas Height : " + Game.Canvas.height);
     let pickInfo: BABYLON.PickingInfo = Game.Scene.pick(
       Game.Canvas.width / 2,
       Game.Canvas.height / 2,
