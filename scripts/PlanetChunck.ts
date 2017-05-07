@@ -2,6 +2,8 @@
 
 class PlanetChunck extends BABYLON.Mesh {
   private static initializationBuffer: Array<PlanetChunck> = new Array<PlanetChunck>();
+  private static delayBuffer: Array<PlanetChunck> = new Array<PlanetChunck>();
+  private static initializedBuffer: Array<PlanetChunck> = new Array<PlanetChunck>();
   private planetSide: PlanetSide;
   public GetSide(): Side {
     return this.planetSide.GetSide();
@@ -30,6 +32,10 @@ class PlanetChunck extends BABYLON.Mesh {
   public GetBaryCenter(): BABYLON.Vector3 {
     return this.barycenter;
   }
+  private normal: BABYLON.Vector3;
+  public GetNormal(): BABYLON.Vector3 {
+    return this.normal;
+  }
   private water: Water;
   public GetRadiusWater(): number {
     return this.planetSide.GetRadiusWater();
@@ -54,13 +60,23 @@ class PlanetChunck extends BABYLON.Mesh {
       PlanetTools.CHUNCKSIZE * this.jPos + PlanetTools.CHUNCKSIZE / 2
     ).multiply(MeshTools.FloatVector(PlanetTools.CHUNCKSIZE * this.kPos + PlanetTools.CHUNCKSIZE / 2));
     this.barycenter = BABYLON.Vector3.TransformCoordinates(this.barycenter, planetSide.computeWorldMatrix());
+    this.normal = BABYLON.Vector3.Normalize(this.barycenter);
     this.water = new Water(this.name + "-water");
     this.water.parent = this;
     this.bedrock = new BABYLON.Mesh(this.name + "-bedrock", Game.Scene);
     this.bedrock.parent = this;
   }
 
-  public AsyncInitialize(): void {
+  private PushToBuffer(): void {
+    let alpha: number = MeshTools.Angle(this.GetNormal(), Player.Position().subtract(this.barycenter));
+    if (alpha < PlanetTools.ALPHALIMIT) {
+      this.PushToInitializationBuffer();
+    } else {
+      PlanetChunck.delayBuffer.push(this);
+    }
+  }
+
+  private PushToInitializationBuffer(): void {
     let thisDistance: number = Player.Position().subtract(this.barycenter).lengthSquared();
     let lastIDistance: number = -1;
     for (let i: number = 0; i < PlanetChunck.initializationBuffer.length; i++) {
@@ -80,6 +96,10 @@ class PlanetChunck extends BABYLON.Mesh {
     PlanetChunck.initializationBuffer.push(this);
   }
 
+  public AsyncInitialize(): void {
+    this.PushToBuffer();
+  }
+
   public Initialize(): void {
     let dataUrl: string = "./chunck" +
                           "/" + this.GetPlanetName() +
@@ -92,6 +112,7 @@ class PlanetChunck extends BABYLON.Mesh {
       (data: string) => {
         this.data = PlanetTools.DataFromHexString(data);
         this.SetMesh();
+        PlanetChunck.initializedBuffer.push(this);
       }
     );
   }
@@ -99,6 +120,7 @@ class PlanetChunck extends BABYLON.Mesh {
   public RandomInitialize(): void {
     this.data = PlanetTools.RandomData();
     this.SetMesh();
+    PlanetChunck.initializedBuffer.push(this);
   }
 
   public SetMesh(): void {
@@ -137,11 +159,31 @@ class PlanetChunck extends BABYLON.Mesh {
     this.bedrock.material = SharedMaterials.BedrockMaterial();
   }
 
+  public Dispose(): void {
+    PlanetTools.EmptyVertexData().applyToMesh(this);
+    PlanetTools.EmptyVertexData().applyToMesh(this.water);
+    PlanetTools.EmptyVertexData().applyToMesh(this.bedrock);
+  }
+
   public static InitializeLoop(): void {
     let chunck: PlanetChunck = PlanetChunck.initializationBuffer.pop();
     if (chunck) {
       // chunck.Initialize();
       chunck.RandomInitialize();
+    }
+    if (PlanetChunck.delayBuffer.length > 0) {
+      let delayedChunck: PlanetChunck = PlanetChunck.delayBuffer.splice(0, 1)[0];
+      delayedChunck.PushToBuffer();
+    }
+    if (PlanetChunck.initializedBuffer.length > 0) {
+      let initializedChunck: PlanetChunck = PlanetChunck.initializedBuffer.splice(0, 1)[0];
+      let alpha: number = MeshTools.Angle(initializedChunck.GetNormal(), Player.Position().subtract(initializedChunck.GetBaryCenter()));
+      if (alpha > PlanetTools.ALPHALIMIT * 1.1) {
+        initializedChunck.Dispose();
+        PlanetChunck.delayBuffer.push(initializedChunck);
+      } else {
+        PlanetChunck.initializedBuffer.push(initializedChunck);
+      }
     }
   }
 }

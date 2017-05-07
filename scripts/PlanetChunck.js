@@ -15,6 +15,7 @@ var PlanetChunck = (function (_super) {
         _this.kPos = kPos;
         _this.barycenter = PlanetTools.EvaluateVertex(_this.GetSize(), PlanetTools.CHUNCKSIZE * _this.iPos + PlanetTools.CHUNCKSIZE / 2, PlanetTools.CHUNCKSIZE * _this.jPos + PlanetTools.CHUNCKSIZE / 2).multiply(MeshTools.FloatVector(PlanetTools.CHUNCKSIZE * _this.kPos + PlanetTools.CHUNCKSIZE / 2));
         _this.barycenter = BABYLON.Vector3.TransformCoordinates(_this.barycenter, planetSide.computeWorldMatrix());
+        _this.normal = BABYLON.Vector3.Normalize(_this.barycenter);
         _this.water = new Water(_this.name + "-water");
         _this.water.parent = _this;
         _this.bedrock = new BABYLON.Mesh(_this.name + "-bedrock", Game.Scene);
@@ -43,10 +44,22 @@ var PlanetChunck = (function (_super) {
     PlanetChunck.prototype.GetBaryCenter = function () {
         return this.barycenter;
     };
+    PlanetChunck.prototype.GetNormal = function () {
+        return this.normal;
+    };
     PlanetChunck.prototype.GetRadiusWater = function () {
         return this.planetSide.GetRadiusWater();
     };
-    PlanetChunck.prototype.AsyncInitialize = function () {
+    PlanetChunck.prototype.PushToBuffer = function () {
+        var alpha = MeshTools.Angle(this.GetNormal(), Player.Position().subtract(this.barycenter));
+        if (alpha < PlanetTools.ALPHALIMIT) {
+            this.PushToInitializationBuffer();
+        }
+        else {
+            PlanetChunck.delayBuffer.push(this);
+        }
+    };
+    PlanetChunck.prototype.PushToInitializationBuffer = function () {
         var thisDistance = Player.Position().subtract(this.barycenter).lengthSquared();
         var lastIDistance = -1;
         for (var i = 0; i < PlanetChunck.initializationBuffer.length; i++) {
@@ -58,6 +71,9 @@ var PlanetChunck = (function (_super) {
             lastIDistance = iDistance;
         }
         PlanetChunck.initializationBuffer.push(this);
+    };
+    PlanetChunck.prototype.AsyncInitialize = function () {
+        this.PushToBuffer();
     };
     PlanetChunck.prototype.Initialize = function () {
         var _this = this;
@@ -71,11 +87,13 @@ var PlanetChunck = (function (_super) {
         $.get(dataUrl, function (data) {
             _this.data = PlanetTools.DataFromHexString(data);
             _this.SetMesh();
+            PlanetChunck.initializedBuffer.push(_this);
         });
     };
     PlanetChunck.prototype.RandomInitialize = function () {
         this.data = PlanetTools.RandomData();
         this.SetMesh();
+        PlanetChunck.initializedBuffer.push(this);
     };
     PlanetChunck.prototype.SetMesh = function () {
         var vertexData = PlanetChunckMeshBuilder
@@ -91,12 +109,34 @@ var PlanetChunck = (function (_super) {
         vertexData.applyToMesh(this.bedrock);
         this.bedrock.material = SharedMaterials.BedrockMaterial();
     };
+    PlanetChunck.prototype.Dispose = function () {
+        PlanetTools.EmptyVertexData().applyToMesh(this);
+        PlanetTools.EmptyVertexData().applyToMesh(this.water);
+        PlanetTools.EmptyVertexData().applyToMesh(this.bedrock);
+    };
     PlanetChunck.InitializeLoop = function () {
         var chunck = PlanetChunck.initializationBuffer.pop();
         if (chunck) {
             chunck.RandomInitialize();
         }
+        if (PlanetChunck.delayBuffer.length > 0) {
+            var delayedChunck = PlanetChunck.delayBuffer.splice(0, 1)[0];
+            delayedChunck.PushToBuffer();
+        }
+        if (PlanetChunck.initializedBuffer.length > 0) {
+            var initializedChunck = PlanetChunck.initializedBuffer.splice(0, 1)[0];
+            var alpha = MeshTools.Angle(initializedChunck.GetNormal(), Player.Position().subtract(initializedChunck.GetBaryCenter()));
+            if (alpha > PlanetTools.ALPHALIMIT * 1.1) {
+                initializedChunck.Dispose();
+                PlanetChunck.delayBuffer.push(initializedChunck);
+            }
+            else {
+                PlanetChunck.initializedBuffer.push(initializedChunck);
+            }
+        }
     };
     return PlanetChunck;
 }(BABYLON.Mesh));
 PlanetChunck.initializationBuffer = new Array();
+PlanetChunck.delayBuffer = new Array();
+PlanetChunck.initializedBuffer = new Array();

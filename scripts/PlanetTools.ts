@@ -2,6 +2,17 @@
 /// <reference path="../lib/jquery.d.ts"/>
 class PlanetTools {
   public static readonly CHUNCKSIZE = 16;
+  public static readonly ALPHALIMIT = Math.PI / 2;
+  private static emptyVertexData: BABYLON.VertexData;
+
+  public static EmptyVertexData(): BABYLON.VertexData {
+    if (!PlanetTools.emptyVertexData) {
+      let emptyMesh: BABYLON.Mesh = new BABYLON.Mesh("Empty", Game.Scene);
+      PlanetTools.emptyVertexData = BABYLON.VertexData.ExtractFromMesh(emptyMesh);
+      emptyMesh.dispose();
+    }
+    return PlanetTools.emptyVertexData;
+  }
 
   public static QuaternionForSide(side: Side): BABYLON.Quaternion {
     if (side === Side.Right) {

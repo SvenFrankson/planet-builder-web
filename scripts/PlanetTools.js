@@ -1,6 +1,14 @@
 var PlanetTools = (function () {
     function PlanetTools() {
     }
+    PlanetTools.EmptyVertexData = function () {
+        if (!PlanetTools.emptyVertexData) {
+            var emptyMesh = new BABYLON.Mesh("Empty", Game.Scene);
+            PlanetTools.emptyVertexData = BABYLON.VertexData.ExtractFromMesh(emptyMesh);
+            emptyMesh.dispose();
+        }
+        return PlanetTools.emptyVertexData;
+    };
     PlanetTools.QuaternionForSide = function (side) {
         if (side === Side.Right) {
             return BABYLON.Quaternion.Identity();
@@ -151,3 +159,4 @@ var PlanetTools = (function () {
     return PlanetTools;
 }());
 PlanetTools.CHUNCKSIZE = 16;
+PlanetTools.ALPHALIMIT = Math.PI / 2;

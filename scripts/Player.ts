@@ -130,25 +130,25 @@ class Player extends BABYLON.Mesh {
     if (Player.Instance.forward) {
       if (Player.CanGoSide(BABYLON.Axis.Z)) {
         let localZ: BABYLON.Vector3 = BABYLON.Vector3.TransformNormal(BABYLON.Axis.Z, Player.Instance.getWorldMatrix());
-        Player.Instance.position.addInPlace(localZ.multiply(MeshTools.FloatVector(0.05)));
+        Player.Instance.position.addInPlace(localZ.multiply(MeshTools.FloatVector(0.2)));
       }
     }
     if (Player.Instance.back) {
       if (Player.CanGoSide(BABYLON.Axis.Z.multiply(MeshTools.FloatVector(-1)))) {
         let localZ: BABYLON.Vector3 = BABYLON.Vector3.TransformNormal(BABYLON.Axis.Z, Player.Instance.getWorldMatrix());
-        Player.Instance.position.addInPlace(localZ.multiply(MeshTools.FloatVector(-0.05)));
+        Player.Instance.position.addInPlace(localZ.multiply(MeshTools.FloatVector(-0.2)));
       }
     }
     if (Player.Instance.right) {
       if (Player.CanGoSide(BABYLON.Axis.X)) {
         let localX: BABYLON.Vector3 = BABYLON.Vector3.TransformNormal(BABYLON.Axis.X, Player.Instance.getWorldMatrix());
-        Player.Instance.position.addInPlace(localX.multiply(MeshTools.FloatVector(0.05)));
+        Player.Instance.position.addInPlace(localX.multiply(MeshTools.FloatVector(0.2)));
       }
     }
     if (Player.Instance.left) {
       if (Player.CanGoSide(BABYLON.Axis.X.multiply(MeshTools.FloatVector(-1)))) {
         let localX: BABYLON.Vector3 = BABYLON.Vector3.TransformNormal(BABYLON.Axis.X, Player.Instance.getWorldMatrix());
-        Player.Instance.position.addInPlace(localX.multiply(MeshTools.FloatVector(-0.05)));
+        Player.Instance.position.addInPlace(localX.multiply(MeshTools.FloatVector(-0.2)));
       }
     }
   }
