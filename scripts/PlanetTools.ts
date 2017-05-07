@@ -2,7 +2,7 @@
 /// <reference path="../lib/jquery.d.ts"/>
 class PlanetTools {
   public static readonly CHUNCKSIZE = 16;
-  public static readonly ALPHALIMIT = Math.PI / 2;
+  public static readonly ALPHALIMIT = Math.PI / 4;
   private static emptyVertexData: BABYLON.VertexData;
 
   public static EmptyVertexData(): BABYLON.VertexData {

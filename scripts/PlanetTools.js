@@ -159,4 +159,4 @@ var PlanetTools = (function () {
     return PlanetTools;
 }());
 PlanetTools.CHUNCKSIZE = 16;
-PlanetTools.ALPHALIMIT = Math.PI / 2;
+PlanetTools.ALPHALIMIT = Math.PI / 4;

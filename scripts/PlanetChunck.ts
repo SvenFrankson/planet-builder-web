@@ -68,7 +68,7 @@ class PlanetChunck extends BABYLON.Mesh {
   }
 
   private PushToBuffer(): void {
-    let alpha: number = MeshTools.Angle(this.GetNormal(), Player.Position().subtract(this.barycenter));
+    let alpha: number = MeshTools.Angle(this.GetNormal(), Player.Position());
     if (alpha < PlanetTools.ALPHALIMIT) {
       this.PushToInitializationBuffer();
     } else {
@@ -177,8 +177,8 @@ class PlanetChunck extends BABYLON.Mesh {
     }
     if (PlanetChunck.initializedBuffer.length > 0) {
       let initializedChunck: PlanetChunck = PlanetChunck.initializedBuffer.splice(0, 1)[0];
-      let alpha: number = MeshTools.Angle(initializedChunck.GetNormal(), Player.Position().subtract(initializedChunck.GetBaryCenter()));
-      if (alpha > PlanetTools.ALPHALIMIT * 1.1) {
+      let alpha: number = MeshTools.Angle(initializedChunck.GetNormal(), Player.Position());
+      if (alpha > PlanetTools.ALPHALIMIT * 1.2) {
         initializedChunck.Dispose();
         PlanetChunck.delayBuffer.push(initializedChunck);
       } else {

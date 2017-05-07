@@ -1,6 +1,23 @@
 var PlanetChunckMeshBuilder = (function () {
     function PlanetChunckMeshBuilder() {
     }
+    PlanetChunckMeshBuilder.GetVertex = function (size, i, j) {
+        if (!PlanetChunckMeshBuilder.cachedVertices) {
+            PlanetChunckMeshBuilder.cachedVertices = new Array();
+        }
+        if (!PlanetChunckMeshBuilder.cachedVertices[size]) {
+            PlanetChunckMeshBuilder.cachedVertices[size] = new Array();
+        }
+        if (!PlanetChunckMeshBuilder.cachedVertices[size][i]) {
+            PlanetChunckMeshBuilder.cachedVertices[size][i] = new Array();
+        }
+        if (!PlanetChunckMeshBuilder.cachedVertices[size][i][j]) {
+            PlanetChunckMeshBuilder.cachedVertices[size][i][j] = PlanetTools.EvaluateVertex(size, i, j);
+        }
+        var vertex = BABYLON.Vector3.Zero();
+        vertex.copyFrom(PlanetChunckMeshBuilder.cachedVertices[size][i][j]);
+        return vertex;
+    };
     PlanetChunckMeshBuilder.BuildVertexData = function (size, iPos, jPos, kPos, data) {
         var vertexData = new BABYLON.VertexData();
         var vertices = new Array();
@@ -13,10 +30,10 @@ var PlanetChunckMeshBuilder = (function () {
                     if (data[i][j][k] !== 0) {
                         var y = i + iPos * PlanetTools.CHUNCKSIZE;
                         var z = j + jPos * PlanetTools.CHUNCKSIZE;
-                        vertices[0] = PlanetTools.EvaluateVertex(size, y, z);
-                        vertices[1] = PlanetTools.EvaluateVertex(size, y, z + 1);
-                        vertices[2] = PlanetTools.EvaluateVertex(size, y + 1, z);
-                        vertices[3] = PlanetTools.EvaluateVertex(size, y + 1, z + 1);
+                        vertices[0] = PlanetChunckMeshBuilder.GetVertex(size, y, z);
+                        vertices[1] = PlanetChunckMeshBuilder.GetVertex(size, y, z + 1);
+                        vertices[2] = PlanetChunckMeshBuilder.GetVertex(size, y + 1, z);
+                        vertices[3] = PlanetChunckMeshBuilder.GetVertex(size, y + 1, z + 1);
                         vertices[4] = vertices[0].multiply(MeshTools.FloatVector(k + kPos * PlanetTools.CHUNCKSIZE + 1));
                         vertices[5] = vertices[1].multiply(MeshTools.FloatVector(k + kPos * PlanetTools.CHUNCKSIZE + 1));
                         vertices[6] = vertices[2].multiply(MeshTools.FloatVector(k + kPos * PlanetTools.CHUNCKSIZE + 1));
@@ -71,10 +88,10 @@ var PlanetChunckMeshBuilder = (function () {
             for (var j = 0; j < PlanetTools.CHUNCKSIZE; j++) {
                 var y = i + iPos * PlanetTools.CHUNCKSIZE;
                 var z = j + jPos * PlanetTools.CHUNCKSIZE;
-                vertices[0] = PlanetTools.EvaluateVertex(size, y, z);
-                vertices[1] = PlanetTools.EvaluateVertex(size, y, z + 1);
-                vertices[2] = PlanetTools.EvaluateVertex(size, y + 1, z);
-                vertices[3] = PlanetTools.EvaluateVertex(size, y + 1, z + 1);
+                vertices[0] = PlanetChunckMeshBuilder.GetVertex(size, y, z);
+                vertices[1] = PlanetChunckMeshBuilder.GetVertex(size, y, z + 1);
+                vertices[2] = PlanetChunckMeshBuilder.GetVertex(size, y + 1, z);
+                vertices[3] = PlanetChunckMeshBuilder.GetVertex(size, y + 1, z + 1);
                 vertices[1].multiplyInPlace(MeshTools.FloatVector(rWater));
                 vertices[2].multiplyInPlace(MeshTools.FloatVector(rWater));
                 vertices[3].multiplyInPlace(MeshTools.FloatVector(rWater));
@@ -104,10 +121,10 @@ var PlanetChunckMeshBuilder = (function () {
                 for (var j = 0; j < PlanetTools.CHUNCKSIZE; j++) {
                     var y = i + iPos * PlanetTools.CHUNCKSIZE;
                     var z = j + jPos * PlanetTools.CHUNCKSIZE;
-                    vertices[0] = PlanetTools.EvaluateVertex(size, y, z);
-                    vertices[1] = PlanetTools.EvaluateVertex(size, y, z + 1);
-                    vertices[2] = PlanetTools.EvaluateVertex(size, y + 1, z);
-                    vertices[3] = PlanetTools.EvaluateVertex(size, y + 1, z + 1);
+                    vertices[0] = PlanetChunckMeshBuilder.GetVertex(size, y, z);
+                    vertices[1] = PlanetChunckMeshBuilder.GetVertex(size, y, z + 1);
+                    vertices[2] = PlanetChunckMeshBuilder.GetVertex(size, y + 1, z);
+                    vertices[3] = PlanetChunckMeshBuilder.GetVertex(size, y + 1, z + 1);
                     vertices[1].multiplyInPlace(MeshTools.FloatVector(r));
                     vertices[2].multiplyInPlace(MeshTools.FloatVector(r));
                     vertices[3].multiplyInPlace(MeshTools.FloatVector(r));

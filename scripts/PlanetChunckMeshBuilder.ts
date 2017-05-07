@@ -1,5 +1,27 @@
 /// <reference path="../lib/babylon.2.4.d.ts"/>
+
 class PlanetChunckMeshBuilder {
+
+  private static cachedVertices: Array<Array<Array<BABYLON.Vector3>>>;
+
+  private static GetVertex(size: number, i: number, j: number): BABYLON.Vector3 {
+    if (!PlanetChunckMeshBuilder.cachedVertices) {
+      PlanetChunckMeshBuilder.cachedVertices = new Array<Array<Array<BABYLON.Vector3>>>();
+    }
+    if (!PlanetChunckMeshBuilder.cachedVertices[size]) {
+      PlanetChunckMeshBuilder.cachedVertices[size] = new Array<Array<BABYLON.Vector3>>();
+    }
+    if (!PlanetChunckMeshBuilder.cachedVertices[size][i]) {
+      PlanetChunckMeshBuilder.cachedVertices[size][i] = new Array<BABYLON.Vector3>();
+    }
+    if (!PlanetChunckMeshBuilder.cachedVertices[size][i][j]) {
+      PlanetChunckMeshBuilder.cachedVertices[size][i][j] = PlanetTools.EvaluateVertex(size, i, j);
+    }
+    let vertex: BABYLON.Vector3 = BABYLON.Vector3.Zero();
+    vertex.copyFrom(PlanetChunckMeshBuilder.cachedVertices[size][i][j]);
+    return vertex;
+  }
+
   public static BuildVertexData(
     size: number,
     iPos: number,
@@ -21,10 +43,10 @@ class PlanetChunckMeshBuilder {
             let y: number = i + iPos * PlanetTools.CHUNCKSIZE;
             let z: number = j + jPos * PlanetTools.CHUNCKSIZE;
             // following vertices should be lazy-computed
-            vertices[0] = PlanetTools.EvaluateVertex(size, y, z);
-            vertices[1] = PlanetTools.EvaluateVertex(size, y, z + 1);
-            vertices[2] = PlanetTools.EvaluateVertex(size, y + 1, z);
-            vertices[3] = PlanetTools.EvaluateVertex(size, y + 1, z + 1);
+            vertices[0] = PlanetChunckMeshBuilder.GetVertex(size, y, z);
+            vertices[1] = PlanetChunckMeshBuilder.GetVertex(size, y, z + 1);
+            vertices[2] = PlanetChunckMeshBuilder.GetVertex(size, y + 1, z);
+            vertices[3] = PlanetChunckMeshBuilder.GetVertex(size, y + 1, z + 1);
 
             vertices[4] = vertices[0].multiply(MeshTools.FloatVector(k + kPos * PlanetTools.CHUNCKSIZE + 1));
             vertices[5] = vertices[1].multiply(MeshTools.FloatVector(k + kPos * PlanetTools.CHUNCKSIZE + 1));
@@ -93,10 +115,10 @@ class PlanetChunckMeshBuilder {
         let y: number = i + iPos * PlanetTools.CHUNCKSIZE;
         let z: number = j + jPos * PlanetTools.CHUNCKSIZE;
         // following vertices should be lazy-computed
-        vertices[0] = PlanetTools.EvaluateVertex(size, y, z);
-        vertices[1] = PlanetTools.EvaluateVertex(size, y, z + 1);
-        vertices[2] = PlanetTools.EvaluateVertex(size, y + 1, z);
-        vertices[3] = PlanetTools.EvaluateVertex(size, y + 1, z + 1);
+        vertices[0] = PlanetChunckMeshBuilder.GetVertex(size, y, z);
+        vertices[1] = PlanetChunckMeshBuilder.GetVertex(size, y, z + 1);
+        vertices[2] = PlanetChunckMeshBuilder.GetVertex(size, y + 1, z);
+        vertices[3] = PlanetChunckMeshBuilder.GetVertex(size, y + 1, z + 1);
 
         vertices[1].multiplyInPlace(MeshTools.FloatVector(rWater));
         vertices[2].multiplyInPlace(MeshTools.FloatVector(rWater));
@@ -142,10 +164,10 @@ class PlanetChunckMeshBuilder {
           let y: number = i + iPos * PlanetTools.CHUNCKSIZE;
           let z: number = j + jPos * PlanetTools.CHUNCKSIZE;
           // following vertices should be lazy-computed
-          vertices[0] = PlanetTools.EvaluateVertex(size, y, z);
-          vertices[1] = PlanetTools.EvaluateVertex(size, y, z + 1);
-          vertices[2] = PlanetTools.EvaluateVertex(size, y + 1, z);
-          vertices[3] = PlanetTools.EvaluateVertex(size, y + 1, z + 1);
+          vertices[0] = PlanetChunckMeshBuilder.GetVertex(size, y, z);
+          vertices[1] = PlanetChunckMeshBuilder.GetVertex(size, y, z + 1);
+          vertices[2] = PlanetChunckMeshBuilder.GetVertex(size, y + 1, z);
+          vertices[3] = PlanetChunckMeshBuilder.GetVertex(size, y + 1, z + 1);
 
           vertices[1].multiplyInPlace(MeshTools.FloatVector(r));
           vertices[2].multiplyInPlace(MeshTools.FloatVector(r));

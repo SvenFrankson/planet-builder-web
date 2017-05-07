@@ -51,7 +51,7 @@ var PlanetChunck = (function (_super) {
         return this.planetSide.GetRadiusWater();
     };
     PlanetChunck.prototype.PushToBuffer = function () {
-        var alpha = MeshTools.Angle(this.GetNormal(), Player.Position().subtract(this.barycenter));
+        var alpha = MeshTools.Angle(this.GetNormal(), Player.Position());
         if (alpha < PlanetTools.ALPHALIMIT) {
             this.PushToInitializationBuffer();
         }
@@ -125,8 +125,8 @@ var PlanetChunck = (function (_super) {
         }
         if (PlanetChunck.initializedBuffer.length > 0) {
             var initializedChunck = PlanetChunck.initializedBuffer.splice(0, 1)[0];
-            var alpha = MeshTools.Angle(initializedChunck.GetNormal(), Player.Position().subtract(initializedChunck.GetBaryCenter()));
-            if (alpha > PlanetTools.ALPHALIMIT * 1.1) {
+            var alpha = MeshTools.Angle(initializedChunck.GetNormal(), Player.Position());
+            if (alpha > PlanetTools.ALPHALIMIT * 1.2) {
                 initializedChunck.Dispose();
                 PlanetChunck.delayBuffer.push(initializedChunck);
             }
