@@ -30,6 +30,24 @@ var PlanetTools = (function () {
         zRad = zRad / 180.0 * Math.PI;
         return new BABYLON.Vector3(Math.sin(xRad) / Math.cos(xRad), Math.sin(yRad) / Math.cos(yRad), Math.sin(zRad) / Math.cos(zRad)).normalize();
     };
+    PlanetTools.RandomData = function () {
+        var data = new Array();
+        for (var i = 0; i < PlanetTools.CHUNCKSIZE; i++) {
+            data[i] = new Array();
+            for (var j = 0; j < PlanetTools.CHUNCKSIZE; j++) {
+                data[i][j] = new Array();
+                for (var k = 0; k < PlanetTools.CHUNCKSIZE; k++) {
+                    if (Math.random() < 0.5) {
+                        data[i][j][k] = 0;
+                    }
+                    else {
+                        data[i][j][k] = Math.floor(Math.random() * 7 + 129);
+                    }
+                }
+            }
+        }
+        return data;
+    };
     PlanetTools.DataFromHexString = function (hexString) {
         if (hexString.length !== PlanetTools.CHUNCKSIZE * PlanetTools.CHUNCKSIZE * PlanetTools.CHUNCKSIZE * 2) {
             console.log("Invalid HexString. Length is =" + hexString.length +
@@ -90,11 +108,9 @@ var PlanetTools = (function () {
         var zDeg = Math.atan(localPos.z) / Math.PI * 180;
         console.log("YDeg : " + yDeg);
         console.log("ZDeg : " + zDeg);
-        var i = Math.floor((zDeg + 45) / 90 * planetSide.GetSize());
-        var j = Math.floor((yDeg + 45) / 90 * planetSide.GetSize());
-        var k = Math.floor(r - planetSide.GetRadiusZero());
-        console.log("R : " + r);
-        console.log("RadiusZero : " + planetSide.GetRadiusZero());
+        var k = Math.floor(r);
+        var i = Math.floor((zDeg + 45) / 90 * PlanetTools.DegreeToSize(PlanetTools.KGlobalToDegree(k)));
+        var j = Math.floor((yDeg + 45) / 90 * PlanetTools.DegreeToSize(PlanetTools.KGlobalToDegree(k)));
         return { i: i, j: j, k: k };
     };
     PlanetTools.GlobalIJKToLocalIJK = function (planetSide, global) {
@@ -104,6 +120,33 @@ var PlanetTools = (function () {
             j: global.j % PlanetTools.CHUNCKSIZE,
             k: global.k % PlanetTools.CHUNCKSIZE
         };
+    };
+    PlanetTools.KGlobalToDegree = function (k) {
+        return PlanetTools.KPosToDegree(Math.floor(k / PlanetTools.CHUNCKSIZE));
+    };
+    PlanetTools.KPosToDegree = function (kPos) {
+        if (kPos < 1) {
+            return 4;
+        }
+        else if (kPos < 2) {
+            return 5;
+        }
+        else if (kPos < 4) {
+            return 6;
+        }
+        else if (kPos < 7) {
+            return 7;
+        }
+        else if (kPos < 13) {
+            return 8;
+        }
+        return 9;
+    };
+    PlanetTools.DegreeToSize = function (degree) {
+        return Math.pow(2, degree);
+    };
+    PlanetTools.DegreeToChuncksCount = function (degree) {
+        return PlanetTools.DegreeToSize(degree) / PlanetTools.CHUNCKSIZE;
     };
     return PlanetTools;
 }());

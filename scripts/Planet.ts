@@ -1,19 +1,16 @@
 /// <reference path="../lib/babylon.2.4.d.ts"/>
+
 class Planet extends BABYLON.Mesh {
   private sides: Array<PlanetSide>;
   public GetSide(side: Side): PlanetSide {
     return this.sides[side];
   }
-  private size: number;
-  public GetSize(): number {
-    return this.size;
-  }
-  private radiusZero: number;
-  public GetRadiusZero(): number {
-    return this.radiusZero;
+  private kPosMax: number;
+  public GetKPosMax(): number {
+    return this.kPosMax;
   }
   public GetRadiusWater(): number {
-    return this.GetRadiusZero() + this.GetSize() / 4 - 1 - 0.2;
+    return this.kPosMax * PlanetTools.CHUNCKSIZE / 4;
   }
   private totalRadiusWaterSquared: number;
   public GetTotalRadiusWaterSquared(): number {
@@ -25,11 +22,10 @@ class Planet extends BABYLON.Mesh {
 
   constructor(
     name: string,
-    size: number
+    kPosMax: number
   ) {
     super(name, Game.Scene);
-    this.size = size;
-    this.radiusZero = Math.floor((2 / Math.PI - 1 / 8) * this.size);
+    this.kPosMax = kPosMax;
     this.totalRadiusWaterSquared = this.GetRadiusWater() * this.GetRadiusWater();
     console.log(this.totalRadiusWaterSquared);
     this.sides = new Array<PlanetSide>();

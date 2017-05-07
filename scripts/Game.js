@@ -94,7 +94,7 @@ window.addEventListener("DOMContentLoaded", function () {
     game.animate();
     Game.SetCursorPosition();
     PlanetEditor.RegisterControl();
-    var planetTest = new Planet("paulita", 64);
+    var planetTest = new Planet("paulita", 4);
     new Player(new BABYLON.Vector3(36, 36, 36), planetTest);
     planetTest.AsyncInitialize();
     Game.Canvas.addEventListener("mouseup", function (event) {

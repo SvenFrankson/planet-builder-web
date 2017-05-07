@@ -35,6 +35,24 @@ class PlanetTools {
     ).normalize();
   }
 
+  public static RandomData(): Array<Array<Array<number>>> {
+    let data: Array<Array<Array<number>>> = new Array<Array<Array<number>>>();
+    for (let i: number = 0; i < PlanetTools.CHUNCKSIZE; i++) {
+      data[i] = new Array<Array<number>>();
+      for (let j: number = 0; j < PlanetTools.CHUNCKSIZE; j++) {
+        data[i][j] = new Array<number>();
+        for (let k: number = 0; k < PlanetTools.CHUNCKSIZE; k++) {
+          if (Math.random() < 0.5) {
+            data[i][j][k] = 0;
+          } else {
+            data[i][j][k] = Math.floor(Math.random() * 7 + 129);
+          }
+        }
+      }
+    }
+    return data;
+  }
+
   public static DataFromHexString(hexString : string): Array<Array<Array<number>>> {
     if (hexString.length !== PlanetTools.CHUNCKSIZE * PlanetTools.CHUNCKSIZE * PlanetTools.CHUNCKSIZE * 2) {
       console.log("Invalid HexString. Length is =" + hexString.length +
@@ -106,11 +124,9 @@ class PlanetTools {
     console.log("YDeg : " + yDeg);
     console.log("ZDeg : " + zDeg);
 
-    let i: number = Math.floor((zDeg + 45) / 90 * planetSide.GetSize());
-    let j: number = Math.floor((yDeg + 45) / 90 * planetSide.GetSize());
-    let k: number = Math.floor(r - planetSide.GetRadiusZero());
-    console.log("R : " + r);
-    console.log("RadiusZero : " + planetSide.GetRadiusZero());
+    let k: number = Math.floor(r);
+    let i: number = Math.floor((zDeg + 45) / 90 * PlanetTools.DegreeToSize( PlanetTools.KGlobalToDegree(k)));
+    let j: number = Math.floor((yDeg + 45) / 90 * PlanetTools.DegreeToSize( PlanetTools.KGlobalToDegree(k)));
 
     return {i: i, j: j, k: k};
   }
@@ -129,5 +145,32 @@ class PlanetTools {
       j: global.j % PlanetTools.CHUNCKSIZE,
       k: global.k % PlanetTools.CHUNCKSIZE
     };
+  }
+
+  public static KGlobalToDegree(k: number): number {
+    return PlanetTools.KPosToDegree(Math.floor(k / PlanetTools.CHUNCKSIZE));
+  }
+
+  public static KPosToDegree(kPos: number): number {
+    if (kPos < 1) {
+      return 4;
+    } else if (kPos < 2) {
+      return 5;
+    } else if (kPos < 4) {
+      return 6;
+    } else if (kPos < 7) {
+      return 7;
+    } else if (kPos < 13) {
+      return 8;
+    }
+    return 9;
+  }
+
+  public static DegreeToSize(degree: number): number {
+    return Math.pow(2, degree);
+  }
+
+  public static DegreeToChuncksCount(degree: number): number {
+    return PlanetTools.DegreeToSize(degree) / PlanetTools.CHUNCKSIZE;
   }
 }

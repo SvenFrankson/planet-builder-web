@@ -1,4 +1,5 @@
 /// <reference path="../lib/babylon.2.4.d.ts"/>
+
 enum Side {
   Right,
   Left,
@@ -14,22 +15,19 @@ class PlanetSide extends BABYLON.Mesh {
     return this.side;
   }
   private planet: Planet;
-  public GetSize(): number {
-    return this.planet.GetSize();
-  }
   public GetPlanetName(): string {
     return this.planet.GetPlanetName();
-  }
-  public GetRadiusZero(): number {
-    return this.planet.GetRadiusZero();
   }
   public GetRadiusWater(): number {
     return this.planet.GetRadiusWater();
   }
+  public GetKPosMax(): number {
+    return this.planet.GetKPosMax();
+  }
   private chuncksLength: number;
   private chuncks: Array<Array<Array<PlanetChunck>>>;
   public GetChunck(i: number, j: number, k: number): PlanetChunck {
-    return this.chuncks[i][j][k];
+    return this.chuncks[k][i][j];
   }
 
   constructor(side: Side, planet: Planet) {
@@ -38,17 +36,17 @@ class PlanetSide extends BABYLON.Mesh {
 
     this.planet = planet;
     this.side = side;
-    this.chuncksLength = this.GetSize() / PlanetTools.CHUNCKSIZE;
     this.rotationQuaternion = PlanetTools.QuaternionForSide(this.side);
 
     this.chuncks = new Array<Array<Array<PlanetChunck>>>();
-    for (let i: number = 0; i < this.chuncksLength; i++) {
-      this.chuncks[i] = new Array<Array<PlanetChunck>>();
-      for (let j: number = 0; j < this.chuncksLength; j++) {
-        this.chuncks[i][j] = new Array<PlanetChunck>();
-        for (let k: number = 0; k < this.chuncksLength / 2; k++) {
-          this.chuncks[i][j][k] = new PlanetChunck(i, j, k, this);
-          this.chuncks[i][j][k].parent = this;
+    for (let k: number = 0; k < this.GetKPosMax(); k++) {
+      this.chuncks[k] = new Array<Array<PlanetChunck>>();
+      let chuncksCount: number = PlanetTools.DegreeToChuncksCount(PlanetTools.KPosToDegree(k));
+      for (let i: number = 0; i < chuncksCount; i++) {
+        this.chuncks[k][i] = new Array<PlanetChunck>();
+        for (let j: number = 0; j < chuncksCount; j++) {
+          this.chuncks[k][i][j] = new PlanetChunck(i, j, k, this);
+          this.chuncks[k][i][j].parent = this;
         }
       }
     }
@@ -65,10 +63,10 @@ class PlanetSide extends BABYLON.Mesh {
   }
 
   public AsyncInitialize(): void {
-    for (let i: number = 0; i < this.chuncksLength; i++) {
-      for (let j: number = 0; j < this.chuncksLength; j++) {
-        for (let k: number = 0; k < this.chuncksLength / 2; k++) {
-          this.chuncks[i][j][k].AsyncInitialize();
+    for (let k: number = 0; k < this.chuncks.length; k++) {
+      for (let i: number = 0; i < this.chuncks[k].length; i++) {
+        for (let j: number = 0; j < this.chuncks[k][i].length; j++) {
+          this.chuncks[k][i][j].AsyncInitialize();
         }
       }
     }

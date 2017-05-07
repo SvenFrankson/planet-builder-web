@@ -20,16 +20,16 @@ var PlanetSide = (function (_super) {
         _this = _super.call(this, name, Game.Scene) || this;
         _this.planet = planet;
         _this.side = side;
-        _this.chuncksLength = _this.GetSize() / PlanetTools.CHUNCKSIZE;
         _this.rotationQuaternion = PlanetTools.QuaternionForSide(_this.side);
         _this.chuncks = new Array();
-        for (var i = 0; i < _this.chuncksLength; i++) {
-            _this.chuncks[i] = new Array();
-            for (var j = 0; j < _this.chuncksLength; j++) {
-                _this.chuncks[i][j] = new Array();
-                for (var k = 0; k < _this.chuncksLength / 2; k++) {
-                    _this.chuncks[i][j][k] = new PlanetChunck(i, j, k, _this);
-                    _this.chuncks[i][j][k].parent = _this;
+        for (var k = 0; k < _this.GetKPosMax(); k++) {
+            _this.chuncks[k] = new Array();
+            var chuncksCount = PlanetTools.DegreeToChuncksCount(PlanetTools.KPosToDegree(k));
+            for (var i = 0; i < chuncksCount; i++) {
+                _this.chuncks[k][i] = new Array();
+                for (var j = 0; j < chuncksCount; j++) {
+                    _this.chuncks[k][i][j] = new PlanetChunck(i, j, k, _this);
+                    _this.chuncks[k][i][j].parent = _this;
                 }
             }
         }
@@ -38,20 +38,17 @@ var PlanetSide = (function (_super) {
     PlanetSide.prototype.GetSide = function () {
         return this.side;
     };
-    PlanetSide.prototype.GetSize = function () {
-        return this.planet.GetSize();
-    };
     PlanetSide.prototype.GetPlanetName = function () {
         return this.planet.GetPlanetName();
-    };
-    PlanetSide.prototype.GetRadiusZero = function () {
-        return this.planet.GetRadiusZero();
     };
     PlanetSide.prototype.GetRadiusWater = function () {
         return this.planet.GetRadiusWater();
     };
+    PlanetSide.prototype.GetKPosMax = function () {
+        return this.planet.GetKPosMax();
+    };
     PlanetSide.prototype.GetChunck = function (i, j, k) {
-        return this.chuncks[i][j][k];
+        return this.chuncks[k][i][j];
     };
     PlanetSide.prototype.Initialize = function () {
         for (var i = 0; i < this.chuncksLength; i++) {
@@ -63,10 +60,10 @@ var PlanetSide = (function (_super) {
         }
     };
     PlanetSide.prototype.AsyncInitialize = function () {
-        for (var i = 0; i < this.chuncksLength; i++) {
-            for (var j = 0; j < this.chuncksLength; j++) {
-                for (var k = 0; k < this.chuncksLength / 2; k++) {
-                    this.chuncks[i][j][k].AsyncInitialize();
+        for (var k = 0; k < this.chuncks.length; k++) {
+            for (var i = 0; i < this.chuncks[k].length; i++) {
+                for (var j = 0; j < this.chuncks[k][i].length; j++) {
+                    this.chuncks[k][i][j].AsyncInitialize();
                 }
             }
         }

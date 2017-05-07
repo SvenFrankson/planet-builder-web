@@ -5,10 +5,9 @@ var __extends = (this && this.__extends) || function (d, b) {
 };
 var Planet = (function (_super) {
     __extends(Planet, _super);
-    function Planet(name, size) {
+    function Planet(name, kPosMax) {
         var _this = _super.call(this, name, Game.Scene) || this;
-        _this.size = size;
-        _this.radiusZero = Math.floor((2 / Math.PI - 1 / 8) * _this.size);
+        _this.kPosMax = kPosMax;
         _this.totalRadiusWaterSquared = _this.GetRadiusWater() * _this.GetRadiusWater();
         console.log(_this.totalRadiusWaterSquared);
         _this.sides = new Array();
@@ -23,14 +22,11 @@ var Planet = (function (_super) {
     Planet.prototype.GetSide = function (side) {
         return this.sides[side];
     };
-    Planet.prototype.GetSize = function () {
-        return this.size;
-    };
-    Planet.prototype.GetRadiusZero = function () {
-        return this.radiusZero;
+    Planet.prototype.GetKPosMax = function () {
+        return this.kPosMax;
     };
     Planet.prototype.GetRadiusWater = function () {
-        return this.GetRadiusZero() + this.GetSize() / 4 - 1 - 0.2;
+        return this.kPosMax * PlanetTools.CHUNCKSIZE / 4;
     };
     Planet.prototype.GetTotalRadiusWaterSquared = function () {
         return this.totalRadiusWaterSquared;

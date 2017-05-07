@@ -1,4 +1,5 @@
 /// <reference path="../lib/babylon.2.4.d.ts"/>
+
 class PlanetChunck extends BABYLON.Mesh {
   private static initializationBuffer: Array<PlanetChunck> = new Array<PlanetChunck>();
   private planetSide: PlanetSide;
@@ -6,13 +7,10 @@ class PlanetChunck extends BABYLON.Mesh {
     return this.planetSide.GetSide();
   }
   public GetSize(): number {
-    return this.planetSide.GetSize();
+    return PlanetTools.DegreeToSize(PlanetTools.KPosToDegree(this.kPos));
   }
   public GetPlanetName(): string {
     return this.planetSide.GetPlanetName();
-  }
-  public GetRadiusZero(): number {
-    return this.planetSide.GetRadiusZero();
   }
   private iPos: number;
   private jPos: number;
@@ -54,7 +52,7 @@ class PlanetChunck extends BABYLON.Mesh {
       this.GetSize(),
       PlanetTools.CHUNCKSIZE * this.iPos + PlanetTools.CHUNCKSIZE / 2,
       PlanetTools.CHUNCKSIZE * this.jPos + PlanetTools.CHUNCKSIZE / 2
-    ).multiply(MeshTools.FloatVector(this.GetRadiusZero() + PlanetTools.CHUNCKSIZE * this.kPos + PlanetTools.CHUNCKSIZE / 2));
+    ).multiply(MeshTools.FloatVector(PlanetTools.CHUNCKSIZE * this.kPos + PlanetTools.CHUNCKSIZE / 2));
     this.barycenter = BABYLON.Vector3.TransformCoordinates(this.barycenter, planetSide.computeWorldMatrix());
     this.water = new Water(this.name + "-water");
     this.water.parent = this;
@@ -98,6 +96,11 @@ class PlanetChunck extends BABYLON.Mesh {
     );
   }
 
+  public RandomInitialize(): void {
+    this.data = PlanetTools.RandomData();
+    this.SetMesh();
+  }
+
   public SetMesh(): void {
     let vertexData: BABYLON.VertexData = PlanetChunckMeshBuilder
     .BuildVertexData(
@@ -105,7 +108,6 @@ class PlanetChunck extends BABYLON.Mesh {
       this.iPos,
       this.jPos,
       this.kPos,
-      this.GetRadiusZero(),
       this.data
     );
     vertexData.applyToMesh(this);
@@ -128,7 +130,7 @@ class PlanetChunck extends BABYLON.Mesh {
       this.iPos,
       this.jPos,
       this.kPos,
-      this.GetRadiusZero(),
+      8,
       this.data
     );
     vertexData.applyToMesh(this.bedrock);
@@ -138,7 +140,8 @@ class PlanetChunck extends BABYLON.Mesh {
   public static InitializeLoop(): void {
     let chunck: PlanetChunck = PlanetChunck.initializationBuffer.pop();
     if (chunck) {
-      chunck.Initialize();
+      // chunck.Initialize();
+      chunck.RandomInitialize();
     }
   }
 }
