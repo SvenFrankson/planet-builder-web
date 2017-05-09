@@ -108,6 +108,7 @@ class PlanetChunck extends BABYLON.Mesh {
                           "/" + this.jPos +
                           "/" + this.kPos +
                           "/data.txt";
+    console.log(dataUrl);
     $.get(dataUrl,
       (data: string) => {
         this.data = PlanetTools.DataFromHexString(data);
@@ -168,21 +169,25 @@ class PlanetChunck extends BABYLON.Mesh {
   public static InitializeLoop(): void {
     let chunck: PlanetChunck = PlanetChunck.initializationBuffer.pop();
     if (chunck) {
-      // chunck.Initialize();
-      chunck.RandomInitialize();
+      chunck.Initialize();
+      // chunck.RandomInitialize();
     }
-    if (PlanetChunck.delayBuffer.length > 0) {
-      let delayedChunck: PlanetChunck = PlanetChunck.delayBuffer.splice(0, 1)[0];
-      delayedChunck.PushToBuffer();
+    for (let i: number = 0; i < 5; i++) {
+      if (PlanetChunck.delayBuffer.length > 0) {
+        let delayedChunck: PlanetChunck = PlanetChunck.delayBuffer.splice(0, 1)[0];
+        delayedChunck.PushToBuffer();
+      }
     }
-    if (PlanetChunck.initializedBuffer.length > 0) {
-      let initializedChunck: PlanetChunck = PlanetChunck.initializedBuffer.splice(0, 1)[0];
-      let alpha: number = MeshTools.Angle(initializedChunck.GetNormal(), Player.Position());
-      if (alpha > PlanetTools.ALPHALIMIT * 1.2) {
-        initializedChunck.Dispose();
-        PlanetChunck.delayBuffer.push(initializedChunck);
-      } else {
-        PlanetChunck.initializedBuffer.push(initializedChunck);
+    for (let i: number = 0; i < 5; i++) {
+      if (PlanetChunck.initializedBuffer.length > 0) {
+        let initializedChunck: PlanetChunck = PlanetChunck.initializedBuffer.splice(0, 1)[0];
+        let alpha: number = MeshTools.Angle(initializedChunck.GetNormal(), Player.Position());
+        if (alpha > PlanetTools.ALPHALIMIT * 1.2) {
+          initializedChunck.Dispose();
+          PlanetChunck.delayBuffer.push(initializedChunck);
+        } else {
+          PlanetChunck.initializedBuffer.push(initializedChunck);
+        }
       }
     }
   }

@@ -84,6 +84,7 @@ var PlanetChunck = (function (_super) {
             "/" + this.jPos +
             "/" + this.kPos +
             "/data.txt";
+        console.log(dataUrl);
         $.get(dataUrl, function (data) {
             _this.data = PlanetTools.DataFromHexString(data);
             _this.SetMesh();
@@ -117,21 +118,25 @@ var PlanetChunck = (function (_super) {
     PlanetChunck.InitializeLoop = function () {
         var chunck = PlanetChunck.initializationBuffer.pop();
         if (chunck) {
-            chunck.RandomInitialize();
+            chunck.Initialize();
         }
-        if (PlanetChunck.delayBuffer.length > 0) {
-            var delayedChunck = PlanetChunck.delayBuffer.splice(0, 1)[0];
-            delayedChunck.PushToBuffer();
-        }
-        if (PlanetChunck.initializedBuffer.length > 0) {
-            var initializedChunck = PlanetChunck.initializedBuffer.splice(0, 1)[0];
-            var alpha = MeshTools.Angle(initializedChunck.GetNormal(), Player.Position());
-            if (alpha > PlanetTools.ALPHALIMIT * 1.2) {
-                initializedChunck.Dispose();
-                PlanetChunck.delayBuffer.push(initializedChunck);
+        for (var i = 0; i < 5; i++) {
+            if (PlanetChunck.delayBuffer.length > 0) {
+                var delayedChunck = PlanetChunck.delayBuffer.splice(0, 1)[0];
+                delayedChunck.PushToBuffer();
             }
-            else {
-                PlanetChunck.initializedBuffer.push(initializedChunck);
+        }
+        for (var i = 0; i < 5; i++) {
+            if (PlanetChunck.initializedBuffer.length > 0) {
+                var initializedChunck = PlanetChunck.initializedBuffer.splice(0, 1)[0];
+                var alpha = MeshTools.Angle(initializedChunck.GetNormal(), Player.Position());
+                if (alpha > PlanetTools.ALPHALIMIT * 1.2) {
+                    initializedChunck.Dispose();
+                    PlanetChunck.delayBuffer.push(initializedChunck);
+                }
+                else {
+                    PlanetChunck.initializedBuffer.push(initializedChunck);
+                }
             }
         }
     };
