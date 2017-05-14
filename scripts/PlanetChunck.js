@@ -17,7 +17,6 @@ var PlanetChunck = (function (_super) {
     __extends(PlanetChunck, _super);
     function PlanetChunck(iPos, jPos, kPos, planetSide) {
         var _this = _super.call(this, "chunck-" + iPos + "-" + jPos + "-" + kPos, Game.Scene) || this;
-        _this.dataLoaded = new Array();
         _this.planetSide = planetSide;
         _this.iPos = iPos;
         _this.jPos = jPos;
@@ -29,30 +28,6 @@ var PlanetChunck = (function (_super) {
         _this.water.parent = _this;
         _this.bedrock = new BABYLON.Mesh(_this.name + "-bedrock", Game.Scene);
         _this.bedrock.parent = _this;
-        _this.dataLoaded[Neighbour.IMinus] = false;
-        _this.dataLoaded[Neighbour.IPlus] = false;
-        _this.dataLoaded[Neighbour.JMinus] = false;
-        _this.dataLoaded[Neighbour.JPlus] = false;
-        _this.dataLoaded[Neighbour.KMinus] = true;
-        _this.dataLoaded[Neighbour.KPlus] = true;
-        if (_this.iPos === 0) {
-            _this.dataLoaded[Neighbour.IMinus] = true;
-        }
-        if (_this.iPos === (PlanetTools.DegreeToChuncksCount(_this.GetDegree()) - 1)) {
-            _this.dataLoaded[Neighbour.IPlus] = true;
-        }
-        if (_this.jPos === 0) {
-            _this.dataLoaded[Neighbour.JMinus] = true;
-        }
-        if (_this.jPos === (PlanetTools.DegreeToChuncksCount(_this.GetDegree()) - 1)) {
-            _this.dataLoaded[Neighbour.JPlus] = true;
-        }
-        if (_this.kPos === 0) {
-            _this.dataLoaded[Neighbour.KMinus] = true;
-        }
-        if (_this.kPos === _this.GetKPosMax()) {
-            _this.dataLoaded[Neighbour.KPlus] = true;
-        }
         return _this;
     }
     PlanetChunck.prototype.GetSide = function () {
@@ -102,10 +77,6 @@ var PlanetChunck = (function (_super) {
     PlanetChunck.prototype.GetRadiusWater = function () {
         return this.planetSide.GetRadiusWater();
     };
-    PlanetChunck.prototype.SetDataLoaded = function (neighbour) {
-        this.dataLoaded[neighbour] = true;
-        this.SetMeshIfAllDataLoaded();
-    };
     PlanetChunck.prototype.PushToBuffer = function () {
         var sqrDist = Player.Position().subtract(this.barycenter).lengthSquared();
         if (sqrDist < PlanetTools.DISTANCELIMITSQUARED) {
@@ -122,11 +93,13 @@ var PlanetChunck = (function (_super) {
             var iDistance = Player.Position().subtract(PlanetChunck.initializationBuffer[i].GetBaryCenter()).lengthSquared();
             if (thisDistance > iDistance) {
                 PlanetChunck.initializationBuffer.splice(i, 0, this);
+                $("#initialization-buffer-length").text(PlanetChunck.initializationBuffer.length + "");
                 return;
             }
             lastIDistance = iDistance;
         }
         PlanetChunck.initializationBuffer.push(this);
+        $("#initialization-buffer-length").text(PlanetChunck.initializationBuffer.length + "");
     };
     PlanetChunck.prototype.AsyncInitialize = function () {
         this.PushToBuffer();
@@ -142,30 +115,8 @@ var PlanetChunck = (function (_super) {
             "/data.txt";
         $.get(dataUrl, function (data) {
             _this.data = PlanetTools.DataFromHexString(data);
-            _this.SetMeshIfAllDataLoaded();
-            _this.ForwardDataLoadedToNeighbours();
+            _this.SetMesh();
         });
-    };
-    PlanetChunck.prototype.ForwardDataLoadedToNeighbours = function () {
-        this.planetSide.SetDataLoaded(Neighbour.IPlus, this.iPos - 1, this.jPos, this.kPos);
-        this.planetSide.SetDataLoaded(Neighbour.IMinus, this.iPos + 1, this.jPos, this.kPos);
-        this.planetSide.SetDataLoaded(Neighbour.JPlus, this.iPos, this.jPos - 1, this.kPos);
-        this.planetSide.SetDataLoaded(Neighbour.JMinus, this.iPos, this.jPos + 1, this.kPos);
-        this.planetSide.SetDataLoaded(Neighbour.KPlus, this.iPos, this.jPos, this.kPos - 1);
-        this.planetSide.SetDataLoaded(Neighbour.KMinus, this.iPos, this.jPos, this.kPos + 1);
-    };
-    PlanetChunck.prototype.RandomInitialize = function () {
-        this.data = PlanetTools.RandomData();
-        this.SetMesh();
-        PlanetChunck.initializedBuffer.push(this);
-    };
-    PlanetChunck.prototype.SetMeshIfAllDataLoaded = function () {
-        for (var i = 0; i < this.dataLoaded.length; i++) {
-            if (!this.dataLoaded[i]) {
-                return;
-            }
-        }
-        this.SetMesh();
     };
     PlanetChunck.prototype.SetMesh = function () {
         var vertexData = PlanetChunckMeshBuilder
@@ -185,6 +136,7 @@ var PlanetChunck = (function (_super) {
             this.bedrock.material = SharedMaterials.BedrockMaterial();
         }
         PlanetChunck.initializedBuffer.push(this);
+        $("#chuncks-set-count").text(PlanetChunck.initializedBuffer.length + "");
     };
     PlanetChunck.prototype.Dispose = function () {
         PlanetTools.EmptyVertexData().applyToMesh(this);
@@ -193,6 +145,7 @@ var PlanetChunck = (function (_super) {
     };
     PlanetChunck.InitializeLoop = function () {
         var chunck = PlanetChunck.initializationBuffer.pop();
+        $("#initialization-buffer-length").text(PlanetChunck.initializationBuffer.length + "");
         if (chunck) {
             chunck.Initialize();
         }
@@ -205,6 +158,7 @@ var PlanetChunck = (function (_super) {
         for (var i = 0; i < 5; i++) {
             if (PlanetChunck.initializedBuffer.length > 0) {
                 var initializedChunck = PlanetChunck.initializedBuffer.splice(0, 1)[0];
+                $("#chuncks-set-count").text(PlanetChunck.initializedBuffer.length + "");
                 var sqrDist = Player.Position().subtract(initializedChunck.barycenter).lengthSquared();
                 if (sqrDist > 4 * PlanetTools.DISTANCELIMITSQUARED) {
                     initializedChunck.Dispose();
@@ -212,6 +166,7 @@ var PlanetChunck = (function (_super) {
                 }
                 else {
                     PlanetChunck.initializedBuffer.push(initializedChunck);
+                    $("#chuncks-set-count").text(PlanetChunck.initializedBuffer.length + "");
                 }
             }
         }

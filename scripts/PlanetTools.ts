@@ -1,9 +1,9 @@
 /// <reference path="../lib/babylon.2.4.d.ts"/>
 /// <reference path="../lib/jquery.d.ts"/>
 class PlanetTools {
-  public static readonly CHUNCKSIZE = 16;
+  public static readonly CHUNCKSIZE = 32;
   public static readonly ALPHALIMIT = Math.PI / 4;
-  public static readonly DISTANCELIMITSQUARED = 64 * 64;
+  public static readonly DISTANCELIMITSQUARED = 128 * 128;
   private static emptyVertexData: BABYLON.VertexData;
 
   public static EmptyVertexData(): BABYLON.VertexData {
@@ -164,6 +164,10 @@ class PlanetTools {
   }
 
   public static KPosToDegree(kPos: number): number {
+    return PlanetTools.KPosToDegree32(kPos);
+  }
+
+  public static KPosToDegree16(kPos: number): number {
     if (kPos < 1) {
       return 4;
     } else if (kPos < 2) {
@@ -173,6 +177,19 @@ class PlanetTools {
     } else if (kPos < 7) {
       return 7;
     } else if (kPos < 13) {
+      return 8;
+    }
+    return 9;
+  }
+
+  public static KPosToDegree32(kPos: number): number {
+    if (kPos < 1) {
+      return 5;
+    } else if (kPos < 2) {
+      return 6;
+    } else if (kPos < 4) {
+      return 7;
+    } else if (kPos < 7) {
       return 8;
     }
     return 9;

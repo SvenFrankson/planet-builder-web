@@ -46,15 +46,6 @@ class PlanetSide extends BABYLON.Mesh {
     }
     return 0;
   }
-  public SetDataLoaded(neighbourSource: Neighbour, i: number, j: number, k: number): void {
-    if (this.chuncks[k]) {
-      if (this.chuncks[k][i]) {
-        if (this.chuncks[k][i][j]) {
-          this.chuncks[k][i][j].SetDataLoaded(neighbourSource);
-        }
-      }
-    }
-  }
 
   constructor(side: Side, planet: Planet) {
     let name: string = "side-" + side;

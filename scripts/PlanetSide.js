@@ -66,15 +66,6 @@ var PlanetSide = (function (_super) {
         }
         return 0;
     };
-    PlanetSide.prototype.SetDataLoaded = function (neighbourSource, i, j, k) {
-        if (this.chuncks[k]) {
-            if (this.chuncks[k][i]) {
-                if (this.chuncks[k][i][j]) {
-                    this.chuncks[k][i][j].SetDataLoaded(neighbourSource);
-                }
-            }
-        }
-    };
     PlanetSide.prototype.Initialize = function () {
         for (var i = 0; i < this.chuncksLength; i++) {
             for (var j = 0; j < this.chuncksLength; j++) {

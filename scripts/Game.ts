@@ -129,9 +129,9 @@ window.addEventListener("DOMContentLoaded", () => {
 
   PlanetEditor.RegisterControl();
 
-  let planetTest: Planet = new Planet("Polita", 6);
+  let planetTest: Planet = new Planet("PolitaFlat", 3);
 
-  new Player(new BABYLON.Vector3(64, 64, 64), planetTest);
+  new Player(new BABYLON.Vector3(0, 128, 0), planetTest);
 
   planetTest.AsyncInitialize();
 

@@ -133,6 +133,9 @@ var PlanetTools = (function () {
         return PlanetTools.KPosToDegree(Math.floor(k / PlanetTools.CHUNCKSIZE));
     };
     PlanetTools.KPosToDegree = function (kPos) {
+        return PlanetTools.KPosToDegree32(kPos);
+    };
+    PlanetTools.KPosToDegree16 = function (kPos) {
         if (kPos < 1) {
             return 4;
         }
@@ -150,6 +153,21 @@ var PlanetTools = (function () {
         }
         return 9;
     };
+    PlanetTools.KPosToDegree32 = function (kPos) {
+        if (kPos < 1) {
+            return 5;
+        }
+        else if (kPos < 2) {
+            return 6;
+        }
+        else if (kPos < 4) {
+            return 7;
+        }
+        else if (kPos < 7) {
+            return 8;
+        }
+        return 9;
+    };
     PlanetTools.DegreeToSize = function (degree) {
         return Math.pow(2, degree);
     };
@@ -158,6 +176,6 @@ var PlanetTools = (function () {
     };
     return PlanetTools;
 }());
-PlanetTools.CHUNCKSIZE = 16;
+PlanetTools.CHUNCKSIZE = 32;
 PlanetTools.ALPHALIMIT = Math.PI / 4;
-PlanetTools.DISTANCELIMITSQUARED = 64 * 64;
+PlanetTools.DISTANCELIMITSQUARED = 128 * 128;

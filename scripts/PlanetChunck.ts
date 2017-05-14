@@ -69,11 +69,6 @@ class PlanetChunck extends BABYLON.Mesh {
     return this.planetSide.GetRadiusWater();
   }
   private bedrock: BABYLON.Mesh;
-  private dataLoaded: Array<boolean> = new Array<boolean>();
-  public SetDataLoaded(neighbour: Neighbour): void {
-    this.dataLoaded[neighbour] = true;
-    this.SetMeshIfAllDataLoaded();
-  }
 
   constructor(
     iPos: number,
@@ -97,30 +92,6 @@ class PlanetChunck extends BABYLON.Mesh {
     this.water.parent = this;
     this.bedrock = new BABYLON.Mesh(this.name + "-bedrock", Game.Scene);
     this.bedrock.parent = this;
-    this.dataLoaded[Neighbour.IMinus] = false;
-    this.dataLoaded[Neighbour.IPlus] = false;
-    this.dataLoaded[Neighbour.JMinus] = false;
-    this.dataLoaded[Neighbour.JPlus] = false;
-    this.dataLoaded[Neighbour.KMinus] = true;
-    this.dataLoaded[Neighbour.KPlus] = true;
-    if (this.iPos === 0) {
-      this.dataLoaded[Neighbour.IMinus] = true;
-    }
-    if (this.iPos === (PlanetTools.DegreeToChuncksCount(this.GetDegree()) - 1)) {
-      this.dataLoaded[Neighbour.IPlus] = true;
-    }
-    if (this.jPos === 0) {
-      this.dataLoaded[Neighbour.JMinus] = true;
-    }
-    if (this.jPos === (PlanetTools.DegreeToChuncksCount(this.GetDegree()) - 1)) {
-      this.dataLoaded[Neighbour.JPlus] = true;
-    }
-    if (this.kPos === 0) {
-      this.dataLoaded[Neighbour.KMinus] = true;
-    }
-    if (this.kPos === this.GetKPosMax()) {
-      this.dataLoaded[Neighbour.KPlus] = true;
-    }
   }
 
   private PushToBuffer(): void {
@@ -147,6 +118,7 @@ class PlanetChunck extends BABYLON.Mesh {
       let iDistance: number = Player.Position().subtract(PlanetChunck.initializationBuffer[i].GetBaryCenter()).lengthSquared();
       if (thisDistance > iDistance) {
         PlanetChunck.initializationBuffer.splice(i, 0, this);
+        $("#initialization-buffer-length").text(PlanetChunck.initializationBuffer.length + "");
         return;
       }
       /*
@@ -158,6 +130,7 @@ class PlanetChunck extends BABYLON.Mesh {
       lastIDistance = iDistance;
     }
     PlanetChunck.initializationBuffer.push(this);
+    $("#initialization-buffer-length").text(PlanetChunck.initializationBuffer.length + "");
   }
 
   public AsyncInitialize(): void {
@@ -175,34 +148,9 @@ class PlanetChunck extends BABYLON.Mesh {
     $.get(dataUrl,
       (data: string) => {
         this.data = PlanetTools.DataFromHexString(data);
-        this.SetMeshIfAllDataLoaded();
-        this.ForwardDataLoadedToNeighbours();
+        this.SetMesh();
       }
     );
-  }
-
-  public ForwardDataLoadedToNeighbours(): void {
-    this.planetSide.SetDataLoaded(Neighbour.IPlus, this.iPos - 1, this.jPos, this.kPos);
-    this.planetSide.SetDataLoaded(Neighbour.IMinus, this.iPos + 1, this.jPos, this.kPos);
-    this.planetSide.SetDataLoaded(Neighbour.JPlus, this.iPos, this.jPos - 1, this.kPos);
-    this.planetSide.SetDataLoaded(Neighbour.JMinus, this.iPos, this.jPos + 1, this.kPos);
-    this.planetSide.SetDataLoaded(Neighbour.KPlus, this.iPos, this.jPos, this.kPos - 1);
-    this.planetSide.SetDataLoaded(Neighbour.KMinus, this.iPos, this.jPos, this.kPos + 1);
-  }
-
-  public RandomInitialize(): void {
-    this.data = PlanetTools.RandomData();
-    this.SetMesh();
-    PlanetChunck.initializedBuffer.push(this);
-  }
-
-  public SetMeshIfAllDataLoaded(): void {
-    for (let i: number = 0; i < this.dataLoaded.length; i++) {
-      if (!this.dataLoaded[i]) {
-        return;
-      }
-    }
-    this.SetMesh();
   }
 
   public SetMesh(): void {
@@ -245,6 +193,7 @@ class PlanetChunck extends BABYLON.Mesh {
     }
 
     PlanetChunck.initializedBuffer.push(this);
+    $("#chuncks-set-count").text(PlanetChunck.initializedBuffer.length + "");
   }
 
   public Dispose(): void {
@@ -255,6 +204,7 @@ class PlanetChunck extends BABYLON.Mesh {
 
   public static InitializeLoop(): void {
     let chunck: PlanetChunck = PlanetChunck.initializationBuffer.pop();
+    $("#initialization-buffer-length").text(PlanetChunck.initializationBuffer.length + "");
     if (chunck) {
       chunck.Initialize();
       // chunck.RandomInitialize();
@@ -268,6 +218,7 @@ class PlanetChunck extends BABYLON.Mesh {
     for (let i: number = 0; i < 5; i++) {
       if (PlanetChunck.initializedBuffer.length > 0) {
         let initializedChunck: PlanetChunck = PlanetChunck.initializedBuffer.splice(0, 1)[0];
+        $("#chuncks-set-count").text(PlanetChunck.initializedBuffer.length + "");
         /*
         let alpha: number = MeshTools.Angle(initializedChunck.GetNormal(), Player.Position());
         if (alpha > PlanetTools.ALPHALIMIT * 1.2) {
@@ -283,6 +234,7 @@ class PlanetChunck extends BABYLON.Mesh {
           PlanetChunck.delayBuffer.push(initializedChunck);
         } else {
           PlanetChunck.initializedBuffer.push(initializedChunck);
+          $("#chuncks-set-count").text(PlanetChunck.initializedBuffer.length + "");
         }
       }
     }
