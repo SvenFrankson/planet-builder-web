@@ -10,7 +10,7 @@ class Planet extends BABYLON.Mesh {
     return this.kPosMax;
   }
   public GetRadiusWater(): number {
-    return this.kPosMax * PlanetTools.CHUNCKSIZE / 4;
+    return 22.8;
   }
   private totalRadiusWaterSquared: number;
   public GetTotalRadiusWaterSquared(): number {
@@ -35,6 +35,8 @@ class Planet extends BABYLON.Mesh {
     this.sides[Side.Back] = new PlanetSide(Side.Back, this);
     this.sides[Side.Top] = new PlanetSide(Side.Top, this);
     this.sides[Side.Bottom] = new PlanetSide(Side.Bottom, this);
+    console.log("KPosMax = " + this.kPosMax);
+    console.log("RadiusWater = " + this.GetRadiusWater());
   }
 
   public Initialize(): void {

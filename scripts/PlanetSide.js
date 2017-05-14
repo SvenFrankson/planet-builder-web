@@ -22,7 +22,7 @@ var PlanetSide = (function (_super) {
         _this.side = side;
         _this.rotationQuaternion = PlanetTools.QuaternionForSide(_this.side);
         _this.chuncks = new Array();
-        for (var k = 0; k < _this.GetKPosMax(); k++) {
+        for (var k = 0; k <= _this.GetKPosMax(); k++) {
             _this.chuncks[k] = new Array();
             var chuncksCount = PlanetTools.DegreeToChuncksCount(PlanetTools.KPosToDegree(k));
             for (var i = 0; i < chuncksCount; i++) {
@@ -49,6 +49,31 @@ var PlanetSide = (function (_super) {
     };
     PlanetSide.prototype.GetChunck = function (i, j, k) {
         return this.chuncks[k][i][j];
+    };
+    PlanetSide.prototype.GetData = function (iGlobal, jGlobal, kGlobal) {
+        var iPos = Math.floor(iGlobal / PlanetTools.CHUNCKSIZE);
+        var jPos = Math.floor(jGlobal / PlanetTools.CHUNCKSIZE);
+        var kPos = Math.floor(kGlobal / PlanetTools.CHUNCKSIZE);
+        if (this.chuncks[kPos]) {
+            if (this.chuncks[kPos][iPos]) {
+                if (this.chuncks[kPos][iPos][jPos]) {
+                    var i = iGlobal - iPos * PlanetTools.CHUNCKSIZE;
+                    var j = jGlobal - jPos * PlanetTools.CHUNCKSIZE;
+                    var k = kGlobal - kPos * PlanetTools.CHUNCKSIZE;
+                    return this.chuncks[kPos][iPos][jPos].GetData(i, j, k);
+                }
+            }
+        }
+        return 0;
+    };
+    PlanetSide.prototype.SetDataLoaded = function (neighbourSource, i, j, k) {
+        if (this.chuncks[k]) {
+            if (this.chuncks[k][i]) {
+                if (this.chuncks[k][i][j]) {
+                    this.chuncks[k][i][j].SetDataLoaded(neighbourSource);
+                }
+            }
+        }
     };
     PlanetSide.prototype.Initialize = function () {
         for (var i = 0; i < this.chuncksLength; i++) {

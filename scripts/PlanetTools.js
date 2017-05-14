@@ -160,3 +160,4 @@ var PlanetTools = (function () {
 }());
 PlanetTools.CHUNCKSIZE = 16;
 PlanetTools.ALPHALIMIT = Math.PI / 4;
+PlanetTools.DISTANCELIMITSQUARED = 64 * 64;

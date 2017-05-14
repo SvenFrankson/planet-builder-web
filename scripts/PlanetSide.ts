@@ -29,6 +29,32 @@ class PlanetSide extends BABYLON.Mesh {
   public GetChunck(i: number, j: number, k: number): PlanetChunck {
     return this.chuncks[k][i][j];
   }
+  public GetData(iGlobal: number, jGlobal: number, kGlobal: number): number {
+    let iPos: number = Math.floor(iGlobal / PlanetTools.CHUNCKSIZE);
+    let jPos: number = Math.floor(jGlobal / PlanetTools.CHUNCKSIZE);
+    let kPos: number = Math.floor(kGlobal / PlanetTools.CHUNCKSIZE);
+
+    if (this.chuncks[kPos]) {
+      if (this.chuncks[kPos][iPos]) {
+        if (this.chuncks[kPos][iPos][jPos]) {
+          let i: number = iGlobal - iPos * PlanetTools.CHUNCKSIZE;
+          let j: number = jGlobal - jPos * PlanetTools.CHUNCKSIZE;
+          let k: number = kGlobal - kPos * PlanetTools.CHUNCKSIZE;
+          return this.chuncks[kPos][iPos][jPos].GetData(i, j, k);
+        }
+      }
+    }
+    return 0;
+  }
+  public SetDataLoaded(neighbourSource: Neighbour, i: number, j: number, k: number): void {
+    if (this.chuncks[k]) {
+      if (this.chuncks[k][i]) {
+        if (this.chuncks[k][i][j]) {
+          this.chuncks[k][i][j].SetDataLoaded(neighbourSource);
+        }
+      }
+    }
+  }
 
   constructor(side: Side, planet: Planet) {
     let name: string = "side-" + side;
@@ -39,7 +65,7 @@ class PlanetSide extends BABYLON.Mesh {
     this.rotationQuaternion = PlanetTools.QuaternionForSide(this.side);
 
     this.chuncks = new Array<Array<Array<PlanetChunck>>>();
-    for (let k: number = 0; k < this.GetKPosMax(); k++) {
+    for (let k: number = 0; k <= this.GetKPosMax(); k++) {
       this.chuncks[k] = new Array<Array<PlanetChunck>>();
       let chuncksCount: number = PlanetTools.DegreeToChuncksCount(PlanetTools.KPosToDegree(k));
       for (let i: number = 0; i < chuncksCount; i++) {

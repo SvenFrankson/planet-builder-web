@@ -17,6 +17,8 @@ var Planet = (function (_super) {
         _this.sides[Side.Back] = new PlanetSide(Side.Back, _this);
         _this.sides[Side.Top] = new PlanetSide(Side.Top, _this);
         _this.sides[Side.Bottom] = new PlanetSide(Side.Bottom, _this);
+        console.log("KPosMax = " + _this.kPosMax);
+        console.log("RadiusWater = " + _this.GetRadiusWater());
         return _this;
     }
     Planet.prototype.GetSide = function (side) {
@@ -26,7 +28,7 @@ var Planet = (function (_super) {
         return this.kPosMax;
     };
     Planet.prototype.GetRadiusWater = function () {
-        return this.kPosMax * PlanetTools.CHUNCKSIZE / 4;
+        return 22.8;
     };
     Planet.prototype.GetTotalRadiusWaterSquared = function () {
         return this.totalRadiusWaterSquared;

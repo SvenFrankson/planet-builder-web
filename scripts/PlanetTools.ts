@@ -3,6 +3,7 @@
 class PlanetTools {
   public static readonly CHUNCKSIZE = 16;
   public static readonly ALPHALIMIT = Math.PI / 4;
+  public static readonly DISTANCELIMITSQUARED = 64 * 64;
   private static emptyVertexData: BABYLON.VertexData;
 
   public static EmptyVertexData(): BABYLON.VertexData {
