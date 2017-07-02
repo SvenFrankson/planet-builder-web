@@ -73,6 +73,12 @@ var MeshTools = (function () {
         uvs.push(0.25 + i * 0.25);
         uvs.push(0.25 - j * 0.25);
     };
+    MeshTools.PushQuadColor = function (r, g, b, a, colors) {
+        colors.push(r, g, b, a);
+        colors.push(r, g, b, a);
+        colors.push(r, g, b, a);
+        colors.push(r, g, b, a);
+    };
     MeshTools.PushWaterUvs = function (uvs) {
         uvs.push(0);
         uvs.push(0);

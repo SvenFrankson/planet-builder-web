@@ -21,6 +21,8 @@ var PlanetSide = (function (_super) {
         _this.planet = planet;
         _this.side = side;
         _this.rotationQuaternion = PlanetTools.QuaternionForSide(_this.side);
+        _this.computeWorldMatrix();
+        _this.freezeWorldMatrix();
         _this.chuncks = new Array();
         for (var k = 0; k <= _this.GetKPosMax(); k++) {
             _this.chuncks[k] = new Array();

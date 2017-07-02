@@ -98,6 +98,13 @@ class MeshTools {
     uvs.push(0.25 - j * 0.25);
   }
 
+  public static PushQuadColor(r: number, g: number, b: number, a: number, colors: Array<number>): void {
+    colors.push(r, g, b, a);
+    colors.push(r, g, b, a);
+    colors.push(r, g, b, a);
+    colors.push(r, g, b, a);
+  }
+
   public static PushWaterUvs(uvs: Array<number>): void {
     uvs.push(0);
     uvs.push(0);

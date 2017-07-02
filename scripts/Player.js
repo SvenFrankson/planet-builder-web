@@ -7,6 +7,7 @@ var Player = (function (_super) {
     __extends(Player, _super);
     function Player(position, planet) {
         var _this = _super.call(this, "Player", Game.Scene) || this;
+        _this.speed = 5;
         _this.underWater = false;
         console.log("Create Player");
         _this.planet = planet;
@@ -107,31 +108,33 @@ var Player = (function (_super) {
         }
     };
     Player.GetMovin = function () {
+        var deltaTime = Game.Engine.getDeltaTime();
+        $("#delta-time").text(deltaTime.toPrecision(2) + "");
         if (!Player.Instance) {
             return;
         }
         if (Player.Instance.forward) {
             if (Player.CanGoSide(BABYLON.Axis.Z)) {
                 var localZ = BABYLON.Vector3.TransformNormal(BABYLON.Axis.Z, Player.Instance.getWorldMatrix());
-                Player.Instance.position.addInPlace(localZ.multiply(MeshTools.FloatVector(0.05)));
+                Player.Instance.position.addInPlace(localZ.multiply(MeshTools.FloatVector(deltaTime / 1000 * Player.Instance.speed)));
             }
         }
         if (Player.Instance.back) {
             if (Player.CanGoSide(BABYLON.Axis.Z.multiply(MeshTools.FloatVector(-1)))) {
                 var localZ = BABYLON.Vector3.TransformNormal(BABYLON.Axis.Z, Player.Instance.getWorldMatrix());
-                Player.Instance.position.addInPlace(localZ.multiply(MeshTools.FloatVector(-0.05)));
+                Player.Instance.position.addInPlace(localZ.multiply(MeshTools.FloatVector(-deltaTime / 1000 * Player.Instance.speed)));
             }
         }
         if (Player.Instance.right) {
             if (Player.CanGoSide(BABYLON.Axis.X)) {
                 var localX = BABYLON.Vector3.TransformNormal(BABYLON.Axis.X, Player.Instance.getWorldMatrix());
-                Player.Instance.position.addInPlace(localX.multiply(MeshTools.FloatVector(0.05)));
+                Player.Instance.position.addInPlace(localX.multiply(MeshTools.FloatVector(deltaTime / 1000 * Player.Instance.speed)));
             }
         }
         if (Player.Instance.left) {
             if (Player.CanGoSide(BABYLON.Axis.X.multiply(MeshTools.FloatVector(-1)))) {
                 var localX = BABYLON.Vector3.TransformNormal(BABYLON.Axis.X, Player.Instance.getWorldMatrix());
-                Player.Instance.position.addInPlace(localX.multiply(MeshTools.FloatVector(-0.05)));
+                Player.Instance.position.addInPlace(localX.multiply(MeshTools.FloatVector(-deltaTime / 1000 * Player.Instance.speed)));
             }
         }
     };

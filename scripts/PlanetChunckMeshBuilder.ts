@@ -43,6 +43,7 @@ class PlanetChunckMeshBuilder {
     let positions: Array<number> = new Array<number>();
     let indices: Array<number> = new Array<number>();
     let uvs: Array<number> = new Array<number>();
+    let colors: Array<number> = new Array<number>();
 
     for (let i: number = 0; i < PlanetTools.CHUNCKSIZE; i++) {
       for (let j: number = 0; j < PlanetTools.CHUNCKSIZE; j++) {
@@ -50,7 +51,6 @@ class PlanetChunckMeshBuilder {
           if (data[i][j][k] !== 0) {
             let y: number = i + iPos * PlanetTools.CHUNCKSIZE;
             let z: number = j + jPos * PlanetTools.CHUNCKSIZE;
-            // following vertices should be lazy-computed
             PlanetChunckMeshBuilder.GetVertexToRef(size, y, z, vertices[0]);
             PlanetChunckMeshBuilder.GetVertexToRef(size, y, z + 1, vertices[1]);
             PlanetChunckMeshBuilder.GetVertexToRef(size, y + 1, z, vertices[2]);
@@ -69,40 +69,49 @@ class PlanetChunckMeshBuilder {
             vertices[2].multiplyInPlace(height);
             vertices[3].multiplyInPlace(height);
 
+            let lum: number = h / 96;
+
             if (i - 1 < 0 || data[i - 1][j][k] === 0) {
               MeshTools.PushQuad(vertices, 1, 5, 4, 0, positions, indices);
               MeshTools.PushSideQuadUvs(data[i][j][k], uvs);
+              MeshTools.PushQuadColor(lum, lum, lum, 1, colors);
             }
             if (j - 1 < 0 || data[i][j - 1][k] === 0) {
               MeshTools.PushQuad(vertices, 0, 4, 6, 2, positions, indices);
               MeshTools.PushSideQuadUvs(data[i][j][k], uvs);
+              MeshTools.PushQuadColor(lum, lum, lum, 1, colors);
             }
             if (k - 1 < 0 || data[i][j][k - 1] === 0) {
               MeshTools.PushQuad(vertices, 0, 2, 3, 1, positions, indices);
               MeshTools.PushTopQuadUvs(data[i][j][k], uvs);
+              MeshTools.PushQuadColor(lum, lum, lum, 1, colors);
             }
             if (i + 1 >= PlanetTools.CHUNCKSIZE || data[i + 1][j][k] === 0) {
               MeshTools.PushQuad(vertices, 2, 6, 7, 3, positions, indices);
               MeshTools.PushSideQuadUvs(data[i][j][k], uvs);
+              MeshTools.PushQuadColor(lum, lum, lum, 1, colors);
             }
             if (j + 1 >= PlanetTools.CHUNCKSIZE || data[i][j + 1][k] === 0) {
               MeshTools.PushQuad(vertices, 3, 7, 5, 1, positions, indices);
               MeshTools.PushSideQuadUvs(data[i][j][k], uvs);
+              MeshTools.PushQuadColor(lum, lum, lum, 1, colors);
             }
             if (k + 1 >= PlanetTools.CHUNCKSIZE || data[i][j][k + 1] === 0) {
               MeshTools.PushQuad(vertices, 4, 5, 7, 6, positions, indices);
               MeshTools.PushTopQuadUvs(data[i][j][k], uvs);
+              MeshTools.PushQuadColor(lum, lum, lum, 1, colors);
             }
           }
         }
       }
     }
-    let normals: Array<number> = new Array<number>();
-    BABYLON.VertexData.ComputeNormals(positions, indices, normals);
+    let normals: Array<number> = [];
     vertexData.positions = positions;
     vertexData.indices = indices;
-    vertexData.normals = normals;
     vertexData.uvs = uvs;
+    vertexData.colors = colors;
+    BABYLON.VertexData.ComputeNormals(positions, indices, normals);
+    vertexData.normals = normals;
 
     return vertexData;
   }

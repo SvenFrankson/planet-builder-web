@@ -54,6 +54,8 @@ class PlanetSide extends BABYLON.Mesh {
     this.planet = planet;
     this.side = side;
     this.rotationQuaternion = PlanetTools.QuaternionForSide(this.side);
+    this.computeWorldMatrix();
+    this.freezeWorldMatrix();
 
     this.chuncks = new Array<Array<Array<PlanetChunck>>>();
     for (let k: number = 0; k <= this.GetKPosMax(); k++) {

@@ -31,6 +31,7 @@ var PlanetChunckMeshBuilder = (function () {
         var positions = new Array();
         var indices = new Array();
         var uvs = new Array();
+        var colors = new Array();
         for (var i = 0; i < PlanetTools.CHUNCKSIZE; i++) {
             for (var j = 0; j < PlanetTools.CHUNCKSIZE; j++) {
                 for (var k = 0; k < PlanetTools.CHUNCKSIZE; k++) {
@@ -52,40 +53,48 @@ var PlanetChunckMeshBuilder = (function () {
                         vertices[1].multiplyInPlace(height);
                         vertices[2].multiplyInPlace(height);
                         vertices[3].multiplyInPlace(height);
+                        var lum = h / 96;
                         if (i - 1 < 0 || data[i - 1][j][k] === 0) {
                             MeshTools.PushQuad(vertices, 1, 5, 4, 0, positions, indices);
                             MeshTools.PushSideQuadUvs(data[i][j][k], uvs);
+                            MeshTools.PushQuadColor(lum, lum, lum, 1, colors);
                         }
                         if (j - 1 < 0 || data[i][j - 1][k] === 0) {
                             MeshTools.PushQuad(vertices, 0, 4, 6, 2, positions, indices);
                             MeshTools.PushSideQuadUvs(data[i][j][k], uvs);
+                            MeshTools.PushQuadColor(lum, lum, lum, 1, colors);
                         }
                         if (k - 1 < 0 || data[i][j][k - 1] === 0) {
                             MeshTools.PushQuad(vertices, 0, 2, 3, 1, positions, indices);
                             MeshTools.PushTopQuadUvs(data[i][j][k], uvs);
+                            MeshTools.PushQuadColor(lum, lum, lum, 1, colors);
                         }
                         if (i + 1 >= PlanetTools.CHUNCKSIZE || data[i + 1][j][k] === 0) {
                             MeshTools.PushQuad(vertices, 2, 6, 7, 3, positions, indices);
                             MeshTools.PushSideQuadUvs(data[i][j][k], uvs);
+                            MeshTools.PushQuadColor(lum, lum, lum, 1, colors);
                         }
                         if (j + 1 >= PlanetTools.CHUNCKSIZE || data[i][j + 1][k] === 0) {
                             MeshTools.PushQuad(vertices, 3, 7, 5, 1, positions, indices);
                             MeshTools.PushSideQuadUvs(data[i][j][k], uvs);
+                            MeshTools.PushQuadColor(lum, lum, lum, 1, colors);
                         }
                         if (k + 1 >= PlanetTools.CHUNCKSIZE || data[i][j][k + 1] === 0) {
                             MeshTools.PushQuad(vertices, 4, 5, 7, 6, positions, indices);
                             MeshTools.PushTopQuadUvs(data[i][j][k], uvs);
+                            MeshTools.PushQuadColor(lum, lum, lum, 1, colors);
                         }
                     }
                 }
             }
         }
-        var normals = new Array();
-        BABYLON.VertexData.ComputeNormals(positions, indices, normals);
+        var normals = [];
         vertexData.positions = positions;
         vertexData.indices = indices;
-        vertexData.normals = normals;
         vertexData.uvs = uvs;
+        vertexData.colors = colors;
+        BABYLON.VertexData.ComputeNormals(positions, indices, normals);
+        vertexData.normals = normals;
         return vertexData;
     };
     PlanetChunckMeshBuilder.BuildWaterVertexData = function (size, iPos, jPos, kPos, rWater) {
