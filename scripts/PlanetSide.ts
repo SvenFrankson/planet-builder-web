@@ -64,6 +64,8 @@ class PlanetSide extends BABYLON.Mesh {
         for (let j: number = 0; j < chuncksCount; j++) {
           this.chuncks[k][i][j] = new PlanetChunck(i, j, k, this);
           this.chuncks[k][i][j].parent = this;
+          this.chuncks[k][i][j].computeWorldMatrix();
+          this.chuncks[k][i][j].freezeWorldMatrix();
         }
       }
     }

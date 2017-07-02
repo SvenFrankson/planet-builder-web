@@ -30,6 +30,8 @@ var PlanetSide = (function (_super) {
                 for (var j = 0; j < chuncksCount; j++) {
                     _this.chuncks[k][i][j] = new PlanetChunck(i, j, k, _this);
                     _this.chuncks[k][i][j].parent = _this;
+                    _this.chuncks[k][i][j].computeWorldMatrix();
+                    _this.chuncks[k][i][j].freezeWorldMatrix();
                 }
             }
         }

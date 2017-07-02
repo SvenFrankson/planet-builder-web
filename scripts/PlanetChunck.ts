@@ -192,6 +192,9 @@ class PlanetChunck extends BABYLON.Mesh {
       this.bedrock.material = SharedMaterials.BedrockMaterial();
     }
 
+    this.computeWorldMatrix();
+    this.refreshBoundingInfo();
+
     PlanetChunck.initializedBuffer.push(this);
     $("#chuncks-set-count").text(PlanetChunck.initializedBuffer.length + "");
   }

@@ -135,6 +135,8 @@ var PlanetChunck = (function (_super) {
             vertexData.applyToMesh(this.bedrock);
             this.bedrock.material = SharedMaterials.BedrockMaterial();
         }
+        this.computeWorldMatrix();
+        this.refreshBoundingInfo();
         PlanetChunck.initializedBuffer.push(this);
         $("#chuncks-set-count").text(PlanetChunck.initializedBuffer.length + "");
     };

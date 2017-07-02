@@ -2,6 +2,10 @@ var PlanetChunckMeshBuilder = (function () {
     function PlanetChunckMeshBuilder() {
     }
     PlanetChunckMeshBuilder.GetVertex = function (size, i, j) {
+        var out = BABYLON.Vector3.Zero();
+        return PlanetChunckMeshBuilder.GetVertexToRef(size, i, j, out);
+    };
+    PlanetChunckMeshBuilder.GetVertexToRef = function (size, i, j, out) {
         if (!PlanetChunckMeshBuilder.cachedVertices) {
             PlanetChunckMeshBuilder.cachedVertices = new Array();
         }
@@ -14,13 +18,16 @@ var PlanetChunckMeshBuilder = (function () {
         if (!PlanetChunckMeshBuilder.cachedVertices[size][i][j]) {
             PlanetChunckMeshBuilder.cachedVertices[size][i][j] = PlanetTools.EvaluateVertex(size, i, j);
         }
-        var vertex = BABYLON.Vector3.Zero();
-        vertex.copyFrom(PlanetChunckMeshBuilder.cachedVertices[size][i][j]);
-        return vertex;
+        out.copyFrom(PlanetChunckMeshBuilder.cachedVertices[size][i][j]);
+        return out;
     };
     PlanetChunckMeshBuilder.BuildVertexData = function (size, iPos, jPos, kPos, data) {
         var vertexData = new BABYLON.VertexData();
         var vertices = new Array();
+        for (var i = 0; i < 8; i++) {
+            vertices[i] = BABYLON.Vector3.Zero();
+        }
+        var height = BABYLON.Vector3.Zero();
         var positions = new Array();
         var indices = new Array();
         var uvs = new Array();
@@ -30,18 +37,21 @@ var PlanetChunckMeshBuilder = (function () {
                     if (data[i][j][k] !== 0) {
                         var y = i + iPos * PlanetTools.CHUNCKSIZE;
                         var z = j + jPos * PlanetTools.CHUNCKSIZE;
-                        vertices[0] = PlanetChunckMeshBuilder.GetVertex(size, y, z);
-                        vertices[1] = PlanetChunckMeshBuilder.GetVertex(size, y, z + 1);
-                        vertices[2] = PlanetChunckMeshBuilder.GetVertex(size, y + 1, z);
-                        vertices[3] = PlanetChunckMeshBuilder.GetVertex(size, y + 1, z + 1);
-                        vertices[4] = vertices[0].multiply(MeshTools.FloatVector(k + kPos * PlanetTools.CHUNCKSIZE + 1));
-                        vertices[5] = vertices[1].multiply(MeshTools.FloatVector(k + kPos * PlanetTools.CHUNCKSIZE + 1));
-                        vertices[6] = vertices[2].multiply(MeshTools.FloatVector(k + kPos * PlanetTools.CHUNCKSIZE + 1));
-                        vertices[7] = vertices[3].multiply(MeshTools.FloatVector(k + kPos * PlanetTools.CHUNCKSIZE + 1));
-                        vertices[0].multiplyInPlace(MeshTools.FloatVector(k + kPos * PlanetTools.CHUNCKSIZE));
-                        vertices[1].multiplyInPlace(MeshTools.FloatVector(k + kPos * PlanetTools.CHUNCKSIZE));
-                        vertices[2].multiplyInPlace(MeshTools.FloatVector(k + kPos * PlanetTools.CHUNCKSIZE));
-                        vertices[3].multiplyInPlace(MeshTools.FloatVector(k + kPos * PlanetTools.CHUNCKSIZE));
+                        PlanetChunckMeshBuilder.GetVertexToRef(size, y, z, vertices[0]);
+                        PlanetChunckMeshBuilder.GetVertexToRef(size, y, z + 1, vertices[1]);
+                        PlanetChunckMeshBuilder.GetVertexToRef(size, y + 1, z, vertices[2]);
+                        PlanetChunckMeshBuilder.GetVertexToRef(size, y + 1, z + 1, vertices[3]);
+                        var h = k + kPos * PlanetTools.CHUNCKSIZE + 1;
+                        height.copyFromFloats(h, h, h);
+                        vertices[0].multiplyToRef(height, vertices[4]);
+                        vertices[1].multiplyToRef(height, vertices[5]);
+                        vertices[2].multiplyToRef(height, vertices[6]);
+                        vertices[3].multiplyToRef(height, vertices[7]);
+                        height.subtractFromFloatsToRef(1, 1, 1, height);
+                        vertices[0].multiplyInPlace(height);
+                        vertices[1].multiplyInPlace(height);
+                        vertices[2].multiplyInPlace(height);
+                        vertices[3].multiplyInPlace(height);
                         if (i - 1 < 0 || data[i - 1][j][k] === 0) {
                             MeshTools.PushQuad(vertices, 1, 5, 4, 0, positions, indices);
                             MeshTools.PushSideQuadUvs(data[i][j][k], uvs);
