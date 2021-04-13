@@ -27,16 +27,11 @@ class Game {
         Game.Sky.rotation.z += 0.0001;
     }
     static AnimateWater() {
-        if (SharedMaterials.WaterMaterial().diffuseTexture instanceof BABYLON.Texture) {
-            SharedMaterials.WaterMaterial().diffuseTexture.uOffset += 0.005;
-            SharedMaterials.WaterMaterial().diffuseTexture.vOffset += 0.005;
-        }
+        SharedMaterials.WaterMaterial().diffuseTexture.uOffset += 0.005;
+        SharedMaterials.WaterMaterial().diffuseTexture.vOffset += 0.005;
     }
     static AnimateLight() {
         Game.Light.direction = Player.Instance.position;
-    }
-    static UpdateFPS() {
-        $("#fps-count").text(Game.Engine.getFps().toPrecision(2));
     }
     animate() {
         Game.Engine.runRenderLoop(() => {
@@ -48,11 +43,9 @@ class Game {
             Game.AnimateWater();
             Game.AnimateLight();
             Player.WaterFilter();
-            Game.UpdateFPS();
         });
         window.addEventListener("resize", () => {
             Game.Engine.resize();
-            Game.SetCursorPosition();
         });
     }
     static LockMouse(event) {
@@ -81,10 +74,6 @@ class Game {
         Game.LockedMouse = false;
         console.log("Unlock");
     }
-    static SetCursorPosition() {
-        $("#cursor").css("top", $("#cursor").parent().height() / 2 - $("#cursor").height() / 2);
-        $("#cursor").css("left", $("#cursor").parent().width() / 2 - $("#cursor").width() / 2);
-    }
 }
 Game.LockedMouse = false;
 Game.ClientXOnLock = -1;
@@ -93,7 +82,6 @@ window.addEventListener("DOMContentLoaded", () => {
     let game = new Game("renderCanvas");
     game.createScene();
     game.animate();
-    Game.SetCursorPosition();
     PlanetEditor.RegisterControl();
     let planetTest = new Planet("Paulita", 3);
     new Player(new BABYLON.Vector3(0, 128, 0), planetTest);
@@ -115,16 +103,6 @@ window.addEventListener("DOMContentLoaded", () => {
                 Game.UnlockMouse();
             }
         }
-    });
-    $("#camera-fov").val(Game.Camera.fov.toPrecision(3));
-    $("#camera-fov").on("change", (e) => {
-        if (e.target instanceof HTMLInputElement) {
-            Game.Camera.fov = parseFloat(e.target.value);
-        }
-    });
-    $("#camera-fov-reset").on("click", () => {
-        Game.Camera.fov = 0.8;
-        $("#camera-fov").val("0.8");
     });
 });
 // get shared VertexData from exposed arrays.

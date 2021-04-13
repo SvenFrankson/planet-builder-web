@@ -1,128 +1,17 @@
 <!DOCTYPE html>
 <html>
-<head>
-    <meta http-equiv="Content-Type" content="text/html" charset="utf-8"/>
-    <title>Planet Builder</title>
-    <script src="./lib/jquery-3.1.1.min.js"></script>
-    <script src="./lib/bootstrap.min.js"></script>
-    <script src="https://cdn.babylonjs.com/babylon.max.js"></script>
-    <script src="./scripts/app.js"></script>
-    <script src="https://preview.babylonjs.com/loaders/babylonjs.loaders.js"></script>
-    <script src="https://use.fontawesome.com/0614ce01da.js"></script>
-    <link rel="stylesheet" type="text/css" href="./styles/app.css">
-    <link rel="stylesheet" type="text/css" href="./styles/bootstrap.css">
-</head>
-<body>
-  <div class="page-header text-center">
-    <h1>Planet Builder - Web Version</h1>
-    requires modern webGL compatible web-browser with javascript enabled. Not mobile responsive (yet...)
-  </div>
-  <div class="row">
-
-    <div class="col-xs-9">
-      <div id="canvas-container" >
-        <canvas id="renderCanvas"></canvas>
-        <img id="cursor" src="./img/cursor.png">
-        <div id="inventory">
-          <intput id="remove" class="btn btn-primary inventory-item">
-            <img class="inventory-picture" src="./img/remove.png">
-            <div>[0] [X]</div>
-          </intput>
-          <intput id="grass" class="btn btn-primary inventory-item" disabled>
-            <img class="inventory-picture" src="./img/grass.png">
-            <div>[1]</div>
-          </intput>
-          <intput id="dirt" class="btn btn-primary inventory-item" disabled>
-            <img class="inventory-picture" src="./img/dirt.png">
-            <div>[2]</div>
-          </intput>
-          <intput id="sand" class="btn btn-primary inventory-item" disabled>
-            <img class="inventory-picture" src="./img/sand.png">
-            <div>[3]</div>
-          </intput>
-          <intput id="rock" class="btn btn-primary inventory-item" disabled>
-            <img class="inventory-picture" src="./img/rock.png">
-            <div>[4]</div>
-          </intput>
-          <intput id="trunc" class="btn btn-primary inventory-item" disabled>
-            <img class="inventory-picture" src="./img/trunc.png">
-            <div>[5]</div>
-          </intput>
-          <intput id="leaf" class="btn btn-primary inventory-item" disabled>
-            <img class="inventory-picture" src="./img/leaf.png">
-            <div>[6]</div>
-          </intput>
-          <intput id="snow" class="btn btn-primary inventory-item" disabled>
-            <img class="inventory-picture" src="./img/snow.png">
-            <div>[7]</div>
-          </intput>
-        </div>
-      </div>
-    </div>
-
-    <div class="col-xs-3">
-      <div class="panel panel-default info-menu">
-        <div class="panel-heading">
-          <h1 class="panel-title">Options</h1>
-        </div>
-        <div class="panel-heading">
-          <h2 class="panel-title">Camera FOV</h1>
-        </div>
-        <div class="panel-body">
-          <div class="row">
-            <div class="col-xs-9">
-              <input id="camera-fov" type="range" min="0.5" max="2.0" step="0.05">
-            </div>
-            <div class="col-xs-3">
-              <button id="camera-fov-reset" type="button" class="btn btn-default btn-sm">
-                <span class="glyphicon glyphicon-remove"></span>
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="panel panel-default info-menu">
-        <div class="panel-heading">
-          <span id="fps-count"></span> FPS</br>
-          DeltaTime = <span id="delta-time"></span> ms</br>
-          <span id="initialization-buffer-length"></span> Chuncks Pending</br>
-          <span id="chuncks-instantiated-count"></span> Chuncks Instanciated</br>
-          <span id="chuncks-set-count"></span> Chuncks With Mesh Set</br>
-        </div>
-      </div>
-      <div class="panel panel-default info-menu">
-        <div class="panel-heading">
-          Controls
-        </div>
-        <div class="panel-body">
-          <b>[Click Canvas]</b> Take control.</br>
-          <b>[Escape]</b> Drop control.</br>
-          <b>[Mouse]</b> Look around.</br>
-          <b>[WASD]</b> Move.</br>
-          <b>[QZSD]</b> Move.</br>
-          <b>[Space]</b> Fly.</br>
-          <b>[0,1,2,3,4]</b> Set selected Item.</br>
-          <b>[Left Shift]</b> Set next Item.</br>
-          <b>[Left Ctrl]</b> Set previous Item.</br>
-          <b>[Click]</b> Use selected Item.
-        </div>
-      </div>
-      <div class="panel panel-default info-menu">
-        <div class="panel-heading">
-          Contact
-        </div>
-        <div class="panel-body">
-          <div class="btn-group-vertical">
-            <a target="_blank" href="https://github.com/SvenFrankson/planet-builder-web" class="btn btn-default"><i class="fa fa-github" aria-hidden="true"></i> Source Code</a>
-            <a target="_blank" href="https://github.com/SvenFrankson/planet-builder-web/issues" class="btn btn-default"><i class="fa fa-bug" aria-hidden="true"></i> Found a bug ?</a>
-            <a target="_blank" href="http://svenfrankson.com/" class="btn btn-default"><i class="fa fa-home" aria-hidden="true"></i> WebSite</a>
-            <a target="_blank" href="https://www.linkedin.com/in/sventaton/?locale=en_US" class="btn btn-default"><i class="fa fa-linkedin"></i> LinkedIn</a>
-            <a target="_blank" href="https://twitter.com/FranksonSven" class="btn btn-default"><i class="fa fa-twitter"></i> Twitter</a>
-          </div>
-        </div>
-      </div>
-    </div>
-
-  </div>
-</body>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html" charset="utf-8"/>
+		<title>Planet Builder</title>
+		<script src="./lib/jquery-3.1.1.min.js"></script>
+		<script src="https://cdn.babylonjs.com/babylon.max.js"></script>
+		<script src="./scripts/app.js"></script>
+		<script src="https://preview.babylonjs.com/loaders/babylonjs.loaders.js"></script>
+		<script src="https://use.fontawesome.com/0614ce01da.js"></script>
+		<link rel="stylesheet" type="text/css" href="./styles/app.css">
+	</head>
+	<body>
+		<canvas id="renderCanvas"></canvas>
+		<img id="cursor" src="./img/cursor.png">
+	</body>
 </html>
