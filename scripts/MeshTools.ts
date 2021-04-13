@@ -1,6 +1,6 @@
-/// <reference path="../lib/babylon.2.4.d.ts"/>
 // get shared VertexData from exposed arrays.
 // obviously not the easiest way to get shapes: mostly an attempt at complete procedural generation.
+
 class MeshTools {
   public static Angle(v1: BABYLON.Vector3, v2: BABYLON.Vector3): number {
     return Math.acos(

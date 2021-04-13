@@ -1,28 +1,16 @@
 {
     "compilerOptions": {
-        "target": "es5",
-        "module": "commonjs",
-        "moduleResolution": "node",
-        "isolatedModules": false,
-        "jsx": "react",
-        "experimentalDecorators": true,
-        "emitDecoratorMetadata": true,
-        "declaration": false,
-        "noImplicitAny": false,
-        "noImplicitUseStrict": false,
-        "removeComments": true,
-        "noLib": false,
-        "preserveConstEnums": true,
-        "suppressImplicitAnyIndexErrors": true
+        "target": "esnext",
+        "outFile": "./app.js"
     },
     "exclude": [
+        "lib",
         "node_modules",
         "typings/browser",
-        "typings/browser.d.ts",
-        "lib/babylon.2.4.js"
+        "typings/browser.d.ts"
     ],
     "compileOnSave": true,
-    "buildOnSave": false,
+    "buildOnSave": true,
     "atom": {
         "rewriteTsconfig": false
     }

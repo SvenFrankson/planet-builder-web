@@ -1,4 +1,3 @@
-/// <reference path="../lib/babylon.2.4.d.ts"/>
 class Player extends BABYLON.Mesh {
   public static Instance: Player;
   public static Position(): BABYLON.Vector3 {
@@ -9,9 +8,9 @@ class Player extends BABYLON.Mesh {
   private planet: Planet;
   private underWater: boolean = false;
   public camPos: BABYLON.AbstractMesh;
-  public forward: boolean;
+  public pForward: boolean;
   public back: boolean;
-  public right: boolean;
+  public pRight: boolean;
   public left: boolean;
   public fly: boolean;
   public PositionLeg(): BABYLON.Vector3 {
@@ -45,7 +44,7 @@ class Player extends BABYLON.Mesh {
         BABYLON.ActionManager.OnKeyDownTrigger,
         (event: BABYLON.ActionEvent) => {
           if ((event.sourceEvent.key === "z") || (event.sourceEvent.key === "w")) {
-            this.forward = true;
+            this.pForward = true;
           }
           if (event.sourceEvent.key === "s") {
             this.back = true;
@@ -54,7 +53,7 @@ class Player extends BABYLON.Mesh {
             this.left = true;
           }
           if (event.sourceEvent.key === "d") {
-            this.right = true;
+            this.pRight = true;
           }
           if (event.sourceEvent.keyCode === 32) {
             this.fly = true;
@@ -67,7 +66,7 @@ class Player extends BABYLON.Mesh {
         BABYLON.ActionManager.OnKeyUpTrigger,
         (event: BABYLON.ActionEvent) => {
           if ((event.sourceEvent.key === "z") || (event.sourceEvent.key === "w")) {
-            this.forward = false;
+            this.pForward = false;
           }
           if (event.sourceEvent.key === "s") {
             this.back = false;
@@ -76,7 +75,7 @@ class Player extends BABYLON.Mesh {
             this.left = false;
           }
           if (event.sourceEvent.key === "d") {
-            this.right = false;
+            this.pRight = false;
           }
           if (event.sourceEvent.keyCode === 32) {
             this.fly = false;
@@ -130,7 +129,7 @@ class Player extends BABYLON.Mesh {
     if (!Player.Instance) {
       return;
     }
-    if (Player.Instance.forward) {
+    if (Player.Instance.pForward) {
       if (Player.CanGoSide(BABYLON.Axis.Z)) {
         let localZ: BABYLON.Vector3 = BABYLON.Vector3.TransformNormal(BABYLON.Axis.Z, Player.Instance.getWorldMatrix());
         Player.Instance.position.addInPlace(localZ.multiply(MeshTools.FloatVector(deltaTime / 1000 * Player.Instance.speed)));
@@ -142,7 +141,7 @@ class Player extends BABYLON.Mesh {
         Player.Instance.position.addInPlace(localZ.multiply(MeshTools.FloatVector(- deltaTime / 1000 * Player.Instance.speed)));
       }
     }
-    if (Player.Instance.right) {
+    if (Player.Instance.pRight) {
       if (Player.CanGoSide(BABYLON.Axis.X)) {
         let localX: BABYLON.Vector3 = BABYLON.Vector3.TransformNormal(BABYLON.Axis.X, Player.Instance.getWorldMatrix());
         Player.Instance.position.addInPlace(localX.multiply(MeshTools.FloatVector(deltaTime / 1000 * Player.Instance.speed)));

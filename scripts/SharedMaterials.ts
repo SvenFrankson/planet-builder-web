@@ -1,4 +1,3 @@
-/// <reference path="../lib/babylon.2.4.d.ts"/>
 class SharedMaterials {
   private static mainMaterial: BABYLON.StandardMaterial;
   public static MainMaterial(): BABYLON.StandardMaterial {

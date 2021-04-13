@@ -1,5 +1,3 @@
-/// <reference path="../lib/babylon.2.4.d.ts"/>
-/// <reference path="../lib/jquery.d.ts"/>
 class PlanetTools {
   public static readonly CHUNCKSIZE = 32;
   public static readonly ALPHALIMIT = Math.PI / 4;

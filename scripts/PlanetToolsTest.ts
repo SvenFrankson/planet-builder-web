@@ -1,4 +1,3 @@
-/// <reference path="../lib/babylon.2.4.d.ts"/>
 class PlanetToolsTest {
   public static Run(): void {
     if (PlanetToolsTest.Corner00()) {

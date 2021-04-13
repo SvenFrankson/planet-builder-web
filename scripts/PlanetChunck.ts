@@ -1,5 +1,3 @@
-/// <reference path="../lib/babylon.2.4.d.ts"/>
-
 enum Neighbour {
   IPlus = 0,
   JPlus = 1,

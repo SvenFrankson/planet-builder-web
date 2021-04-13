@@ -1,5 +1,3 @@
-/// <reference path="../lib/babylon.2.4.d.ts"/>
-
 class Planet extends BABYLON.Mesh {
   private sides: Array<PlanetSide>;
   public GetSide(side: Side): PlanetSide {

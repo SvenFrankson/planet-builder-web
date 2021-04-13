@@ -1,5 +1,3 @@
-/// <reference path="../lib/babylon.2.4.d.ts"/>
-
 class PlanetEditor extends BABYLON.Mesh {
 
   public static data: number = 0;
