@@ -1,5 +1,4 @@
 /// <reference path="../lib/babylon.d.ts"/>
-/// <reference path="../lib/jquery.d.ts"/>
 class Game {
     constructor(canvasElement) {
         Game.Instance = this;
@@ -83,7 +82,7 @@ window.addEventListener("DOMContentLoaded", () => {
     game.createScene();
     game.animate();
     PlanetEditor.RegisterControl();
-    let planetTest = new Planet("Paulita", 2);
+    let planetTest = new Planet("Paulita", 0);
     new Player(new BABYLON.Vector3(0, 128, 0), planetTest);
     planetTest.AsyncInitialize();
     Game.Canvas.addEventListener("mouseup", (event) => {
@@ -257,7 +256,6 @@ var Neighbour;
     Neighbour[Neighbour["JMinus"] = 4] = "JMinus";
     Neighbour[Neighbour["KMinus"] = 5] = "KMinus";
 })(Neighbour || (Neighbour = {}));
-;
 class PlanetChunck extends BABYLON.Mesh {
     constructor(iPos, jPos, kPos, planetSide) {
         super("chunck-" + iPos + "-" + jPos + "-" + kPos, Game.Scene);
@@ -292,7 +290,7 @@ class PlanetChunck extends BABYLON.Mesh {
         return {
             i: this.iPos,
             j: this.jPos,
-            k: this.kPos
+            k: this.kPos,
         };
     }
     GetData(i, j, k) {
@@ -321,7 +319,9 @@ class PlanetChunck extends BABYLON.Mesh {
         return this.planetSide.GetRadiusWater();
     }
     PushToBuffer() {
-        let sqrDist = Player.Position().subtract(this.barycenter).lengthSquared();
+        let sqrDist = Player.Position()
+            .subtract(this.barycenter)
+            .lengthSquared();
         if (sqrDist < PlanetTools.DISTANCELIMITSQUARED) {
             this.PushToInitializationBuffer();
         }
@@ -329,72 +329,61 @@ class PlanetChunck extends BABYLON.Mesh {
             PlanetChunck.delayBuffer.push(this);
         }
         /*
-        let alpha: number = MeshTools.Angle(this.GetNormal(), Player.Position());
-        if (alpha < PlanetTools.ALPHALIMIT) {
-          this.PushToInitializationBuffer();
-        } else {
-          PlanetChunck.delayBuffer.push(this);
-        }
-        */
+    let alpha: number = MeshTools.Angle(this.GetNormal(), Player.Position());
+    if (alpha < PlanetTools.ALPHALIMIT) {
+      this.PushToInitializationBuffer();
+    } else {
+      PlanetChunck.delayBuffer.push(this);
+    }
+    */
     }
     PushToInitializationBuffer() {
-        let thisDistance = Player.Position().subtract(this.barycenter).lengthSquared();
+        let thisDistance = Player.Position()
+            .subtract(this.barycenter)
+            .lengthSquared();
         let lastIDistance = -1;
         for (let i = 0; i < PlanetChunck.initializationBuffer.length; i++) {
-            let iDistance = Player.Position().subtract(PlanetChunck.initializationBuffer[i].GetBaryCenter()).lengthSquared();
+            let iDistance = Player.Position()
+                .subtract(PlanetChunck.initializationBuffer[i].GetBaryCenter())
+                .lengthSquared();
             if (thisDistance > iDistance) {
                 PlanetChunck.initializationBuffer.splice(i, 0, this);
-                $("#initialization-buffer-length").text(PlanetChunck.initializationBuffer.length + "");
                 return;
             }
             /*
-            if (iDistance < lastIDistance) {
-              let tmp: PlanetChunck = PlanetChunck.initializationBuffer[i];
-              PlanetChunck.initializationBuffer[i] = PlanetChunck.initializationBuffer[i - 1];
-              PlanetChunck.initializationBuffer[i - 1] = tmp;
-            }*/
+      if (iDistance < lastIDistance) {
+        let tmp: PlanetChunck = PlanetChunck.initializationBuffer[i];
+        PlanetChunck.initializationBuffer[i] = PlanetChunck.initializationBuffer[i - 1];
+        PlanetChunck.initializationBuffer[i - 1] = tmp;
+      }*/
             lastIDistance = iDistance;
         }
         PlanetChunck.initializationBuffer.push(this);
-        $("#initialization-buffer-length").text(PlanetChunck.initializationBuffer.length + "");
     }
     AsyncInitialize() {
         this.PushToBuffer();
     }
     Initialize() {
-        let dataUrl = "./chunck" +
-            "/" + this.GetPlanetName() +
-            "/" + Side[this.side] +
-            "/" + this.iPos +
-            "/" + this.jPos +
-            "/" + this.kPos +
-            "/data.txt";
-        $.get(dataUrl, (data) => {
-            this.data = PlanetTools.DataFromHexString(data);
-            this.SetMesh();
-        });
+        this.data = PlanetTools.RandomData();
+        this.SetMesh();
     }
     SetMesh() {
-        let vertexData = PlanetChunckMeshBuilder
-            .BuildVertexData(this.GetSize(), this.iPos, this.jPos, this.kPos, this.data);
+        let vertexData = PlanetChunckMeshBuilder.BuildVertexData(this.GetSize(), this.iPos, this.jPos, this.kPos, this.data);
         vertexData.applyToMesh(this);
         this.material = SharedMaterials.MainMaterial();
         if (this.kPos === this.planetSide.GetKPosMax()) {
-            vertexData = PlanetChunckMeshBuilder
-                .BuildWaterVertexData(this.GetSize(), this.iPos, this.jPos, this.kPos, this.GetRadiusWater());
+            vertexData = PlanetChunckMeshBuilder.BuildWaterVertexData(this.GetSize(), this.iPos, this.jPos, this.kPos, this.GetRadiusWater());
             vertexData.applyToMesh(this.water);
             this.water.material = SharedMaterials.WaterMaterial();
         }
         if (this.kPos === 0) {
-            vertexData = PlanetChunckMeshBuilder
-                .BuildBedrockVertexData(this.GetSize(), this.iPos, this.jPos, this.kPos, 8, this.data);
+            vertexData = PlanetChunckMeshBuilder.BuildBedrockVertexData(this.GetSize(), this.iPos, this.jPos, this.kPos, 8, this.data);
             vertexData.applyToMesh(this.bedrock);
             this.bedrock.material = SharedMaterials.BedrockMaterial();
         }
         this.computeWorldMatrix();
         this.refreshBoundingInfo();
         PlanetChunck.initializedBuffer.push(this);
-        $("#chuncks-set-count").text(PlanetChunck.initializedBuffer.length + "");
     }
     Dispose() {
         PlanetTools.EmptyVertexData().applyToMesh(this);
@@ -403,7 +392,6 @@ class PlanetChunck extends BABYLON.Mesh {
     }
     static InitializeLoop() {
         let chunck = PlanetChunck.initializationBuffer.pop();
-        $("#initialization-buffer-length").text(PlanetChunck.initializationBuffer.length + "");
         if (chunck) {
             chunck.Initialize();
             // chunck.RandomInitialize();
@@ -417,24 +405,15 @@ class PlanetChunck extends BABYLON.Mesh {
         for (let i = 0; i < 5; i++) {
             if (PlanetChunck.initializedBuffer.length > 0) {
                 let initializedChunck = PlanetChunck.initializedBuffer.splice(0, 1)[0];
-                $("#chuncks-set-count").text(PlanetChunck.initializedBuffer.length + "");
-                /*
-                let alpha: number = MeshTools.Angle(initializedChunck.GetNormal(), Player.Position());
-                if (alpha > PlanetTools.ALPHALIMIT * 1.2) {
-                  initializedChunck.Dispose();
-                  PlanetChunck.delayBuffer.push(initializedChunck);
-                } else {
-                  PlanetChunck.initializedBuffer.push(initializedChunck);
-                }
-                */
-                let sqrDist = Player.Position().subtract(initializedChunck.barycenter).lengthSquared();
+                let sqrDist = Player.Position()
+                    .subtract(initializedChunck.barycenter)
+                    .lengthSquared();
                 if (sqrDist > 4 * PlanetTools.DISTANCELIMITSQUARED) {
                     initializedChunck.Dispose();
                     PlanetChunck.delayBuffer.push(initializedChunck);
                 }
                 else {
                     PlanetChunck.initializedBuffer.push(initializedChunck);
-                    $("#chuncks-set-count").text(PlanetChunck.initializedBuffer.length + "");
                 }
             }
         }
@@ -512,17 +491,20 @@ class PlanetChunckMeshBuilder {
                             MeshTools.PushTopQuadUvs(data[i][j][k], uvs);
                             MeshTools.PushQuadColor(lum, lum, lum, 1, colors);
                         }
-                        if (i + 1 >= PlanetTools.CHUNCKSIZE || data[i + 1][j][k] === 0) {
+                        if (i + 1 >= PlanetTools.CHUNCKSIZE ||
+                            data[i + 1][j][k] === 0) {
                             MeshTools.PushQuad(vertices, 2, 6, 7, 3, positions, indices);
                             MeshTools.PushSideQuadUvs(data[i][j][k], uvs);
                             MeshTools.PushQuadColor(lum, lum, lum, 1, colors);
                         }
-                        if (j + 1 >= PlanetTools.CHUNCKSIZE || data[i][j + 1][k] === 0) {
+                        if (j + 1 >= PlanetTools.CHUNCKSIZE ||
+                            data[i][j + 1][k] === 0) {
                             MeshTools.PushQuad(vertices, 3, 7, 5, 1, positions, indices);
                             MeshTools.PushSideQuadUvs(data[i][j][k], uvs);
                             MeshTools.PushQuadColor(lum, lum, lum, 1, colors);
                         }
-                        if (k + 1 >= PlanetTools.CHUNCKSIZE || data[i][j][k + 1] === 0) {
+                        if (k + 1 >= PlanetTools.CHUNCKSIZE ||
+                            data[i][j][k + 1] === 0) {
                             MeshTools.PushQuad(vertices, 4, 5, 7, 6, positions, indices);
                             MeshTools.PushTopQuadUvs(data[i][j][k], uvs);
                             MeshTools.PushQuadColor(lum, lum, lum, 1, colors);
@@ -630,16 +612,28 @@ class PlanetEditor extends BABYLON.Mesh {
         let worldPos = PlanetEditor.GetHitWorldPos(removeMode);
         console.log("WorldPos : " + worldPos);
         if (worldPos) {
-            if (PlanetEditor.data === 0 || worldPos.subtract(Player.Instance.PositionHead()).lengthSquared() > 1) {
-                if (PlanetEditor.data === 0 || worldPos.subtract(Player.Instance.PositionLeg()).lengthSquared() > 1) {
+            if (PlanetEditor.data === 0 ||
+                worldPos
+                    .subtract(Player.Instance.PositionHead())
+                    .lengthSquared() > 1) {
+                if (PlanetEditor.data === 0 ||
+                    worldPos
+                        .subtract(Player.Instance.PositionLeg())
+                        .lengthSquared() > 1) {
                     let planetSide = PlanetTools.WorldPositionToPlanetSide(planet, worldPos);
                     console.log("PlanetSide : " + Side[planetSide.side]);
                     if (planetSide) {
                         let global = PlanetTools.WorldPositionToGlobalIJK(planetSide, worldPos);
                         console.log("Globals : " + JSON.stringify(global));
                         let local = PlanetTools.GlobalIJKToLocalIJK(planetSide, global);
-                        console.log("Chunck : " + JSON.stringify(local.planetChunck.Position()));
-                        console.log("Block : I=" + local.i + " , J=" + local.j + " , K=" + local.k);
+                        console.log("Chunck : " +
+                            JSON.stringify(local.planetChunck.Position()));
+                        console.log("Block : I=" +
+                            local.i +
+                            " , J=" +
+                            local.j +
+                            " , K=" +
+                            local.k);
                         local.planetChunck.SetData(local.i, local.j, local.k, PlanetEditor.data);
                         local.planetChunck.SetMesh();
                     }
@@ -650,7 +644,8 @@ class PlanetEditor extends BABYLON.Mesh {
     static RegisterControl() {
         let scene = Game.Scene;
         scene.actionManager.registerAction(new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnKeyDownTrigger, (event) => {
-            if ((event.sourceEvent.keyCode === 48) || (event.sourceEvent.keyCode === 88)) {
+            if (event.sourceEvent.keyCode === 48 ||
+                event.sourceEvent.keyCode === 88) {
                 PlanetEditor.SetData(0);
             }
             if (event.sourceEvent.keyCode === 49) {
@@ -698,31 +693,6 @@ class PlanetEditor extends BABYLON.Mesh {
             newData = 0;
         }
         PlanetEditor.data = newData;
-        $(".inventory-item").attr("disabled", true);
-        if (PlanetEditor.data === 0) {
-            $("#remove").attr("disabled", false);
-        }
-        if (PlanetEditor.data === 129) {
-            $("#grass").attr("disabled", false);
-        }
-        if (PlanetEditor.data === 130) {
-            $("#dirt").attr("disabled", false);
-        }
-        if (PlanetEditor.data === 131) {
-            $("#sand").attr("disabled", false);
-        }
-        if (PlanetEditor.data === 132) {
-            $("#rock").attr("disabled", false);
-        }
-        if (PlanetEditor.data === 133) {
-            $("#trunc").attr("disabled", false);
-        }
-        if (PlanetEditor.data === 134) {
-            $("#leaf").attr("disabled", false);
-        }
-        if (PlanetEditor.data === 135) {
-            $("#snow").attr("disabled", false);
-        }
     }
 }
 PlanetEditor.data = 0;
@@ -998,6 +968,32 @@ class PlanetTools {
     static DegreeToChuncksCount(degree) {
         return PlanetTools.DegreeToSize(degree) / PlanetTools.CHUNCKSIZE;
     }
+    static StringColorRGBInterpolation(c1, c2, dt) {
+        let offset1 = 0;
+        if (c1[0] === "#") {
+            offset1 = 1;
+        }
+        let r1 = parseInt(c1.substr(0 + offset1, 2), 16);
+        let g1 = parseInt(c1.substr(2 + offset1, 2), 16);
+        let b1 = parseInt(c1.substr(4 + offset1, 2), 16);
+        let offset2 = 0;
+        if (c2[0] === "#") {
+            offset2 = 1;
+        }
+        let r2 = parseInt(c2.substr(0 + offset1, 2), 16);
+        let g2 = parseInt(c2.substr(2 + offset1, 2), 16);
+        let b2 = parseInt(c2.substr(4 + offset1, 2), 16);
+        let r = Math.round(r1 * (1 - dt) + r2 * dt);
+        let g = Math.round(g1 * (1 - dt) + g2 * dt);
+        let b = Math.round(b1 * (1 - dt) + b2 * dt);
+        let rs = "00" + r.toString(16);
+        rs = rs.substr(-2, 2);
+        let gs = "00" + g.toString(16);
+        gs = gs.substr(-2, 2);
+        let bs = "00" + b.toString(16);
+        bs = bs.substr(-2, 2);
+        return "#" + rs + gs + bs;
+    }
 }
 PlanetTools.CHUNCKSIZE = 32;
 PlanetTools.ALPHALIMIT = Math.PI / 4;
@@ -1154,7 +1150,6 @@ class Player extends BABYLON.Mesh {
     }
     static GetMovin() {
         let deltaTime = Game.Engine.getDeltaTime();
-        $("#delta-time").text(deltaTime.toPrecision(2) + "");
         if (!Player.Instance) {
             return;
         }

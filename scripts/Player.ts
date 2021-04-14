@@ -157,7 +157,6 @@ class Player extends BABYLON.Mesh {
 
     public static GetMovin(): void {
         let deltaTime: number = Game.Engine.getDeltaTime();
-        $("#delta-time").text(deltaTime.toPrecision(2) + "");
         if (!Player.Instance) {
             return;
         }

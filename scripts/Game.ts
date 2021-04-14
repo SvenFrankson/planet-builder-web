@@ -1,6 +1,4 @@
 /// <reference path="../lib/babylon.d.ts"/>
-/// <reference path="../lib/jquery.d.ts"/>
-
 class Game {
 
 	public static Instance: Game;
@@ -124,7 +122,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
 	PlanetEditor.RegisterControl();
 
-	let planetTest: Planet = new Planet("Paulita", 2);
+	let planetTest: Planet = new Planet("Paulita", 0);
 
 	new Player(new BABYLON.Vector3(0, 128, 0), planetTest);
 
