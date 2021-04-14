@@ -19,7 +19,7 @@ class PlanetEditor extends BABYLON.Mesh {
           offset = -0.25;
         }
         return pickInfo.pickedPoint.add(
-          pickInfo.getNormal(true, false).multiply(MeshTools.FloatVector(offset))
+          pickInfo.getNormal(true, false).scale(offset)
         );
       }
     }

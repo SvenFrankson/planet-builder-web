@@ -111,9 +111,6 @@ class MeshTools {
     static Angle(v1, v2) {
         return Math.acos(BABYLON.Vector3.Dot(BABYLON.Vector3.Normalize(v1), BABYLON.Vector3.Normalize(v2)));
     }
-    static FloatVector(size) {
-        return new BABYLON.Vector3(size, size, size);
-    }
     // tool method to add a mesh triangle.
     static PushTriangle(vertices, a, b, c, positions, indices) {
         let index = positions.length / 3;
@@ -268,7 +265,7 @@ class PlanetChunck extends BABYLON.Mesh {
         this.iPos = iPos;
         this.jPos = jPos;
         this.kPos = kPos;
-        this.barycenter = PlanetTools.EvaluateVertex(this.GetSize(), PlanetTools.CHUNCKSIZE * this.iPos + PlanetTools.CHUNCKSIZE / 2, PlanetTools.CHUNCKSIZE * this.jPos + PlanetTools.CHUNCKSIZE / 2).multiply(MeshTools.FloatVector(PlanetTools.CHUNCKSIZE * this.kPos + PlanetTools.CHUNCKSIZE / 2));
+        this.barycenter = PlanetTools.EvaluateVertex(this.GetSize(), PlanetTools.CHUNCKSIZE * this.iPos + PlanetTools.CHUNCKSIZE / 2, PlanetTools.CHUNCKSIZE * this.jPos + PlanetTools.CHUNCKSIZE / 2).scale(PlanetTools.CHUNCKSIZE * this.kPos + PlanetTools.CHUNCKSIZE / 2);
         this.barycenter = BABYLON.Vector3.TransformCoordinates(this.barycenter, planetSide.computeWorldMatrix());
         this.normal = BABYLON.Vector3.Normalize(this.barycenter);
         this.water = new Water(this.name + "-water");
@@ -558,10 +555,10 @@ class PlanetChunckMeshBuilder {
                 vertices[1] = PlanetChunckMeshBuilder.GetVertex(size, y, z + 1);
                 vertices[2] = PlanetChunckMeshBuilder.GetVertex(size, y + 1, z);
                 vertices[3] = PlanetChunckMeshBuilder.GetVertex(size, y + 1, z + 1);
-                vertices[1].multiplyInPlace(MeshTools.FloatVector(rWater));
-                vertices[2].multiplyInPlace(MeshTools.FloatVector(rWater));
-                vertices[3].multiplyInPlace(MeshTools.FloatVector(rWater));
-                vertices[0].multiplyInPlace(MeshTools.FloatVector(rWater));
+                vertices[1].scaleInPlace(rWater);
+                vertices[2].scaleInPlace(rWater);
+                vertices[3].scaleInPlace(rWater);
+                vertices[0].scaleInPlace(rWater);
                 MeshTools.PushQuad(vertices, 0, 1, 3, 2, positions, indices);
                 MeshTools.PushWaterUvs(uvs);
                 MeshTools.PushQuad(vertices, 0, 2, 3, 1, positions, indices);
@@ -592,10 +589,10 @@ class PlanetChunckMeshBuilder {
                     vertices[1] = PlanetChunckMeshBuilder.GetVertex(size, y, z + 1);
                     vertices[2] = PlanetChunckMeshBuilder.GetVertex(size, y + 1, z);
                     vertices[3] = PlanetChunckMeshBuilder.GetVertex(size, y + 1, z + 1);
-                    vertices[1].multiplyInPlace(MeshTools.FloatVector(r));
-                    vertices[2].multiplyInPlace(MeshTools.FloatVector(r));
-                    vertices[3].multiplyInPlace(MeshTools.FloatVector(r));
-                    vertices[0].multiplyInPlace(MeshTools.FloatVector(r));
+                    vertices[1].scaleInPlace(r);
+                    vertices[2].scaleInPlace(r);
+                    vertices[3].scaleInPlace(r);
+                    vertices[0].scaleInPlace(r);
                     MeshTools.PushQuad(vertices, 0, 1, 3, 2, positions, indices);
                     MeshTools.PushWaterUvs(uvs);
                 }
@@ -623,7 +620,7 @@ class PlanetEditor extends BABYLON.Mesh {
                 if (remove) {
                     offset = -0.25;
                 }
-                return pickInfo.pickedPoint.add(pickInfo.getNormal(true, false).multiply(MeshTools.FloatVector(offset)));
+                return pickInfo.pickedPoint.add(pickInfo.getNormal(true, false).scale(offset));
             }
         }
         return undefined;
@@ -829,7 +826,7 @@ class PlanetTools {
             return BABYLON.Quaternion.RotationAxis(BABYLON.Vector3.Up(), Math.PI);
         }
         else if (side === Side.Front) {
-            return BABYLON.Quaternion.RotationAxis(BABYLON.Vector3.Up(), 3 * Math.PI / 2.0);
+            return BABYLON.Quaternion.RotationAxis(BABYLON.Vector3.Up(), (3 * Math.PI) / 2.0);
         }
         else if (side === Side.Back) {
             return BABYLON.Quaternion.RotationAxis(BABYLON.Vector3.Up(), Math.PI / 2.0);
@@ -838,16 +835,16 @@ class PlanetTools {
             return BABYLON.Quaternion.RotationAxis(new BABYLON.Vector3(0, 0, 1), Math.PI / 2.0);
         }
         else if (side === Side.Bottom) {
-            return BABYLON.Quaternion.RotationAxis(new BABYLON.Vector3(0, 0, 1), 3 * Math.PI / 2.0);
+            return BABYLON.Quaternion.RotationAxis(new BABYLON.Vector3(0, 0, 1), (3 * Math.PI) / 2.0);
         }
     }
     static EvaluateVertex(size, i, j) {
         let xRad = 45.0;
         let yRad = -45.0 + 90.0 * (j / size);
         let zRad = -45.0 + 90.0 * (i / size);
-        xRad = xRad / 180.0 * Math.PI;
-        yRad = yRad / 180.0 * Math.PI;
-        zRad = zRad / 180.0 * Math.PI;
+        xRad = (xRad / 180.0) * Math.PI;
+        yRad = (yRad / 180.0) * Math.PI;
+        zRad = (zRad / 180.0) * Math.PI;
         return new BABYLON.Vector3(Math.sin(xRad) / Math.cos(xRad), Math.sin(yRad) / Math.cos(yRad), Math.sin(zRad) / Math.cos(zRad)).normalize();
     }
     static RandomData() {
@@ -869,9 +866,19 @@ class PlanetTools {
         return data;
     }
     static DataFromHexString(hexString) {
-        if (hexString.length !== PlanetTools.CHUNCKSIZE * PlanetTools.CHUNCKSIZE * PlanetTools.CHUNCKSIZE * 2) {
-            console.log("Invalid HexString. Length is =" + hexString.length +
-                ". Expected length is = " + (PlanetTools.CHUNCKSIZE * PlanetTools.CHUNCKSIZE * PlanetTools.CHUNCKSIZE * 2) + ".");
+        if (hexString.length !==
+            PlanetTools.CHUNCKSIZE *
+                PlanetTools.CHUNCKSIZE *
+                PlanetTools.CHUNCKSIZE *
+                2) {
+            console.log("Invalid HexString. Length is =" +
+                hexString.length +
+                ". Expected length is = " +
+                PlanetTools.CHUNCKSIZE *
+                    PlanetTools.CHUNCKSIZE *
+                    PlanetTools.CHUNCKSIZE *
+                    2 +
+                ".");
             return null;
         }
         let data = new Array();
@@ -880,7 +887,10 @@ class PlanetTools {
             for (let j = 0; j < PlanetTools.CHUNCKSIZE; j++) {
                 data[i][j] = new Array();
                 for (let k = 0; k < PlanetTools.CHUNCKSIZE; k++) {
-                    let index = 2 * (i * PlanetTools.CHUNCKSIZE * PlanetTools.CHUNCKSIZE + j * PlanetTools.CHUNCKSIZE + k);
+                    let index = 2 *
+                        (i * PlanetTools.CHUNCKSIZE * PlanetTools.CHUNCKSIZE +
+                            j * PlanetTools.CHUNCKSIZE +
+                            k);
                     data[i][j][k] = parseInt(hexString.slice(index, index + 2), 16);
                 }
             }
@@ -900,11 +910,11 @@ class PlanetTools {
     }
     static WorldPositionToPlanetSide(planet, worldPos) {
         let angles = new Array();
-        angles[Side.Back] = MeshTools.Angle(BABYLON.Axis.Z.multiply(MeshTools.FloatVector(-1)), worldPos);
+        angles[Side.Back] = MeshTools.Angle(BABYLON.Axis.Z.scale(-1), worldPos);
         angles[Side.Right] = MeshTools.Angle(BABYLON.Axis.X, worldPos);
-        angles[Side.Left] = MeshTools.Angle(BABYLON.Axis.X.multiply(MeshTools.FloatVector(-1)), worldPos);
+        angles[Side.Left] = MeshTools.Angle(BABYLON.Axis.X.scale(-1), worldPos);
         angles[Side.Top] = MeshTools.Angle(BABYLON.Axis.Y, worldPos);
-        angles[Side.Bottom] = MeshTools.Angle(BABYLON.Axis.Y.multiply(MeshTools.FloatVector(-1)), worldPos);
+        angles[Side.Bottom] = MeshTools.Angle(BABYLON.Axis.Y.scale(-1), worldPos);
         angles[Side.Front] = MeshTools.Angle(BABYLON.Axis.Z, worldPos);
         let min = Math.min(...angles);
         let sideIndex = angles.indexOf(min);
@@ -916,21 +926,23 @@ class PlanetTools {
         let localPos = BABYLON.Vector3.TransformCoordinates(worldPos, invert);
         let r = localPos.length();
         if (Math.abs(localPos.x) > 1) {
-            localPos = localPos.divide(MeshTools.FloatVector(localPos.x));
+            localPos = localPos.scale(1 / localPos.x);
         }
         if (Math.abs(localPos.y) > 1) {
-            localPos = localPos.divide(MeshTools.FloatVector(localPos.y));
+            localPos = localPos.scale(1 / localPos.y);
         }
         if (Math.abs(localPos.z) > 1) {
-            localPos = localPos.divide(MeshTools.FloatVector(localPos.z));
+            localPos = localPos.scale(1 / localPos.z);
         }
-        let yDeg = Math.atan(localPos.y) / Math.PI * 180;
-        let zDeg = Math.atan(localPos.z) / Math.PI * 180;
+        let yDeg = (Math.atan(localPos.y) / Math.PI) * 180;
+        let zDeg = (Math.atan(localPos.z) / Math.PI) * 180;
         console.log("YDeg : " + yDeg);
         console.log("ZDeg : " + zDeg);
         let k = Math.floor(r);
-        let i = Math.floor((zDeg + 45) / 90 * PlanetTools.DegreeToSize(PlanetTools.KGlobalToDegree(k)));
-        let j = Math.floor((yDeg + 45) / 90 * PlanetTools.DegreeToSize(PlanetTools.KGlobalToDegree(k)));
+        let i = Math.floor(((zDeg + 45) / 90) *
+            PlanetTools.DegreeToSize(PlanetTools.KGlobalToDegree(k)));
+        let j = Math.floor(((yDeg + 45) / 90) *
+            PlanetTools.DegreeToSize(PlanetTools.KGlobalToDegree(k)));
         return { i: i, j: j, k: k };
     }
     static GlobalIJKToLocalIJK(planetSide, global) {
@@ -938,7 +950,7 @@ class PlanetTools {
             planetChunck: planetSide.GetChunck(Math.floor(global.i / PlanetTools.CHUNCKSIZE), Math.floor(global.j / PlanetTools.CHUNCKSIZE), Math.floor(global.k / PlanetTools.CHUNCKSIZE)),
             i: global.i % PlanetTools.CHUNCKSIZE,
             j: global.j % PlanetTools.CHUNCKSIZE,
-            k: global.k % PlanetTools.CHUNCKSIZE
+            k: global.k % PlanetTools.CHUNCKSIZE,
         };
     }
     static KGlobalToDegree(k) {
@@ -1054,7 +1066,7 @@ class Player extends BABYLON.Mesh {
         return Player.Instance.position;
     }
     PositionLeg() {
-        let posLeg = this.position.add(BABYLON.Vector3.TransformNormal(BABYLON.Axis.Y, this.getWorldMatrix()).multiply(MeshTools.FloatVector(-1)));
+        let posLeg = this.position.add(BABYLON.Vector3.TransformNormal(BABYLON.Axis.Y, this.getWorldMatrix()).scale(-1));
         return posLeg;
     }
     PositionHead() {
@@ -1144,25 +1156,25 @@ class Player extends BABYLON.Mesh {
         if (Player.Instance.pForward) {
             if (Player.CanGoSide(BABYLON.Axis.Z)) {
                 let localZ = BABYLON.Vector3.TransformNormal(BABYLON.Axis.Z, Player.Instance.getWorldMatrix());
-                Player.Instance.position.addInPlace(localZ.multiply(MeshTools.FloatVector(deltaTime / 1000 * Player.Instance.speed)));
+                Player.Instance.position.addInPlace(localZ.scale(deltaTime / 1000 * Player.Instance.speed));
             }
         }
         if (Player.Instance.back) {
-            if (Player.CanGoSide(BABYLON.Axis.Z.multiply(MeshTools.FloatVector(-1)))) {
+            if (Player.CanGoSide(BABYLON.Axis.Z.scale(-1))) {
                 let localZ = BABYLON.Vector3.TransformNormal(BABYLON.Axis.Z, Player.Instance.getWorldMatrix());
-                Player.Instance.position.addInPlace(localZ.multiply(MeshTools.FloatVector(-deltaTime / 1000 * Player.Instance.speed)));
+                Player.Instance.position.addInPlace(localZ.scale(-deltaTime / 1000 * Player.Instance.speed));
             }
         }
         if (Player.Instance.pRight) {
             if (Player.CanGoSide(BABYLON.Axis.X)) {
                 let localX = BABYLON.Vector3.TransformNormal(BABYLON.Axis.X, Player.Instance.getWorldMatrix());
-                Player.Instance.position.addInPlace(localX.multiply(MeshTools.FloatVector(deltaTime / 1000 * Player.Instance.speed)));
+                Player.Instance.position.addInPlace(localX.scale(deltaTime / 1000 * Player.Instance.speed));
             }
         }
         if (Player.Instance.left) {
-            if (Player.CanGoSide(BABYLON.Axis.X.multiply(MeshTools.FloatVector(-1)))) {
+            if (Player.CanGoSide(BABYLON.Axis.X.scale(-1))) {
                 let localX = BABYLON.Vector3.TransformNormal(BABYLON.Axis.X, Player.Instance.getWorldMatrix());
-                Player.Instance.position.addInPlace(localX.multiply(MeshTools.FloatVector(-deltaTime / 1000 * Player.Instance.speed)));
+                Player.Instance.position.addInPlace(localX.scale(-deltaTime / 1000 * Player.Instance.speed));
             }
         }
     }
@@ -1176,7 +1188,7 @@ class Player extends BABYLON.Mesh {
         let correctionAngle = Math.abs(Math.asin(correctionAxis.length()));
         if (Player.Instance.fly) {
             if (Player.CanGoUp()) {
-                Player.Instance.position.addInPlace(targetUp.multiply(MeshTools.FloatVector(0.05)));
+                Player.Instance.position.addInPlace(targetUp.scale(0.05));
             }
         }
         else {
@@ -1186,7 +1198,7 @@ class Player extends BABYLON.Mesh {
                 if (Player.Instance.underWater) {
                     gravityFactor = 0.02;
                 }
-                Player.Instance.position.addInPlace(targetUp.multiply(MeshTools.FloatVector(gravity * gravityFactor)));
+                Player.Instance.position.addInPlace(targetUp.scale(gravity * gravityFactor));
             }
         }
         if (correctionAngle > 0.001) {

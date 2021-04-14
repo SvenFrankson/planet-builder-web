@@ -157,10 +157,10 @@ class PlanetChunckMeshBuilder {
         vertices[2] = PlanetChunckMeshBuilder.GetVertex(size, y + 1, z);
         vertices[3] = PlanetChunckMeshBuilder.GetVertex(size, y + 1, z + 1);
 
-        vertices[1].multiplyInPlace(MeshTools.FloatVector(rWater));
-        vertices[2].multiplyInPlace(MeshTools.FloatVector(rWater));
-        vertices[3].multiplyInPlace(MeshTools.FloatVector(rWater));
-        vertices[0].multiplyInPlace(MeshTools.FloatVector(rWater));
+        vertices[1].scaleInPlace(rWater);
+        vertices[2].scaleInPlace(rWater);
+        vertices[3].scaleInPlace(rWater);
+        vertices[0].scaleInPlace(rWater);
 
         MeshTools.PushQuad(vertices, 0, 1, 3, 2, positions, indices);
         MeshTools.PushWaterUvs(uvs);
@@ -205,10 +205,10 @@ class PlanetChunckMeshBuilder {
           vertices[2] = PlanetChunckMeshBuilder.GetVertex(size, y + 1, z);
           vertices[3] = PlanetChunckMeshBuilder.GetVertex(size, y + 1, z + 1);
 
-          vertices[1].multiplyInPlace(MeshTools.FloatVector(r));
-          vertices[2].multiplyInPlace(MeshTools.FloatVector(r));
-          vertices[3].multiplyInPlace(MeshTools.FloatVector(r));
-          vertices[0].multiplyInPlace(MeshTools.FloatVector(r));
+          vertices[1].scaleInPlace(r);
+          vertices[2].scaleInPlace(r);
+          vertices[3].scaleInPlace(r);
+          vertices[0].scaleInPlace(r);
 
           MeshTools.PushQuad(vertices, 0, 1, 3, 2, positions, indices);
           MeshTools.PushWaterUvs(uvs);
