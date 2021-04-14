@@ -83,7 +83,7 @@ window.addEventListener("DOMContentLoaded", () => {
     game.createScene();
     game.animate();
     PlanetEditor.RegisterControl();
-    let planetTest = new Planet("Paulita", 3);
+    let planetTest = new Planet("Paulita", 2);
     new Player(new BABYLON.Vector3(0, 128, 0), planetTest);
     planetTest.AsyncInitialize();
     Game.Canvas.addEventListener("mouseup", (event) => {
@@ -273,8 +273,8 @@ class PlanetChunck extends BABYLON.Mesh {
         this.bedrock = new BABYLON.Mesh(this.name + "-bedrock", Game.Scene);
         this.bedrock.parent = this;
     }
-    GetSide() {
-        return this.planetSide.GetSide();
+    get side() {
+        return this.planetSide.side;
     }
     GetDegree() {
         return PlanetTools.KPosToDegree(this.kPos);
@@ -364,7 +364,7 @@ class PlanetChunck extends BABYLON.Mesh {
     Initialize() {
         let dataUrl = "./chunck" +
             "/" + this.GetPlanetName() +
-            "/" + Side[this.GetSide()] +
+            "/" + Side[this.side] +
             "/" + this.iPos +
             "/" + this.jPos +
             "/" + this.kPos +
@@ -633,7 +633,7 @@ class PlanetEditor extends BABYLON.Mesh {
             if (PlanetEditor.data === 0 || worldPos.subtract(Player.Instance.PositionHead()).lengthSquared() > 1) {
                 if (PlanetEditor.data === 0 || worldPos.subtract(Player.Instance.PositionLeg()).lengthSquared() > 1) {
                     let planetSide = PlanetTools.WorldPositionToPlanetSide(planet, worldPos);
-                    console.log("PlanetSide : " + Side[planetSide.GetSide()]);
+                    console.log("PlanetSide : " + Side[planetSide.side]);
                     if (planetSide) {
                         let global = PlanetTools.WorldPositionToGlobalIJK(planetSide, worldPos);
                         console.log("Globals : " + JSON.stringify(global));
@@ -740,8 +740,8 @@ class PlanetSide extends BABYLON.Mesh {
         let name = "side-" + side;
         super(name, Game.Scene);
         this.planet = planet;
-        this.side = side;
-        this.rotationQuaternion = PlanetTools.QuaternionForSide(this.side);
+        this._side = side;
+        this.rotationQuaternion = PlanetTools.QuaternionForSide(this._side);
         this.computeWorldMatrix();
         this.freezeWorldMatrix();
         this.chuncks = new Array();
@@ -759,8 +759,8 @@ class PlanetSide extends BABYLON.Mesh {
             }
         }
     }
-    GetSide() {
-        return this.side;
+    get side() {
+        return this._side;
     }
     GetPlanetName() {
         return this.planet.GetPlanetName();
@@ -1075,13 +1075,15 @@ class Player extends BABYLON.Mesh {
     RegisterControl() {
         let scene = Game.Scene;
         scene.actionManager.registerAction(new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnKeyDownTrigger, (event) => {
-            if ((event.sourceEvent.key === "z") || (event.sourceEvent.key === "w")) {
+            if (event.sourceEvent.key === "z" ||
+                event.sourceEvent.key === "w") {
                 this.pForward = true;
             }
             if (event.sourceEvent.key === "s") {
                 this.back = true;
             }
-            if ((event.sourceEvent.key === "q") || (event.sourceEvent.key === "a")) {
+            if (event.sourceEvent.key === "q" ||
+                event.sourceEvent.key === "a") {
                 this.left = true;
             }
             if (event.sourceEvent.key === "d") {
@@ -1092,13 +1094,15 @@ class Player extends BABYLON.Mesh {
             }
         }));
         scene.actionManager.registerAction(new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnKeyUpTrigger, (event) => {
-            if ((event.sourceEvent.key === "z") || (event.sourceEvent.key === "w")) {
+            if (event.sourceEvent.key === "z" ||
+                event.sourceEvent.key === "w") {
                 this.pForward = false;
             }
             if (event.sourceEvent.key === "s") {
                 this.back = false;
             }
-            if ((event.sourceEvent.key === "q") || (event.sourceEvent.key === "a")) {
+            if (event.sourceEvent.key === "q" ||
+                event.sourceEvent.key === "a") {
                 this.left = false;
             }
             if (event.sourceEvent.key === "d") {
@@ -1137,7 +1141,8 @@ class Player extends BABYLON.Mesh {
     }
     static WaterFilter() {
         if (Player.Instance) {
-            if (Player.Instance.position.lengthSquared() < Player.Instance.planet.GetTotalRadiusWaterSquared()) {
+            if (Player.Instance.position.lengthSquared() <
+                Player.Instance.planet.GetTotalRadiusWaterSquared()) {
                 Game.Light.diffuse = new BABYLON.Color3(0.5, 0.5, 1);
                 Player.Instance.underWater = true;
             }
@@ -1156,25 +1161,25 @@ class Player extends BABYLON.Mesh {
         if (Player.Instance.pForward) {
             if (Player.CanGoSide(BABYLON.Axis.Z)) {
                 let localZ = BABYLON.Vector3.TransformNormal(BABYLON.Axis.Z, Player.Instance.getWorldMatrix());
-                Player.Instance.position.addInPlace(localZ.scale(deltaTime / 1000 * Player.Instance.speed));
+                Player.Instance.position.addInPlace(localZ.scale((deltaTime / 1000) * Player.Instance.speed));
             }
         }
         if (Player.Instance.back) {
             if (Player.CanGoSide(BABYLON.Axis.Z.scale(-1))) {
                 let localZ = BABYLON.Vector3.TransformNormal(BABYLON.Axis.Z, Player.Instance.getWorldMatrix());
-                Player.Instance.position.addInPlace(localZ.scale(-deltaTime / 1000 * Player.Instance.speed));
+                Player.Instance.position.addInPlace(localZ.scale((-deltaTime / 1000) * Player.Instance.speed));
             }
         }
         if (Player.Instance.pRight) {
             if (Player.CanGoSide(BABYLON.Axis.X)) {
                 let localX = BABYLON.Vector3.TransformNormal(BABYLON.Axis.X, Player.Instance.getWorldMatrix());
-                Player.Instance.position.addInPlace(localX.scale(deltaTime / 1000 * Player.Instance.speed));
+                Player.Instance.position.addInPlace(localX.scale((deltaTime / 1000) * Player.Instance.speed));
             }
         }
         if (Player.Instance.left) {
             if (Player.CanGoSide(BABYLON.Axis.X.scale(-1))) {
                 let localX = BABYLON.Vector3.TransformNormal(BABYLON.Axis.X, Player.Instance.getWorldMatrix());
-                Player.Instance.position.addInPlace(localX.scale(-deltaTime / 1000 * Player.Instance.speed));
+                Player.Instance.position.addInPlace(localX.scale((-deltaTime / 1000) * Player.Instance.speed));
             }
         }
     }

@@ -8,12 +8,14 @@ enum Neighbour {
 };
 
 class PlanetChunck extends BABYLON.Mesh {
+
   private static initializationBuffer: Array<PlanetChunck> = new Array<PlanetChunck>();
   private static delayBuffer: Array<PlanetChunck> = new Array<PlanetChunck>();
   private static initializedBuffer: Array<PlanetChunck> = new Array<PlanetChunck>();
   private planetSide: PlanetSide;
-  public GetSide(): Side {
-    return this.planetSide.GetSide();
+
+  public get side(): Side {
+    return this.planetSide.side;
   }
   public GetDegree(): number {
     return PlanetTools.KPosToDegree(this.kPos);
@@ -138,7 +140,7 @@ class PlanetChunck extends BABYLON.Mesh {
   public Initialize(): void {
     let dataUrl: string = "./chunck" +
                           "/" + this.GetPlanetName() +
-                          "/" + Side[this.GetSide()] +
+                          "/" + Side[this.side] +
                           "/" + this.iPos +
                           "/" + this.jPos +
                           "/" + this.kPos +
