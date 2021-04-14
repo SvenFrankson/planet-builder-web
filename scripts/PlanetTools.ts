@@ -1,4 +1,5 @@
 class PlanetTools {
+
     public static readonly CHUNCKSIZE = 32;
     public static readonly ALPHALIMIT = Math.PI / 4;
     public static readonly DISTANCELIMITSQUARED = 128 * 128;
@@ -7,9 +8,7 @@ class PlanetTools {
     public static EmptyVertexData(): BABYLON.VertexData {
         if (!PlanetTools.emptyVertexData) {
             let emptyMesh: BABYLON.Mesh = new BABYLON.Mesh("Empty", Game.Scene);
-            PlanetTools.emptyVertexData = BABYLON.VertexData.ExtractFromMesh(
-                emptyMesh
-            );
+            PlanetTools.emptyVertexData = BABYLON.VertexData.ExtractFromMesh(emptyMesh);
             emptyMesh.dispose();
         }
         return PlanetTools.emptyVertexData;
@@ -18,27 +17,32 @@ class PlanetTools {
     public static QuaternionForSide(side: Side): BABYLON.Quaternion {
         if (side === Side.Right) {
             return BABYLON.Quaternion.Identity();
-        } else if (side === Side.Left) {
+        }
+        else if (side === Side.Left) {
             return BABYLON.Quaternion.RotationAxis(
                 BABYLON.Vector3.Up(),
                 Math.PI
             );
-        } else if (side === Side.Front) {
+        }
+        else if (side === Side.Front) {
             return BABYLON.Quaternion.RotationAxis(
                 BABYLON.Vector3.Up(),
                 (3 * Math.PI) / 2.0
             );
-        } else if (side === Side.Back) {
+        }
+        else if (side === Side.Back) {
             return BABYLON.Quaternion.RotationAxis(
                 BABYLON.Vector3.Up(),
                 Math.PI / 2.0
             );
-        } else if (side === Side.Top) {
+        }
+        else if (side === Side.Top) {
             return BABYLON.Quaternion.RotationAxis(
                 new BABYLON.Vector3(0, 0, 1),
                 Math.PI / 2.0
             );
-        } else if (side === Side.Bottom) {
+        }
+        else if (side === Side.Bottom) {
             return BABYLON.Quaternion.RotationAxis(
                 new BABYLON.Vector3(0, 0, 1),
                 (3 * Math.PI) / 2.0
@@ -59,21 +63,30 @@ class PlanetTools {
         yRad = (yRad / 180.0) * Math.PI;
         zRad = (zRad / 180.0) * Math.PI;
 
-        return new BABYLON.Vector3(
-            Math.sin(xRad) / Math.cos(xRad),
-            Math.sin(yRad) / Math.cos(yRad),
-            Math.sin(zRad) / Math.cos(zRad)
-        ).normalize();
+        return new BABYLON.Vector3(Math.sin(xRad) / Math.cos(xRad), Math.sin(yRad) / Math.cos(yRad), Math.sin(zRad) / Math.cos(zRad)).normalize();
     }
 
-    public static RandomData(): Array<Array<Array<number>>> {
-        let data: Array<Array<Array<number>>> = new Array<
-            Array<Array<number>>
-        >();
+    public static FilledData(): number[][][] {
+        let data: number[][][] = [];
+
         for (let i: number = 0; i < PlanetTools.CHUNCKSIZE; i++) {
-            data[i] = new Array<Array<number>>();
+            data[i] = [];
             for (let j: number = 0; j < PlanetTools.CHUNCKSIZE; j++) {
-                data[i][j] = new Array<number>();
+                data[i][j] = [];
+                for (let k: number = 0; k < PlanetTools.CHUNCKSIZE; k++) {
+                    data[i][j][k] = 129;
+                }
+            }
+        }
+        return data;
+    }
+
+    public static RandomData(): number[][][] {
+        let data: number[][][] = [];
+        for (let i: number = 0; i < PlanetTools.CHUNCKSIZE; i++) {
+            data[i] = [];
+            for (let j: number = 0; j < PlanetTools.CHUNCKSIZE; j++) {
+                data[i][j] = [];
                 for (let k: number = 0; k < PlanetTools.CHUNCKSIZE; k++) {
                     if (Math.random() < 0.5) {
                         data[i][j][k] = 0;
@@ -88,14 +101,8 @@ class PlanetTools {
 
     public static DataFromHexString(
         hexString: string
-    ): Array<Array<Array<number>>> {
-        if (
-            hexString.length !==
-            PlanetTools.CHUNCKSIZE *
-                PlanetTools.CHUNCKSIZE *
-                PlanetTools.CHUNCKSIZE *
-                2
-        ) {
+    ): number[][][] {
+        if (hexString.length !== PlanetTools.CHUNCKSIZE * PlanetTools.CHUNCKSIZE * PlanetTools.CHUNCKSIZE * 2) {
             console.log(
                 "Invalid HexString. Length is =" +
                     hexString.length +
@@ -106,32 +113,23 @@ class PlanetTools {
                         2 +
                     "."
             );
-            return null;
+            return;
         }
-        let data: Array<Array<Array<number>>> = new Array<
-            Array<Array<number>>
-        >();
+        let data: number[][][] = [];
         for (let i: number = 0; i < PlanetTools.CHUNCKSIZE; i++) {
-            data[i] = new Array<Array<number>>();
+            data[i] = [];
             for (let j: number = 0; j < PlanetTools.CHUNCKSIZE; j++) {
-                data[i][j] = new Array<number>();
+                data[i][j] = [];
                 for (let k: number = 0; k < PlanetTools.CHUNCKSIZE; k++) {
-                    let index: number =
-                        2 *
-                        (i * PlanetTools.CHUNCKSIZE * PlanetTools.CHUNCKSIZE +
-                            j * PlanetTools.CHUNCKSIZE +
-                            k);
-                    data[i][j][k] = parseInt(
-                        hexString.slice(index, index + 2),
-                        16
-                    );
+                    let index: number = 2 * (i * PlanetTools.CHUNCKSIZE * PlanetTools.CHUNCKSIZE + j * PlanetTools.CHUNCKSIZE + k);
+                    data[i][j][k] = parseInt( hexString.slice(index, index + 2), 16);
                 }
             }
         }
         return data;
     }
 
-    public static HexStringFromData(data: Array<Array<Array<number>>>): string {
+    public static HexStringFromData(data: number[][][]): string {
         let hexString: string = "";
         for (let i: number = 0; i < PlanetTools.CHUNCKSIZE; i++) {
             for (let j: number = 0; j < PlanetTools.CHUNCKSIZE; j++) {
@@ -147,21 +145,12 @@ class PlanetTools {
         planet: Planet,
         worldPos: BABYLON.Vector3
     ): PlanetSide {
-        let angles: Array<number> = new Array<number>();
-        angles[Side.Back] = MeshTools.Angle(
-            BABYLON.Axis.Z.scale(-1),
-            worldPos
-        );
+        let angles: number[] = [];
+        angles[Side.Back] = MeshTools.Angle(BABYLON.Axis.Z.scale(-1), worldPos);
         angles[Side.Right] = MeshTools.Angle(BABYLON.Axis.X, worldPos);
-        angles[Side.Left] = MeshTools.Angle(
-            BABYLON.Axis.X.scale(-1),
-            worldPos
-        );
+        angles[Side.Left] = MeshTools.Angle( BABYLON.Axis.X.scale(-1), worldPos);
         angles[Side.Top] = MeshTools.Angle(BABYLON.Axis.Y, worldPos);
-        angles[Side.Bottom] = MeshTools.Angle(
-            BABYLON.Axis.Y.scale(-1),
-            worldPos
-        );
+        angles[Side.Bottom] = MeshTools.Angle( BABYLON.Axis.Y.scale(-1), worldPos);
         angles[Side.Front] = MeshTools.Angle(BABYLON.Axis.Z, worldPos);
 
         let min: number = Math.min(...angles);
@@ -175,10 +164,7 @@ class PlanetTools {
     ): { i: number; j: number; k: number } {
         let invert: BABYLON.Matrix = new BABYLON.Matrix();
         planetSide.getWorldMatrix().invertToRef(invert);
-        let localPos: BABYLON.Vector3 = BABYLON.Vector3.TransformCoordinates(
-            worldPos,
-            invert
-        );
+        let localPos: BABYLON.Vector3 = BABYLON.Vector3.TransformCoordinates(worldPos, invert);
         let r: number = localPos.length();
 
         if (Math.abs(localPos.x) > 1) {
@@ -197,14 +183,8 @@ class PlanetTools {
         console.log("ZDeg : " + zDeg);
 
         let k: number = Math.floor(r);
-        let i: number = Math.floor(
-            ((zDeg + 45) / 90) *
-                PlanetTools.DegreeToSize(PlanetTools.KGlobalToDegree(k))
-        );
-        let j: number = Math.floor(
-            ((yDeg + 45) / 90) *
-                PlanetTools.DegreeToSize(PlanetTools.KGlobalToDegree(k))
-        );
+        let i: number = Math.floor(((zDeg + 45) / 90) * PlanetTools.DegreeToSize(PlanetTools.KGlobalToDegree(k)));
+        let j: number = Math.floor(((yDeg + 45) / 90) * PlanetTools.DegreeToSize(PlanetTools.KGlobalToDegree(k)));
 
         return { i: i, j: j, k: k };
     }
@@ -214,11 +194,7 @@ class PlanetTools {
         global: { i: number; j: number; k: number }
     ): { planetChunck: PlanetChunck; i: number; j: number; k: number } {
         return {
-            planetChunck: planetSide.GetChunck(
-                Math.floor(global.i / PlanetTools.CHUNCKSIZE),
-                Math.floor(global.j / PlanetTools.CHUNCKSIZE),
-                Math.floor(global.k / PlanetTools.CHUNCKSIZE)
-            ),
+            planetChunck: planetSide.GetChunck(Math.floor(global.i / PlanetTools.CHUNCKSIZE), Math.floor(global.j / PlanetTools.CHUNCKSIZE), Math.floor(global.k / PlanetTools.CHUNCKSIZE)),
             i: global.i % PlanetTools.CHUNCKSIZE,
             j: global.j % PlanetTools.CHUNCKSIZE,
             k: global.k % PlanetTools.CHUNCKSIZE,
@@ -236,13 +212,17 @@ class PlanetTools {
     public static KPosToDegree16(kPos: number): number {
         if (kPos < 1) {
             return 4;
-        } else if (kPos < 2) {
+        }
+        else if (kPos < 2) {
             return 5;
-        } else if (kPos < 4) {
+        }
+        else if (kPos < 4) {
             return 6;
-        } else if (kPos < 7) {
+        }
+        else if (kPos < 7) {
             return 7;
-        } else if (kPos < 13) {
+        }
+        else if (kPos < 13) {
             return 8;
         }
         return 9;
@@ -251,11 +231,14 @@ class PlanetTools {
     public static KPosToDegree32(kPos: number): number {
         if (kPos < 1) {
             return 5;
-        } else if (kPos < 2) {
+        }
+        else if (kPos < 2) {
             return 6;
-        } else if (kPos < 4) {
+        }
+        else if (kPos < 4) {
             return 7;
-        } else if (kPos < 7) {
+        }
+        else if (kPos < 7) {
             return 8;
         }
         return 9;

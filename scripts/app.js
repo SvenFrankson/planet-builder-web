@@ -817,12 +817,25 @@ class PlanetTools {
         zRad = (zRad / 180.0) * Math.PI;
         return new BABYLON.Vector3(Math.sin(xRad) / Math.cos(xRad), Math.sin(yRad) / Math.cos(yRad), Math.sin(zRad) / Math.cos(zRad)).normalize();
     }
-    static RandomData() {
-        let data = new Array();
+    static FilledData() {
+        let data = [];
         for (let i = 0; i < PlanetTools.CHUNCKSIZE; i++) {
-            data[i] = new Array();
+            data[i] = [];
             for (let j = 0; j < PlanetTools.CHUNCKSIZE; j++) {
-                data[i][j] = new Array();
+                data[i][j] = [];
+                for (let k = 0; k < PlanetTools.CHUNCKSIZE; k++) {
+                    data[i][j][k] = 129;
+                }
+            }
+        }
+        return data;
+    }
+    static RandomData() {
+        let data = [];
+        for (let i = 0; i < PlanetTools.CHUNCKSIZE; i++) {
+            data[i] = [];
+            for (let j = 0; j < PlanetTools.CHUNCKSIZE; j++) {
+                data[i][j] = [];
                 for (let k = 0; k < PlanetTools.CHUNCKSIZE; k++) {
                     if (Math.random() < 0.5) {
                         data[i][j][k] = 0;
@@ -836,11 +849,7 @@ class PlanetTools {
         return data;
     }
     static DataFromHexString(hexString) {
-        if (hexString.length !==
-            PlanetTools.CHUNCKSIZE *
-                PlanetTools.CHUNCKSIZE *
-                PlanetTools.CHUNCKSIZE *
-                2) {
+        if (hexString.length !== PlanetTools.CHUNCKSIZE * PlanetTools.CHUNCKSIZE * PlanetTools.CHUNCKSIZE * 2) {
             console.log("Invalid HexString. Length is =" +
                 hexString.length +
                 ". Expected length is = " +
@@ -849,18 +858,15 @@ class PlanetTools {
                     PlanetTools.CHUNCKSIZE *
                     2 +
                 ".");
-            return null;
+            return;
         }
-        let data = new Array();
+        let data = [];
         for (let i = 0; i < PlanetTools.CHUNCKSIZE; i++) {
-            data[i] = new Array();
+            data[i] = [];
             for (let j = 0; j < PlanetTools.CHUNCKSIZE; j++) {
-                data[i][j] = new Array();
+                data[i][j] = [];
                 for (let k = 0; k < PlanetTools.CHUNCKSIZE; k++) {
-                    let index = 2 *
-                        (i * PlanetTools.CHUNCKSIZE * PlanetTools.CHUNCKSIZE +
-                            j * PlanetTools.CHUNCKSIZE +
-                            k);
+                    let index = 2 * (i * PlanetTools.CHUNCKSIZE * PlanetTools.CHUNCKSIZE + j * PlanetTools.CHUNCKSIZE + k);
                     data[i][j][k] = parseInt(hexString.slice(index, index + 2), 16);
                 }
             }
@@ -879,7 +885,7 @@ class PlanetTools {
         return hexString;
     }
     static WorldPositionToPlanetSide(planet, worldPos) {
-        let angles = new Array();
+        let angles = [];
         angles[Side.Back] = MeshTools.Angle(BABYLON.Axis.Z.scale(-1), worldPos);
         angles[Side.Right] = MeshTools.Angle(BABYLON.Axis.X, worldPos);
         angles[Side.Left] = MeshTools.Angle(BABYLON.Axis.X.scale(-1), worldPos);
@@ -909,10 +915,8 @@ class PlanetTools {
         console.log("YDeg : " + yDeg);
         console.log("ZDeg : " + zDeg);
         let k = Math.floor(r);
-        let i = Math.floor(((zDeg + 45) / 90) *
-            PlanetTools.DegreeToSize(PlanetTools.KGlobalToDegree(k)));
-        let j = Math.floor(((yDeg + 45) / 90) *
-            PlanetTools.DegreeToSize(PlanetTools.KGlobalToDegree(k)));
+        let i = Math.floor(((zDeg + 45) / 90) * PlanetTools.DegreeToSize(PlanetTools.KGlobalToDegree(k)));
+        let j = Math.floor(((yDeg + 45) / 90) * PlanetTools.DegreeToSize(PlanetTools.KGlobalToDegree(k)));
         return { i: i, j: j, k: k };
     }
     static GlobalIJKToLocalIJK(planetSide, global) {
