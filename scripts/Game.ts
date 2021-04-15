@@ -76,7 +76,6 @@ class Game {
 			Game.AnimateSky();
 			Game.AnimateWater();
 			Game.AnimateLight();
-			Player.WaterFilter();
 		});
 
 		window.addEventListener("resize", () => {
@@ -122,13 +121,13 @@ window.addEventListener("DOMContentLoaded", () => {
 
 	PlanetEditor.RegisterControl();
 
-	let planetTest: Planet = new Planet("Paulita", 0);
+	let planetTest: Planet = new Planet("Paulita", 1);
 
-	new Player(new BABYLON.Vector3(0, 128, 0), planetTest);
+	new Player(new BABYLON.Vector3(0, 64, 0), planetTest);
 
 	planetTest.AsyncInitialize();
 
-	Game.Canvas.addEventListener("mouseup", (event: MouseEvent) => {
+	Game.Canvas.addEventListener("pointerup", (event: MouseEvent) => {
 		if (!Game.LockedMouse) {
 			Game.LockMouse(event);
 		}
@@ -137,7 +136,7 @@ window.addEventListener("DOMContentLoaded", () => {
 		}
 	});
 
-	document.addEventListener("mousemove", (event: MouseEvent) => {
+	document.addEventListener("pointermove", (event: MouseEvent) => {
 		if (Game.LockedMouse) {
 			if (event.clientX !== Game.ClientXOnLock) {
 				Game.UnlockMouse();

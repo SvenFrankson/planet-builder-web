@@ -1,6 +1,11 @@
+var PI4 = Math.PI / 4;
+var PI2 = Math.PI / 2;
+var PI = Math.PI;
+
 class PlanetTools {
 
-    public static readonly CHUNCKSIZE = 32;
+    public static readonly BLOCKSIZE = 1;
+    public static readonly CHUNCKSIZE = 16;
     public static readonly ALPHALIMIT = Math.PI / 4;
     public static readonly DISTANCELIMITSQUARED = 128 * 128;
     private static emptyVertexData: BABYLON.VertexData;
@@ -55,15 +60,11 @@ class PlanetTools {
         i: number,
         j: number
     ): BABYLON.Vector3 {
-        let xRad: number = 45.0;
-        let yRad: number = -45.0 + 90.0 * (j / size);
-        let zRad: number = -45.0 + 90.0 * (i / size);
+        let xRad: number = PI4;
+        let yRad: number = - PI4 + PI2 * (j / size);
+        let zRad: number = - PI4 + PI2 * (i / size);
 
-        xRad = (xRad / 180.0) * Math.PI;
-        yRad = (yRad / 180.0) * Math.PI;
-        zRad = (zRad / 180.0) * Math.PI;
-
-        return new BABYLON.Vector3(Math.sin(xRad) / Math.cos(xRad), Math.sin(yRad) / Math.cos(yRad), Math.sin(zRad) / Math.cos(zRad)).normalize();
+        return new BABYLON.Vector3(Math.tan(xRad), Math.tan(yRad), Math.tan(zRad)).normalize();
     }
 
     public static FilledData(): number[][][] {
@@ -182,7 +183,7 @@ class PlanetTools {
         console.log("YDeg : " + yDeg);
         console.log("ZDeg : " + zDeg);
 
-        let k: number = Math.floor(r);
+        let k: number = Math.floor(r / PlanetTools.BLOCKSIZE);
         let i: number = Math.floor(((zDeg + 45) / 90) * PlanetTools.DegreeToSize(PlanetTools.KGlobalToDegree(k)));
         let j: number = Math.floor(((yDeg + 45) / 90) * PlanetTools.DegreeToSize(PlanetTools.KGlobalToDegree(k)));
 
@@ -206,7 +207,7 @@ class PlanetTools {
     }
 
     public static KPosToDegree(kPos: number): number {
-        return PlanetTools.KPosToDegree32(kPos);
+        return PlanetTools.KPosToDegree16(kPos);
     }
 
     public static KPosToDegree16(kPos: number): number {

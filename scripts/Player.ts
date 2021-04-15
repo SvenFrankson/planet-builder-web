@@ -5,6 +5,8 @@ class Player extends BABYLON.Mesh {
     }
 
     private speed: number = 5;
+    private velocity: BABYLON.Vector3 = BABYLON.Vector3.Zero();
+
     private planet: Planet;
     private underWater: boolean = false;
     public camPos: BABYLON.AbstractMesh;
@@ -13,6 +15,7 @@ class Player extends BABYLON.Mesh {
     public pRight: boolean;
     public left: boolean;
     public fly: boolean;
+
     public PositionLeg(): BABYLON.Vector3 {
         let posLeg: BABYLON.Vector3 = this.position.add(
             BABYLON.Vector3.TransformNormal(
@@ -22,6 +25,7 @@ class Player extends BABYLON.Mesh {
         );
         return posLeg;
     }
+
     public PositionHead(): BABYLON.Vector3 {
         return this.position;
     }
@@ -140,19 +144,11 @@ class Player extends BABYLON.Mesh {
         });
     }
 
-    public static WaterFilter(): void {
-        if (Player.Instance) {
-            if (
-                Player.Instance.position.lengthSquared() <
-                Player.Instance.planet.GetTotalRadiusWaterSquared()
-            ) {
-                Game.Light.diffuse = new BABYLON.Color3(0.5, 0.5, 1);
-                Player.Instance.underWater = true;
-            } else {
-                Game.Light.diffuse = new BABYLON.Color3(1, 1, 1);
-                Player.Instance.underWater = false;
-            }
-        }
+    private _downDirection: BABYLON.Vector3 = new BABYLON.Vector3(0, - 1, 0);
+    private _update = () => {
+        let deltaTime: number = Game.Engine.getDeltaTime() / 1000;
+        
+        let down = this.getDirection(BABYLON.Axis.Y).scaleInPlace(-1);
     }
 
     public static GetMovin(): void {
@@ -253,12 +249,13 @@ class Player extends BABYLON.Mesh {
         }
     }
 
+    private static _downRaycastDir: BABYLON.Vector3 = new BABYLON.Vector3(0, - 1, 0);
     public static DownRayCast(): number {
         let pos: BABYLON.Vector3 = Player.Instance.position;
-        let dir: BABYLON.Vector3 = BABYLON.Vector3.Normalize(
-            BABYLON.Vector3.Zero().subtract(Player.Instance.position)
-        );
-        let ray: BABYLON.Ray = new BABYLON.Ray(pos, dir, 1.6);
+        Player._downRaycastDir.copyFrom(this.Position());
+        Player._downRaycastDir.scaleInPlace(- 1);
+        Player._downRaycastDir.normalize();
+        let ray: BABYLON.Ray = new BABYLON.Ray(pos, Player._downRaycastDir, 1.6);
         let hit: BABYLON.PickingInfo = Game.Scene.pickWithRay(
             ray,
             (mesh: BABYLON.Mesh) => {

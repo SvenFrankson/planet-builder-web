@@ -111,14 +111,6 @@ class PlanetChunck extends BABYLON.Mesh {
         } else {
             PlanetChunck.delayBuffer.push(this);
         }
-        /*
-    let alpha: number = MeshTools.Angle(this.GetNormal(), Player.Position());
-    if (alpha < PlanetTools.ALPHALIMIT) {
-      this.PushToInitializationBuffer();
-    } else {
-      PlanetChunck.delayBuffer.push(this);
-    }
-    */
     }
 
     private PushToInitializationBuffer(): void {
@@ -138,12 +130,6 @@ class PlanetChunck extends BABYLON.Mesh {
                 PlanetChunck.initializationBuffer.splice(i, 0, this);
                 return;
             }
-            /*
-      if (iDistance < lastIDistance) {
-        let tmp: PlanetChunck = PlanetChunck.initializationBuffer[i];
-        PlanetChunck.initializationBuffer[i] = PlanetChunck.initializationBuffer[i - 1];
-        PlanetChunck.initializationBuffer[i - 1] = tmp;
-      }*/
             lastIDistance = iDistance;
         }
         PlanetChunck.initializationBuffer.push(this);
@@ -154,7 +140,7 @@ class PlanetChunck extends BABYLON.Mesh {
     }
 
     public Initialize(): void {
-        this.data = PlanetTools.RandomData();
+        this.data = PlanetTools.FilledData();
         this.SetMesh();
     }
 
@@ -168,18 +154,6 @@ class PlanetChunck extends BABYLON.Mesh {
         );
         vertexData.applyToMesh(this);
         this.material = SharedMaterials.MainMaterial();
-
-        if (this.kPos === this.planetSide.GetKPosMax()) {
-            vertexData = PlanetChunckMeshBuilder.BuildWaterVertexData(
-                this.GetSize(),
-                this.iPos,
-                this.jPos,
-                this.kPos,
-                this.GetRadiusWater()
-            );
-            vertexData.applyToMesh(this.water);
-            this.water.material = SharedMaterials.WaterMaterial();
-        }
 
         if (this.kPos === 0) {
             vertexData = PlanetChunckMeshBuilder.BuildBedrockVertexData(
