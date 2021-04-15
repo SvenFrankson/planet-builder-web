@@ -4,6 +4,7 @@ class Player extends BABYLON.Mesh {
         return Player.Instance.position;
     }
 
+    private mass: number = 1;
     private speed: number = 5;
     private velocity: BABYLON.Vector3 = BABYLON.Vector3.Zero();
 
@@ -42,6 +43,8 @@ class Player extends BABYLON.Mesh {
         Game.Camera.parent = this.camPos;
         this.RegisterControl();
         Player.Instance = this;
+        
+        Game.Scene.onBeforeRenderObservable.add(this._update);
     }
 
     public RegisterControl(): void {
@@ -97,7 +100,7 @@ class Player extends BABYLON.Mesh {
                         this.pRight = false;
                     }
                     if (event.sourceEvent.keyCode === 32) {
-                        this.fly = false;
+                        this.velocity.addInPlace(this.getDirection(BABYLON.Axis.Y).scale(5));
                     }
                 }
             )
@@ -144,65 +147,68 @@ class Player extends BABYLON.Mesh {
         });
     }
 
+    private _gravityFactor: BABYLON.Vector3 = BABYLON.Vector3.Zero();
+    private _groundReaction: BABYLON.Vector3 = BABYLON.Vector3.Zero();
+    private _controlFactor: BABYLON.Vector3 = BABYLON.Vector3.Zero();
+    private _forwardDirection: BABYLON.Vector3 = new BABYLON.Vector3(0, - 1, 0);
     private _downDirection: BABYLON.Vector3 = new BABYLON.Vector3(0, - 1, 0);
     private _update = () => {
         let deltaTime: number = Game.Engine.getDeltaTime() / 1000;
+
+        this._keepUp();
         
-        let down = this.getDirection(BABYLON.Axis.Y).scaleInPlace(-1);
+        this.getDirectionToRef(BABYLON.Axis.Y, this._downDirection);
+        this._downDirection.scaleInPlace(- 1);
+        this._downDirection.normalize();
+
+        this._gravityFactor.copyFrom(this._downDirection).scaleInPlace(9.8 * deltaTime);
+
+        this._groundReaction.copyFromFloats(0, 0, 0);
+
+        Player._downRaycastDir.copyFrom(this.position);
+        Player._downRaycastDir.scaleInPlace(- 1);
+        Player._downRaycastDir.normalize();
+        let ray: BABYLON.Ray = new BABYLON.Ray(this.position, Player._downRaycastDir, 1.6);
+        let hit: BABYLON.PickingInfo = Game.Scene.pickWithRay(
+            ray,
+            (mesh: BABYLON.Mesh) => {
+                return !(mesh instanceof Water);
+            }
+        );
+        let f = 1;
+        if (hit.pickedPoint) {
+            let d: number = hit.pickedPoint.subtract(this.position).length();
+            this._groundReaction.copyFrom(this._gravityFactor).scaleInPlace(- 1).scaleInPlace(1.5 / d);
+            if (d < 1.5) {
+                if (BABYLON.Vector3.Dot(this.velocity, this.position) < 0) {
+                    f *= d / 1.5;
+                }
+            }
+        }
+
+        this.velocity.addInPlace(this._gravityFactor);
+        this.velocity.addInPlace(this._groundReaction);
+        
+        this._controlFactor.copyFromFloats(0, 0, 0);
+        if (this.pForward) {
+            this.getDirectionToRef(BABYLON.Axis.Z, this._forwardDirection);
+            this._controlFactor.addInPlace(this._forwardDirection);
+        }
+
+        if (this._controlFactor.lengthSquared() > 0.1) {
+            this._controlFactor.normalize();
+        }
+
+        this._controlFactor.scaleInPlace(10 / this.mass * deltaTime);
+
+        this.velocity.addInPlace(this._controlFactor);
+
+        this.velocity.scaleInPlace(0.99 * f);
+
+        this.position.addInPlace(this.velocity.scale(deltaTime));
     }
 
-    public static GetMovin(): void {
-        let deltaTime: number = Game.Engine.getDeltaTime();
-        if (!Player.Instance) {
-            return;
-        }
-        if (Player.Instance.pForward) {
-            if (Player.CanGoSide(BABYLON.Axis.Z)) {
-                let localZ: BABYLON.Vector3 = BABYLON.Vector3.TransformNormal(
-                    BABYLON.Axis.Z,
-                    Player.Instance.getWorldMatrix()
-                );
-                Player.Instance.position.addInPlace(
-                    localZ.scale((deltaTime / 1000) * Player.Instance.speed)
-                );
-            }
-        }
-        if (Player.Instance.back) {
-            if (Player.CanGoSide(BABYLON.Axis.Z.scale(-1))) {
-                let localZ: BABYLON.Vector3 = BABYLON.Vector3.TransformNormal(
-                    BABYLON.Axis.Z,
-                    Player.Instance.getWorldMatrix()
-                );
-                Player.Instance.position.addInPlace(
-                    localZ.scale((-deltaTime / 1000) * Player.Instance.speed)
-                );
-            }
-        }
-        if (Player.Instance.pRight) {
-            if (Player.CanGoSide(BABYLON.Axis.X)) {
-                let localX: BABYLON.Vector3 = BABYLON.Vector3.TransformNormal(
-                    BABYLON.Axis.X,
-                    Player.Instance.getWorldMatrix()
-                );
-                Player.Instance.position.addInPlace(
-                    localX.scale((deltaTime / 1000) * Player.Instance.speed)
-                );
-            }
-        }
-        if (Player.Instance.left) {
-            if (Player.CanGoSide(BABYLON.Axis.X.scale(-1))) {
-                let localX: BABYLON.Vector3 = BABYLON.Vector3.TransformNormal(
-                    BABYLON.Axis.X,
-                    Player.Instance.getWorldMatrix()
-                );
-                Player.Instance.position.addInPlace(
-                    localX.scale((-deltaTime / 1000) * Player.Instance.speed)
-                );
-            }
-        }
-    }
-
-    public static StillStanding(): void {
+    private _keepUp(): void {
         if (!Player.Instance) {
             return;
         }
@@ -219,25 +225,8 @@ class Player extends BABYLON.Mesh {
             currentUp,
             targetUp
         );
-        let correctionAngle: number = Math.abs(
-            Math.asin(correctionAxis.length())
-        );
-        if (Player.Instance.fly) {
-            if (Player.CanGoUp()) {
-                Player.Instance.position.addInPlace(targetUp.scale(0.05));
-            }
-        } else {
-            let gravity: number = Player.DownRayCast();
-            if (gravity !== 0) {
-                let gravityFactor: number = 0.1;
-                if (Player.Instance.underWater) {
-                    gravityFactor = 0.02;
-                }
-                Player.Instance.position.addInPlace(
-                    targetUp.scale(gravity * gravityFactor)
-                );
-            }
-        }
+        let correctionAngle: number = Math.abs(Math.asin(correctionAxis.length()));
+        
         if (correctionAngle > 0.001) {
             let rotation: BABYLON.Quaternion = BABYLON.Quaternion.RotationAxis(
                 correctionAxis,

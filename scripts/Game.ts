@@ -71,8 +71,6 @@ class Game {
 		Game.Engine.runRenderLoop(() => {
 			Game.Scene.render();
 			PlanetChunck.InitializeLoop();
-			Player.StillStanding();
-			Player.GetMovin();
 			Game.AnimateSky();
 			Game.AnimateWater();
 			Game.AnimateLight();
