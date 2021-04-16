@@ -100,7 +100,11 @@ class Player extends BABYLON.Mesh {
                         this.pRight = false;
                     }
                     if (event.sourceEvent.keyCode === 32) {
-                        this.velocity.addInPlace(this.getDirection(BABYLON.Axis.Y).scale(5));
+                        if (this._isGrounded) {
+                            this.velocity.addInPlace(this.getDirection(BABYLON.Axis.Y).scale(5));
+                            this._isGrounded = false;
+                            this._jumpTimer = 0.2;
+                        }
                     }
                 }
             )
@@ -152,8 +156,14 @@ class Player extends BABYLON.Mesh {
     private _controlFactor: BABYLON.Vector3 = BABYLON.Vector3.Zero();
     private _forwardDirection: BABYLON.Vector3 = new BABYLON.Vector3(0, - 1, 0);
     private _downDirection: BABYLON.Vector3 = new BABYLON.Vector3(0, - 1, 0);
+
+    private _jumpTimer: number = 0;
+    private _isGrounded: boolean = false;
+
     private _update = () => {
         let deltaTime: number = Game.Engine.getDeltaTime() / 1000;
+
+        this._jumpTimer = Math.max(this._jumpTimer - deltaTime, 0);
 
         this._keepUp();
         
@@ -165,24 +175,23 @@ class Player extends BABYLON.Mesh {
 
         this._groundReaction.copyFromFloats(0, 0, 0);
 
-        Player._downRaycastDir.copyFrom(this.position);
-        Player._downRaycastDir.scaleInPlace(- 1);
-        Player._downRaycastDir.normalize();
-        let ray: BABYLON.Ray = new BABYLON.Ray(this.position, Player._downRaycastDir, 1.6);
-        let hit: BABYLON.PickingInfo = Game.Scene.pickWithRay(
-            ray,
-            (mesh: BABYLON.Mesh) => {
-                return !(mesh instanceof Water);
-            }
-        );
         let f = 1;
-        if (hit.pickedPoint) {
-            let d: number = hit.pickedPoint.subtract(this.position).length();
-            this._groundReaction.copyFrom(this._gravityFactor).scaleInPlace(- 1).scaleInPlace(1.5 / d);
-            if (d < 1.5) {
-                if (BABYLON.Vector3.Dot(this.velocity, this.position) < 0) {
-                    f *= d / 1.5;
+        if (this._jumpTimer === 0) {
+            Player._downRaycastDir.copyFrom(this.position);
+            Player._downRaycastDir.scaleInPlace(- 1);
+            Player._downRaycastDir.normalize();
+            let ray: BABYLON.Ray = new BABYLON.Ray(this.position, Player._downRaycastDir, 1.7);
+            let hit: BABYLON.PickingInfo = Game.Scene.pickWithRay(
+                ray,
+                (mesh: BABYLON.Mesh) => {
+                    return !(mesh instanceof Water);
                 }
+            );
+            if (hit.pickedPoint) {
+                let d: number = hit.pickedPoint.subtract(this.position).length();
+                this._groundReaction.copyFrom(this._gravityFactor).scaleInPlace(- 1).scaleInPlace(Math.pow(1.5 / d, 1));
+                f = 0.005;
+                this._isGrounded = true;
             }
         }
 
@@ -199,11 +208,17 @@ class Player extends BABYLON.Mesh {
             this._controlFactor.normalize();
         }
 
-        this._controlFactor.scaleInPlace(10 / this.mass * deltaTime);
+        this._controlFactor.scaleInPlace(40 / this.mass * deltaTime);
 
         this.velocity.addInPlace(this._controlFactor);
 
-        this.velocity.scaleInPlace(0.99 * f);
+
+        let downVelocity = this._downDirection.scale(BABYLON.Vector3.Dot(this.velocity, this._downDirection));
+
+        this.velocity.subtractInPlace(downVelocity);
+        downVelocity.scaleInPlace(Math.pow(0.75 * f, deltaTime))
+        this.velocity.scaleInPlace(Math.pow(0.01, deltaTime));
+        this.velocity.addInPlace(downVelocity);
 
         this.position.addInPlace(this.velocity.scale(deltaTime));
     }
