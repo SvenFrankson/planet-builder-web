@@ -215,7 +215,9 @@ class Player extends BABYLON.Mesh {
             );
             if (hit.pickedPoint) {
                 let d: number = hit.pickedPoint.subtract(this.position).length();
-                this._groundFactor.copyFrom(this._gravityFactor).scaleInPlace(- 1).scaleInPlace(Math.pow(1.5 / d, 1));
+                if (d > 0.01) {
+                    this._groundFactor.copyFrom(this._gravityFactor).scaleInPlace(- 1).scaleInPlace(Math.pow(1.5 / d, 1));
+                }
                 fVert = 0.005;
                 this._isGrounded = true;
             }
@@ -251,7 +253,7 @@ class Player extends BABYLON.Mesh {
             let pos = this._collisionPositions[i];
             for (let j = 0; j < this._collisionAxis.length; j++) {
                 let axis = this._collisionAxis[j];
-                let ray: BABYLON.Ray = new BABYLON.Ray(pos, axis, 0.30);
+                let ray: BABYLON.Ray = new BABYLON.Ray(pos, axis, 0.35);
                 let hit: BABYLON.PickingInfo = Game.Scene.pickWithRay(
                     ray,
                     (mesh: BABYLON.Mesh) => {
@@ -260,9 +262,13 @@ class Player extends BABYLON.Mesh {
                 );
                 if (hit.pickedPoint) {
                     let d: number = hit.pickedPoint.subtract(pos).length();
-                    if (d > 0) {
-                        this._surfaceFactor.addInPlace((axis).scale(- 10 / this.mass * 0.25 / d * deltaTime));
+                    if (d > 0.01) {
+                        this._surfaceFactor.addInPlace((axis).scale(- 10 / this.mass * 0.30 / d * deltaTime));
                         fLat = 0.1;
+                    }
+                    else {
+                        // In case where it stuck to the surface, force push.
+                        this.position.addInPlace(hit.getNormal(true).scale(0.01));
                     }
                 }
             }
@@ -276,6 +282,10 @@ class Player extends BABYLON.Mesh {
         this.velocity.scaleInPlace(Math.pow(0.01 * fLat, deltaTime));
         this.velocity.addInPlace(downVelocity);
 
+        // Safety check.
+        if (!VMath.IsFinite(this.velocity)) {
+            this.velocity.copyFromFloats(- 0.1 + 0.2 * Math.random(), - 0.1 + 0.2 * Math.random(), - 0.1 + 0.2 * Math.random());
+        }
         this.position.addInPlace(this.velocity.scale(deltaTime));
     }
 

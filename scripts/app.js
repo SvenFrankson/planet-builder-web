@@ -79,7 +79,7 @@ window.addEventListener("DOMContentLoaded", () => {
     game.createScene();
     game.animate();
     PlanetEditor.RegisterControl();
-    let planetTest = new Planet("Paulita", 1);
+    let planetTest = new Planet("Paulita", 2);
     new Player(new BABYLON.Vector3(0, 64, 0), planetTest);
     planetTest.AsyncInitialize();
     Game.Canvas.addEventListener("pointerup", (event) => {
@@ -349,7 +349,20 @@ class PlanetChunck extends BABYLON.Mesh {
         this.PushToBuffer();
     }
     Initialize() {
-        this.data = PlanetTools.FilledData();
+        if (this.kPos < this.GetKPosMax()) {
+            this.data = PlanetTools.FilledData();
+        }
+        else {
+            this.data = PlanetTools.Data((i, j, k) => {
+                let h = PlanetTools.CHUNCKSIZE / 2 + 2 * Math.cos(i * 6) + 2 * Math.sin(j * 3);
+                if (k < h) {
+                    return Math.floor(128 + 9 + Math.floor(4 * Math.random()));
+                }
+                else {
+                    return 0;
+                }
+            });
+        }
         this.SetMesh();
     }
     SetMesh() {
@@ -809,6 +822,19 @@ class PlanetTools {
         let zRad = -PI4 + PI2 * (i / size);
         return new BABYLON.Vector3(Math.tan(xRad), Math.tan(yRad), Math.tan(zRad)).normalize();
     }
+    static Data(callback) {
+        let data = [];
+        for (let i = 0; i < PlanetTools.CHUNCKSIZE; i++) {
+            data[i] = [];
+            for (let j = 0; j < PlanetTools.CHUNCKSIZE; j++) {
+                data[i][j] = [];
+                for (let k = 0; k < PlanetTools.CHUNCKSIZE; k++) {
+                    data[i][j][k] = callback(i, j, k);
+                }
+            }
+        }
+        return data;
+    }
     static FilledData() {
         let data = [];
         for (let i = 0; i < PlanetTools.CHUNCKSIZE; i++) {
@@ -1068,7 +1094,9 @@ class Player extends BABYLON.Mesh {
                 });
                 if (hit.pickedPoint) {
                     let d = hit.pickedPoint.subtract(this.position).length();
-                    this._groundFactor.copyFrom(this._gravityFactor).scaleInPlace(-1).scaleInPlace(Math.pow(1.5 / d, 1));
+                    if (d > 0.01) {
+                        this._groundFactor.copyFrom(this._gravityFactor).scaleInPlace(-1).scaleInPlace(Math.pow(1.5 / d, 1));
+                    }
                     fVert = 0.005;
                     this._isGrounded = true;
                 }
@@ -1101,15 +1129,19 @@ class Player extends BABYLON.Mesh {
                 let pos = this._collisionPositions[i];
                 for (let j = 0; j < this._collisionAxis.length; j++) {
                     let axis = this._collisionAxis[j];
-                    let ray = new BABYLON.Ray(pos, axis, 0.30);
+                    let ray = new BABYLON.Ray(pos, axis, 0.35);
                     let hit = Game.Scene.pickWithRay(ray, (mesh) => {
                         return mesh instanceof PlanetChunck;
                     });
                     if (hit.pickedPoint) {
                         let d = hit.pickedPoint.subtract(pos).length();
-                        if (d > 0) {
-                            this._surfaceFactor.addInPlace((axis).scale(-10 / this.mass * 0.25 / d * deltaTime));
+                        if (d > 0.01) {
+                            this._surfaceFactor.addInPlace((axis).scale(-10 / this.mass * 0.30 / d * deltaTime));
                             fLat = 0.1;
+                        }
+                        else {
+                            // In case where it stuck to the surface, force push.
+                            this.position.addInPlace(hit.getNormal(true).scale(0.01));
                         }
                     }
                 }
@@ -1121,6 +1153,10 @@ class Player extends BABYLON.Mesh {
             downVelocity.scaleInPlace(Math.pow(0.5 * fVert, deltaTime));
             this.velocity.scaleInPlace(Math.pow(0.01 * fLat, deltaTime));
             this.velocity.addInPlace(downVelocity);
+            // Safety check.
+            if (!VMath.IsFinite(this.velocity)) {
+                this.velocity.copyFromFloats(-0.1 + 0.2 * Math.random(), -0.1 + 0.2 * Math.random(), -0.1 + 0.2 * Math.random());
+            }
             this.position.addInPlace(this.velocity.scale(deltaTime));
         };
         console.log("Create Player");
@@ -1293,6 +1329,14 @@ class SharedMaterials {
             SharedMaterials.skyMaterial.specularColor = BABYLON.Color3.Black();
         }
         return SharedMaterials.skyMaterial;
+    }
+}
+class VMath {
+    static IsFinite(o) {
+        if (o instanceof BABYLON.Vector3) {
+            return isFinite(o.x) && isFinite(o.y) && isFinite(o.z);
+        }
+        return false;
     }
 }
 class Water extends BABYLON.Mesh {

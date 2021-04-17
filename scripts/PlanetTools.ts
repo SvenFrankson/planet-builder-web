@@ -67,6 +67,22 @@ class PlanetTools {
         return new BABYLON.Vector3(Math.tan(xRad), Math.tan(yRad), Math.tan(zRad)).normalize();
     }
 
+    public static Data(callback: (i: number, j: number, k: number) => number): number[][][] {
+        let data: number[][][] = [];
+
+        for (let i: number = 0; i < PlanetTools.CHUNCKSIZE; i++) {
+            data[i] = [];
+            for (let j: number = 0; j < PlanetTools.CHUNCKSIZE; j++) {
+                data[i][j] = [];
+                for (let k: number = 0; k < PlanetTools.CHUNCKSIZE; k++) {
+                    data[i][j][k] = callback(i, j, k);
+                }
+            }
+        }
+        
+        return data;
+    }
+
     public static FilledData(): number[][][] {
         let data: number[][][] = [];
 
@@ -79,6 +95,7 @@ class PlanetTools {
                 }
             }
         }
+        
         return data;
     }
 
@@ -91,12 +108,14 @@ class PlanetTools {
                 for (let k: number = 0; k < PlanetTools.CHUNCKSIZE; k++) {
                     if (Math.random() < 0.5) {
                         data[i][j][k] = 0;
-                    } else {
+                    }
+                    else {
                         data[i][j][k] = Math.floor(Math.random() * 7 + 129);
                     }
                 }
             }
         }
+        
         return data;
     }
 

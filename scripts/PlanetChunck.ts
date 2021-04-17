@@ -140,7 +140,20 @@ class PlanetChunck extends BABYLON.Mesh {
     }
 
     public Initialize(): void {
-        this.data = PlanetTools.FilledData();
+        if (this.kPos < this.GetKPosMax()) {
+            this.data = PlanetTools.FilledData();
+        }
+        else {
+            this.data = PlanetTools.Data((i, j, k) => {
+                let h = PlanetTools.CHUNCKSIZE / 2 + 2 * Math.cos(i * 6) + 2 * Math.sin(j * 3);
+                if (k < h) {
+                    return Math.floor(128 + 9 + Math.floor(4 * Math.random()));
+                }
+                else {
+                    return 0;
+                }
+            });
+        }
         this.SetMesh();
     }
 
