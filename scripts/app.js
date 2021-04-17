@@ -39,6 +39,7 @@ class Game {
             Game.AnimateSky();
             Game.AnimateWater();
             Game.AnimateLight();
+            Game.PlanetEditor.update();
         });
         window.addEventListener("resize", () => {
             Game.Engine.resize();
@@ -77,11 +78,12 @@ Game.ClientYOnLock = -1;
 window.addEventListener("DOMContentLoaded", () => {
     let game = new Game("renderCanvas");
     game.createScene();
-    game.animate();
     PlanetEditor.RegisterControl();
     let planetTest = new Planet("Paulita", 2);
     new Player(new BABYLON.Vector3(0, 64, 0), planetTest);
     planetTest.AsyncInitialize();
+    Game.PlanetEditor = new PlanetEditor(planetTest);
+    game.animate();
     Game.Canvas.addEventListener("pointerup", (event) => {
         if (!Game.LockedMouse) {
             Game.LockMouse(event);
@@ -354,7 +356,7 @@ class PlanetChunck extends BABYLON.Mesh {
         }
         else {
             this.data = PlanetTools.Data((i, j, k) => {
-                let h = PlanetTools.CHUNCKSIZE / 2 + 2 * Math.cos(i * 6) + 2 * Math.sin(j * 3);
+                let h = PlanetTools.CHUNCKSIZE / 2 + 1.5 * Math.cos(i * 6) + 1.5 * Math.sin(j * 3);
                 if (k < h) {
                     return Math.floor(128 + 9 + Math.floor(4 * Math.random()));
                 }
@@ -446,6 +448,76 @@ class PlanetChunckMeshBuilder {
         }
         out.copyFrom(PlanetChunckMeshBuilder.cachedVertices[size][i][j]);
         return out;
+    }
+    static BuildBlockVertexData(size, iGlobal, jGlobal, hGlobal, data, scale = 1) {
+        let vertexData = new BABYLON.VertexData();
+        if (!PlanetChunckMeshBuilder.tmpVertices) {
+            PlanetChunckMeshBuilder.tmpVertices = [];
+            for (let i = 0; i < 8; i++) {
+                PlanetChunckMeshBuilder.tmpVertices[i] = BABYLON.Vector3.Zero();
+            }
+        }
+        else {
+            for (let i = 0; i < 8; i++) {
+                PlanetChunckMeshBuilder.tmpVertices[i].copyFromFloats(0, 0, 0);
+            }
+        }
+        let positions = [];
+        let indices = [];
+        let uvs = [];
+        let colors = [];
+        PlanetChunckMeshBuilder.GetVertexToRef(size, iGlobal, jGlobal, PlanetChunckMeshBuilder.tmpVertices[0]);
+        PlanetChunckMeshBuilder.GetVertexToRef(size, iGlobal, jGlobal + 1, PlanetChunckMeshBuilder.tmpVertices[1]);
+        PlanetChunckMeshBuilder.GetVertexToRef(size, iGlobal + 1, jGlobal, PlanetChunckMeshBuilder.tmpVertices[2]);
+        PlanetChunckMeshBuilder.GetVertexToRef(size, iGlobal + 1, jGlobal + 1, PlanetChunckMeshBuilder.tmpVertices[3]);
+        let h = (hGlobal + 1) * PlanetTools.BLOCKSIZE;
+        PlanetChunckMeshBuilder.tmpVertices[0].scaleToRef(h, PlanetChunckMeshBuilder.tmpVertices[4]);
+        PlanetChunckMeshBuilder.tmpVertices[1].scaleToRef(h, PlanetChunckMeshBuilder.tmpVertices[5]);
+        PlanetChunckMeshBuilder.tmpVertices[2].scaleToRef(h, PlanetChunckMeshBuilder.tmpVertices[6]);
+        PlanetChunckMeshBuilder.tmpVertices[3].scaleToRef(h, PlanetChunckMeshBuilder.tmpVertices[7]);
+        PlanetChunckMeshBuilder.tmpVertices[0].scaleInPlace(h - PlanetTools.BLOCKSIZE);
+        PlanetChunckMeshBuilder.tmpVertices[1].scaleInPlace(h - PlanetTools.BLOCKSIZE);
+        PlanetChunckMeshBuilder.tmpVertices[2].scaleInPlace(h - PlanetTools.BLOCKSIZE);
+        PlanetChunckMeshBuilder.tmpVertices[3].scaleInPlace(h - PlanetTools.BLOCKSIZE);
+        if (scale != 1) {
+            this._tmpBlockCenter.copyFrom(PlanetChunckMeshBuilder.tmpVertices[0]);
+            for (let v = 1; v < PlanetChunckMeshBuilder.tmpVertices.length; v++) {
+                this._tmpBlockCenter.addInPlace(PlanetChunckMeshBuilder.tmpVertices[v]);
+            }
+            this._tmpBlockCenter.scaleInPlace(1 / PlanetChunckMeshBuilder.tmpVertices.length);
+            for (let v = 0; v < PlanetChunckMeshBuilder.tmpVertices.length; v++) {
+                PlanetChunckMeshBuilder.tmpVertices[v].subtractInPlace(this._tmpBlockCenter);
+                PlanetChunckMeshBuilder.tmpVertices[v].scaleInPlace(scale);
+                PlanetChunckMeshBuilder.tmpVertices[v].addInPlace(this._tmpBlockCenter);
+            }
+        }
+        let c = PlanetChunckMeshBuilder.BlockColor.get(data);
+        MeshTools.PushQuad(PlanetChunckMeshBuilder.tmpVertices, 1, 5, 4, 0, positions, indices);
+        MeshTools.PushSideQuadUvs(data, uvs);
+        MeshTools.PushQuadColor(c.r, c.g, c.b, 1, colors);
+        MeshTools.PushQuad(PlanetChunckMeshBuilder.tmpVertices, 0, 4, 6, 2, positions, indices);
+        MeshTools.PushSideQuadUvs(data, uvs);
+        MeshTools.PushQuadColor(c.r, c.g, c.b, 1, colors);
+        MeshTools.PushQuad(PlanetChunckMeshBuilder.tmpVertices, 0, 2, 3, 1, positions, indices);
+        MeshTools.PushTopQuadUvs(data, uvs);
+        MeshTools.PushQuadColor(c.r, c.g, c.b, 1, colors);
+        MeshTools.PushQuad(PlanetChunckMeshBuilder.tmpVertices, 2, 6, 7, 3, positions, indices);
+        MeshTools.PushSideQuadUvs(data, uvs);
+        MeshTools.PushQuadColor(c.r, c.g, c.b, 1, colors);
+        MeshTools.PushQuad(PlanetChunckMeshBuilder.tmpVertices, 3, 7, 5, 1, positions, indices);
+        MeshTools.PushSideQuadUvs(data, uvs);
+        MeshTools.PushQuadColor(c.r, c.g, c.b, 1, colors);
+        MeshTools.PushQuad(PlanetChunckMeshBuilder.tmpVertices, 4, 5, 7, 6, positions, indices);
+        MeshTools.PushTopQuadUvs(data, uvs);
+        MeshTools.PushQuadColor(c.r, c.g, c.b, 1, colors);
+        let normals = [];
+        vertexData.positions = positions;
+        vertexData.indices = indices;
+        vertexData.uvs = uvs;
+        vertexData.colors = colors;
+        BABYLON.VertexData.ComputeNormals(positions, indices, normals);
+        vertexData.normals = normals;
+        return vertexData;
     }
     static BuildVertexData(size, iPos, jPos, kPos, data) {
         let vertexData = new BABYLON.VertexData();
@@ -594,12 +666,16 @@ class PlanetChunckMeshBuilder {
         return vertexData;
     }
 }
-class PlanetEditor extends BABYLON.Mesh {
+PlanetChunckMeshBuilder._tmpBlockCenter = BABYLON.Vector3.Zero();
+class PlanetEditor {
+    constructor(planet) {
+        this.planet = planet;
+    }
     static GetHitWorldPos(remove = false) {
         console.log("Canvas Width : " + Game.Canvas.width);
         console.log("Canvas Height : " + Game.Canvas.height);
         let pickInfo = Game.Scene.pick(Game.Canvas.width / 2, Game.Canvas.height / 2, (mesh) => {
-            return !(mesh instanceof Water);
+            return !(mesh instanceof Water) && !(mesh.name === "preview-mesh");
         });
         if (pickInfo.hit) {
             if (pickInfo.pickedMesh instanceof PlanetChunck) {
@@ -612,19 +688,51 @@ class PlanetEditor extends BABYLON.Mesh {
         }
         return undefined;
     }
+    update() {
+        let removeMode = PlanetEditor.data === 0;
+        let worldPos = PlanetEditor.GetHitWorldPos(removeMode);
+        console.log("WorldPos : " + worldPos);
+        if (worldPos) {
+            if (PlanetEditor.data === 0 || worldPos.subtract(Player.Instance.PositionHead()).lengthSquared() > 1) {
+                if (PlanetEditor.data === 0 || worldPos.subtract(Player.Instance.PositionLeg()).lengthSquared() > 1) {
+                    let planetSide = PlanetTools.WorldPositionToPlanetSide(this.planet, worldPos);
+                    console.log("PlanetSide : " + Side[planetSide.side]);
+                    if (planetSide) {
+                        let global = PlanetTools.WorldPositionToGlobalIJK(planetSide, worldPos);
+                        console.log("Globals : " + JSON.stringify(global));
+                        let local = PlanetTools.GlobalIJKToLocalIJK(planetSide, global);
+                        console.log("Chunck : " +
+                            JSON.stringify(local.planetChunck.Position()));
+                        console.log("Block : I=" +
+                            local.i +
+                            " , J=" +
+                            local.j +
+                            " , K=" +
+                            local.k);
+                        if (!this._previewMesh) {
+                            this._previewMesh = new BABYLON.Mesh("preview-mesh");
+                            this._previewMesh.visibility = 0.5;
+                        }
+                        let vertexData = PlanetChunckMeshBuilder.BuildBlockVertexData(PlanetTools.DegreeToSize(PlanetTools.KGlobalToDegree(global.k)), global.i, global.j, global.k, 140, 1.1);
+                        vertexData.applyToMesh(this._previewMesh);
+                        this._previewMesh.rotationQuaternion = PlanetTools.QuaternionForSide(planetSide.side);
+                        return;
+                    }
+                }
+            }
+        }
+        if (this._previewMesh) {
+            this._previewMesh.dispose();
+            this._previewMesh = undefined;
+        }
+    }
     static OnClick(planet) {
         let removeMode = PlanetEditor.data === 0;
         let worldPos = PlanetEditor.GetHitWorldPos(removeMode);
         console.log("WorldPos : " + worldPos);
         if (worldPos) {
-            if (PlanetEditor.data === 0 ||
-                worldPos
-                    .subtract(Player.Instance.PositionHead())
-                    .lengthSquared() > 1) {
-                if (PlanetEditor.data === 0 ||
-                    worldPos
-                        .subtract(Player.Instance.PositionLeg())
-                        .lengthSquared() > 1) {
+            if (PlanetEditor.data === 0 || worldPos.subtract(Player.Instance.PositionHead()).lengthSquared() > 1) {
+                if (PlanetEditor.data === 0 || worldPos.subtract(Player.Instance.PositionLeg()).lengthSquared() > 1) {
                     let planetSide = PlanetTools.WorldPositionToPlanetSide(planet, worldPos);
                     console.log("PlanetSide : " + Side[planetSide.side]);
                     if (planetSide) {

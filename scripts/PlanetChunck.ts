@@ -145,7 +145,7 @@ class PlanetChunck extends BABYLON.Mesh {
         }
         else {
             this.data = PlanetTools.Data((i, j, k) => {
-                let h = PlanetTools.CHUNCKSIZE / 2 + 2 * Math.cos(i * 6) + 2 * Math.sin(j * 3);
+                let h = PlanetTools.CHUNCKSIZE / 2 + 1.5 * Math.cos(i * 6) + 1.5 * Math.sin(j * 3);
                 if (k < h) {
                     return Math.floor(128 + 9 + Math.floor(4 * Math.random()));
                 }

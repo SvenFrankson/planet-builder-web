@@ -8,6 +8,7 @@ class Game {
 	public static Camera: BABYLON.Camera;
 	public static Light: BABYLON.HemisphericLight;
 	public static Sky: BABYLON.Mesh;
+	public static PlanetEditor: PlanetEditor;
 
 	public static LockedMouse: boolean = false;
 	public static ClientXOnLock: number = -1;
@@ -74,6 +75,7 @@ class Game {
 			Game.AnimateSky();
 			Game.AnimateWater();
 			Game.AnimateLight();
+			Game.PlanetEditor.update();
 		});
 
 		window.addEventListener("resize", () => {
@@ -115,7 +117,6 @@ class Game {
 window.addEventListener("DOMContentLoaded", () => {
 	let game: Game = new Game("renderCanvas");
 	game.createScene();
-	game.animate();
 
 	PlanetEditor.RegisterControl();
 
@@ -124,6 +125,10 @@ window.addEventListener("DOMContentLoaded", () => {
 	new Player(new BABYLON.Vector3(0, 64, 0), planetTest);
 
 	planetTest.AsyncInitialize();
+
+	Game.PlanetEditor = new PlanetEditor(planetTest);
+	
+	game.animate();
 
 	Game.Canvas.addEventListener("pointerup", (event: MouseEvent) => {
 		if (!Game.LockedMouse) {

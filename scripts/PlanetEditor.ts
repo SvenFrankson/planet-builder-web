@@ -1,4 +1,4 @@
-class PlanetEditor extends BABYLON.Mesh {
+class PlanetEditor {
     public static data: number = 0;
 
     public static GetHitWorldPos(remove: boolean = false): BABYLON.Vector3 {
@@ -8,7 +8,7 @@ class PlanetEditor extends BABYLON.Mesh {
             Game.Canvas.width / 2,
             Game.Canvas.height / 2,
             (mesh: BABYLON.Mesh) => {
-                return !(mesh instanceof Water);
+                return !(mesh instanceof Water) && !(mesh.name === "preview-mesh");
             }
         );
         if (pickInfo.hit) {
@@ -25,37 +25,29 @@ class PlanetEditor extends BABYLON.Mesh {
         return undefined;
     }
 
-    public static OnClick(planet: Planet): void {
+    constructor(
+        public planet: Planet
+    ) {
+
+    }
+
+    private _previewMesh: BABYLON.Mesh;
+    public update(): void {
         let removeMode: boolean = PlanetEditor.data === 0;
         let worldPos: BABYLON.Vector3 = PlanetEditor.GetHitWorldPos(removeMode);
         console.log("WorldPos : " + worldPos);
+
         if (worldPos) {
-            if (
-                PlanetEditor.data === 0 ||
-                worldPos
-                    .subtract(Player.Instance.PositionHead())
-                    .lengthSquared() > 1
-            ) {
-                if (
-                    PlanetEditor.data === 0 ||
-                    worldPos
-                        .subtract(Player.Instance.PositionLeg())
-                        .lengthSquared() > 1
-                ) {
-                    let planetSide: PlanetSide = PlanetTools.WorldPositionToPlanetSide(
-                        planet,
-                        worldPos
-                    );
+            if (PlanetEditor.data === 0 || worldPos.subtract(Player.Instance.PositionHead()).lengthSquared() > 1) {
+                if (PlanetEditor.data === 0 || worldPos.subtract(Player.Instance.PositionLeg()).lengthSquared() > 1) {
+                    let planetSide: PlanetSide = PlanetTools.WorldPositionToPlanetSide(this.planet, worldPos);
                     console.log("PlanetSide : " + Side[planetSide.side]);
                     if (planetSide) {
                         let global: {
                             i: number;
                             j: number;
                             k: number;
-                        } = PlanetTools.WorldPositionToGlobalIJK(
-                            planetSide,
-                            worldPos
-                        );
+                        } = PlanetTools.WorldPositionToGlobalIJK(planetSide, worldPos);
                         console.log("Globals : " + JSON.stringify(global));
                         let local: {
                             planetChunck: PlanetChunck;
@@ -75,12 +67,62 @@ class PlanetEditor extends BABYLON.Mesh {
                                 " , K=" +
                                 local.k
                         );
-                        local.planetChunck.SetData(
-                            local.i,
-                            local.j,
-                            local.k,
-                            PlanetEditor.data
+                        if (!this._previewMesh) {
+                            this._previewMesh = new BABYLON.Mesh("preview-mesh");
+                            this._previewMesh.visibility = 0.5;
+                        }
+                        let vertexData = PlanetChunckMeshBuilder.BuildBlockVertexData(PlanetTools.DegreeToSize(PlanetTools.KGlobalToDegree(global.k)), global.i, global.j, global.k, 140, 1.1);
+                        vertexData.applyToMesh(this._previewMesh);
+                        this._previewMesh.rotationQuaternion = PlanetTools.QuaternionForSide(planetSide.side);
+                        return;
+                    }
+                }
+            }
+        }
+        if (this._previewMesh) {
+            this._previewMesh.dispose();
+            this._previewMesh = undefined;
+        }
+    }
+
+    public static OnClick(planet: Planet): void {
+        let removeMode: boolean = PlanetEditor.data === 0;
+        let worldPos: BABYLON.Vector3 = PlanetEditor.GetHitWorldPos(removeMode);
+        console.log("WorldPos : " + worldPos);
+        if (worldPos) {
+            if (PlanetEditor.data === 0 || worldPos.subtract(Player.Instance.PositionHead()).lengthSquared() > 1) {
+                if (PlanetEditor.data === 0 || worldPos.subtract(Player.Instance.PositionLeg()).lengthSquared() > 1) {
+                    let planetSide: PlanetSide = PlanetTools.WorldPositionToPlanetSide(
+                        planet,
+                        worldPos
+                    );
+                    console.log("PlanetSide : " + Side[planetSide.side]);
+                    if (planetSide) {
+                        let global: {
+                            i: number;
+                            j: number;
+                            k: number;
+                        } = PlanetTools.WorldPositionToGlobalIJK(planetSide, worldPos);
+                        console.log("Globals : " + JSON.stringify(global));
+                        let local: {
+                            planetChunck: PlanetChunck;
+                            i: number;
+                            j: number;
+                            k: number;
+                        } = PlanetTools.GlobalIJKToLocalIJK(planetSide, global);
+                        console.log(
+                            "Chunck : " +
+                                JSON.stringify(local.planetChunck.Position())
                         );
+                        console.log(
+                            "Block : I=" +
+                                local.i +
+                                " , J=" +
+                                local.j +
+                                " , K=" +
+                                local.k
+                        );
+                        local.planetChunck.SetData(local.i, local.j, local.k, PlanetEditor.data);
                         local.planetChunck.SetMesh();
                     }
                 }
