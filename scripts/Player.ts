@@ -152,10 +152,21 @@ class Player extends BABYLON.Mesh {
     }
 
     private _gravityFactor: BABYLON.Vector3 = BABYLON.Vector3.Zero();
-    private _groundReaction: BABYLON.Vector3 = BABYLON.Vector3.Zero();
+    private _groundFactor: BABYLON.Vector3 = BABYLON.Vector3.Zero();
+    private _surfaceFactor: BABYLON.Vector3 = BABYLON.Vector3.Zero();
     private _controlFactor: BABYLON.Vector3 = BABYLON.Vector3.Zero();
-    private _forwardDirection: BABYLON.Vector3 = new BABYLON.Vector3(0, - 1, 0);
+
+    private _rightDirection: BABYLON.Vector3 = new BABYLON.Vector3(1, 0, 0);
+    private _leftDirection: BABYLON.Vector3 = new BABYLON.Vector3(- 1, 0, 0);
+    private _upDirection: BABYLON.Vector3 = new BABYLON.Vector3(0, 1, 0);
     private _downDirection: BABYLON.Vector3 = new BABYLON.Vector3(0, - 1, 0);
+    private _forwardDirection: BABYLON.Vector3 = new BABYLON.Vector3(0, 0, 1);
+    private _backwardDirection: BABYLON.Vector3 = new BABYLON.Vector3(0, 0, - 1);
+    
+    private _feetPosition: BABYLON.Vector3 = BABYLON.Vector3.Zero();
+
+    private _collisionAxis: BABYLON.Vector3[] = [];
+    private _collisionPositions: BABYLON.Vector3[] = [];
 
     private _jumpTimer: number = 0;
     private _isGrounded: boolean = false;
@@ -166,21 +177,36 @@ class Player extends BABYLON.Mesh {
         this._jumpTimer = Math.max(this._jumpTimer - deltaTime, 0);
 
         this._keepUp();
+
+        this._collisionPositions[0] = this.position;
+        this._collisionPositions[1] = this._feetPosition;
+        this._collisionAxis[0] = this._rightDirection;
+        this._collisionAxis[1] = this._leftDirection;
+        this._collisionAxis[2] = this._forwardDirection;
+        this._collisionAxis[3] = this._backwardDirection;
         
-        this.getDirectionToRef(BABYLON.Axis.Y, this._downDirection);
+        this.getDirectionToRef(BABYLON.Axis.X, this._rightDirection);
+        this._leftDirection.copyFrom(this._rightDirection);
+        this._leftDirection.scaleInPlace(- 1);
+
+        this._upDirection.copyFrom(this.position);
+        this._upDirection.normalize();
+        this._downDirection.copyFrom(this._upDirection);
         this._downDirection.scaleInPlace(- 1);
-        this._downDirection.normalize();
 
+        this.getDirectionToRef(BABYLON.Axis.Z, this._forwardDirection);
+        this._backwardDirection.copyFrom(this._forwardDirection);
+        this._backwardDirection.scaleInPlace(- 1);
+
+        this._feetPosition.copyFrom(this.position);
+        this._feetPosition.addInPlace(this._downDirection);
+
+        // Add gravity and ground reaction.
         this._gravityFactor.copyFrom(this._downDirection).scaleInPlace(9.8 * deltaTime);
-
-        this._groundReaction.copyFromFloats(0, 0, 0);
-
-        let f = 1;
+        this._groundFactor.copyFromFloats(0, 0, 0);
+        let fVert = 1;
         if (this._jumpTimer === 0) {
-            Player._downRaycastDir.copyFrom(this.position);
-            Player._downRaycastDir.scaleInPlace(- 1);
-            Player._downRaycastDir.normalize();
-            let ray: BABYLON.Ray = new BABYLON.Ray(this.position, Player._downRaycastDir, 1.7);
+            let ray: BABYLON.Ray = new BABYLON.Ray(this.position, this._downDirection, 1.7);
             let hit: BABYLON.PickingInfo = Game.Scene.pickWithRay(
                 ray,
                 (mesh: BABYLON.Mesh) => {
@@ -189,35 +215,65 @@ class Player extends BABYLON.Mesh {
             );
             if (hit.pickedPoint) {
                 let d: number = hit.pickedPoint.subtract(this.position).length();
-                this._groundReaction.copyFrom(this._gravityFactor).scaleInPlace(- 1).scaleInPlace(Math.pow(1.5 / d, 1));
-                f = 0.005;
+                this._groundFactor.copyFrom(this._gravityFactor).scaleInPlace(- 1).scaleInPlace(Math.pow(1.5 / d, 1));
+                fVert = 0.005;
                 this._isGrounded = true;
             }
         }
 
         this.velocity.addInPlace(this._gravityFactor);
-        this.velocity.addInPlace(this._groundReaction);
+        this.velocity.addInPlace(this._groundFactor);
         
+        // Add input force.
         this._controlFactor.copyFromFloats(0, 0, 0);
+        if (this.pRight) {
+            this._controlFactor.addInPlace(this._rightDirection);
+        }
+        if (this.left) {
+            this._controlFactor.addInPlace(this._leftDirection);
+        }
         if (this.pForward) {
-            this.getDirectionToRef(BABYLON.Axis.Z, this._forwardDirection);
             this._controlFactor.addInPlace(this._forwardDirection);
         }
-
+        if (this.back) {
+            this._controlFactor.addInPlace(this._backwardDirection);
+        }
         if (this._controlFactor.lengthSquared() > 0.1) {
             this._controlFactor.normalize();
         }
-
-        this._controlFactor.scaleInPlace(40 / this.mass * deltaTime);
-
+        this._controlFactor.scaleInPlace(20 / this.mass * deltaTime);
         this.velocity.addInPlace(this._controlFactor);
 
+        // Check wall collisions.
+        let fLat = 1;
+        this._surfaceFactor.copyFromFloats(0, 0, 0);
+        for (let i = 0; i < this._collisionPositions.length; i++) {
+            let pos = this._collisionPositions[i];
+            for (let j = 0; j < this._collisionAxis.length; j++) {
+                let axis = this._collisionAxis[j];
+                let ray: BABYLON.Ray = new BABYLON.Ray(pos, axis, 0.30);
+                let hit: BABYLON.PickingInfo = Game.Scene.pickWithRay(
+                    ray,
+                    (mesh: BABYLON.Mesh) => {
+                        return mesh instanceof PlanetChunck;
+                    }
+                );
+                if (hit.pickedPoint) {
+                    let d: number = hit.pickedPoint.subtract(pos).length();
+                    if (d > 0) {
+                        this._surfaceFactor.addInPlace((axis).scale(- 10 / this.mass * 0.25 / d * deltaTime));
+                        fLat = 0.1;
+                    }
+                }
+            }
+        }
+        this.velocity.addInPlace(this._surfaceFactor);
 
+        // Add friction
         let downVelocity = this._downDirection.scale(BABYLON.Vector3.Dot(this.velocity, this._downDirection));
-
         this.velocity.subtractInPlace(downVelocity);
-        downVelocity.scaleInPlace(Math.pow(0.75 * f, deltaTime))
-        this.velocity.scaleInPlace(Math.pow(0.01, deltaTime));
+        downVelocity.scaleInPlace(Math.pow(0.5 * fVert, deltaTime))
+        this.velocity.scaleInPlace(Math.pow(0.01 * fLat, deltaTime));
         this.velocity.addInPlace(downVelocity);
 
         this.position.addInPlace(this.velocity.scale(deltaTime));
@@ -251,29 +307,6 @@ class Player extends BABYLON.Mesh {
                 Player.Instance.rotationQuaternion
             );
         }
-    }
-
-    private static _downRaycastDir: BABYLON.Vector3 = new BABYLON.Vector3(0, - 1, 0);
-    public static DownRayCast(): number {
-        let pos: BABYLON.Vector3 = Player.Instance.position;
-        Player._downRaycastDir.copyFrom(this.Position());
-        Player._downRaycastDir.scaleInPlace(- 1);
-        Player._downRaycastDir.normalize();
-        let ray: BABYLON.Ray = new BABYLON.Ray(pos, Player._downRaycastDir, 1.6);
-        let hit: BABYLON.PickingInfo = Game.Scene.pickWithRay(
-            ray,
-            (mesh: BABYLON.Mesh) => {
-                return !(mesh instanceof Water);
-            }
-        );
-        if (!hit.pickedPoint) {
-            return -1;
-        }
-        let d: number = hit.pickedPoint.subtract(pos).length();
-        if (d < 1.5) {
-            return 1;
-        }
-        return 0;
     }
 
     public static CanGoSide(axis: BABYLON.Vector3): boolean {
