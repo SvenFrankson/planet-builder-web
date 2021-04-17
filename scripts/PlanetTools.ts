@@ -8,15 +8,15 @@ class PlanetTools {
     public static readonly CHUNCKSIZE = 16;
     public static readonly ALPHALIMIT = Math.PI / 4;
     public static readonly DISTANCELIMITSQUARED = 128 * 128;
-    private static emptyVertexData: BABYLON.VertexData;
 
+    private static _emptyVertexData: BABYLON.VertexData;
     public static EmptyVertexData(): BABYLON.VertexData {
-        if (!PlanetTools.emptyVertexData) {
+        if (!PlanetTools._emptyVertexData) {
             let emptyMesh: BABYLON.Mesh = new BABYLON.Mesh("Empty", Game.Scene);
-            PlanetTools.emptyVertexData = BABYLON.VertexData.ExtractFromMesh(emptyMesh);
+            PlanetTools._emptyVertexData = BABYLON.VertexData.ExtractFromMesh(emptyMesh);
             emptyMesh.dispose();
         }
-        return PlanetTools.emptyVertexData;
+        return PlanetTools._emptyVertexData;
     }
 
     public static QuaternionForSide(side: Side): BABYLON.Quaternion {
@@ -75,7 +75,7 @@ class PlanetTools {
             for (let j: number = 0; j < PlanetTools.CHUNCKSIZE; j++) {
                 data[i][j] = [];
                 for (let k: number = 0; k < PlanetTools.CHUNCKSIZE; k++) {
-                    data[i][j][k] = 129;
+                    data[i][j][k] = 128 + 9 + Math.floor(4 * Math.random());
                 }
             }
         }
@@ -251,34 +251,5 @@ class PlanetTools {
 
     public static DegreeToChuncksCount(degree: number): number {
         return PlanetTools.DegreeToSize(degree) / PlanetTools.CHUNCKSIZE;
-    }
-
-    public static StringColorRGBInterpolation(c1: string, c2: string, dt: number): string {
-        let offset1 = 0;
-        if (c1[0] === "#") {
-            offset1 = 1;
-        }
-        let r1 = parseInt(c1.substr(0 + offset1, 2), 16);
-        let g1 = parseInt(c1.substr(2 + offset1, 2), 16);
-        let b1 = parseInt(c1.substr(4 + offset1, 2), 16);
-        let offset2 = 0;
-        if (c2[0] === "#") {
-            offset2 = 1;
-        }
-        let r2 = parseInt(c2.substr(0 + offset1, 2), 16);
-        let g2 = parseInt(c2.substr(2 + offset1, 2), 16);
-        let b2 = parseInt(c2.substr(4 + offset1, 2), 16);
-
-        let r = Math.round(r1 * (1 - dt) + r2 * dt);
-        let g = Math.round(g1 * (1 - dt) + g2 * dt);
-        let b = Math.round(b1 * (1 - dt) + b2 * dt);
-        let rs = "00" + r.toString(16);
-        rs = rs.substr(-2, 2);
-        let gs = "00" + g.toString(16);
-        gs = gs.substr(-2, 2);
-        let bs = "00" + b.toString(16);
-        bs = bs.substr(-2, 2);
-
-        return "#" + rs + gs + bs;
     }
 }

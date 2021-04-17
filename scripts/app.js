@@ -152,6 +152,7 @@ class MeshTools {
         indices.push(index);
     }
     static PushTopQuadUvs(block, uvs) {
+        block = Math.min(block, 128 + 8);
         let i = (block - 128 - 1) % 4;
         let j = Math.floor((block - 128 - 1) / 4);
         uvs.push(0 + i * 0.25);
@@ -164,6 +165,7 @@ class MeshTools {
         uvs.push(0.75 - j * 0.25);
     }
     static PushSideQuadUvs(block, uvs) {
+        block = Math.min(block, 128 + 8);
         let i = (block - 128 - 1) % 4;
         let j = Math.floor((block - 128 - 1) / 4);
         uvs.push(0 + i * 0.25);
@@ -401,6 +403,17 @@ PlanetChunck.initializationBuffer = new Array();
 PlanetChunck.delayBuffer = new Array();
 PlanetChunck.initializedBuffer = new Array();
 class PlanetChunckMeshBuilder {
+    static get BlockColor() {
+        if (!PlanetChunckMeshBuilder._BlockColor) {
+            PlanetChunckMeshBuilder._BlockColor = new Map();
+            PlanetChunckMeshBuilder._BlockColor.set(128 + 8, BABYLON.Color3.FromHexString("#FFFFFF"));
+            PlanetChunckMeshBuilder._BlockColor.set(128 + 9, BABYLON.Color3.FromHexString("#81FF36"));
+            PlanetChunckMeshBuilder._BlockColor.set(128 + 10, BABYLON.Color3.FromHexString("#36E6FF"));
+            PlanetChunckMeshBuilder._BlockColor.set(128 + 11, BABYLON.Color3.FromHexString("#B436FF"));
+            PlanetChunckMeshBuilder._BlockColor.set(128 + 12, BABYLON.Color3.FromHexString("#FF4F36"));
+        }
+        return PlanetChunckMeshBuilder._BlockColor;
+    }
     static GetVertex(size, i, j) {
         let out = BABYLON.Vector3.Zero();
         return PlanetChunckMeshBuilder.GetVertexToRef(size, i, j, out);
@@ -457,37 +470,36 @@ class PlanetChunckMeshBuilder {
                         PlanetChunckMeshBuilder.tmpVertices[1].scaleInPlace(h - PlanetTools.BLOCKSIZE);
                         PlanetChunckMeshBuilder.tmpVertices[2].scaleInPlace(h - PlanetTools.BLOCKSIZE);
                         PlanetChunckMeshBuilder.tmpVertices[3].scaleInPlace(h - PlanetTools.BLOCKSIZE);
-                        //let lum: number = h / 96;
-                        let lum = 1;
+                        let c = PlanetChunckMeshBuilder.BlockColor.get(data[i][j][k]);
                         if (i - 1 < 0 || data[i - 1][j][k] === 0) {
                             MeshTools.PushQuad(PlanetChunckMeshBuilder.tmpVertices, 1, 5, 4, 0, positions, indices);
                             MeshTools.PushSideQuadUvs(data[i][j][k], uvs);
-                            MeshTools.PushQuadColor(lum, lum, lum, 1, colors);
+                            MeshTools.PushQuadColor(c.r, c.g, c.b, 1, colors);
                         }
                         if (j - 1 < 0 || data[i][j - 1][k] === 0) {
                             MeshTools.PushQuad(PlanetChunckMeshBuilder.tmpVertices, 0, 4, 6, 2, positions, indices);
                             MeshTools.PushSideQuadUvs(data[i][j][k], uvs);
-                            MeshTools.PushQuadColor(lum, lum, lum, 1, colors);
+                            MeshTools.PushQuadColor(c.r, c.g, c.b, 1, colors);
                         }
                         if (k - 1 < 0 || data[i][j][k - 1] === 0) {
                             MeshTools.PushQuad(PlanetChunckMeshBuilder.tmpVertices, 0, 2, 3, 1, positions, indices);
                             MeshTools.PushTopQuadUvs(data[i][j][k], uvs);
-                            MeshTools.PushQuadColor(lum, lum, lum, 1, colors);
+                            MeshTools.PushQuadColor(c.r, c.g, c.b, 1, colors);
                         }
                         if (i + 1 >= PlanetTools.CHUNCKSIZE || data[i + 1][j][k] === 0) {
                             MeshTools.PushQuad(PlanetChunckMeshBuilder.tmpVertices, 2, 6, 7, 3, positions, indices);
                             MeshTools.PushSideQuadUvs(data[i][j][k], uvs);
-                            MeshTools.PushQuadColor(lum, lum, lum, 1, colors);
+                            MeshTools.PushQuadColor(c.r, c.g, c.b, 1, colors);
                         }
                         if (j + 1 >= PlanetTools.CHUNCKSIZE || data[i][j + 1][k] === 0) {
                             MeshTools.PushQuad(PlanetChunckMeshBuilder.tmpVertices, 3, 7, 5, 1, positions, indices);
                             MeshTools.PushSideQuadUvs(data[i][j][k], uvs);
-                            MeshTools.PushQuadColor(lum, lum, lum, 1, colors);
+                            MeshTools.PushQuadColor(c.r, c.g, c.b, 1, colors);
                         }
                         if (k + 1 >= PlanetTools.CHUNCKSIZE || data[i][j][k + 1] === 0) {
                             MeshTools.PushQuad(PlanetChunckMeshBuilder.tmpVertices, 4, 5, 7, 6, positions, indices);
                             MeshTools.PushTopQuadUvs(data[i][j][k], uvs);
-                            MeshTools.PushQuadColor(lum, lum, lum, 1, colors);
+                            MeshTools.PushQuadColor(c.r, c.g, c.b, 1, colors);
                         }
                     }
                 }
@@ -764,12 +776,12 @@ var PI2 = Math.PI / 2;
 var PI = Math.PI;
 class PlanetTools {
     static EmptyVertexData() {
-        if (!PlanetTools.emptyVertexData) {
+        if (!PlanetTools._emptyVertexData) {
             let emptyMesh = new BABYLON.Mesh("Empty", Game.Scene);
-            PlanetTools.emptyVertexData = BABYLON.VertexData.ExtractFromMesh(emptyMesh);
+            PlanetTools._emptyVertexData = BABYLON.VertexData.ExtractFromMesh(emptyMesh);
             emptyMesh.dispose();
         }
-        return PlanetTools.emptyVertexData;
+        return PlanetTools._emptyVertexData;
     }
     static QuaternionForSide(side) {
         if (side === Side.Right) {
@@ -804,7 +816,7 @@ class PlanetTools {
             for (let j = 0; j < PlanetTools.CHUNCKSIZE; j++) {
                 data[i][j] = [];
                 for (let k = 0; k < PlanetTools.CHUNCKSIZE; k++) {
-                    data[i][j][k] = 129;
+                    data[i][j][k] = 128 + 9 + Math.floor(4 * Math.random());
                 }
             }
         }
@@ -951,32 +963,6 @@ class PlanetTools {
     }
     static DegreeToChuncksCount(degree) {
         return PlanetTools.DegreeToSize(degree) / PlanetTools.CHUNCKSIZE;
-    }
-    static StringColorRGBInterpolation(c1, c2, dt) {
-        let offset1 = 0;
-        if (c1[0] === "#") {
-            offset1 = 1;
-        }
-        let r1 = parseInt(c1.substr(0 + offset1, 2), 16);
-        let g1 = parseInt(c1.substr(2 + offset1, 2), 16);
-        let b1 = parseInt(c1.substr(4 + offset1, 2), 16);
-        let offset2 = 0;
-        if (c2[0] === "#") {
-            offset2 = 1;
-        }
-        let r2 = parseInt(c2.substr(0 + offset1, 2), 16);
-        let g2 = parseInt(c2.substr(2 + offset1, 2), 16);
-        let b2 = parseInt(c2.substr(4 + offset1, 2), 16);
-        let r = Math.round(r1 * (1 - dt) + r2 * dt);
-        let g = Math.round(g1 * (1 - dt) + g2 * dt);
-        let b = Math.round(b1 * (1 - dt) + b2 * dt);
-        let rs = "00" + r.toString(16);
-        rs = rs.substr(-2, 2);
-        let gs = "00" + g.toString(16);
-        gs = gs.substr(-2, 2);
-        let bs = "00" + b.toString(16);
-        bs = bs.substr(-2, 2);
-        return "#" + rs + gs + bs;
     }
 }
 PlanetTools.BLOCKSIZE = 1;

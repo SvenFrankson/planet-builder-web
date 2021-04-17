@@ -75,6 +75,8 @@ class MeshTools {
   }
 
   public static PushTopQuadUvs(block: number, uvs: Array<number>): void {
+	block = Math.min(block, 128 + 8);
+	
 	let i: number = (block - 128 - 1) % 4;
 	let j: number = Math.floor((block - 128 - 1) / 4);
 
@@ -92,6 +94,8 @@ class MeshTools {
   }
 
   public static PushSideQuadUvs(block: number, uvs: Array<number>): void {
+	block = Math.min(block, 128 + 8);
+
 	let i: number = (block - 128 - 1) % 4;
 	let j: number = Math.floor((block - 128 - 1) / 4);
 
