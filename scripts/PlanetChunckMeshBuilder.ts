@@ -106,6 +106,9 @@ class PlanetChunckMeshBuilder {
         }
 
         let c = PlanetChunckMeshBuilder.BlockColor.get(data);
+        if (!c) {
+            c = PlanetChunckMeshBuilder.BlockColor.get(136);
+        }
 
         MeshTools.PushQuad(PlanetChunckMeshBuilder.tmpVertices, 1, 5, 4, 0, positions, indices);
         MeshTools.PushSideQuadUvs(data, uvs);
@@ -192,6 +195,9 @@ class PlanetChunckMeshBuilder {
                         PlanetChunckMeshBuilder.tmpVertices[3].scaleInPlace(h - PlanetTools.BLOCKSIZE);
 
                         let c = PlanetChunckMeshBuilder.BlockColor.get(data[i][j][k]);
+                        if (!c) {
+                            c = PlanetChunckMeshBuilder.BlockColor.get(136);
+                        }
 
                         if (i - 1 < 0 || data[i - 1][j][k] === 0) {
                             MeshTools.PushQuad(PlanetChunckMeshBuilder.tmpVertices, 1, 5, 4, 0, positions, indices);

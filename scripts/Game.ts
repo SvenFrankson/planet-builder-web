@@ -75,7 +75,6 @@ class Game {
 			Game.AnimateSky();
 			Game.AnimateWater();
 			Game.AnimateLight();
-			Game.PlanetEditor.update();
 		});
 
 		window.addEventListener("resize", () => {
@@ -118,8 +117,6 @@ window.addEventListener("DOMContentLoaded", () => {
 	let game: Game = new Game("renderCanvas");
 	game.createScene();
 
-	PlanetEditor.RegisterControl();
-
 	let planetTest: Planet = new Planet("Paulita", 2);
 
 	new Player(new BABYLON.Vector3(0, 64, 0), planetTest);
@@ -127,15 +124,13 @@ window.addEventListener("DOMContentLoaded", () => {
 	planetTest.AsyncInitialize();
 
 	Game.PlanetEditor = new PlanetEditor(planetTest);
+	Game.PlanetEditor.initialize();
 	
 	game.animate();
 
 	Game.Canvas.addEventListener("pointerup", (event: MouseEvent) => {
 		if (!Game.LockedMouse) {
 			Game.LockMouse(event);
-		}
-		else {
-			PlanetEditor.OnClick(planetTest);
 		}
 	});
 

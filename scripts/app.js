@@ -39,7 +39,6 @@ class Game {
             Game.AnimateSky();
             Game.AnimateWater();
             Game.AnimateLight();
-            Game.PlanetEditor.update();
         });
         window.addEventListener("resize", () => {
             Game.Engine.resize();
@@ -78,18 +77,15 @@ Game.ClientYOnLock = -1;
 window.addEventListener("DOMContentLoaded", () => {
     let game = new Game("renderCanvas");
     game.createScene();
-    PlanetEditor.RegisterControl();
     let planetTest = new Planet("Paulita", 2);
     new Player(new BABYLON.Vector3(0, 64, 0), planetTest);
     planetTest.AsyncInitialize();
     Game.PlanetEditor = new PlanetEditor(planetTest);
+    Game.PlanetEditor.initialize();
     game.animate();
     Game.Canvas.addEventListener("pointerup", (event) => {
         if (!Game.LockedMouse) {
             Game.LockMouse(event);
-        }
-        else {
-            PlanetEditor.OnClick(planetTest);
         }
     });
     document.addEventListener("pointermove", (event) => {
@@ -492,6 +488,9 @@ class PlanetChunckMeshBuilder {
             }
         }
         let c = PlanetChunckMeshBuilder.BlockColor.get(data);
+        if (!c) {
+            c = PlanetChunckMeshBuilder.BlockColor.get(136);
+        }
         MeshTools.PushQuad(PlanetChunckMeshBuilder.tmpVertices, 1, 5, 4, 0, positions, indices);
         MeshTools.PushSideQuadUvs(data, uvs);
         MeshTools.PushQuadColor(c.r, c.g, c.b, 1, colors);
@@ -556,6 +555,9 @@ class PlanetChunckMeshBuilder {
                         PlanetChunckMeshBuilder.tmpVertices[2].scaleInPlace(h - PlanetTools.BLOCKSIZE);
                         PlanetChunckMeshBuilder.tmpVertices[3].scaleInPlace(h - PlanetTools.BLOCKSIZE);
                         let c = PlanetChunckMeshBuilder.BlockColor.get(data[i][j][k]);
+                        if (!c) {
+                            c = PlanetChunckMeshBuilder.BlockColor.get(136);
+                        }
                         if (i - 1 < 0 || data[i - 1][j][k] === 0) {
                             MeshTools.PushQuad(PlanetChunckMeshBuilder.tmpVertices, 1, 5, 4, 0, positions, indices);
                             MeshTools.PushSideQuadUvs(data[i][j][k], uvs);
@@ -670,10 +672,35 @@ PlanetChunckMeshBuilder._tmpBlockCenter = BABYLON.Vector3.Zero();
 class PlanetEditor {
     constructor(planet) {
         this.planet = planet;
+        this.data = 0;
+        this._update = () => {
+            let removeMode = this.data === 0;
+            let worldPos = PlanetEditor.GetHitWorldPos(removeMode);
+            if (worldPos) {
+                if (this.data === 0 || worldPos.subtract(Player.Instance.PositionHead()).lengthSquared() > 1) {
+                    if (this.data === 0 || worldPos.subtract(Player.Instance.PositionLeg()).lengthSquared() > 1) {
+                        let planetSide = PlanetTools.WorldPositionToPlanetSide(this.planet, worldPos);
+                        if (planetSide) {
+                            let global = PlanetTools.WorldPositionToGlobalIJK(planetSide, worldPos);
+                            if (!this._previewMesh) {
+                                this._previewMesh = new BABYLON.Mesh("preview-mesh");
+                                this._previewMesh.visibility = 0.5;
+                            }
+                            let vertexData = PlanetChunckMeshBuilder.BuildBlockVertexData(PlanetTools.DegreeToSize(PlanetTools.KGlobalToDegree(global.k)), global.i, global.j, global.k, 140, this.data === 0 ? 1.1 : 0.9);
+                            vertexData.applyToMesh(this._previewMesh);
+                            this._previewMesh.rotationQuaternion = PlanetTools.QuaternionForSide(planetSide.side);
+                            return;
+                        }
+                    }
+                }
+            }
+            if (this._previewMesh) {
+                this._previewMesh.dispose();
+                this._previewMesh = undefined;
+            }
+        };
     }
     static GetHitWorldPos(remove = false) {
-        console.log("Canvas Width : " + Game.Canvas.width);
-        console.log("Canvas Height : " + Game.Canvas.height);
         let pickInfo = Game.Scene.pick(Game.Canvas.width / 2, Game.Canvas.height / 2, (mesh) => {
             return !(mesh instanceof Water) && !(mesh.name === "preview-mesh");
         });
@@ -688,127 +715,52 @@ class PlanetEditor {
         }
         return undefined;
     }
-    update() {
-        let removeMode = PlanetEditor.data === 0;
-        let worldPos = PlanetEditor.GetHitWorldPos(removeMode);
-        console.log("WorldPos : " + worldPos);
-        if (worldPos) {
-            if (PlanetEditor.data === 0 || worldPos.subtract(Player.Instance.PositionHead()).lengthSquared() > 1) {
-                if (PlanetEditor.data === 0 || worldPos.subtract(Player.Instance.PositionLeg()).lengthSquared() > 1) {
-                    let planetSide = PlanetTools.WorldPositionToPlanetSide(this.planet, worldPos);
-                    console.log("PlanetSide : " + Side[planetSide.side]);
-                    if (planetSide) {
-                        let global = PlanetTools.WorldPositionToGlobalIJK(planetSide, worldPos);
-                        console.log("Globals : " + JSON.stringify(global));
-                        let local = PlanetTools.GlobalIJKToLocalIJK(planetSide, global);
-                        console.log("Chunck : " +
-                            JSON.stringify(local.planetChunck.Position()));
-                        console.log("Block : I=" +
-                            local.i +
-                            " , J=" +
-                            local.j +
-                            " , K=" +
-                            local.k);
-                        if (!this._previewMesh) {
-                            this._previewMesh = new BABYLON.Mesh("preview-mesh");
-                            this._previewMesh.visibility = 0.5;
-                        }
-                        let vertexData = PlanetChunckMeshBuilder.BuildBlockVertexData(PlanetTools.DegreeToSize(PlanetTools.KGlobalToDegree(global.k)), global.i, global.j, global.k, 140, 1.1);
-                        vertexData.applyToMesh(this._previewMesh);
-                        this._previewMesh.rotationQuaternion = PlanetTools.QuaternionForSide(planetSide.side);
-                        return;
-                    }
-                }
+    initialize() {
+        Game.Scene.onBeforeRenderObservable.add(this._update);
+        Game.Canvas.addEventListener("pointerup", (event) => {
+            if (Game.LockedMouse) {
+                this._pointerUp();
             }
-        }
-        if (this._previewMesh) {
-            this._previewMesh.dispose();
-            this._previewMesh = undefined;
-        }
+        });
+        let keyDataMap = new Map();
+        keyDataMap.set("Digit1", 129);
+        keyDataMap.set("Digit2", 130);
+        keyDataMap.set("Digit3", 131);
+        keyDataMap.set("Digit4", 132);
+        keyDataMap.set("Digit5", 133);
+        keyDataMap.set("Digit6", 134);
+        keyDataMap.set("Digit7", 135);
+        keyDataMap.set("Digit8", 136);
+        keyDataMap.set("Digit9", 137);
+        keyDataMap.set("Digit0", 0);
+        keyDataMap.set("KeyX", 0);
+        Game.Canvas.addEventListener("keyup", (event) => {
+            if (keyDataMap.has(event.code)) {
+                this.data = keyDataMap.get(event.code);
+            }
+        });
     }
-    static OnClick(planet) {
-        let removeMode = PlanetEditor.data === 0;
+    dispose() {
+        Game.Scene.onBeforeRenderObservable.removeCallback(this._update);
+    }
+    _pointerUp() {
+        let removeMode = this.data === 0;
         let worldPos = PlanetEditor.GetHitWorldPos(removeMode);
-        console.log("WorldPos : " + worldPos);
         if (worldPos) {
-            if (PlanetEditor.data === 0 || worldPos.subtract(Player.Instance.PositionHead()).lengthSquared() > 1) {
-                if (PlanetEditor.data === 0 || worldPos.subtract(Player.Instance.PositionLeg()).lengthSquared() > 1) {
-                    let planetSide = PlanetTools.WorldPositionToPlanetSide(planet, worldPos);
-                    console.log("PlanetSide : " + Side[planetSide.side]);
+            if (this.data === 0 || worldPos.subtract(Player.Instance.PositionHead()).lengthSquared() > 1) {
+                if (this.data === 0 || worldPos.subtract(Player.Instance.PositionLeg()).lengthSquared() > 1) {
+                    let planetSide = PlanetTools.WorldPositionToPlanetSide(this.planet, worldPos);
                     if (planetSide) {
                         let global = PlanetTools.WorldPositionToGlobalIJK(planetSide, worldPos);
-                        console.log("Globals : " + JSON.stringify(global));
                         let local = PlanetTools.GlobalIJKToLocalIJK(planetSide, global);
-                        console.log("Chunck : " +
-                            JSON.stringify(local.planetChunck.Position()));
-                        console.log("Block : I=" +
-                            local.i +
-                            " , J=" +
-                            local.j +
-                            " , K=" +
-                            local.k);
-                        local.planetChunck.SetData(local.i, local.j, local.k, PlanetEditor.data);
+                        local.planetChunck.SetData(local.i, local.j, local.k, this.data);
                         local.planetChunck.SetMesh();
                     }
                 }
             }
         }
     }
-    static RegisterControl() {
-        let scene = Game.Scene;
-        scene.actionManager.registerAction(new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnKeyDownTrigger, (event) => {
-            if (event.sourceEvent.keyCode === 48 ||
-                event.sourceEvent.keyCode === 88) {
-                PlanetEditor.SetData(0);
-            }
-            if (event.sourceEvent.keyCode === 49) {
-                PlanetEditor.SetData(129);
-            }
-            if (event.sourceEvent.keyCode === 50) {
-                PlanetEditor.SetData(130);
-            }
-            if (event.sourceEvent.keyCode === 51) {
-                PlanetEditor.SetData(131);
-            }
-            if (event.sourceEvent.keyCode === 52) {
-                PlanetEditor.SetData(132);
-            }
-            if (event.sourceEvent.keyCode === 53) {
-                PlanetEditor.SetData(133);
-            }
-            if (event.sourceEvent.keyCode === 54) {
-                PlanetEditor.SetData(134);
-            }
-            if (event.sourceEvent.keyCode === 55) {
-                PlanetEditor.SetData(135);
-            }
-            if (event.sourceEvent.keyCode === 17) {
-                PlanetEditor.SetData(PlanetEditor.data - 1);
-            }
-            if (event.sourceEvent.keyCode === 16) {
-                PlanetEditor.SetData(PlanetEditor.data + 1);
-            }
-        }));
-    }
-    static SetData(newData) {
-        if (newData < 0) {
-            newData = 0;
-        }
-        if (newData > 0 && newData < 129) {
-            if (newData > PlanetEditor.data) {
-                newData = 129;
-            }
-            else {
-                newData = 0;
-            }
-        }
-        if (newData > 135) {
-            newData = 0;
-        }
-        PlanetEditor.data = newData;
-    }
 }
-PlanetEditor.data = 0;
 var Side;
 (function (Side) {
     Side[Side["Right"] = 0] = "Right";
@@ -1038,8 +990,6 @@ class PlanetTools {
         }
         let yDeg = (Math.atan(localPos.y) / Math.PI) * 180;
         let zDeg = (Math.atan(localPos.z) / Math.PI) * 180;
-        console.log("YDeg : " + yDeg);
-        console.log("ZDeg : " + zDeg);
         let k = Math.floor(r / PlanetTools.BLOCKSIZE);
         let i = Math.floor(((zDeg + 45) / 90) * PlanetTools.DegreeToSize(PlanetTools.KGlobalToDegree(k)));
         let j = Math.floor(((yDeg + 45) / 90) * PlanetTools.DegreeToSize(PlanetTools.KGlobalToDegree(k)));

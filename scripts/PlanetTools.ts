@@ -199,8 +199,6 @@ class PlanetTools {
 
         let yDeg: number = (Math.atan(localPos.y) / Math.PI) * 180;
         let zDeg: number = (Math.atan(localPos.z) / Math.PI) * 180;
-        console.log("YDeg : " + yDeg);
-        console.log("ZDeg : " + zDeg);
 
         let k: number = Math.floor(r / PlanetTools.BLOCKSIZE);
         let i: number = Math.floor(((zDeg + 45) / 90) * PlanetTools.DegreeToSize(PlanetTools.KGlobalToDegree(k)));
