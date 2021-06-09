@@ -109,7 +109,7 @@ class Game {
         console.log("Unlock");
     }
 }
-Game.WorldCameraMode = true;
+Game.WorldCameraMode = false;
 Game.ShowDebugPlanetHeightMap = false;
 Game.DebugLodDistanceFactor = 1;
 Game.LockedMouse = false;
@@ -231,10 +231,13 @@ class MeshTools {
         indices.push(index);
     }
     static PushTopQuadUvs(block, uvs) {
-        return;
-        block = Math.min(block, 128 + 8);
-        let i = (block - 128 - 1) % 4;
-        let j = Math.floor((block - 128 - 1) / 4);
+        let i = 1;
+        let j = 0;
+        if (block != BlockType.RedDirt) {
+            block = Math.min(block, 128 + 8);
+            i = (block - 128 - 1) % 4;
+            j = Math.floor((block - 128 - 1) / 4);
+        }
         uvs.push(0 + i * 0.25);
         uvs.push(0.75 - j * 0.25);
         uvs.push(0 + i * 0.25);
@@ -245,10 +248,13 @@ class MeshTools {
         uvs.push(0.75 - j * 0.25);
     }
     static PushSideQuadUvs(block, uvs) {
-        return;
-        block = Math.min(block, 128 + 8);
-        let i = (block - 128 - 1) % 4;
-        let j = Math.floor((block - 128 - 1) / 4);
+        let i = 1;
+        let j = 0;
+        if (block != BlockType.RedDirt) {
+            block = Math.min(block, 128 + 8);
+            i = (block - 128 - 1) % 4;
+            j = Math.floor((block - 128 - 1) / 4);
+        }
         uvs.push(0 + i * 0.25);
         uvs.push(0.25 - j * 0.25);
         uvs.push(0 + i * 0.25);

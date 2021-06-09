@@ -1,7 +1,7 @@
 /// <reference path="../lib/babylon.d.ts"/>
 class Game {
 
-	public static WorldCameraMode: boolean = true;
+	public static WorldCameraMode: boolean = false;
 	public static ShowDebugPlanetHeightMap: boolean = false;
 	public static DebugLodDistanceFactor: number = 1;
 
