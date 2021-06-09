@@ -13,15 +13,13 @@ class PlanetSide extends BABYLON.Mesh {
         return this._side;
     }
 	
-    private planet: Planet;
+    public planet: Planet;
     public GetPlanetName(): string {
         return this.planet.GetPlanetName();
     }
-    public GetRadiusWater(): number {
-        return this.planet.GetRadiusWater();
-    }
-    public GetKPosMax(): number {
-        return this.planet.GetKPosMax();
+    
+    public get kPosMax(): number {
+        return this.planet.kPosMax;
     }
     private chuncksLength: number;
     private chuncks: Array<Array<Array<PlanetChunck>>>;
@@ -57,7 +55,7 @@ class PlanetSide extends BABYLON.Mesh {
         this.freezeWorldMatrix();
 
         this.chuncks = new Array<Array<Array<PlanetChunck>>>();
-        for (let k: number = 0; k <= this.GetKPosMax(); k++) {
+        for (let k: number = 0; k <= this.kPosMax; k++) {
             this.chuncks[k] = new Array<Array<PlanetChunck>>();
             let chuncksCount: number = PlanetTools.DegreeToChuncksCount(
                 PlanetTools.KPosToDegree(k)

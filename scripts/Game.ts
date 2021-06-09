@@ -1,6 +1,10 @@
 /// <reference path="../lib/babylon.d.ts"/>
 class Game {
 
+	public static WorldCameraMode: boolean = true;
+	public static ShowDebugPlanetHeightMap: boolean = false;
+	public static DebugLodDistanceFactor: number = 1;
+
 	public static Instance: Game;
 	public static Canvas: HTMLCanvasElement;
 	public static Engine: BABYLON.Engine;
@@ -23,12 +27,26 @@ class Game {
 	public createScene(): void {
 		Game.Scene = new BABYLON.Scene(Game.Engine);
 		Game.Scene.actionManager = new BABYLON.ActionManager(Game.Scene);
+		Game.Scene.clearColor.copyFromFloats(0.1, 0.1, 0.1, 1);
 
-		Game.Camera = new BABYLON.FreeCamera(
-			"Camera",
-			BABYLON.Vector3.Zero(),
-			Game.Scene
-		);
+		if (Game.WorldCameraMode) {
+			Game.Camera = new BABYLON.ArcRotateCamera(
+				"Camera",
+				0,
+				Math.PI / 2,
+				100,
+				BABYLON.Vector3.Zero(),
+				Game.Scene
+			);
+			Game.Camera.attachControl(Game.Canvas);
+		}
+		else {
+			Game.Camera = new BABYLON.FreeCamera(
+				"Camera",
+				BABYLON.Vector3.Zero(),
+				Game.Scene
+			);
+		}
 		Game.Camera.minZ = 0.1;
 
 		Game.Light = new BABYLON.HemisphericLight(
@@ -41,22 +59,13 @@ class Game {
 		Game.Light.specular = new BABYLON.Color3(1, 1, 1);
 		Game.Light.groundColor = new BABYLON.Color3(0.5, 0.5, 0.5);
 
-		Game.CreateSky();
-	}
-
-	public static CreateSky(): void {
-		Game.Sky = BABYLON.MeshBuilder.CreateBox(
-			"Sky",
-			{ size: 1000, sideOrientation: 1 },
-			Game.Scene
-		);
-		Game.Sky.material = SharedMaterials.SkyMaterial();
-	}
-
-	public static AnimateSky(): void {
-		Game.Sky.rotation.x += 0.0001;
-		Game.Sky.rotation.y += 0.0001;
-		Game.Sky.rotation.z += 0.0001;
+		/*
+		let water = BABYLON.MeshBuilder.CreateSphere("water", { diameter: 78 - 0.4 }, Game.Scene);
+		let waterMaterial = new BABYLON.StandardMaterial("water-material", Game.Scene);
+		waterMaterial.diffuseColor.copyFromFloats(0.1, 0.5, 0.9);
+		waterMaterial.alpha = 0.5;
+		water.material = waterMaterial;
+		*/
 	}
 
 	public static AnimateWater(): void {
@@ -65,16 +74,42 @@ class Game {
 	}
 
 	public static AnimateLight(): void {
-		Game.Light.direction = Player.Instance.position;
+		let position: BABYLON.Vector3;
+        if (Game.WorldCameraMode) {
+            position = Game.Camera.position;
+        }
+        else {
+            position = Player.Position();
+        }
+		Game.Light.direction = position;
 	}
 
 	animate(): void {
+		let fpsInfoElement = document.getElementById("fps-info");
+		let meshesInfoTotalElement = document.getElementById("meshes-info-total");
+		let meshesInfoNonStaticUniqueElement = document.getElementById("meshes-info-nonstatic-unique");
+		let meshesInfoStaticUniqueElement = document.getElementById("meshes-info-static-unique");
+		let meshesInfoNonStaticInstanceElement = document.getElementById("meshes-info-nonstatic-instance");
+		let meshesInfoStaticInstanceElement = document.getElementById("meshes-info-static-instance");
+
 		Game.Engine.runRenderLoop(() => {
 			Game.Scene.render();
 			PlanetChunck.InitializeLoop();
-			Game.AnimateSky();
 			Game.AnimateWater();
 			Game.AnimateLight();
+			
+			fpsInfoElement.innerText = Game.Engine.getFps().toFixed(0) + " fps";
+			let uniques = Game.Scene.meshes.filter(m => { return !(m instanceof BABYLON.InstancedMesh); });
+			let uniquesNonStatic = uniques.filter(m => { return !m.isWorldMatrixFrozen; });
+			let uniquesStatic = uniques.filter(m => { return m.isWorldMatrixFrozen; });
+			let instances = Game.Scene.meshes.filter(m => { return m instanceof BABYLON.InstancedMesh; });
+			let instancesNonStatic = instances.filter(m => { return !m.isWorldMatrixFrozen; });
+			let instancesStatic = instances.filter(m => { return m.isWorldMatrixFrozen; });
+			meshesInfoTotalElement.innerText = Game.Scene.meshes.length.toFixed(0).padStart(4, "0");
+			meshesInfoNonStaticUniqueElement.innerText = uniquesNonStatic.length.toFixed(0).padStart(4, "0");
+			meshesInfoStaticUniqueElement.innerText = uniquesStatic.length.toFixed(0).padStart(4, "0");
+			meshesInfoNonStaticInstanceElement.innerText = instancesNonStatic.length.toFixed(0).padStart(4, "0");
+			meshesInfoStaticInstanceElement.innerText = instancesStatic.length.toFixed(0).padStart(4, "0");
 		});
 
 		window.addEventListener("resize", () => {
@@ -117,31 +152,76 @@ window.addEventListener("DOMContentLoaded", () => {
 	let game: Game = new Game("renderCanvas");
 	game.createScene();
 
-	let planetTest: Planet = new Planet("Paulita", 2);
+	let planetTest: Planet = new Planet("Paulita", 5);
 
-	new Player(new BABYLON.Vector3(0, 64, 0), planetTest);
+	let heightMap = PlanetHeightMap.CreateMap(PlanetTools.KPosToDegree(5), 60, 10);
+	let heightMap2 = PlanetHeightMap.CreateMap(PlanetTools.KPosToDegree(5), 60, 20, {
+		firstNoiseDegree: 3,
+		postComputation: (v) => {
+			let delta = Math.abs(60 - v);
+			if (delta > 2) {
+				return 1;
+			}
+			return 4 - delta;
+		}
+	});
+	let heightMap3 = PlanetHeightMap.CreateMap(PlanetTools.KPosToDegree(5), 60, 20);
+	let heightMap4 = PlanetHeightMap.CreateMap(PlanetTools.KPosToDegree(5), 60, 30, {
+		firstNoiseDegree: 1,
+		postComputation: (v) => {
+			let delta = Math.abs(60 - v);
+			if (delta > 2) {
+				return 1;
+			}
+			return 4 - delta;
+		}
+	});
+	heightMap.substractInPlace(heightMap4);
+	let heightMap5 = PlanetHeightMap.CreateMap(PlanetTools.KPosToDegree(5), 60, 30, {
+		firstNoiseDegree: 4,
+		postComputation: (v) => {
+			if (v > 70) {
+				return (v - 70) * 1.5;
+			}
+			return 1;
+		}
+	});
+	heightMap.addInPlace(heightMap5);
+	
+	
+
+	planetTest.generator = new PlanetGeneratorChaos(planetTest);
+
+	if (!Game.WorldCameraMode) {
+		new Player(new BABYLON.Vector3(0, 64, 0), planetTest);
+	
+		Game.PlanetEditor = new PlanetEditor(planetTest);
+		Game.PlanetEditor.initialize();
+	}
 
 	planetTest.AsyncInitialize();
-
-	Game.PlanetEditor = new PlanetEditor(planetTest);
-	Game.PlanetEditor.initialize();
 	
 	game.animate();
 
-	Game.Canvas.addEventListener("pointerup", (event: MouseEvent) => {
-		if (!Game.LockedMouse) {
-			Game.LockMouse(event);
-		}
-	});
+	if (Game.WorldCameraMode) {
 
-	document.addEventListener("pointermove", (event: MouseEvent) => {
-		if (Game.LockedMouse) {
-			if (event.clientX !== Game.ClientXOnLock) {
-				Game.UnlockMouse();
+	}
+	else {
+		Game.Canvas.addEventListener("pointerup", (event: MouseEvent) => {
+			if (!Game.LockedMouse) {
+				Game.LockMouse(event);
 			}
-			else if (event.clientY !== Game.ClientYOnLock) {
-				Game.UnlockMouse();
+		});
+	
+		document.addEventListener("pointermove", (event: MouseEvent) => {
+			if (Game.LockedMouse) {
+				if (event.clientX !== Game.ClientXOnLock) {
+					Game.UnlockMouse();
+				}
+				else if (event.clientY !== Game.ClientYOnLock) {
+					Game.UnlockMouse();
+				}
 			}
-		}
-	});
+		});
+	}
 });

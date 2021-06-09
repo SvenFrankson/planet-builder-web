@@ -1,3 +1,13 @@
+var BlockType;
+(function (BlockType) {
+    BlockType[BlockType["Grass"] = 1] = "Grass";
+    BlockType[BlockType["Dirt"] = 2] = "Dirt";
+    BlockType[BlockType["Sand"] = 3] = "Sand";
+    BlockType[BlockType["Rock"] = 4] = "Rock";
+    BlockType[BlockType["RedDirt"] = 5] = "RedDirt";
+    BlockType[BlockType["RedDust"] = 6] = "RedDust";
+    BlockType[BlockType["RedRock"] = 7] = "RedRock";
+})(BlockType || (BlockType = {}));
 /// <reference path="../lib/babylon.d.ts"/>
 class Game {
     constructor(canvasElement) {
@@ -8,37 +18,65 @@ class Game {
     createScene() {
         Game.Scene = new BABYLON.Scene(Game.Engine);
         Game.Scene.actionManager = new BABYLON.ActionManager(Game.Scene);
-        Game.Camera = new BABYLON.FreeCamera("Camera", BABYLON.Vector3.Zero(), Game.Scene);
+        Game.Scene.clearColor.copyFromFloats(0.1, 0.1, 0.1, 1);
+        if (Game.WorldCameraMode) {
+            Game.Camera = new BABYLON.ArcRotateCamera("Camera", 0, Math.PI / 2, 100, BABYLON.Vector3.Zero(), Game.Scene);
+            Game.Camera.attachControl(Game.Canvas);
+        }
+        else {
+            Game.Camera = new BABYLON.FreeCamera("Camera", BABYLON.Vector3.Zero(), Game.Scene);
+        }
         Game.Camera.minZ = 0.1;
         Game.Light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), Game.Scene);
         Game.Light.diffuse = new BABYLON.Color3(1, 1, 1);
         Game.Light.specular = new BABYLON.Color3(1, 1, 1);
         Game.Light.groundColor = new BABYLON.Color3(0.5, 0.5, 0.5);
-        Game.CreateSky();
-    }
-    static CreateSky() {
-        Game.Sky = BABYLON.MeshBuilder.CreateBox("Sky", { size: 1000, sideOrientation: 1 }, Game.Scene);
-        Game.Sky.material = SharedMaterials.SkyMaterial();
-    }
-    static AnimateSky() {
-        Game.Sky.rotation.x += 0.0001;
-        Game.Sky.rotation.y += 0.0001;
-        Game.Sky.rotation.z += 0.0001;
+        /*
+        let water = BABYLON.MeshBuilder.CreateSphere("water", { diameter: 78 - 0.4 }, Game.Scene);
+        let waterMaterial = new BABYLON.StandardMaterial("water-material", Game.Scene);
+        waterMaterial.diffuseColor.copyFromFloats(0.1, 0.5, 0.9);
+        waterMaterial.alpha = 0.5;
+        water.material = waterMaterial;
+        */
     }
     static AnimateWater() {
         SharedMaterials.WaterMaterial().diffuseTexture.uOffset += 0.005;
         SharedMaterials.WaterMaterial().diffuseTexture.vOffset += 0.005;
     }
     static AnimateLight() {
-        Game.Light.direction = Player.Instance.position;
+        let position;
+        if (Game.WorldCameraMode) {
+            position = Game.Camera.position;
+        }
+        else {
+            position = Player.Position();
+        }
+        Game.Light.direction = position;
     }
     animate() {
+        let fpsInfoElement = document.getElementById("fps-info");
+        let meshesInfoTotalElement = document.getElementById("meshes-info-total");
+        let meshesInfoNonStaticUniqueElement = document.getElementById("meshes-info-nonstatic-unique");
+        let meshesInfoStaticUniqueElement = document.getElementById("meshes-info-static-unique");
+        let meshesInfoNonStaticInstanceElement = document.getElementById("meshes-info-nonstatic-instance");
+        let meshesInfoStaticInstanceElement = document.getElementById("meshes-info-static-instance");
         Game.Engine.runRenderLoop(() => {
             Game.Scene.render();
             PlanetChunck.InitializeLoop();
-            Game.AnimateSky();
             Game.AnimateWater();
             Game.AnimateLight();
+            fpsInfoElement.innerText = Game.Engine.getFps().toFixed(0) + " fps";
+            let uniques = Game.Scene.meshes.filter(m => { return !(m instanceof BABYLON.InstancedMesh); });
+            let uniquesNonStatic = uniques.filter(m => { return !m.isWorldMatrixFrozen; });
+            let uniquesStatic = uniques.filter(m => { return m.isWorldMatrixFrozen; });
+            let instances = Game.Scene.meshes.filter(m => { return m instanceof BABYLON.InstancedMesh; });
+            let instancesNonStatic = instances.filter(m => { return !m.isWorldMatrixFrozen; });
+            let instancesStatic = instances.filter(m => { return m.isWorldMatrixFrozen; });
+            meshesInfoTotalElement.innerText = Game.Scene.meshes.length.toFixed(0).padStart(4, "0");
+            meshesInfoNonStaticUniqueElement.innerText = uniquesNonStatic.length.toFixed(0).padStart(4, "0");
+            meshesInfoStaticUniqueElement.innerText = uniquesStatic.length.toFixed(0).padStart(4, "0");
+            meshesInfoNonStaticInstanceElement.innerText = instancesNonStatic.length.toFixed(0).padStart(4, "0");
+            meshesInfoStaticInstanceElement.innerText = instancesStatic.length.toFixed(0).padStart(4, "0");
         });
         window.addEventListener("resize", () => {
             Game.Engine.resize();
@@ -71,33 +109,76 @@ class Game {
         console.log("Unlock");
     }
 }
+Game.WorldCameraMode = true;
+Game.ShowDebugPlanetHeightMap = false;
+Game.DebugLodDistanceFactor = 1;
 Game.LockedMouse = false;
 Game.ClientXOnLock = -1;
 Game.ClientYOnLock = -1;
 window.addEventListener("DOMContentLoaded", () => {
     let game = new Game("renderCanvas");
     game.createScene();
-    let planetTest = new Planet("Paulita", 2);
-    new Player(new BABYLON.Vector3(0, 64, 0), planetTest);
+    let planetTest = new Planet("Paulita", 5);
+    let heightMap = PlanetHeightMap.CreateMap(PlanetTools.KPosToDegree(5), 60, 10);
+    let heightMap2 = PlanetHeightMap.CreateMap(PlanetTools.KPosToDegree(5), 60, 20, {
+        firstNoiseDegree: 3,
+        postComputation: (v) => {
+            let delta = Math.abs(60 - v);
+            if (delta > 2) {
+                return 1;
+            }
+            return 4 - delta;
+        }
+    });
+    let heightMap3 = PlanetHeightMap.CreateMap(PlanetTools.KPosToDegree(5), 60, 20);
+    let heightMap4 = PlanetHeightMap.CreateMap(PlanetTools.KPosToDegree(5), 60, 30, {
+        firstNoiseDegree: 1,
+        postComputation: (v) => {
+            let delta = Math.abs(60 - v);
+            if (delta > 2) {
+                return 1;
+            }
+            return 4 - delta;
+        }
+    });
+    heightMap.substractInPlace(heightMap4);
+    let heightMap5 = PlanetHeightMap.CreateMap(PlanetTools.KPosToDegree(5), 60, 30, {
+        firstNoiseDegree: 4,
+        postComputation: (v) => {
+            if (v > 70) {
+                return (v - 70) * 1.5;
+            }
+            return 1;
+        }
+    });
+    heightMap.addInPlace(heightMap5);
+    planetTest.generator = new PlanetGeneratorChaos(planetTest);
+    if (!Game.WorldCameraMode) {
+        new Player(new BABYLON.Vector3(0, 64, 0), planetTest);
+        Game.PlanetEditor = new PlanetEditor(planetTest);
+        Game.PlanetEditor.initialize();
+    }
     planetTest.AsyncInitialize();
-    Game.PlanetEditor = new PlanetEditor(planetTest);
-    Game.PlanetEditor.initialize();
     game.animate();
-    Game.Canvas.addEventListener("pointerup", (event) => {
-        if (!Game.LockedMouse) {
-            Game.LockMouse(event);
-        }
-    });
-    document.addEventListener("pointermove", (event) => {
-        if (Game.LockedMouse) {
-            if (event.clientX !== Game.ClientXOnLock) {
-                Game.UnlockMouse();
+    if (Game.WorldCameraMode) {
+    }
+    else {
+        Game.Canvas.addEventListener("pointerup", (event) => {
+            if (!Game.LockedMouse) {
+                Game.LockMouse(event);
             }
-            else if (event.clientY !== Game.ClientYOnLock) {
-                Game.UnlockMouse();
+        });
+        document.addEventListener("pointermove", (event) => {
+            if (Game.LockedMouse) {
+                if (event.clientX !== Game.ClientXOnLock) {
+                    Game.UnlockMouse();
+                }
+                else if (event.clientY !== Game.ClientYOnLock) {
+                    Game.UnlockMouse();
+                }
             }
-        }
-    });
+        });
+    }
 });
 // get shared VertexData from exposed arrays.
 // obviously not the easiest way to get shapes: mostly an attempt at complete procedural generation.
@@ -150,6 +231,7 @@ class MeshTools {
         indices.push(index);
     }
     static PushTopQuadUvs(block, uvs) {
+        return;
         block = Math.min(block, 128 + 8);
         let i = (block - 128 - 1) % 4;
         let j = Math.floor((block - 128 - 1) / 4);
@@ -163,6 +245,7 @@ class MeshTools {
         uvs.push(0.75 - j * 0.25);
     }
     static PushSideQuadUvs(block, uvs) {
+        return;
         block = Math.min(block, 128 + 8);
         let i = (block - 128 - 1) % 4;
         let j = Math.floor((block - 128 - 1) / 4);
@@ -206,29 +289,16 @@ class Planet extends BABYLON.Mesh {
     constructor(name, kPosMax) {
         super(name, Game.Scene);
         this.kPosMax = kPosMax;
-        this.totalRadiusWaterSquared = this.GetRadiusWater() * this.GetRadiusWater();
-        console.log(this.totalRadiusWaterSquared);
-        this.sides = new Array();
+        this.sides = [];
         this.sides[Side.Right] = new PlanetSide(Side.Right, this);
         this.sides[Side.Left] = new PlanetSide(Side.Left, this);
         this.sides[Side.Front] = new PlanetSide(Side.Front, this);
         this.sides[Side.Back] = new PlanetSide(Side.Back, this);
         this.sides[Side.Top] = new PlanetSide(Side.Top, this);
         this.sides[Side.Bottom] = new PlanetSide(Side.Bottom, this);
-        console.log("KPosMax = " + this.kPosMax);
-        console.log("RadiusWater = " + this.GetRadiusWater());
     }
     GetSide(side) {
         return this.sides[side];
-    }
-    GetKPosMax() {
-        return this.kPosMax;
-    }
-    GetRadiusWater() {
-        return 22.8;
-    }
-    GetTotalRadiusWaterSquared() {
-        return this.totalRadiusWaterSquared;
     }
     GetPlanetName() {
         return this.name;
@@ -260,13 +330,14 @@ class PlanetChunck extends BABYLON.Mesh {
         this.iPos = iPos;
         this.jPos = jPos;
         this.kPos = kPos;
+        this.name = "chunck:" + this.side + ":" + this.iPos + "-" + this.jPos + "-" + this.kPos;
         this.barycenter = PlanetTools.EvaluateVertex(this.GetSize(), PlanetTools.CHUNCKSIZE * this.iPos + PlanetTools.CHUNCKSIZE / 2, PlanetTools.CHUNCKSIZE * this.jPos + PlanetTools.CHUNCKSIZE / 2).scale(PlanetTools.CHUNCKSIZE * this.kPos + PlanetTools.CHUNCKSIZE / 2);
         this.barycenter = BABYLON.Vector3.TransformCoordinates(this.barycenter, planetSide.computeWorldMatrix());
         this.normal = BABYLON.Vector3.Normalize(this.barycenter);
-        this.water = new Water(this.name + "-water");
-        this.water.parent = this;
-        this.bedrock = new BABYLON.Mesh(this.name + "-bedrock", Game.Scene);
-        this.bedrock.parent = this;
+        if (this.kPos === 0) {
+            this.bedrock = new BABYLON.Mesh(this.name + "-bedrock", Game.Scene);
+            this.bedrock.parent = this;
+        }
     }
     get side() {
         return this.planetSide.side;
@@ -280,8 +351,8 @@ class PlanetChunck extends BABYLON.Mesh {
     GetPlanetName() {
         return this.planetSide.GetPlanetName();
     }
-    GetKPosMax() {
-        return this.planetSide.GetKPosMax();
+    get kPosMax() {
+        return this.planetSide.kPosMax;
     }
     Position() {
         return {
@@ -312,14 +383,18 @@ class PlanetChunck extends BABYLON.Mesh {
     GetNormal() {
         return this.normal;
     }
-    GetRadiusWater() {
-        return this.planetSide.GetRadiusWater();
-    }
     PushToBuffer() {
-        let sqrDist = Player.Position()
+        let position;
+        if (Game.WorldCameraMode) {
+            position = Game.Camera.position;
+        }
+        else {
+            position = Player.Position();
+        }
+        let sqrDist = position
             .subtract(this.barycenter)
             .lengthSquared();
-        if (sqrDist < PlanetTools.DISTANCELIMITSQUARED) {
+        if (sqrDist < Game.DebugLodDistanceFactor * PlanetTools.DISTANCELIMITSQUARED) {
             this.PushToInitializationBuffer();
         }
         else {
@@ -327,12 +402,19 @@ class PlanetChunck extends BABYLON.Mesh {
         }
     }
     PushToInitializationBuffer() {
-        let thisDistance = Player.Position()
+        let position;
+        if (Game.WorldCameraMode) {
+            position = Game.Camera.position;
+        }
+        else {
+            position = Player.Position();
+        }
+        let thisDistance = position
             .subtract(this.barycenter)
             .lengthSquared();
         let lastIDistance = -1;
         for (let i = 0; i < PlanetChunck.initializationBuffer.length; i++) {
-            let iDistance = Player.Position()
+            let iDistance = position
                 .subtract(PlanetChunck.initializationBuffer[i].GetBaryCenter())
                 .lengthSquared();
             if (thisDistance > iDistance) {
@@ -347,19 +429,13 @@ class PlanetChunck extends BABYLON.Mesh {
         this.PushToBuffer();
     }
     Initialize() {
-        if (this.kPos < this.GetKPosMax()) {
-            this.data = PlanetTools.FilledData();
+        let data = localStorage.getItem(this.name);
+        if (data && false) {
+            this.deserialize(data);
         }
         else {
-            this.data = PlanetTools.Data((i, j, k) => {
-                let h = PlanetTools.CHUNCKSIZE / 2 + 1.5 * Math.cos(i * 6) + 1.5 * Math.sin(j * 3);
-                if (k < h) {
-                    return Math.floor(128 + 9 + Math.floor(4 * Math.random()));
-                }
-                else {
-                    return 0;
-                }
-            });
+            this.data = this.planetSide.planet.generator.makeData(this);
+            this.saveToLocalStorage();
         }
         this.SetMesh();
     }
@@ -378,10 +454,18 @@ class PlanetChunck extends BABYLON.Mesh {
     }
     Dispose() {
         PlanetTools.EmptyVertexData().applyToMesh(this);
-        PlanetTools.EmptyVertexData().applyToMesh(this.water);
-        PlanetTools.EmptyVertexData().applyToMesh(this.bedrock);
+        if (this.bedrock) {
+            PlanetTools.EmptyVertexData().applyToMesh(this.bedrock);
+        }
     }
     static InitializeLoop() {
+        let position;
+        if (Game.WorldCameraMode) {
+            position = Game.Camera.position;
+        }
+        else {
+            position = Player.Position();
+        }
         let chunck = PlanetChunck.initializationBuffer.pop();
         if (chunck) {
             chunck.Initialize();
@@ -396,10 +480,10 @@ class PlanetChunck extends BABYLON.Mesh {
         for (let i = 0; i < 5; i++) {
             if (PlanetChunck.initializedBuffer.length > 0) {
                 let initializedChunck = PlanetChunck.initializedBuffer.splice(0, 1)[0];
-                let sqrDist = Player.Position()
+                let sqrDist = position
                     .subtract(initializedChunck.barycenter)
                     .lengthSquared();
-                if (sqrDist > 4 * PlanetTools.DISTANCELIMITSQUARED) {
+                if (sqrDist > Game.DebugLodDistanceFactor * PlanetTools.DISTANCELIMITSQUARED) {
                     initializedChunck.Dispose();
                     PlanetChunck.delayBuffer.push(initializedChunck);
                 }
@@ -409,6 +493,36 @@ class PlanetChunck extends BABYLON.Mesh {
             }
         }
     }
+    serialize() {
+        let output = "";
+        for (let i = 0; i < PlanetTools.CHUNCKSIZE; i++) {
+            for (let j = 0; j < PlanetTools.CHUNCKSIZE; j++) {
+                for (let k = 0; k < PlanetTools.CHUNCKSIZE; k++) {
+                    output += this.data[i][j][k].toFixed(0);
+                }
+            }
+        }
+        let compressed = Utils.compress(output);
+        console.log("Compressed " + this.name + " data to " + (compressed.length / output.length * 100).toFixed(0) + "% of uncompressed size.");
+        return compressed;
+    }
+    deserialize(input) {
+        let data = Utils.decompress(input);
+        this.data = [];
+        for (let i = 0; i < PlanetTools.CHUNCKSIZE; i++) {
+            this.data[i] = [];
+            for (let j = 0; j < PlanetTools.CHUNCKSIZE; j++) {
+                this.data[i][j] = [];
+                for (let k = 0; k < PlanetTools.CHUNCKSIZE; k++) {
+                    let n = k + j * PlanetTools.CHUNCKSIZE + i * PlanetTools.CHUNCKSIZE * PlanetTools.CHUNCKSIZE;
+                    this.data[i][j][k] = parseInt(data[n]);
+                }
+            }
+        }
+    }
+    saveToLocalStorage() {
+        localStorage.setItem(this.name, this.serialize());
+    }
 }
 PlanetChunck.initializationBuffer = new Array();
 PlanetChunck.delayBuffer = new Array();
@@ -417,6 +531,9 @@ class PlanetChunckMeshBuilder {
     static get BlockColor() {
         if (!PlanetChunckMeshBuilder._BlockColor) {
             PlanetChunckMeshBuilder._BlockColor = new Map();
+            PlanetChunckMeshBuilder._BlockColor.set(BlockType.RedDirt, BABYLON.Color3.FromHexString("#fa591e"));
+            PlanetChunckMeshBuilder._BlockColor.set(BlockType.RedDust, BABYLON.Color3.FromHexString("#ad7c6a"));
+            PlanetChunckMeshBuilder._BlockColor.set(BlockType.RedRock, BABYLON.Color3.FromHexString("#4f1a06"));
             PlanetChunckMeshBuilder._BlockColor.set(128 + 8, BABYLON.Color3.FromHexString("#FFFFFF"));
             PlanetChunckMeshBuilder._BlockColor.set(128 + 9, BABYLON.Color3.FromHexString("#81FF36"));
             PlanetChunckMeshBuilder._BlockColor.set(128 + 10, BABYLON.Color3.FromHexString("#36E6FF"));
@@ -702,7 +819,7 @@ class PlanetEditor {
     }
     static GetHitWorldPos(remove = false) {
         let pickInfo = Game.Scene.pick(Game.Canvas.width / 2, Game.Canvas.height / 2, (mesh) => {
-            return !(mesh instanceof Water) && !(mesh.name === "preview-mesh");
+            return !(mesh.name === "preview-mesh");
         });
         if (pickInfo.hit) {
             if (pickInfo.pickedMesh instanceof PlanetChunck) {
@@ -755,10 +872,381 @@ class PlanetEditor {
                         let local = PlanetTools.GlobalIJKToLocalIJK(planetSide, global);
                         local.planetChunck.SetData(local.i, local.j, local.k, this.data);
                         local.planetChunck.SetMesh();
+                        local.planetChunck.saveToLocalStorage();
                     }
                 }
             }
         }
+    }
+}
+class PlanetGenerator {
+    constructor(planet) {
+        this.planet = planet;
+    }
+    showDebug() {
+        for (let i = 0; i < this.heightMaps.length; i++) {
+            let x = -3.5 + Math.floor(i / 3) * 7;
+            if (i === 1) {
+                x -= 1;
+            }
+            if (i === 4) {
+                x += 1;
+            }
+            Utils.showDebugPlanetHeightMap(this.heightMaps[i], x, 1.5 - 1.5 * (i % 3));
+        }
+    }
+}
+class PlanetGeneratorChaos extends PlanetGenerator {
+    constructor(planet) {
+        super(planet);
+        let hMax = this.planet.kPosMax * PlanetTools.CHUNCKSIZE;
+        let heightMap1 = PlanetHeightMap.CreateMap(PlanetTools.KPosToDegree(this.planet.kPosMax), hMax * 0.5, hMax * 0.15);
+        let heightMap2 = PlanetHeightMap.CreateMap(PlanetTools.KPosToDegree(this.planet.kPosMax), hMax * 0.5, hMax * 0.25, {
+            firstNoiseDegree: 4,
+            postComputation: (v) => {
+                if (v > hMax * 0.60) {
+                    return (v - hMax * 0.60) * 1.5;
+                }
+                return 0;
+            }
+        });
+        let heightMap3 = PlanetHeightMap.CreateMap(PlanetTools.KPosToDegree(5), hMax * 0.5, hMax * 0.25, {
+            firstNoiseDegree: 3,
+            postComputation: (v) => {
+                let delta = Math.abs(hMax * 0.5 - v);
+                if (delta > 2) {
+                    return 0;
+                }
+                return 3 - delta;
+            }
+        });
+        this.heightMaps = [heightMap1, heightMap2, heightMap3];
+        if (Game.ShowDebugPlanetHeightMap) {
+            this.showDebug();
+        }
+    }
+    makeData(chunck) {
+        let f = Math.pow(2, this.heightMaps[0].degree - PlanetTools.KPosToDegree(chunck.kPos));
+        let hMax = this.planet.kPosMax * PlanetTools.CHUNCKSIZE;
+        return PlanetTools.Data((i, j, k) => {
+            let h1 = this.heightMaps[0].getForSide(chunck.side, (chunck.iPos * PlanetTools.CHUNCKSIZE + i) * f, (chunck.jPos * PlanetTools.CHUNCKSIZE + j) * f);
+            let h2 = this.heightMaps[1].getForSide(chunck.side, (chunck.iPos * PlanetTools.CHUNCKSIZE + i) * f, (chunck.jPos * PlanetTools.CHUNCKSIZE + j) * f);
+            let h3 = this.heightMaps[2].getForSide(chunck.side, (chunck.iPos * PlanetTools.CHUNCKSIZE + i) * f, (chunck.jPos * PlanetTools.CHUNCKSIZE + j) * f);
+            let globalK = k + chunck.kPos * PlanetTools.CHUNCKSIZE;
+            let hGround = h1 - h3;
+            if (globalK < hGround) {
+                if (h3 > 0) {
+                    return BlockType.RedRock;
+                }
+                if (globalK < hMax * 0.5) {
+                    return BlockType.RedDust;
+                }
+                return BlockType.RedDirt;
+            }
+            if (globalK < hGround + h2) {
+                return BlockType.RedRock;
+            }
+            return 0;
+        });
+    }
+}
+class PlanetHeightMap {
+    constructor(degree) {
+        this.degree = degree;
+        this.map = [];
+        this.size = Math.pow(2, this.degree);
+    }
+    static CreateMap(degree, seaLevel, maxAltitude, options) {
+        let map = new PlanetHeightMap(0);
+        let firstNoiseDegree = 1;
+        if (options && isFinite(options.firstNoiseDegree)) {
+            firstNoiseDegree = options.firstNoiseDegree;
+        }
+        for (let i = 0; i <= map.size; i++) {
+            for (let j = 0; j <= map.size; j++) {
+                for (let k = 0; k <= map.size; k++) {
+                    if (map.isValid(i, j, k)) {
+                        map.setValue(seaLevel, i, j, k);
+                    }
+                }
+            }
+        }
+        let noise = maxAltitude;
+        while (map.degree < degree) {
+            map = map.scale2();
+            if (map.degree >= firstNoiseDegree) {
+                noise = noise * 0.5;
+                map.noise(noise);
+            }
+        }
+        if (options && options.postComputation) {
+            for (let i = 0; i <= map.size; i++) {
+                for (let j = 0; j <= map.size; j++) {
+                    for (let k = 0; k <= map.size; k++) {
+                        if (map.isValid(i, j, k)) {
+                            let v = map.getValue(i, j, k);
+                            map.setValue(options.postComputation(v), i, j, k);
+                        }
+                    }
+                }
+            }
+        }
+        map.seaLevel = seaLevel;
+        map.maxAltitude = maxAltitude;
+        return map;
+    }
+    noise(range) {
+        for (let i = 0; i <= this.size; i++) {
+            for (let j = 0; j <= this.size; j++) {
+                for (let k = 0; k <= this.size; k++) {
+                    if (this.isValid(i, j, k)) {
+                        let v = this.getValue(i, j, k);
+                        v += (Math.random() * 2 - 1) * range;
+                        this.setValue(v, i, j, k);
+                    }
+                }
+            }
+        }
+    }
+    addInPlace(other) {
+        if (other.degree = this.degree) {
+            for (let i = 0; i <= this.size; i++) {
+                for (let j = 0; j <= this.size; j++) {
+                    for (let k = 0; k <= this.size; k++) {
+                        if (this.isValid(i, j, k)) {
+                            let v = this.getValue(i, j, k);
+                            v += other.getValue(i, j, k);
+                            this.setValue(v, i, j, k);
+                        }
+                    }
+                }
+            }
+        }
+    }
+    substractInPlace(other) {
+        if (other.degree = this.degree) {
+            for (let i = 0; i <= this.size; i++) {
+                for (let j = 0; j <= this.size; j++) {
+                    for (let k = 0; k <= this.size; k++) {
+                        if (this.isValid(i, j, k)) {
+                            let v = this.getValue(i, j, k);
+                            v -= other.getValue(i, j, k);
+                            this.setValue(v, i, j, k);
+                        }
+                    }
+                }
+            }
+        }
+    }
+    scale2() {
+        let scaledMap = new PlanetHeightMap(this.degree + 1);
+        for (let I = 0; I <= this.size; I++) {
+            for (let J = 0; J <= this.size; J++) {
+                for (let K = 0; K <= this.size; K++) {
+                    if (this.isValid(I, J, K)) {
+                        let v = this.getValue(I, J, K);
+                        scaledMap.setValue(v, 2 * I, 2 * J, 2 * K);
+                    }
+                }
+            }
+        }
+        for (let i = 0; i <= this.size; i++) {
+            for (let j = 0; j <= this.size; j++) {
+                for (let k = 0; k <= this.size; k++) {
+                    if (scaledMap.isValid(2 * i + 1, 2 * j, 2 * k)) {
+                        let v1 = scaledMap.getValue(2 * i, 2 * j, 2 * k);
+                        let v2 = scaledMap.getValue(2 * i + 2, 2 * j, 2 * k);
+                        if (isFinite(v1) && isFinite(v2)) {
+                            scaledMap.setValue((v1 + v2) * 0.5, 2 * i + 1, 2 * j, 2 * k);
+                        }
+                    }
+                    if (scaledMap.isValid(2 * i, 2 * j + 1, 2 * k)) {
+                        let v1 = scaledMap.getValue(2 * i, 2 * j, 2 * k);
+                        let v2 = scaledMap.getValue(2 * i, 2 * j + 2, 2 * k);
+                        if (isFinite(v1) && isFinite(v2)) {
+                            scaledMap.setValue((v1 + v2) * 0.5, 2 * i, 2 * j + 1, 2 * k);
+                        }
+                    }
+                    if (scaledMap.isValid(2 * i, 2 * j, 2 * k + 1)) {
+                        let v1 = scaledMap.getValue(2 * i, 2 * j, 2 * k);
+                        let v2 = scaledMap.getValue(2 * i, 2 * j, 2 * k + 2);
+                        if (isFinite(v1) && isFinite(v2)) {
+                            scaledMap.setValue((v1 + v2) * 0.5, 2 * i, 2 * j, 2 * k + 1);
+                        }
+                    }
+                }
+            }
+        }
+        for (let i = 0; i <= this.size; i++) {
+            for (let j = 0; j <= this.size; j++) {
+                for (let k = 0; k <= this.size; k++) {
+                    if (scaledMap.isValid(2 * i + 1, 2 * j + 1, 2 * k)) {
+                        let v1 = scaledMap.getValue(2 * i, 2 * j + 1, 2 * k);
+                        let v2 = scaledMap.getValue(2 * i + 2, 2 * j + 1, 2 * k);
+                        let v3 = scaledMap.getValue(2 * i + 1, 2 * j + 2, 2 * k);
+                        let v4 = scaledMap.getValue(2 * i + 1, 2 * j, 2 * k);
+                        let c = 0;
+                        let v = 0;
+                        if (isFinite(v1)) {
+                            c++;
+                            v += v1;
+                        }
+                        if (isFinite(v2)) {
+                            c++;
+                            v += v2;
+                        }
+                        if (isFinite(v3)) {
+                            c++;
+                            v += v3;
+                        }
+                        if (isFinite(v4)) {
+                            c++;
+                            v += v4;
+                        }
+                        v /= c;
+                        if (isNaN(v)) {
+                            debugger;
+                        }
+                        scaledMap.setValue(v, 2 * i + 1, 2 * j + 1, 2 * k);
+                    }
+                    if (scaledMap.isValid(2 * i + 1, 2 * j, 2 * k + 1)) {
+                        let v1 = scaledMap.getValue(2 * i, 2 * j, 2 * k + 1);
+                        let v2 = scaledMap.getValue(2 * i + 2, 2 * j, 2 * k + 1);
+                        let v3 = scaledMap.getValue(2 * i + 1, 2 * j, 2 * k);
+                        let v4 = scaledMap.getValue(2 * i + 1, 2 * j, 2 * k + 2);
+                        let c = 0;
+                        let v = 0;
+                        if (isFinite(v1)) {
+                            c++;
+                            v += v1;
+                        }
+                        if (isFinite(v2)) {
+                            c++;
+                            v += v2;
+                        }
+                        if (isFinite(v3)) {
+                            c++;
+                            v += v3;
+                        }
+                        if (isFinite(v4)) {
+                            c++;
+                            v += v4;
+                        }
+                        v /= c;
+                        if (isNaN(v)) {
+                            debugger;
+                        }
+                        scaledMap.setValue(v, 2 * i + 1, 2 * j, 2 * k + 1);
+                    }
+                    if (scaledMap.isValid(2 * i, 2 * j + 1, 2 * k + 1)) {
+                        let v1 = scaledMap.getValue(2 * i, 2 * j, 2 * k + 1);
+                        let v2 = scaledMap.getValue(2 * i, 2 * j + 2, 2 * k + 1);
+                        let v3 = scaledMap.getValue(2 * i, 2 * j + 1, 2 * k);
+                        let v4 = scaledMap.getValue(2 * i, 2 * j + 1, 2 * k + 2);
+                        let c = 0;
+                        let v = 0;
+                        if (isFinite(v1)) {
+                            c++;
+                            v += v1;
+                        }
+                        if (isFinite(v2)) {
+                            c++;
+                            v += v2;
+                        }
+                        if (isFinite(v3)) {
+                            c++;
+                            v += v3;
+                        }
+                        if (isFinite(v4)) {
+                            c++;
+                            v += v4;
+                        }
+                        v /= c;
+                        if (isNaN(v)) {
+                            debugger;
+                        }
+                        scaledMap.setValue(v, 2 * i, 2 * j + 1, 2 * k + 1);
+                    }
+                }
+            }
+        }
+        if (!scaledMap.sanityCheck()) {
+            debugger;
+        }
+        return scaledMap;
+    }
+    isValid(i, j, k) {
+        return (i === 0 || j === 0 || k === 0 || i === this.size || j === this.size || k === this.size) && (i >= 0 && j >= 0 && k >= 0 && i <= this.size && j <= this.size && k <= this.size);
+    }
+    sanityCheck() {
+        for (let i = 0; i <= this.size; i++) {
+            for (let j = 0; j <= this.size; j++) {
+                for (let k = 0; k <= this.size; k++) {
+                    if (this.isValid(i, j, k)) {
+                        if (isNaN(this.getValue(i, j, k))) {
+                            return false;
+                        }
+                    }
+                }
+            }
+        }
+        return true;
+    }
+    getForSide(side, i, j) {
+        if (side === Side.Top) {
+            return this.getValue(this.size - j, this.size, i);
+        }
+        else if (side === Side.Right) {
+            return this.getValue(this.size, j, i);
+        }
+        else if (side === Side.Front) {
+            return this.getValue(this.size - i, j, this.size);
+        }
+        else if (side === Side.Left) {
+            return this.getValue(0, j, this.size - i);
+        }
+        else if (side === Side.Back) {
+            return this.getValue(i, j, 0);
+        }
+        if (side === Side.Bottom) {
+            return this.getValue(j, 0, i);
+        }
+        else {
+            return 0;
+        }
+    }
+    getValue(i, j, k) {
+        if (this.map[i]) {
+            if (this.map[i][j]) {
+                return this.map[i][j][k];
+            }
+        }
+    }
+    setValue(v, i, j, k) {
+        if (!this.map[i]) {
+            this.map[i] = [];
+        }
+        if (!this.map[i][j]) {
+            this.map[i][j] = [];
+        }
+        this.map[i][j][k] = v;
+    }
+    getTexture(side, maxValue) {
+        let texture = new BABYLON.DynamicTexture("texture-" + side, this.size, Game.Scene, false);
+        let context = texture.getContext();
+        if (!isFinite(maxValue)) {
+            maxValue = this.seaLevel + this.maxAltitude;
+        }
+        for (let i = 0; i < this.size; i++) {
+            for (let j = 0; j < this.size; j++) {
+                let v = this.getForSide(side, i, j);
+                let c = v / maxValue * 256;
+                context.fillStyle = "rgb(" + c.toFixed(0) + ", " + c.toFixed(0) + ", " + c.toFixed(0) + ")";
+                context.fillRect(i, j, 1, 1);
+            }
+        }
+        texture.update(false);
+        return texture;
     }
 }
 var Side;
@@ -780,7 +1268,7 @@ class PlanetSide extends BABYLON.Mesh {
         this.computeWorldMatrix();
         this.freezeWorldMatrix();
         this.chuncks = new Array();
-        for (let k = 0; k <= this.GetKPosMax(); k++) {
+        for (let k = 0; k <= this.kPosMax; k++) {
             this.chuncks[k] = new Array();
             let chuncksCount = PlanetTools.DegreeToChuncksCount(PlanetTools.KPosToDegree(k));
             for (let i = 0; i < chuncksCount; i++) {
@@ -800,11 +1288,8 @@ class PlanetSide extends BABYLON.Mesh {
     GetPlanetName() {
         return this.planet.GetPlanetName();
     }
-    GetRadiusWater() {
-        return this.planet.GetRadiusWater();
-    }
-    GetKPosMax() {
-        return this.planet.GetKPosMax();
+    get kPosMax() {
+        return this.planet.kPosMax;
     }
     GetChunck(i, j, k) {
         return this.chuncks[k][i][j];
@@ -902,7 +1387,8 @@ class PlanetTools {
             for (let j = 0; j < PlanetTools.CHUNCKSIZE; j++) {
                 data[i][j] = [];
                 for (let k = 0; k < PlanetTools.CHUNCKSIZE; k++) {
-                    data[i][j][k] = 128 + 9 + Math.floor(4 * Math.random());
+                    //data[i][j][k] = 128 + 9 + Math.floor(4 * Math.random());
+                    data[i][j][k] = 3;
                 }
             }
         }
@@ -1148,7 +1634,7 @@ class Player extends BABYLON.Mesh {
             if (this._jumpTimer === 0) {
                 let ray = new BABYLON.Ray(this.position, this._downDirection, 1.7);
                 let hit = Game.Scene.pickWithRay(ray, (mesh) => {
-                    return !(mesh instanceof Water);
+                    return (mesh instanceof PlanetChunck);
                 });
                 if (hit.pickedPoint) {
                     let d = hit.pickedPoint.subtract(this.position).length();
@@ -1225,6 +1711,7 @@ class Player extends BABYLON.Mesh {
         this.camPos.parent = this;
         this.camPos.position = new BABYLON.Vector3(0, 0, 0);
         Game.Camera.parent = this.camPos;
+        Game.Camera.position.copyFromFloats(0, 0, 0);
         this.RegisterControl();
         Player.Instance = this;
         Game.Scene.onBeforeRenderObservable.add(this._update);
@@ -1235,6 +1722,9 @@ class Player extends BABYLON.Mesh {
     PositionLeg() {
         let posLeg = this.position.add(BABYLON.Vector3.TransformNormal(BABYLON.Axis.Y, this.getWorldMatrix()).scale(-1));
         return posLeg;
+    }
+    PositionRoot() {
+        return this.position.add(this._downDirection.scale(0.75));
     }
     PositionHead() {
         return this.position;
@@ -1323,35 +1813,6 @@ class Player extends BABYLON.Mesh {
             Player.Instance.rotationQuaternion = rotation.multiply(Player.Instance.rotationQuaternion);
         }
     }
-    static CanGoSide(axis) {
-        let localAxis = BABYLON.Vector3.TransformNormal(axis, Player.Instance.getWorldMatrix());
-        let ray = new BABYLON.Ray(Player.Instance.PositionLeg(), localAxis, 0.6);
-        let hit = Game.Scene.pickWithRay(ray, (mesh) => {
-            return !(mesh instanceof Water);
-        });
-        if (hit.pickedPoint) {
-            return false;
-        }
-        ray = new BABYLON.Ray(Player.Instance.PositionHead(), localAxis, 0.6);
-        hit = Game.Scene.pickWithRay(ray, (mesh) => {
-            return !(mesh instanceof Water);
-        });
-        if (hit.pickedPoint) {
-            return false;
-        }
-        return true;
-    }
-    static CanGoUp() {
-        let localAxis = BABYLON.Vector3.TransformNormal(BABYLON.Axis.Y, Player.Instance.getWorldMatrix());
-        let ray = new BABYLON.Ray(Player.Instance.PositionHead(), localAxis, 0.6);
-        let hit = Game.Scene.pickWithRay(ray, (mesh) => {
-            return !(mesh instanceof Water);
-        });
-        if (hit.pickedPoint) {
-            return false;
-        }
-        return true;
-    }
 }
 class SharedMaterials {
     static MainMaterial() {
@@ -1389,16 +1850,164 @@ class SharedMaterials {
         return SharedMaterials.skyMaterial;
     }
 }
+class Utils {
+    static showDebugPlanetHeightMap(heightMap, x, y, maxValue) {
+        let debugPlanet = new BABYLON.Mesh("debug-planet");
+        for (let i = 0; i < 6; i++) {
+            BABYLON.SceneLoader.ImportMesh("", "./resources/models/planet-side.babylon", "", Game.Scene, (meshes) => {
+                let debugPlanetSide = meshes[0];
+                if (debugPlanetSide instanceof (BABYLON.Mesh)) {
+                    let debugPlanetSideMaterial = new BABYLON.StandardMaterial("debub-planet-side-material", Game.Scene);
+                    debugPlanetSideMaterial.diffuseTexture = heightMap.getTexture(i, maxValue);
+                    debugPlanetSideMaterial.emissiveColor = BABYLON.Color3.White();
+                    debugPlanetSideMaterial.specularColor = BABYLON.Color3.Black();
+                    debugPlanetSide.material = debugPlanetSideMaterial;
+                    debugPlanetSide.rotationQuaternion = PlanetTools.QuaternionForSide(i);
+                    debugPlanetSide.parent = debugPlanet;
+                }
+            });
+        }
+        Game.Scene.onBeforeRenderObservable.add(() => {
+            Game.Camera.computeWorldMatrix();
+            debugPlanet.position.copyFrom(Game.Camera.position);
+            debugPlanet.position.addInPlace(Game.Camera.getDirection(BABYLON.Axis.Z).scale(7));
+            debugPlanet.position.addInPlace(Game.Camera.getDirection(BABYLON.Axis.X).scale(x));
+            debugPlanet.position.addInPlace(Game.Camera.getDirection(BABYLON.Axis.Y).scale(y));
+        });
+    }
+    static compress(input) {
+        let output = "";
+        let i = 0;
+        let l = input.length;
+        let lastC = "";
+        let lastCount = 0;
+        while (i < l) {
+            let c = input[i];
+            if (c === lastC) {
+                lastCount++;
+            }
+            else {
+                if (lastCount > 3) {
+                    if (lastCount < 10) {
+                        output += ".";
+                    }
+                    else if (lastCount < 100) {
+                        output += ":";
+                    }
+                    else if (lastCount < 1000) {
+                        output += ";";
+                    }
+                    else if (lastCount < 10000) {
+                        output += "!";
+                    }
+                    else if (lastCount < 100000) {
+                        output += "?";
+                    }
+                    else {
+                        output += "X_ERROR_TOO_MANY_REP_" + lastC + "_X";
+                        return output;
+                    }
+                    output += lastCount.toFixed(0) + lastC;
+                    lastC = c;
+                    lastCount = 1;
+                }
+                else {
+                    for (let n = 0; n < lastCount; n++) {
+                        output += lastC;
+                    }
+                    lastC = c;
+                    lastCount = 1;
+                }
+            }
+            i++;
+        }
+        if (lastCount > 3) {
+            if (lastCount < 10) {
+                output += ".";
+            }
+            else if (lastCount < 100) {
+                output += ":";
+            }
+            else if (lastCount < 1000) {
+                output += ";";
+            }
+            else if (lastCount < 10000) {
+                output += "!";
+            }
+            else if (lastCount < 100000) {
+                output += "?";
+            }
+            else {
+                output += "X_ERROR_TOO_MANY_REP_" + lastC + "_X";
+                return output;
+            }
+            output += lastCount.toFixed(0) + lastC;
+        }
+        else {
+            for (let n = 0; n < lastCount; n++) {
+                output += lastC;
+            }
+        }
+        return output;
+    }
+    static decompress(input) {
+        let output = "";
+        let i = -1;
+        let l = input.length;
+        while (i < l - 1) {
+            let c = input[++i];
+            if (c === ".") {
+                let countS = input[++i];
+                let count = parseInt(countS);
+                c = input[++i];
+                for (let n = 0; n < count; n++) {
+                    output += c;
+                }
+            }
+            else if (c === ":") {
+                let countS = input[++i] + input[++i];
+                let count = parseInt(countS);
+                c = input[++i];
+                for (let n = 0; n < count; n++) {
+                    output += c;
+                }
+            }
+            else if (c === ";") {
+                let countS = input[++i] + input[++i] + input[++i];
+                let count = parseInt(countS);
+                c = input[++i];
+                for (let n = 0; n < count; n++) {
+                    output += c;
+                }
+            }
+            else if (c === "!") {
+                let countS = input[++i] + input[++i] + input[++i] + input[++i];
+                let count = parseInt(countS);
+                c = input[++i];
+                for (let n = 0; n < count; n++) {
+                    output += c;
+                }
+            }
+            else if (c === "?") {
+                let countS = input[++i] + input[++i] + input[++i] + input[++i] + input[++i];
+                let count = parseInt(countS);
+                c = input[++i];
+                for (let n = 0; n < count; n++) {
+                    output += c;
+                }
+            }
+            else {
+                output += c;
+            }
+        }
+        return output;
+    }
+}
 class VMath {
     static IsFinite(o) {
         if (o instanceof BABYLON.Vector3) {
             return isFinite(o.x) && isFinite(o.y) && isFinite(o.z);
         }
         return false;
-    }
-}
-class Water extends BABYLON.Mesh {
-    constructor(name) {
-        super(name, Game.Scene);
     }
 }

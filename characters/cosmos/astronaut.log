@@ -1,0 +1,144 @@
+Exporter version: 6.4.5, Blender version: 2.90.1
+========= Conversion from Blender to Babylon.js =========
+	Scene settings used :
+		Inline textures     :  false
+		Material Type       :  PBR
+		Positions Precision :  4
+		Normals Precision   :  3
+		UVs Precision       :  3
+		Vert Color Precision:  3
+		Mat Weight Precision:  2
+		Keep Z-up r-handed  :  no
+		Texture directory   :  C:\Users\svent\Documents\Sven Frankson\planet-builder-web\characters\cosmos\
+	Python World class constructor completed
+	WARNING: No active camera has been assigned, or is not in a currently selected Blender layer
+	processing begun of mesh:  head
+		processing begun of material:  White
+		num positions      :  88
+		num normals        :  88
+		num tangents       :  0
+		num uvs            :  176
+		num uvs2           :  0
+		num colors         :  0
+		num triangles      :  80
+	processing begun of mesh:  upper-arm-left
+		processing begun of material:  White
+		registered as also a user of material:  White
+		num positions      :  189
+		num normals        :  189
+		num tangents       :  0
+		num uvs            :  378
+		num uvs2           :  0
+		num colors         :  0
+		num triangles      :  264
+	processing begun of mesh:  body-root
+		processing begun of material:  White
+		processing begun of material:  Black
+		registered as also a user of material:  White
+		processing begun of multimaterial:  astronaut.Multimaterial#0
+		num positions      :  553
+		num normals        :  553
+		num tangents       :  0
+		num uvs            :  1106
+		num uvs2           :  0
+		num colors         :  0
+		num triangles      :  518
+		WARNING: # of 0 area faces found:  32
+	processing begun of mesh:  arm-left
+		processing begun of material:  Black
+		registered as also a user of material:  Black
+		num positions      :  189
+		num normals        :  189
+		num tangents       :  0
+		num uvs            :  378
+		num uvs2           :  0
+		num colors         :  0
+		num triangles      :  264
+	processing begun of mesh:  upper-leg-right
+		processing begun of material:  White
+		registered as also a user of material:  White
+		num positions      :  173
+		num normals        :  173
+		num tangents       :  0
+		num uvs            :  346
+		num uvs2           :  0
+		num colors         :  0
+		num triangles      :  240
+	processing begun of mesh:  leg-right
+		processing begun of material:  Black
+		registered as also a user of material:  Black
+		num positions      :  171
+		num normals        :  171
+		num tangents       :  0
+		num uvs            :  342
+		num uvs2           :  0
+		num colors         :  0
+		num triangles      :  240
+	processing begun of mesh:  body-up
+		processing begun of material:  Black
+		processing begun of material:  White
+		registered as also a user of material:  Black
+		registered as also a user of material:  White
+		processing begun of multimaterial:  astronaut.Multimaterial#1
+		num positions      :  669
+		num normals        :  669
+		num tangents       :  0
+		num uvs            :  1338
+		num uvs2           :  0
+		num colors         :  0
+		num triangles      :  672
+	processing begun of mesh:  upper-leg-left
+		processing begun of material:  White
+		registered as also a user of material:  White
+		num positions      :  172
+		num normals        :  172
+		num tangents       :  0
+		num uvs            :  344
+		num uvs2           :  0
+		num colors         :  0
+		num triangles      :  240
+	processing begun of mesh:  leg-left
+		processing begun of material:  Black
+		registered as also a user of material:  Black
+		num positions      :  171
+		num normals        :  171
+		num tangents       :  0
+		num uvs            :  342
+		num uvs2           :  0
+		num colors         :  0
+		num triangles      :  240
+	processing begun of mesh:  upper-arm-right
+		processing begun of material:  White
+		registered as also a user of material:  White
+		num positions      :  189
+		num normals        :  189
+		num tangents       :  0
+		num uvs            :  378
+		num uvs2           :  0
+		num colors         :  0
+		num triangles      :  264
+	processing begun of mesh:  arm-right
+		processing begun of material:  Black
+		registered as also a user of material:  Black
+		num positions      :  189
+		num normals        :  189
+		num tangents       :  0
+		num uvs            :  378
+		num uvs2           :  0
+		num colors         :  0
+		num triangles      :  264
+========= Writing of JSON file started =========
+	writing mesh:  head
+	writing mesh:  upper-arm-left
+	writing mesh:  body-root
+	writing mesh:  arm-left
+	writing mesh:  upper-leg-right
+	writing mesh:  leg-right
+	writing mesh:  body-up
+	writing mesh:  upper-leg-left
+	writing mesh:  leg-left
+	writing mesh:  upper-arm-right
+	writing mesh:  arm-right
+========= Writing of JSON file completed =========
+========= end of processing =========
+elapsed time:  0 min, 0.2004 secs

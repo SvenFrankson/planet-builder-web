@@ -6,7 +6,7 @@ class Player extends BABYLON.Mesh {
 
     private mass: number = 1;
     private speed: number = 5;
-    private velocity: BABYLON.Vector3 = BABYLON.Vector3.Zero();
+    public velocity: BABYLON.Vector3 = BABYLON.Vector3.Zero();
 
     private planet: Planet;
     private underWater: boolean = false;
@@ -27,6 +27,10 @@ class Player extends BABYLON.Mesh {
         return posLeg;
     }
 
+    public PositionRoot(): BABYLON.Vector3 {
+        return this.position.add(this._downDirection.scale(0.75));
+    }
+
     public PositionHead(): BABYLON.Vector3 {
         return this.position;
     }
@@ -41,6 +45,7 @@ class Player extends BABYLON.Mesh {
         this.camPos.parent = this;
         this.camPos.position = new BABYLON.Vector3(0, 0, 0);
         Game.Camera.parent = this.camPos;
+        Game.Camera.position.copyFromFloats(0, 0, 0);
         this.RegisterControl();
         Player.Instance = this;
         
@@ -210,7 +215,7 @@ class Player extends BABYLON.Mesh {
             let hit: BABYLON.PickingInfo = Game.Scene.pickWithRay(
                 ray,
                 (mesh: BABYLON.Mesh) => {
-                    return !(mesh instanceof Water);
+                    return (mesh instanceof PlanetChunck);
                 }
             );
             if (hit.pickedPoint) {
@@ -317,56 +322,5 @@ class Player extends BABYLON.Mesh {
                 Player.Instance.rotationQuaternion
             );
         }
-    }
-
-    public static CanGoSide(axis: BABYLON.Vector3): boolean {
-        let localAxis: BABYLON.Vector3 = BABYLON.Vector3.TransformNormal(
-            axis,
-            Player.Instance.getWorldMatrix()
-        );
-        let ray: BABYLON.Ray = new BABYLON.Ray(
-            Player.Instance.PositionLeg(),
-            localAxis,
-            0.6
-        );
-        let hit: BABYLON.PickingInfo = Game.Scene.pickWithRay(
-            ray,
-            (mesh: BABYLON.Mesh) => {
-                return !(mesh instanceof Water);
-            }
-        );
-        if (hit.pickedPoint) {
-            return false;
-        }
-        ray = new BABYLON.Ray(Player.Instance.PositionHead(), localAxis, 0.6);
-        hit = Game.Scene.pickWithRay(ray, (mesh: BABYLON.Mesh) => {
-            return !(mesh instanceof Water);
-        });
-        if (hit.pickedPoint) {
-            return false;
-        }
-        return true;
-    }
-
-    public static CanGoUp(): boolean {
-        let localAxis: BABYLON.Vector3 = BABYLON.Vector3.TransformNormal(
-            BABYLON.Axis.Y,
-            Player.Instance.getWorldMatrix()
-        );
-        let ray: BABYLON.Ray = new BABYLON.Ray(
-            Player.Instance.PositionHead(),
-            localAxis,
-            0.6
-        );
-        let hit: BABYLON.PickingInfo = Game.Scene.pickWithRay(
-            ray,
-            (mesh: BABYLON.Mesh) => {
-                return !(mesh instanceof Water);
-            }
-        );
-        if (hit.pickedPoint) {
-            return false;
-        }
-        return true;
     }
 }

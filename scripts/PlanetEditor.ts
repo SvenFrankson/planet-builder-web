@@ -8,7 +8,7 @@ class PlanetEditor {
             Game.Canvas.width / 2,
             Game.Canvas.height / 2,
             (mesh: BABYLON.Mesh) => {
-                return !(mesh instanceof Water) && !(mesh.name === "preview-mesh");
+                return !(mesh.name === "preview-mesh");
             }
         );
         if (pickInfo.hit) {
@@ -106,6 +106,7 @@ class PlanetEditor {
                         let local = PlanetTools.GlobalIJKToLocalIJK(planetSide, global);
                         local.planetChunck.SetData(local.i, local.j, local.k, this.data);
                         local.planetChunck.SetMesh();
+                        local.planetChunck.saveToLocalStorage();
                     }
                 }
             }
