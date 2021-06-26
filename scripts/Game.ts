@@ -1,18 +1,19 @@
 /// <reference path="../lib/babylon.d.ts"/>
 class Game {
 
-	public static WorldCameraMode: boolean = false;
 	public static ShowDebugPlanetHeightMap: boolean = false;
-	public static DebugLodDistanceFactor: number = 1;
+	public static DebugLodDistanceFactor: number = 100;
 
 	public static Instance: Game;
 	public static Canvas: HTMLCanvasElement;
 	public static Engine: BABYLON.Engine;
 	public static Scene: BABYLON.Scene;
-	public static Camera: BABYLON.Camera;
 	public static Light: BABYLON.HemisphericLight;
 	public static Sky: BABYLON.Mesh;
 	public static PlanetEditor: PlanetEditor;
+	public static CameraManager: CameraManager;
+	public static Player: Player;
+	public static Plane: Plane;
 
 	public static LockedMouse: boolean = false;
 	public static ClientXOnLock: number = -1;
@@ -29,26 +30,6 @@ class Game {
 		Game.Scene.actionManager = new BABYLON.ActionManager(Game.Scene);
 		Game.Scene.clearColor.copyFromFloats(0.1, 0.1, 0.1, 1);
 
-		if (Game.WorldCameraMode) {
-			Game.Camera = new BABYLON.ArcRotateCamera(
-				"Camera",
-				0,
-				Math.PI / 2,
-				100,
-				BABYLON.Vector3.Zero(),
-				Game.Scene
-			);
-			Game.Camera.attachControl(Game.Canvas);
-		}
-		else {
-			Game.Camera = new BABYLON.FreeCamera(
-				"Camera",
-				BABYLON.Vector3.Zero(),
-				Game.Scene
-			);
-		}
-		Game.Camera.minZ = 0.1;
-
 		Game.Light = new BABYLON.HemisphericLight(
 			"light",
 			new BABYLON.Vector3(0, 1, 0),
@@ -58,6 +39,8 @@ class Game {
 		Game.Light.diffuse = new BABYLON.Color3(1, 1, 1);
 		Game.Light.specular = new BABYLON.Color3(1, 1, 1);
 		Game.Light.groundColor = new BABYLON.Color3(0.5, 0.5, 0.5);
+
+		Game.CameraManager = new CameraManager();
 
 		/*
 		let water = BABYLON.MeshBuilder.CreateSphere("water", { diameter: 78 - 0.4 }, Game.Scene);
@@ -73,17 +56,6 @@ class Game {
 		(SharedMaterials.WaterMaterial().diffuseTexture as BABYLON.Texture).vOffset += 0.005;
 	}
 
-	public static AnimateLight(): void {
-		let position: BABYLON.Vector3;
-        if (Game.WorldCameraMode) {
-            position = Game.Camera.position;
-        }
-        else {
-            position = Player.Position();
-        }
-		Game.Light.direction = position;
-	}
-
 	animate(): void {
 		let fpsInfoElement = document.getElementById("fps-info");
 		let meshesInfoTotalElement = document.getElementById("meshes-info-total");
@@ -96,7 +68,6 @@ class Game {
 			Game.Scene.render();
 			PlanetChunck.InitializeLoop();
 			Game.AnimateWater();
-			Game.AnimateLight();
 			
 			fpsInfoElement.innerText = Game.Engine.getFps().toFixed(0) + " fps";
 			let uniques = Game.Scene.meshes.filter(m => { return !(m instanceof BABYLON.InstancedMesh); });
@@ -152,7 +123,7 @@ window.addEventListener("DOMContentLoaded", () => {
 	let game: Game = new Game("renderCanvas");
 	game.createScene();
 
-	let planetTest: Planet = new Planet("Paulita", 5);
+	let planetTest: Planet = new Planet("Paulita", 6);
 
 	let heightMap = PlanetHeightMap.CreateMap(PlanetTools.KPosToDegree(5), 60, 10);
 	let heightMap2 = PlanetHeightMap.CreateMap(PlanetTools.KPosToDegree(5), 60, 20, {
@@ -188,40 +159,46 @@ window.addEventListener("DOMContentLoaded", () => {
 	});
 	heightMap.addInPlace(heightMap5);
 	
-	
-
 	planetTest.generator = new PlanetGeneratorChaos(planetTest);
 
-	if (!Game.WorldCameraMode) {
-		new Player(new BABYLON.Vector3(0, 64, 0), planetTest);
-	
-		Game.PlanetEditor = new PlanetEditor(planetTest);
-		Game.PlanetEditor.initialize();
-	}
+	Game.Player = new Player(new BABYLON.Vector3(10, 80, 0), planetTest);
+	Game.Player.registerControl();
+
+	Game.PlanetEditor = new PlanetEditor(planetTest);
+	//Game.PlanetEditor.initialize();
+
+	Game.Plane = new Plane(new BABYLON.Vector3(0, 80, 0), planetTest);
+	Game.Plane.instantiate();
+
+	Game.CameraManager.plane = Game.Plane;
+	Game.CameraManager.player = Game.Player;
+
+	Game.CameraManager.setMode(CameraMode.Player);
 
 	planetTest.AsyncInitialize();
 	
 	game.animate();
 
-	if (Game.WorldCameraMode) {
+	Game.Canvas.addEventListener("pointerup", (event: MouseEvent) => {
+		if (Game.CameraManager.cameraMode === CameraMode.Sky) {
+			return;
+		}
+		if (!Game.LockedMouse) {
+			Game.LockMouse(event);
+		}
+	});
 
-	}
-	else {
-		Game.Canvas.addEventListener("pointerup", (event: MouseEvent) => {
-			if (!Game.LockedMouse) {
-				Game.LockMouse(event);
+	document.addEventListener("pointermove", (event: MouseEvent) => {
+		if (Game.CameraManager.cameraMode === CameraMode.Sky) {
+			return;
+		}
+		if (Game.LockedMouse) {
+			if (event.clientX !== Game.ClientXOnLock) {
+				Game.UnlockMouse();
 			}
-		});
-	
-		document.addEventListener("pointermove", (event: MouseEvent) => {
-			if (Game.LockedMouse) {
-				if (event.clientX !== Game.ClientXOnLock) {
-					Game.UnlockMouse();
-				}
-				else if (event.clientY !== Game.ClientYOnLock) {
-					Game.UnlockMouse();
-				}
+			else if (event.clientY !== Game.ClientYOnLock) {
+				Game.UnlockMouse();
 			}
-		});
-	}
+		}
+	});
 });

@@ -104,13 +104,7 @@ class PlanetChunck extends BABYLON.Mesh {
     }
 
     private PushToBuffer(): void {
-        let position: BABYLON.Vector3;
-        if (Game.WorldCameraMode) {
-            position = Game.Camera.position;
-        }
-        else {
-            position = Player.Position();
-        }
+        let position: BABYLON.Vector3 = Game.CameraManager.absolutePosition;
         let sqrDist: number = position
             .subtract(this.barycenter)
             .lengthSquared();
@@ -122,13 +116,7 @@ class PlanetChunck extends BABYLON.Mesh {
     }
 
     private PushToInitializationBuffer(): void {
-        let position: BABYLON.Vector3;
-        if (Game.WorldCameraMode) {
-            position = Game.Camera.position;
-        }
-        else {
-            position = Player.Position();
-        }
+        let position: BABYLON.Vector3 = Game.CameraManager.absolutePosition;
         let thisDistance: number = position
             .subtract(this.barycenter)
             .lengthSquared();
@@ -174,9 +162,11 @@ class PlanetChunck extends BABYLON.Mesh {
             this.kPos,
             this.data
         );
-        vertexData.applyToMesh(this);
-        this.material = SharedMaterials.MainMaterial();
-
+        if (vertexData.positions.length > 0) {
+            vertexData.applyToMesh(this);
+            this.material = SharedMaterials.MainMaterial();
+        }
+    
         if (this.kPos === 0) {
             vertexData = PlanetChunckMeshBuilder.BuildBedrockVertexData(
                 this.GetSize(),
@@ -204,13 +194,7 @@ class PlanetChunck extends BABYLON.Mesh {
     }
 
     public static InitializeLoop(): void {
-        let position: BABYLON.Vector3;
-        if (Game.WorldCameraMode) {
-            position = Game.Camera.position;
-        }
-        else {
-            position = Player.Position();
-        }
+        let position: BABYLON.Vector3 = Game.CameraManager.absolutePosition;
         let chunck: PlanetChunck = PlanetChunck.initializationBuffer.pop();
         if (chunck) {
             chunck.Initialize();
@@ -255,7 +239,7 @@ class PlanetChunck extends BABYLON.Mesh {
             }
         }
         let compressed = Utils.compress(output);
-		console.log("Compressed " + this.name + " data to " + (compressed.length / output.length * 100).toFixed(0) + "% of uncompressed size.");
+		//console.log("Compressed " + this.name + " data to " + (compressed.length / output.length * 100).toFixed(0) + "% of uncompressed size.");
         return compressed;
     }
 

@@ -17,6 +17,13 @@ html, body {
 #cursor {
 	position: absolute;
 	z-index: 1;
+	top: 49.2%;
+	left: 49.6%;
+}
+
+#plane-cursor {
+	position: absolute;
+	z-index: 1;
 	top: 50%;
 	left: 50%;
 }

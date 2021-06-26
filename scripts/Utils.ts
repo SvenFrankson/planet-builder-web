@@ -24,11 +24,11 @@ class Utils {
 		}
 		Game.Scene.onBeforeRenderObservable.add(
 			() => {
-                Game.Camera.computeWorldMatrix();
-				debugPlanet.position.copyFrom(Game.Camera.position);
-				debugPlanet.position.addInPlace(Game.Camera.getDirection(BABYLON.Axis.Z).scale(7));
-				debugPlanet.position.addInPlace(Game.Camera.getDirection(BABYLON.Axis.X).scale(x));
-				debugPlanet.position.addInPlace(Game.Camera.getDirection(BABYLON.Axis.Y).scale(y));
+                Game.Scene.activeCamera.computeWorldMatrix();
+				debugPlanet.position.copyFrom(Game.CameraManager.absolutePosition);
+				debugPlanet.position.addInPlace(Game.Scene.activeCamera.getDirection(BABYLON.Axis.Z).scale(7));
+				debugPlanet.position.addInPlace(Game.Scene.activeCamera.getDirection(BABYLON.Axis.X).scale(x));
+				debugPlanet.position.addInPlace(Game.Scene.activeCamera.getDirection(BABYLON.Axis.Y).scale(y));
 			}
 		)
     }

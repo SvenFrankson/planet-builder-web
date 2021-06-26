@@ -68,8 +68,8 @@ class PlanetEditor {
         let worldPos: BABYLON.Vector3 = PlanetEditor.GetHitWorldPos(removeMode);
 
         if (worldPos) {
-            if (this.data === 0 || worldPos.subtract(Player.Instance.PositionHead()).lengthSquared() > 1) {
-                if (this.data === 0 || worldPos.subtract(Player.Instance.PositionLeg()).lengthSquared() > 1) {
+            if (this.data === 0 || worldPos.subtract(Game.Player.PositionHead()).lengthSquared() > 1) {
+                if (this.data === 0 || worldPos.subtract(Game.Player.PositionLeg()).lengthSquared() > 1) {
                     let planetSide: PlanetSide = PlanetTools.WorldPositionToPlanetSide(this.planet, worldPos);
                     if (planetSide) {
                         let global = PlanetTools.WorldPositionToGlobalIJK(planetSide, worldPos);
@@ -95,8 +95,8 @@ class PlanetEditor {
         let removeMode: boolean = this.data === 0;
         let worldPos: BABYLON.Vector3 = PlanetEditor.GetHitWorldPos(removeMode);
         if (worldPos) {
-            if (this.data === 0 || worldPos.subtract(Player.Instance.PositionHead()).lengthSquared() > 1) {
-                if (this.data === 0 || worldPos.subtract(Player.Instance.PositionLeg()).lengthSquared() > 1) {
+            if (this.data === 0 || worldPos.subtract(Game.Player.PositionHead()).lengthSquared() > 1) {
+                if (this.data === 0 || worldPos.subtract(Game.Player.PositionLeg()).lengthSquared() > 1) {
                     let planetSide: PlanetSide = PlanetTools.WorldPositionToPlanetSide(
                         this.planet,
                         worldPos
