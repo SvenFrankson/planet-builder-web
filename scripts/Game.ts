@@ -28,17 +28,16 @@ class Game {
 	public createScene(): void {
 		Game.Scene = new BABYLON.Scene(Game.Engine);
 		Game.Scene.actionManager = new BABYLON.ActionManager(Game.Scene);
-		Game.Scene.clearColor.copyFromFloats(0.1, 0.1, 0.1, 1);
+		Game.Scene.clearColor.copyFromFloats(166 / 255, 231 / 255, 255 / 255, 1);
 
 		Game.Light = new BABYLON.HemisphericLight(
 			"light",
-			new BABYLON.Vector3(0, 1, 0),
+			new BABYLON.Vector3(0.6, 1, 0.3),
 			Game.Scene
 		);
 
 		Game.Light.diffuse = new BABYLON.Color3(1, 1, 1);
-		Game.Light.specular = new BABYLON.Color3(1, 1, 1);
-		Game.Light.groundColor = new BABYLON.Color3(0.5, 0.5, 0.5);
+		Game.Light.groundColor = new BABYLON.Color3(0.1, 0.1, 0.1);
 
 		Game.CameraManager = new CameraManager();
 

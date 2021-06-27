@@ -40,8 +40,11 @@ class CameraManager {
             Game.Scene
         );
         this.freeCamera.rotationQuaternion = BABYLON.Quaternion.Identity();
+        this.freeCamera.minZ = 0.1;
 
         Game.Scene.onBeforeRenderObservable.add(this._update);
+
+        OutlinePostProcess.AddOutlinePostProcess(this.freeCamera);
     }
 
     public setMode(newCameraMode: CameraMode): void {
@@ -58,6 +61,7 @@ class CameraManager {
             if (this.cameraMode === CameraMode.Player) {
                 this.freeCamera.parent = this.player.camPos;
                 this.freeCamera.position.copyFromFloats(0, 0, 0);
+                this.freeCamera.rotationQuaternion.copyFrom(BABYLON.Quaternion.Identity());
                 Game.Scene.activeCamera = this.freeCamera;
             }
             if (this.cameraMode === CameraMode.Plane) {

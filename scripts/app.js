@@ -26,7 +26,9 @@ class CameraManager {
         this.arcRotateCamera.attachControl(Game.Canvas);
         this.freeCamera = new BABYLON.FreeCamera("Camera", BABYLON.Vector3.Zero(), Game.Scene);
         this.freeCamera.rotationQuaternion = BABYLON.Quaternion.Identity();
+        this.freeCamera.minZ = 0.1;
         Game.Scene.onBeforeRenderObservable.add(this._update);
+        OutlinePostProcess.AddOutlinePostProcess(this.freeCamera);
     }
     get absolutePosition() {
         if (this.cameraMode === CameraMode.Sky) {
@@ -48,6 +50,7 @@ class CameraManager {
             if (this.cameraMode === CameraMode.Player) {
                 this.freeCamera.parent = this.player.camPos;
                 this.freeCamera.position.copyFromFloats(0, 0, 0);
+                this.freeCamera.rotationQuaternion.copyFrom(BABYLON.Quaternion.Identity());
                 Game.Scene.activeCamera = this.freeCamera;
             }
             if (this.cameraMode === CameraMode.Plane) {
@@ -85,11 +88,10 @@ class Game {
     createScene() {
         Game.Scene = new BABYLON.Scene(Game.Engine);
         Game.Scene.actionManager = new BABYLON.ActionManager(Game.Scene);
-        Game.Scene.clearColor.copyFromFloats(0.1, 0.1, 0.1, 1);
-        Game.Light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), Game.Scene);
+        Game.Scene.clearColor.copyFromFloats(166 / 255, 231 / 255, 255 / 255, 1);
+        Game.Light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0.6, 1, 0.3), Game.Scene);
         Game.Light.diffuse = new BABYLON.Color3(1, 1, 1);
-        Game.Light.specular = new BABYLON.Color3(1, 1, 1);
-        Game.Light.groundColor = new BABYLON.Color3(0.5, 0.5, 0.5);
+        Game.Light.groundColor = new BABYLON.Color3(0.1, 0.1, 0.1);
         Game.CameraManager = new CameraManager();
         /*
         let water = BABYLON.MeshBuilder.CreateSphere("water", { diameter: 78 - 0.4 }, Game.Scene);
@@ -343,6 +345,85 @@ class MeshTools {
         vertexData.matricesWeights = tmp.matricesWeights;
         vertexData.indices = tmp.indices;
         return vertexData;
+    }
+}
+class OutlinePostProcess {
+    static AddOutlinePostProcess(camera) {
+        let scene = camera.getScene();
+        let engine = scene.getEngine();
+        BABYLON.Effect.ShadersStore["EdgeFragmentShader"] = `
+			#ifdef GL_ES
+			precision highp float;
+			#endif
+			varying vec2 vUV;
+			uniform sampler2D textureSampler;
+			uniform sampler2D depthSampler;
+			uniform float 		width;
+			uniform float 		height;
+			void make_kernel_color(inout vec4 n[9], sampler2D tex, vec2 coord)
+			{
+				float w = 1.0 / width;
+				float h = 1.0 / height;
+				n[0] = texture2D(tex, coord + vec2( -w, -h));
+				n[1] = texture2D(tex, coord + vec2(0.0, -h));
+				n[2] = texture2D(tex, coord + vec2(  w, -h));
+				n[3] = texture2D(tex, coord + vec2( -w, 0.0));
+				n[4] = texture2D(tex, coord);
+				n[5] = texture2D(tex, coord + vec2(  w, 0.0));
+				n[6] = texture2D(tex, coord + vec2( -w, h));
+				n[7] = texture2D(tex, coord + vec2(0.0, h));
+				n[8] = texture2D(tex, coord + vec2(  w, h));
+			}
+			void make_kernel_depth(inout float n[9], sampler2D tex, vec2 coord)
+			{
+				float w = 1.0 / width;
+				float h = 1.0 / height;
+				n[0] = texture2D(tex, coord + vec2( -w, -h)).r;
+				n[1] = texture2D(tex, coord + vec2(0.0, -h)).r;
+				n[2] = texture2D(tex, coord + vec2(  w, -h)).r;
+				n[3] = texture2D(tex, coord + vec2( -w, 0.0)).r;
+				n[4] = texture2D(tex, coord).r;
+				n[5] = texture2D(tex, coord + vec2(  w, 0.0)).r;
+				n[6] = texture2D(tex, coord + vec2( -w, h)).r;
+				n[7] = texture2D(tex, coord + vec2(0.0, h)).r;
+				n[8] = texture2D(tex, coord + vec2(  w, h)).r;
+			}
+			void main(void) 
+			{
+				vec4 d = texture2D(depthSampler, vUV);
+				float depth = d.r * (2000.0 - 0.2) + 0.2;
+				
+				float nD[9];
+				make_kernel_depth( nD, depthSampler, vUV );
+				float sobel_depth_edge_h = nD[2] + (2.0*nD[5]) + nD[8] - (nD[0] + (2.0*nD[3]) + nD[6]);
+				float sobel_depth_edge_v = nD[0] + (2.0*nD[1]) + nD[2] - (nD[6] + (2.0*nD[7]) + nD[8]);
+				float sobel_depth = sqrt((sobel_depth_edge_h * sobel_depth_edge_h) + (sobel_depth_edge_v * sobel_depth_edge_v));
+				float thresholdDepth = 0.002;
+
+				vec4 n[9];
+				make_kernel_color( n, textureSampler, vUV );
+				vec4 sobel_edge_h = n[2] + (2.0*n[5]) + n[8] - (n[0] + (2.0*n[3]) + n[6]);
+				vec4 sobel_edge_v = n[0] + (2.0*n[1]) + n[2] - (n[6] + (2.0*n[7]) + n[8]);
+				vec4 sobel = sqrt((sobel_edge_h * sobel_edge_h) + (sobel_edge_v * sobel_edge_v));
+				float threshold = 0.1;
+				
+				gl_FragColor = vec4(n[4]) * 0.5;
+				gl_FragColor.a = 1.0;
+				if (sobel_depth < thresholdDepth || depth > 1000.) {
+					if (max(sobel.r, max(sobel.g, sobel.b)) < threshold) {
+						gl_FragColor = n[4];
+					}
+				}
+			}
+        `;
+        BABYLON.Engine.ShadersRepository = "./shaders/";
+        let depthMap = scene.enableDepthRenderer(camera).getDepthMap();
+        let postProcess = new BABYLON.PostProcess("Edge", "Edge", ["width", "height"], ["depthSampler"], 1, camera);
+        postProcess.onApply = (effect) => {
+            effect.setTexture("depthSampler", depthMap);
+            effect.setFloat("width", engine.getRenderWidth());
+            effect.setFloat("height", engine.getRenderHeight());
+        };
     }
 }
 class Plane extends BABYLON.Mesh {
@@ -2292,7 +2373,7 @@ class SharedMaterials {
     static MainMaterial() {
         if (!SharedMaterials.mainMaterial) {
             SharedMaterials.mainMaterial = new BABYLON.StandardMaterial("mainMaterial", Game.Scene);
-            SharedMaterials.mainMaterial.diffuseTexture = new BABYLON.Texture("./resources/textures/mainTexture.png", Game.Scene);
+            //SharedMaterials.mainMaterial.diffuseTexture = new BABYLON.Texture("./resources/textures/mainTexture.png", Game.Scene);
             SharedMaterials.mainMaterial.specularColor = BABYLON.Color3.Black();
         }
         return SharedMaterials.mainMaterial;
