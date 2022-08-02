@@ -1,7 +1,8 @@
 {
     "compilerOptions": {
         "target": "esnext",
-        "outFile": "./app.js"
+        "outFile": "./app.js",
+        "skipLibCheck": true
     },
     "exclude": [
         "lib",

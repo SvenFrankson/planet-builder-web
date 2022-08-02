@@ -37,7 +37,7 @@ class Game {
 		);
 
 		Game.Light.diffuse = new BABYLON.Color3(1, 1, 1);
-		Game.Light.groundColor = new BABYLON.Color3(0.1, 0.1, 0.1);
+		Game.Light.groundColor = new BABYLON.Color3(0.5, 0.5, 0.5);
 
 		Game.CameraManager = new CameraManager();
 
@@ -148,20 +148,21 @@ window.addEventListener("DOMContentLoaded", () => {
 	heightMap.addInPlace(heightMap5);
 	
 	planetTest.generator = new PlanetGeneratorChaos(planetTest);
+	//planetTest.generator.showDebug();
 
-	Game.Player = new Player(new BABYLON.Vector3(10, 60, 0), planetTest);
-	Game.Player.registerControl();
+	//Game.Player = new Player(new BABYLON.Vector3(10, 60, 0), planetTest);
+	//Game.Player.registerControl();
 
 	Game.PlanetEditor = new PlanetEditor(planetTest);
 	//Game.PlanetEditor.initialize();
 
-	Game.Plane = new Plane(new BABYLON.Vector3(0, 80, 0), planetTest);
-	Game.Plane.instantiate();
+	//Game.Plane = new Plane(new BABYLON.Vector3(0, 80, 0), planetTest);
+	//Game.Plane.instantiate();
 
-	Game.CameraManager.plane = Game.Plane;
-	Game.CameraManager.player = Game.Player;
+	//Game.CameraManager.plane = Game.Plane;
+	//Game.CameraManager.player = Game.Player;
 
-	Game.CameraManager.setMode(CameraMode.Player);
+	Game.CameraManager.setMode(CameraMode.Sky);
 
 	planetTest.AsyncInitialize();
 	

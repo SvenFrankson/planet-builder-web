@@ -26,9 +26,7 @@ abstract class PlanetGenerator {
 
 class PlanetGeneratorChaos extends PlanetGenerator {
 
-    constructor(
-        planet: Planet
-    ) {
+    constructor(planet: Planet) {
         super(planet);
 
         let hMax = this.planet.kPosMax * PlanetTools.CHUNCKSIZE;
@@ -90,6 +88,41 @@ class PlanetGeneratorChaos extends PlanetGenerator {
                     return BlockType.RedRock;
                 }
 
+                return 0;
+            }
+        );
+    }
+}
+
+class PlanetGeneratorDebug extends PlanetGenerator {
+
+    constructor(planet: Planet) {
+        super(planet);
+    }
+
+    public makeData(chunck: PlanetChunck): number[][][] {
+        return PlanetTools.Data(
+            (i, j, k) => {
+                let iGlobal = i + chunck.iPos * PlanetTools.CHUNCKSIZE;
+                let jGlobal = j + chunck.jPos * PlanetTools.CHUNCKSIZE;
+                let kGlobal = k + chunck.kPos * PlanetTools.CHUNCKSIZE;
+
+                let h = 50;
+                if (chunck.side === Side.Front) {
+                    h = 60;
+                }
+                if (chunck.side === Side.Right) {
+                    h = 40;
+                }
+                if (kGlobal < h) {
+                    if (iGlobal < 5) {
+                        return BlockType.RedDirt;
+                    }
+                    if (jGlobal < 5) {
+                        return BlockType.RedRock;
+                    }
+                    return BlockType.RedDust;
+                }
                 return 0;
             }
         );

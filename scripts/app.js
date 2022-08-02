@@ -110,7 +110,7 @@ class Game {
         Game.Scene.clearColor.copyFromFloats(166 / 255, 231 / 255, 255 / 255, 1);
         Game.Light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0.6, 1, 0.3), Game.Scene);
         Game.Light.diffuse = new BABYLON.Color3(1, 1, 1);
-        Game.Light.groundColor = new BABYLON.Color3(0.1, 0.1, 0.1);
+        Game.Light.groundColor = new BABYLON.Color3(0.5, 0.5, 0.5);
         Game.CameraManager = new CameraManager();
         /*
         let water = BABYLON.MeshBuilder.CreateSphere("water", { diameter: 78 - 0.4 }, Game.Scene);
@@ -206,15 +206,16 @@ window.addEventListener("DOMContentLoaded", () => {
     });
     heightMap.addInPlace(heightMap5);
     planetTest.generator = new PlanetGeneratorChaos(planetTest);
-    Game.Player = new Player(new BABYLON.Vector3(10, 60, 0), planetTest);
-    Game.Player.registerControl();
+    //planetTest.generator.showDebug();
+    //Game.Player = new Player(new BABYLON.Vector3(10, 60, 0), planetTest);
+    //Game.Player.registerControl();
     Game.PlanetEditor = new PlanetEditor(planetTest);
     //Game.PlanetEditor.initialize();
-    Game.Plane = new Plane(new BABYLON.Vector3(0, 80, 0), planetTest);
-    Game.Plane.instantiate();
-    Game.CameraManager.plane = Game.Plane;
-    Game.CameraManager.player = Game.Player;
-    Game.CameraManager.setMode(CameraMode.Player);
+    //Game.Plane = new Plane(new BABYLON.Vector3(0, 80, 0), planetTest);
+    //Game.Plane.instantiate();
+    //Game.CameraManager.plane = Game.Plane;
+    //Game.CameraManager.player = Game.Player;
+    Game.CameraManager.setMode(CameraMode.Sky);
     planetTest.AsyncInitialize();
     game.animate();
     Game.Canvas.addEventListener("pointerup", (event) => {
@@ -1364,6 +1365,23 @@ class PlanetChunckMeshBuilder {
         return vertexData;
     }
 }
+class PlanetChunckMeshBuilderNew {
+    static BuildVertexData(size, iPos, jPos, kPos, chunck) {
+        let vertexData = new BABYLON.VertexData();
+        let r = 1;
+        for (let i = -r; i < PlanetTools.CHUNCKSIZE + r; i++) {
+            for (let j = -r; j < PlanetTools.CHUNCKSIZE + r; j++) {
+                for (let k = -r; k < PlanetTools.CHUNCKSIZE + r; k++) {
+                    let iGlobal = i + chunck.iPos * PlanetTools.CHUNCKSIZE;
+                    let jGlobal = j + chunck.jPos * PlanetTools.CHUNCKSIZE;
+                    let kGlobal = k + chunck.kPos * PlanetTools.CHUNCKSIZE;
+                    let data = chunck.planetSide.GetData(iGlobal, jGlobal, kGlobal);
+                }
+            }
+        }
+        return vertexData;
+    }
+}
 class PlanetEditor {
     planet;
     data = 0;
@@ -1527,6 +1545,35 @@ class PlanetGeneratorChaos extends PlanetGenerator {
             }
             if (globalK < hGround + h2) {
                 return BlockType.RedRock;
+            }
+            return 0;
+        });
+    }
+}
+class PlanetGeneratorDebug extends PlanetGenerator {
+    constructor(planet) {
+        super(planet);
+    }
+    makeData(chunck) {
+        return PlanetTools.Data((i, j, k) => {
+            let iGlobal = i + chunck.iPos * PlanetTools.CHUNCKSIZE;
+            let jGlobal = j + chunck.jPos * PlanetTools.CHUNCKSIZE;
+            let kGlobal = k + chunck.kPos * PlanetTools.CHUNCKSIZE;
+            let h = 50;
+            if (chunck.side === Side.Front) {
+                h = 60;
+            }
+            if (chunck.side === Side.Right) {
+                h = 40;
+            }
+            if (kGlobal < h) {
+                if (iGlobal < 5) {
+                    return BlockType.RedDirt;
+                }
+                if (jGlobal < 5) {
+                    return BlockType.RedRock;
+                }
+                return BlockType.RedDust;
             }
             return 0;
         });
