@@ -122,24 +122,13 @@ window.addEventListener("DOMContentLoaded", () => {
 	let game: Game = new Game("renderCanvas");
 	game.createScene();
 
-	let planetTest: Planet = new Planet("Paulita", 6);
+	let planetTest: Planet = new Planet("Paulita", 4);
 
-	let heightMap = PlanetHeightMap.CreateMap(PlanetTools.KPosToDegree(5), 60, 10);
-	let heightMap2 = PlanetHeightMap.CreateMap(PlanetTools.KPosToDegree(5), 60, 20, {
-		firstNoiseDegree: 3,
-		postComputation: (v) => {
-			let delta = Math.abs(60 - v);
-			if (delta > 2) {
-				return 1;
-			}
-			return 4 - delta;
-		}
-	});
-	let heightMap3 = PlanetHeightMap.CreateMap(PlanetTools.KPosToDegree(5), 60, 20);
-	let heightMap4 = PlanetHeightMap.CreateMap(PlanetTools.KPosToDegree(5), 60, 30, {
+	let heightMap = PlanetHeightMap.CreateMap(PlanetTools.KPosToDegree(4), 50, 5);
+	let heightMap4 = PlanetHeightMap.CreateMap(PlanetTools.KPosToDegree(4), 50, 15, {
 		firstNoiseDegree: 1,
 		postComputation: (v) => {
-			let delta = Math.abs(60 - v);
+			let delta = Math.abs(50 - v);
 			if (delta > 2) {
 				return 1;
 			}
@@ -147,11 +136,11 @@ window.addEventListener("DOMContentLoaded", () => {
 		}
 	});
 	heightMap.substractInPlace(heightMap4);
-	let heightMap5 = PlanetHeightMap.CreateMap(PlanetTools.KPosToDegree(5), 60, 30, {
+	let heightMap5 = PlanetHeightMap.CreateMap(PlanetTools.KPosToDegree(4), 50, 15, {
 		firstNoiseDegree: 4,
 		postComputation: (v) => {
-			if (v > 70) {
-				return (v - 70) * 1.5;
+			if (v > 60) {
+				return (v - 60) * 1.5;
 			}
 			return 1;
 		}
@@ -160,7 +149,7 @@ window.addEventListener("DOMContentLoaded", () => {
 	
 	planetTest.generator = new PlanetGeneratorChaos(planetTest);
 
-	Game.Player = new Player(new BABYLON.Vector3(10, 80, 0), planetTest);
+	Game.Player = new Player(new BABYLON.Vector3(10, 60, 0), planetTest);
 	Game.Player.registerControl();
 
 	Game.PlanetEditor = new PlanetEditor(planetTest);
