@@ -114,6 +114,9 @@ class PlanetGeneratorDebug extends PlanetGenerator {
                 if (chunck.side === Side.Right) {
                     h = 40;
                 }
+                if (jGlobal < 5) {
+                    h += 5;
+                }
                 if (kGlobal < h) {
                     if (iGlobal < 5) {
                         return BlockType.RedDirt;

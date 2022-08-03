@@ -30,24 +30,36 @@ class PlanetSide extends BABYLON.Mesh {
 
     public GetData(iGlobal: number, jGlobal: number, kGlobal: number): number {
         let chuncksCount: number = PlanetTools.DegreeToChuncksCount(PlanetTools.KGlobalToDegree(kGlobal));
-        let lGlobal = chuncksCount * PlanetTools.CHUNCKSIZE;
+        let L = chuncksCount * PlanetTools.CHUNCKSIZE;
 
         if (iGlobal < 0) {
             if (this.side <= Side.Left) {
                 let chunck = this.planet.GetSide((this.side + 3) % 4);
-                return chunck.GetData(iGlobal + lGlobal, jGlobal, kGlobal);
+                return chunck.GetData(iGlobal + L, jGlobal, kGlobal);
+            }
+            else if (this.side === Side.Top) {
+                return this.planet.GetSide(Side.Back).GetData(L - 1 - jGlobal, L + iGlobal, kGlobal);
+            }
+            else if (this.side === Side.Bottom) {
+                return this.planet.GetSide(Side.Back).GetData(jGlobal, - 1 - iGlobal, kGlobal);
             }
         }
-        else if (iGlobal >= lGlobal) {
+        else if (iGlobal >= L) {
             if (this.side <= Side.Left) {
                 let chunck = this.planet.GetSide((this.side + 1) % 4);
-                return chunck.GetData(iGlobal - lGlobal, jGlobal, kGlobal);
+                return chunck.GetData(iGlobal - L, jGlobal, kGlobal);
+            }
+            else if (this.side === Side.Top) {
+                return this.planet.GetSide(Side.Front).GetData(jGlobal, 2 * L - 1 - iGlobal, kGlobal);
+            }
+            else if (this.side === Side.Bottom) {
+                return this.planet.GetSide(Side.Front).GetData(L - 1 - jGlobal, iGlobal - L, kGlobal);
             }
         }
         if (jGlobal < 0) {
 
         }
-        else if (jGlobal >= lGlobal) {
+        else if (jGlobal >= L) {
             
         }
         let iChunck: number = Math.floor(iGlobal / PlanetTools.CHUNCKSIZE);
