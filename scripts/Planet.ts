@@ -18,10 +18,10 @@ class Planet extends BABYLON.Mesh {
         this.kPosMax = kPosMax;
 		
         this.sides = [];
-        this.sides[Side.Right] = new PlanetSide(Side.Right, this);
-        this.sides[Side.Left] = new PlanetSide(Side.Left, this);
         this.sides[Side.Front] = new PlanetSide(Side.Front, this);
+        this.sides[Side.Right] = new PlanetSide(Side.Right, this);
         this.sides[Side.Back] = new PlanetSide(Side.Back, this);
+        this.sides[Side.Left] = new PlanetSide(Side.Left, this);
         this.sides[Side.Top] = new PlanetSide(Side.Top, this);
         this.sides[Side.Bottom] = new PlanetSide(Side.Bottom, this);
     }

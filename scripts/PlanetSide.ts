@@ -1,10 +1,10 @@
 enum Side {
+    Front,
     Right,
+    Back,
     Left,
     Top,
-    Bottom,
-    Front,
-    Back,
+    Bottom
 }
 
 class PlanetSide extends BABYLON.Mesh {
@@ -23,21 +23,44 @@ class PlanetSide extends BABYLON.Mesh {
     }
     private chuncksLength: number;
     private chuncks: Array<Array<Array<PlanetChunck>>>;
+
     public GetChunck(i: number, j: number, k: number): PlanetChunck {
         return this.chuncks[k][i][j];
     }
-    public GetData(iGlobal: number, jGlobal: number, kGlobal: number): number {
-        let iPos: number = Math.floor(iGlobal / PlanetTools.CHUNCKSIZE);
-        let jPos: number = Math.floor(jGlobal / PlanetTools.CHUNCKSIZE);
-        let kPos: number = Math.floor(kGlobal / PlanetTools.CHUNCKSIZE);
 
-        if (this.chuncks[kPos]) {
-            if (this.chuncks[kPos][iPos]) {
-                if (this.chuncks[kPos][iPos][jPos]) {
-                    let i: number = iGlobal - iPos * PlanetTools.CHUNCKSIZE;
-                    let j: number = jGlobal - jPos * PlanetTools.CHUNCKSIZE;
-                    let k: number = kGlobal - kPos * PlanetTools.CHUNCKSIZE;
-                    return this.chuncks[kPos][iPos][jPos].GetData(i, j, k);
+    public GetData(iGlobal: number, jGlobal: number, kGlobal: number): number {
+        let chuncksCount: number = PlanetTools.DegreeToChuncksCount(PlanetTools.KGlobalToDegree(kGlobal));
+        let lGlobal = chuncksCount * PlanetTools.CHUNCKSIZE;
+
+        if (iGlobal < 0) {
+            if (this.side <= Side.Left) {
+                let chunck = this.planet.GetSide((this.side + 3) % 4);
+                return chunck.GetData(iGlobal + lGlobal, jGlobal, kGlobal);
+            }
+        }
+        else if (iGlobal >= lGlobal) {
+            if (this.side <= Side.Left) {
+                let chunck = this.planet.GetSide((this.side + 1) % 4);
+                return chunck.GetData(iGlobal - lGlobal, jGlobal, kGlobal);
+            }
+        }
+        if (jGlobal < 0) {
+
+        }
+        else if (jGlobal >= lGlobal) {
+            
+        }
+        let iChunck: number = Math.floor(iGlobal / PlanetTools.CHUNCKSIZE);
+        let jChunck: number = Math.floor(jGlobal / PlanetTools.CHUNCKSIZE);
+        let kChunck: number = Math.floor(kGlobal / PlanetTools.CHUNCKSIZE);
+
+        if (this.chuncks[kChunck]) {
+            if (this.chuncks[kChunck][iChunck]) {
+                if (this.chuncks[kChunck][iChunck][jChunck]) {
+                    let i: number = iGlobal - iChunck * PlanetTools.CHUNCKSIZE;
+                    let j: number = jGlobal - jChunck * PlanetTools.CHUNCKSIZE;
+                    let k: number = kGlobal - kChunck * PlanetTools.CHUNCKSIZE;
+                    return this.chuncks[kChunck][iChunck][jChunck].GetData(i, j, k);
                 }
             }
         }
