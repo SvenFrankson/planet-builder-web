@@ -147,7 +147,7 @@ window.addEventListener("DOMContentLoaded", () => {
 	});
 	heightMap.addInPlace(heightMap5);
 	
-	planetTest.generator = new PlanetGeneratorDebug(planetTest);
+	planetTest.generator = new PlanetGeneratorChaos(planetTest);
 	//planetTest.generator.showDebug();
 
 	//Game.Player = new Player(new BABYLON.Vector3(10, 60, 0), planetTest);

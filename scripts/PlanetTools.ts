@@ -4,7 +4,6 @@ var PI = Math.PI;
 
 class PlanetTools {
 
-    public static readonly BLOCKSIZE = 1;
     public static readonly CHUNCKSIZE = 8;
     public static readonly ALPHALIMIT = Math.PI / 4;
     public static readonly DISTANCELIMITSQUARED = 128 * 128;
@@ -201,7 +200,7 @@ class PlanetTools {
         let yDeg: number = (Math.atan(localPos.y) / Math.PI) * 180;
         let zDeg: number = (Math.atan(localPos.z) / Math.PI) * 180;
 
-        let k: number = Math.floor(r / PlanetTools.BLOCKSIZE);
+        let k: number = PlanetTools.AltitudeToKGlobal(r);
         let i: number = Math.floor(((zDeg + 45) / 90) * PlanetTools.DegreeToSize(PlanetTools.KGlobalToDegree(k)));
         let j: number = Math.floor(((yDeg + 45) / 90) * PlanetTools.DegreeToSize(PlanetTools.KGlobalToDegree(k)));
 
@@ -242,15 +241,24 @@ class PlanetTools {
         }
         return PlanetTools._Altitudes;
     }
+    private static _SummedBSizesLength: number[];
+    public static get SummedBSizesLength(): number[] {
+        if (!PlanetTools._SummedBSizesLength) {
+            PlanetTools._ComputeBSizes();
+        }
+        return PlanetTools._SummedBSizesLength;
+    }
     
     private static _ComputeBSizes(): void {
         PlanetTools._BSizes = [];
         PlanetTools._Altitudes = [];
+        PlanetTools._SummedBSizesLength = [];
         let coreRadius = 7.6;
         let radius = coreRadius;
         let degree = 4;
         let bSizes = [];
         let altitudes = [];
+        let summedBSizesLength = 0;
         while (radius < 1000) {
             let size = PlanetTools.DegreeToSize(degree);
             for (let i = 0; i < PlanetTools.CHUNCKSIZE; i++) {
@@ -263,6 +271,8 @@ class PlanetTools {
             let a = Math.PI / 2 / size;
             let s = a * radius;
             if (s > 1.3) {
+                PlanetTools._SummedBSizesLength[degree] = summedBSizesLength;
+                summedBSizesLength += bSizes.length;
                 PlanetTools._BSizes[degree] = [...bSizes];
                 bSizes = [];
                 PlanetTools._Altitudes[degree] = [...altitudes];
@@ -270,7 +280,6 @@ class PlanetTools {
                 degree++;
             }
         }
-        console.log(PlanetTools._BSizes);
     }
 
     public static KPosToDegree8(kPos: number): number {
@@ -285,6 +294,52 @@ class PlanetTools {
                 degree++;
             }
         }
+    }
+
+    public static RecursiveFind(data: number[], value: number, nMin: number, nMax: number): number {
+        let n = Math.floor(nMin * 0.5 + nMax * 0.5);
+        if (nMax - nMin === 1) {
+          return n; 
+        }
+        let vn = data[n];
+        if (nMax - nMin === 2) {
+          if (vn > value) {
+            return n - 1; 
+          }
+          else {
+            return n; 
+          }
+        }
+        if (vn > value) {
+          return PlanetTools.RecursiveFind(data, value, nMin, n);
+        }
+        else {
+          return PlanetTools.RecursiveFind(data, value, n, nMax);
+        }
+      }
+
+    public static AltitudeToKGlobal(altitude: number): number {
+        let degree = 4;
+        while (degree < PlanetTools.Altitudes.length - 1) {
+            let highest = PlanetTools.Altitudes[degree + 1][0];
+            if (altitude < highest) {
+                break;
+            }
+            else {
+                altitude -= highest;
+                degree++;
+            }
+        }
+        let altitudes = PlanetTools.Altitudes[degree];
+        let summedLength = PlanetTools.SummedBSizesLength[degree];
+        return summedLength + PlanetTools.RecursiveFind(altitudes, altitude, 0, altitudes.length);
+    }
+
+    public static KGlobalToAltitude(kGlobal: number): number {
+        let degree = PlanetTools.KGlobalToDegree(kGlobal);
+        let altitudes = PlanetTools.Altitudes[degree];
+        let summedLength = PlanetTools.SummedBSizesLength[degree];
+        return altitudes[kGlobal - summedLength];
     }
 
     /*

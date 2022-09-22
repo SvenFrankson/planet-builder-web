@@ -191,7 +191,7 @@ window.addEventListener("DOMContentLoaded", () => {
         }
     });
     heightMap.addInPlace(heightMap5);
-    planetTest.generator = new PlanetGeneratorDebug(planetTest);
+    planetTest.generator = new PlanetGeneratorChaos(planetTest);
     //planetTest.generator.showDebug();
     //Game.Player = new Player(new BABYLON.Vector3(10, 60, 0), planetTest);
     //Game.Player.registerControl();
@@ -1112,15 +1112,16 @@ class PlanetChunckMeshBuilder {
         PlanetChunckMeshBuilder.GetVertexToRef(size, iGlobal, jGlobal + 1, PlanetChunckMeshBuilder.tmpVertices[1]);
         PlanetChunckMeshBuilder.GetVertexToRef(size, iGlobal + 1, jGlobal, PlanetChunckMeshBuilder.tmpVertices[2]);
         PlanetChunckMeshBuilder.GetVertexToRef(size, iGlobal + 1, jGlobal + 1, PlanetChunckMeshBuilder.tmpVertices[3]);
-        let h = (hGlobal + 1) * PlanetTools.BLOCKSIZE;
-        PlanetChunckMeshBuilder.tmpVertices[0].scaleToRef(h, PlanetChunckMeshBuilder.tmpVertices[4]);
-        PlanetChunckMeshBuilder.tmpVertices[1].scaleToRef(h, PlanetChunckMeshBuilder.tmpVertices[5]);
-        PlanetChunckMeshBuilder.tmpVertices[2].scaleToRef(h, PlanetChunckMeshBuilder.tmpVertices[6]);
-        PlanetChunckMeshBuilder.tmpVertices[3].scaleToRef(h, PlanetChunckMeshBuilder.tmpVertices[7]);
-        PlanetChunckMeshBuilder.tmpVertices[0].scaleInPlace(h - PlanetTools.BLOCKSIZE);
-        PlanetChunckMeshBuilder.tmpVertices[1].scaleInPlace(h - PlanetTools.BLOCKSIZE);
-        PlanetChunckMeshBuilder.tmpVertices[2].scaleInPlace(h - PlanetTools.BLOCKSIZE);
-        PlanetChunckMeshBuilder.tmpVertices[3].scaleInPlace(h - PlanetTools.BLOCKSIZE);
+        let hLow = PlanetTools.KGlobalToAltitude(hGlobal);
+        let hHigh = PlanetTools.KGlobalToAltitude(hGlobal + 1);
+        PlanetChunckMeshBuilder.tmpVertices[0].scaleToRef(hHigh, PlanetChunckMeshBuilder.tmpVertices[4]);
+        PlanetChunckMeshBuilder.tmpVertices[1].scaleToRef(hHigh, PlanetChunckMeshBuilder.tmpVertices[5]);
+        PlanetChunckMeshBuilder.tmpVertices[2].scaleToRef(hHigh, PlanetChunckMeshBuilder.tmpVertices[6]);
+        PlanetChunckMeshBuilder.tmpVertices[3].scaleToRef(hHigh, PlanetChunckMeshBuilder.tmpVertices[7]);
+        PlanetChunckMeshBuilder.tmpVertices[0].scaleInPlace(hLow);
+        PlanetChunckMeshBuilder.tmpVertices[1].scaleInPlace(hLow);
+        PlanetChunckMeshBuilder.tmpVertices[2].scaleInPlace(hLow);
+        PlanetChunckMeshBuilder.tmpVertices[3].scaleInPlace(hLow);
         if (scale != 1) {
             this._tmpBlockCenter.copyFrom(PlanetChunckMeshBuilder.tmpVertices[0]);
             for (let v = 1; v < PlanetChunckMeshBuilder.tmpVertices.length; v++) {
@@ -1191,15 +1192,18 @@ class PlanetChunckMeshBuilder {
                         PlanetChunckMeshBuilder.GetVertexToRef(size, y, z + 1, PlanetChunckMeshBuilder.tmpVertices[1]);
                         PlanetChunckMeshBuilder.GetVertexToRef(size, y + 1, z, PlanetChunckMeshBuilder.tmpVertices[2]);
                         PlanetChunckMeshBuilder.GetVertexToRef(size, y + 1, z + 1, PlanetChunckMeshBuilder.tmpVertices[3]);
-                        let h = (k + kPos * PlanetTools.CHUNCKSIZE + 1) * PlanetTools.BLOCKSIZE;
-                        PlanetChunckMeshBuilder.tmpVertices[0].scaleToRef(h, PlanetChunckMeshBuilder.tmpVertices[4]);
-                        PlanetChunckMeshBuilder.tmpVertices[1].scaleToRef(h, PlanetChunckMeshBuilder.tmpVertices[5]);
-                        PlanetChunckMeshBuilder.tmpVertices[2].scaleToRef(h, PlanetChunckMeshBuilder.tmpVertices[6]);
-                        PlanetChunckMeshBuilder.tmpVertices[3].scaleToRef(h, PlanetChunckMeshBuilder.tmpVertices[7]);
-                        PlanetChunckMeshBuilder.tmpVertices[0].scaleInPlace(h - PlanetTools.BLOCKSIZE);
-                        PlanetChunckMeshBuilder.tmpVertices[1].scaleInPlace(h - PlanetTools.BLOCKSIZE);
-                        PlanetChunckMeshBuilder.tmpVertices[2].scaleInPlace(h - PlanetTools.BLOCKSIZE);
-                        PlanetChunckMeshBuilder.tmpVertices[3].scaleInPlace(h - PlanetTools.BLOCKSIZE);
+                        let hGlobal = (k + kPos * PlanetTools.CHUNCKSIZE + 1);
+                        ;
+                        let hLow = PlanetTools.KGlobalToAltitude(hGlobal);
+                        let hHigh = PlanetTools.KGlobalToAltitude(hGlobal + 1);
+                        PlanetChunckMeshBuilder.tmpVertices[0].scaleToRef(hHigh, PlanetChunckMeshBuilder.tmpVertices[4]);
+                        PlanetChunckMeshBuilder.tmpVertices[1].scaleToRef(hHigh, PlanetChunckMeshBuilder.tmpVertices[5]);
+                        PlanetChunckMeshBuilder.tmpVertices[2].scaleToRef(hHigh, PlanetChunckMeshBuilder.tmpVertices[6]);
+                        PlanetChunckMeshBuilder.tmpVertices[3].scaleToRef(hHigh, PlanetChunckMeshBuilder.tmpVertices[7]);
+                        PlanetChunckMeshBuilder.tmpVertices[0].scaleInPlace(hLow);
+                        PlanetChunckMeshBuilder.tmpVertices[1].scaleInPlace(hLow);
+                        PlanetChunckMeshBuilder.tmpVertices[2].scaleInPlace(hLow);
+                        PlanetChunckMeshBuilder.tmpVertices[3].scaleInPlace(hLow);
                         let c = PlanetChunckMeshBuilder.BlockColor.get(data[i][j][k]);
                         if (!c) {
                             c = PlanetChunckMeshBuilder.BlockColor.get(136);
@@ -2081,7 +2085,7 @@ class PlanetTools {
         }
         let yDeg = (Math.atan(localPos.y) / Math.PI) * 180;
         let zDeg = (Math.atan(localPos.z) / Math.PI) * 180;
-        let k = Math.floor(r / PlanetTools.BLOCKSIZE);
+        let k = PlanetTools.AltitudeToKGlobal(r);
         let i = Math.floor(((zDeg + 45) / 90) * PlanetTools.DegreeToSize(PlanetTools.KGlobalToDegree(k)));
         let j = Math.floor(((yDeg + 45) / 90) * PlanetTools.DegreeToSize(PlanetTools.KGlobalToDegree(k)));
         return { i: i, j: j, k: k };
@@ -2112,14 +2116,22 @@ class PlanetTools {
         }
         return PlanetTools._Altitudes;
     }
+    static get SummedBSizesLength() {
+        if (!PlanetTools._SummedBSizesLength) {
+            PlanetTools._ComputeBSizes();
+        }
+        return PlanetTools._SummedBSizesLength;
+    }
     static _ComputeBSizes() {
         PlanetTools._BSizes = [];
         PlanetTools._Altitudes = [];
+        PlanetTools._SummedBSizesLength = [];
         let coreRadius = 7.6;
         let radius = coreRadius;
         let degree = 4;
         let bSizes = [];
         let altitudes = [];
+        let summedBSizesLength = 0;
         while (radius < 1000) {
             let size = PlanetTools.DegreeToSize(degree);
             for (let i = 0; i < PlanetTools.CHUNCKSIZE; i++) {
@@ -2132,6 +2144,8 @@ class PlanetTools {
             let a = Math.PI / 2 / size;
             let s = a * radius;
             if (s > 1.3) {
+                PlanetTools._SummedBSizesLength[degree] = summedBSizesLength;
+                summedBSizesLength += bSizes.length;
                 PlanetTools._BSizes[degree] = [...bSizes];
                 bSizes = [];
                 PlanetTools._Altitudes[degree] = [...altitudes];
@@ -2139,7 +2153,6 @@ class PlanetTools {
                 degree++;
             }
         }
-        console.log(PlanetTools._BSizes);
     }
     static KPosToDegree8(kPos) {
         let degree = 4;
@@ -2153,6 +2166,49 @@ class PlanetTools {
                 degree++;
             }
         }
+    }
+    static RecursiveFind(data, value, nMin, nMax) {
+        let n = Math.floor(nMin * 0.5 + nMax * 0.5);
+        if (nMax - nMin === 1) {
+            return n;
+        }
+        let vn = data[n];
+        if (nMax - nMin === 2) {
+            if (vn > value) {
+                return n - 1;
+            }
+            else {
+                return n;
+            }
+        }
+        if (vn > value) {
+            return PlanetTools.RecursiveFind(data, value, nMin, n);
+        }
+        else {
+            return PlanetTools.RecursiveFind(data, value, n, nMax);
+        }
+    }
+    static AltitudeToKGlobal(altitude) {
+        let degree = 4;
+        while (degree < PlanetTools.Altitudes.length - 1) {
+            let highest = PlanetTools.Altitudes[degree + 1][0];
+            if (altitude < highest) {
+                break;
+            }
+            else {
+                altitude -= highest;
+                degree++;
+            }
+        }
+        let altitudes = PlanetTools.Altitudes[degree];
+        let summedLength = PlanetTools.SummedBSizesLength[degree];
+        return summedLength + PlanetTools.RecursiveFind(altitudes, altitude, 0, altitudes.length);
+    }
+    static KGlobalToAltitude(kGlobal) {
+        let degree = PlanetTools.KGlobalToDegree(kGlobal);
+        let altitudes = PlanetTools.Altitudes[degree];
+        let summedLength = PlanetTools.SummedBSizesLength[degree];
+        return altitudes[kGlobal - summedLength];
     }
     /*
     public static KPosToDegree16(kPos: number): number {
@@ -2197,7 +2253,6 @@ class PlanetTools {
         return PlanetTools.DegreeToSize(degree) / PlanetTools.CHUNCKSIZE;
     }
 }
-PlanetTools.BLOCKSIZE = 1;
 PlanetTools.CHUNCKSIZE = 8;
 PlanetTools.ALPHALIMIT = Math.PI / 4;
 PlanetTools.DISTANCELIMITSQUARED = 128 * 128;
