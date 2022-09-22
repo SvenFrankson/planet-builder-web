@@ -835,10 +835,10 @@ class Planet extends BABYLON.Mesh {
         super(name, Game.Scene);
         this.kPosMax = kPosMax;
         this.sides = [];
-        this.sides[Side.Right] = new PlanetSide(Side.Right, this);
-        this.sides[Side.Left] = new PlanetSide(Side.Left, this);
         this.sides[Side.Front] = new PlanetSide(Side.Front, this);
+        this.sides[Side.Right] = new PlanetSide(Side.Right, this);
         this.sides[Side.Back] = new PlanetSide(Side.Back, this);
+        this.sides[Side.Left] = new PlanetSide(Side.Left, this);
         this.sides[Side.Top] = new PlanetSide(Side.Top, this);
         this.sides[Side.Bottom] = new PlanetSide(Side.Bottom, this);
     }
@@ -1505,15 +1505,12 @@ class PlanetGeneratorDebug extends PlanetGenerator {
             let iGlobal = i + chunck.iPos * PlanetTools.CHUNCKSIZE;
             let jGlobal = j + chunck.jPos * PlanetTools.CHUNCKSIZE;
             let kGlobal = k + chunck.kPos * PlanetTools.CHUNCKSIZE;
-            let h = 50;
+            let h = 25;
             if (chunck.side === Side.Front) {
-                h = 60;
-            }
-            if (chunck.side === Side.Right) {
-                h = 40;
+                h = 28;
             }
             if (jGlobal < 5) {
-                h += 5;
+                h = 30;
             }
             if (kGlobal < h) {
                 if (iGlobal < 5) {
@@ -1829,12 +1826,12 @@ class PlanetHeightMap {
 }
 var Side;
 (function (Side) {
-    Side[Side["Right"] = 0] = "Right";
-    Side[Side["Left"] = 1] = "Left";
-    Side[Side["Top"] = 2] = "Top";
-    Side[Side["Bottom"] = 3] = "Bottom";
-    Side[Side["Front"] = 4] = "Front";
-    Side[Side["Back"] = 5] = "Back";
+    Side[Side["Front"] = 0] = "Front";
+    Side[Side["Right"] = 1] = "Right";
+    Side[Side["Back"] = 2] = "Back";
+    Side[Side["Left"] = 3] = "Left";
+    Side[Side["Top"] = 4] = "Top";
+    Side[Side["Bottom"] = 5] = "Bottom";
 })(Side || (Side = {}));
 class PlanetSide extends BABYLON.Mesh {
     constructor(side, planet) {
@@ -1873,16 +1870,46 @@ class PlanetSide extends BABYLON.Mesh {
         return this.chuncks[k][i][j];
     }
     GetData(iGlobal, jGlobal, kGlobal) {
-        let iPos = Math.floor(iGlobal / PlanetTools.CHUNCKSIZE);
-        let jPos = Math.floor(jGlobal / PlanetTools.CHUNCKSIZE);
-        let kPos = Math.floor(kGlobal / PlanetTools.CHUNCKSIZE);
-        if (this.chuncks[kPos]) {
-            if (this.chuncks[kPos][iPos]) {
-                if (this.chuncks[kPos][iPos][jPos]) {
-                    let i = iGlobal - iPos * PlanetTools.CHUNCKSIZE;
-                    let j = jGlobal - jPos * PlanetTools.CHUNCKSIZE;
-                    let k = kGlobal - kPos * PlanetTools.CHUNCKSIZE;
-                    return this.chuncks[kPos][iPos][jPos].GetData(i, j, k);
+        let chuncksCount = PlanetTools.DegreeToChuncksCount(PlanetTools.KGlobalToDegree(kGlobal));
+        let L = chuncksCount * PlanetTools.CHUNCKSIZE;
+        if (iGlobal < 0) {
+            if (this.side <= Side.Left) {
+                let chunck = this.planet.GetSide((this.side + 3) % 4);
+                return chunck.GetData(iGlobal + L, jGlobal, kGlobal);
+            }
+            else if (this.side === Side.Top) {
+                return this.planet.GetSide(Side.Back).GetData(L - 1 - jGlobal, L + iGlobal, kGlobal);
+            }
+            else if (this.side === Side.Bottom) {
+                return this.planet.GetSide(Side.Back).GetData(jGlobal, -1 - iGlobal, kGlobal);
+            }
+        }
+        else if (iGlobal >= L) {
+            if (this.side <= Side.Left) {
+                let chunck = this.planet.GetSide((this.side + 1) % 4);
+                return chunck.GetData(iGlobal - L, jGlobal, kGlobal);
+            }
+            else if (this.side === Side.Top) {
+                return this.planet.GetSide(Side.Front).GetData(jGlobal, 2 * L - 1 - iGlobal, kGlobal);
+            }
+            else if (this.side === Side.Bottom) {
+                return this.planet.GetSide(Side.Front).GetData(L - 1 - jGlobal, iGlobal - L, kGlobal);
+            }
+        }
+        if (jGlobal < 0) {
+        }
+        else if (jGlobal >= L) {
+        }
+        let iChunck = Math.floor(iGlobal / PlanetTools.CHUNCKSIZE);
+        let jChunck = Math.floor(jGlobal / PlanetTools.CHUNCKSIZE);
+        let kChunck = Math.floor(kGlobal / PlanetTools.CHUNCKSIZE);
+        if (this.chuncks[kChunck]) {
+            if (this.chuncks[kChunck][iChunck]) {
+                if (this.chuncks[kChunck][iChunck][jChunck]) {
+                    let i = iGlobal - iChunck * PlanetTools.CHUNCKSIZE;
+                    let j = jGlobal - jChunck * PlanetTools.CHUNCKSIZE;
+                    let k = kGlobal - kChunck * PlanetTools.CHUNCKSIZE;
+                    return this.chuncks[kChunck][iChunck][jChunck].GetData(i, j, k);
                 }
             }
         }
@@ -2071,9 +2098,64 @@ class PlanetTools {
         return PlanetTools.KPosToDegree(Math.floor(k / PlanetTools.CHUNCKSIZE));
     }
     static KPosToDegree(kPos) {
-        return PlanetTools.KPosToDegree16(kPos);
+        return PlanetTools.KPosToDegree8(kPos);
     }
-    static KPosToDegree16(kPos) {
+    static get BSizes() {
+        if (!PlanetTools._BSizes) {
+            PlanetTools._ComputeBSizes();
+        }
+        return PlanetTools._BSizes;
+    }
+    static get Altitudes() {
+        if (!PlanetTools._Altitudes) {
+            PlanetTools._ComputeBSizes();
+        }
+        return PlanetTools._Altitudes;
+    }
+    static _ComputeBSizes() {
+        PlanetTools._BSizes = [];
+        PlanetTools._Altitudes = [];
+        let coreRadius = 7.6;
+        let radius = coreRadius;
+        let degree = 4;
+        let bSizes = [];
+        let altitudes = [];
+        while (radius < 1000) {
+            let size = PlanetTools.DegreeToSize(degree);
+            for (let i = 0; i < PlanetTools.CHUNCKSIZE; i++) {
+                let a = Math.PI / 2 / size;
+                let s = a * radius;
+                bSizes.push(s);
+                altitudes.push(radius);
+                radius = radius + s;
+            }
+            let a = Math.PI / 2 / size;
+            let s = a * radius;
+            if (s > 1.3) {
+                PlanetTools._BSizes[degree] = [...bSizes];
+                bSizes = [];
+                PlanetTools._Altitudes[degree] = [...altitudes];
+                altitudes = [];
+                degree++;
+            }
+        }
+        console.log(PlanetTools._BSizes);
+    }
+    static KPosToDegree8(kPos) {
+        let degree = 4;
+        while (degree < PlanetTools.BSizes.length) {
+            let size = PlanetTools.BSizes[degree].length / PlanetTools.CHUNCKSIZE;
+            if (kPos < size) {
+                return degree;
+            }
+            else {
+                kPos -= size;
+                degree++;
+            }
+        }
+    }
+    /*
+    public static KPosToDegree16(kPos: number): number {
         if (kPos < 1) {
             return 4;
         }
@@ -2091,7 +2173,8 @@ class PlanetTools {
         }
         return 9;
     }
-    static KPosToDegree32(kPos) {
+
+    public static KPosToDegree32(kPos: number): number {
         if (kPos < 1) {
             return 5;
         }
@@ -2106,6 +2189,7 @@ class PlanetTools {
         }
         return 9;
     }
+    */
     static DegreeToSize(degree) {
         return Math.pow(2, degree);
     }
@@ -2114,7 +2198,7 @@ class PlanetTools {
     }
 }
 PlanetTools.BLOCKSIZE = 1;
-PlanetTools.CHUNCKSIZE = 16;
+PlanetTools.CHUNCKSIZE = 8;
 PlanetTools.ALPHALIMIT = Math.PI / 4;
 PlanetTools.DISTANCELIMITSQUARED = 128 * 128;
 class PlanetToolsTest {

@@ -5,7 +5,7 @@ var PI = Math.PI;
 class PlanetTools {
 
     public static readonly BLOCKSIZE = 1;
-    public static readonly CHUNCKSIZE = 16;
+    public static readonly CHUNCKSIZE = 8;
     public static readonly ALPHALIMIT = Math.PI / 4;
     public static readonly DISTANCELIMITSQUARED = 128 * 128;
 
@@ -225,9 +225,69 @@ class PlanetTools {
     }
 
     public static KPosToDegree(kPos: number): number {
-        return PlanetTools.KPosToDegree16(kPos);
+        return PlanetTools.KPosToDegree8(kPos);
     }
 
+    private static _BSizes: number[][];
+    public static get BSizes(): number[][] {
+        if (!PlanetTools._BSizes) {
+            PlanetTools._ComputeBSizes();
+        }
+        return PlanetTools._BSizes;
+    }
+    private static _Altitudes: number[][];
+    public static get Altitudes(): number[][] {
+        if (!PlanetTools._Altitudes) {
+            PlanetTools._ComputeBSizes();
+        }
+        return PlanetTools._Altitudes;
+    }
+    
+    private static _ComputeBSizes(): void {
+        PlanetTools._BSizes = [];
+        PlanetTools._Altitudes = [];
+        let coreRadius = 7.6;
+        let radius = coreRadius;
+        let degree = 4;
+        let bSizes = [];
+        let altitudes = [];
+        while (radius < 1000) {
+            let size = PlanetTools.DegreeToSize(degree);
+            for (let i = 0; i < PlanetTools.CHUNCKSIZE; i++) {
+                let a = Math.PI / 2 / size;
+                let s = a * radius;
+                bSizes.push(s);
+                altitudes.push(radius);
+                radius = radius + s;
+            }
+            let a = Math.PI / 2 / size;
+            let s = a * radius;
+            if (s > 1.3) {
+                PlanetTools._BSizes[degree] = [...bSizes];
+                bSizes = [];
+                PlanetTools._Altitudes[degree] = [...altitudes];
+                altitudes = [];
+                degree++;
+            }
+        }
+        console.log(PlanetTools._BSizes);
+    }
+
+    public static KPosToDegree8(kPos: number): number {
+        let degree = 4;
+        while (degree < PlanetTools.BSizes.length) {
+            let size = PlanetTools.BSizes[degree].length / PlanetTools.CHUNCKSIZE;
+            if (kPos < size) {
+                return degree;
+            }
+            else {
+                kPos -= size;
+                degree++;
+            }
+        }
+    }
+
+    /*
     public static KPosToDegree16(kPos: number): number {
         if (kPos < 1) {
             return 4;
@@ -262,6 +322,7 @@ class PlanetTools {
         }
         return 9;
     }
+    */
 
     public static DegreeToSize(degree: number): number {
         return Math.pow(2, degree);

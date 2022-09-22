@@ -107,15 +107,12 @@ class PlanetGeneratorDebug extends PlanetGenerator {
                 let jGlobal = j + chunck.jPos * PlanetTools.CHUNCKSIZE;
                 let kGlobal = k + chunck.kPos * PlanetTools.CHUNCKSIZE;
 
-                let h = 50;
+                let h = 25;
                 if (chunck.side === Side.Front) {
-                    h = 60;
-                }
-                if (chunck.side === Side.Right) {
-                    h = 40;
+                    h = 28;
                 }
                 if (jGlobal < 5) {
-                    h += 5;
+                    h = 30;
                 }
                 if (kGlobal < h) {
                     if (iGlobal < 5) {
