@@ -8,13 +8,14 @@ enum Neighbour {
 }
 
 class PlanetChunck extends BABYLON.Mesh {
-    private static initializationBuffer: Array<PlanetChunck> = new Array<PlanetChunck>();
-    private static delayBuffer: Array<PlanetChunck> = new Array<PlanetChunck>();
-    private static initializedBuffer: Array<PlanetChunck> = new Array<PlanetChunck>();
+    
     public planetSide: PlanetSide;
 
     public get side(): Side {
         return this.planetSide.side;
+    }
+    public get chunckManager(): PlanetChunckManager {
+        return this.planetSide.chunckManager;
     }
     public GetDegree(): number {
         return PlanetTools.KPosToDegree(this.kPos);
@@ -101,47 +102,10 @@ class PlanetChunck extends BABYLON.Mesh {
             this.bedrock = new BABYLON.Mesh(this.name + "-bedrock", Game.Scene);
             this.bedrock.parent = this;
         }
-    }
 
-    private PushToBuffer(): void {
-        let position: BABYLON.Vector3 = Game.CameraManager.absolutePosition;
-        let sqrDist: number = position
-            .subtract(this.barycenter)
-            .lengthSquared();
-        if (sqrDist < Game.DebugLodDistanceFactor * PlanetTools.DISTANCELIMITSQUARED) {
-            this.PushToInitializationBuffer();
-        } else {
-            PlanetChunck.delayBuffer.push(this);
-        }
+        this.chunckManager.requestDraw(this);
     }
-
-    private PushToInitializationBuffer(): void {
-        let position: BABYLON.Vector3 = Game.CameraManager.absolutePosition;
-        let thisDistance: number = position
-            .subtract(this.barycenter)
-            .lengthSquared();
-        let lastIDistance: number = -1;
-        for (
-            let i: number = 0;
-            i < PlanetChunck.initializationBuffer.length;
-            i++
-        ) {
-            let iDistance: number = position
-                .subtract(PlanetChunck.initializationBuffer[i].GetBaryCenter())
-                .lengthSquared();
-            if (thisDistance > iDistance) {
-                PlanetChunck.initializationBuffer.splice(i, 0, this);
-                return;
-            }
-            lastIDistance = iDistance;
-        }
-        PlanetChunck.initializationBuffer.push(this);
-    }
-
-    public AsyncInitialize(): void {
-        this.PushToBuffer();
-    }
-
+    
     public Initialize(): void {
         let data = localStorage.getItem(this.name);
         if (data && false) {
@@ -182,50 +146,12 @@ class PlanetChunck extends BABYLON.Mesh {
 
         this.computeWorldMatrix();
         this.refreshBoundingInfo();
-
-        PlanetChunck.initializedBuffer.push(this);
     }
 
     public Dispose(): void {
         PlanetTools.EmptyVertexData().applyToMesh(this);
         if (this.bedrock) {
             PlanetTools.EmptyVertexData().applyToMesh(this.bedrock);
-        }
-    }
-
-    public static InitializeLoop(): void {
-        let position: BABYLON.Vector3 = Game.CameraManager.absolutePosition;
-        let chunck: PlanetChunck = PlanetChunck.initializationBuffer.pop();
-        if (chunck) {
-            chunck.Initialize();
-            // chunck.RandomInitialize();
-        }
-        for (let i: number = 0; i < 5; i++) {
-            if (PlanetChunck.delayBuffer.length > 0) {
-                let delayedChunck: PlanetChunck = PlanetChunck.delayBuffer.splice(
-                    0,
-                    1
-                )[0];
-                delayedChunck.PushToBuffer();
-            }
-        }
-        for (let i: number = 0; i < 5; i++) {
-            if (PlanetChunck.initializedBuffer.length > 0) {
-                let initializedChunck: PlanetChunck = PlanetChunck.initializedBuffer.splice(
-                    0,
-                    1
-                )[0];
-                let sqrDist: number = position
-                    .subtract(initializedChunck.barycenter)
-                    .lengthSquared();
-                if (sqrDist > Game.DebugLodDistanceFactor * PlanetTools.DISTANCELIMITSQUARED) {
-                    initializedChunck.Dispose();
-                    PlanetChunck.delayBuffer.push(initializedChunck);
-                }
-				else {
-                    PlanetChunck.initializedBuffer.push(initializedChunck);
-                }
-            }
         }
     }
 

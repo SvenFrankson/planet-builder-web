@@ -12,6 +12,9 @@ class PlanetSide extends BABYLON.Mesh {
     public get side(): Side {
         return this._side;
     }
+    public get chunckManager(): PlanetChunckManager {
+        return this.planet.chunckManager;
+    }
 	
     public planet: Planet;
     public GetPlanetName(): string {
@@ -79,7 +82,10 @@ class PlanetSide extends BABYLON.Mesh {
         return 0;
     }
 
-    constructor(side: Side, planet: Planet) {
+    constructor(
+        side: Side,
+        planet: Planet
+    ) {
         let name: string = "side-" + side;
         super(name, Game.Scene);
 
@@ -102,26 +108,6 @@ class PlanetSide extends BABYLON.Mesh {
                     this.chuncks[k][i][j].parent = this;
                     this.chuncks[k][i][j].computeWorldMatrix();
                     this.chuncks[k][i][j].freezeWorldMatrix();
-                }
-            }
-        }
-    }
-
-    public Initialize(): void {
-        for (let i: number = 0; i < this.chuncksLength; i++) {
-            for (let j: number = 0; j < this.chuncksLength; j++) {
-                for (let k: number = 0; k < this.chuncksLength / 2; k++) {
-                    this.chuncks[i][j][k].Initialize();
-                }
-            }
-        }
-    }
-
-    public AsyncInitialize(): void {
-        for (let k: number = 0; k < this.chuncks.length; k++) {
-            for (let i: number = 0; i < this.chuncks[k].length; i++) {
-                for (let j: number = 0; j < this.chuncks[k][i].length; j++) {
-                    this.chuncks[k][i][j].AsyncInitialize();
                 }
             }
         }

@@ -14,6 +14,7 @@ class Game {
 	public static CameraManager: CameraManager;
 	public static Player: Player;
 	public static Plane: Plane;
+	public chunckManager: PlanetChunckManager;
 
 	public static LockedMouse: boolean = false;
 	public static ClientXOnLock: number = -1;
@@ -41,6 +42,9 @@ class Game {
 
 		Game.CameraManager = new CameraManager();
 
+		this.chunckManager = new PlanetChunckManager(Game.Scene);
+		this.chunckManager.initialize();
+
 		/*
 		let water = BABYLON.MeshBuilder.CreateSphere("water", { diameter: 78 - 0.4 }, Game.Scene);
 		let waterMaterial = new BABYLON.StandardMaterial("water-material", Game.Scene);
@@ -65,7 +69,7 @@ class Game {
 
 		Game.Engine.runRenderLoop(() => {
 			Game.Scene.render();
-			PlanetChunck.InitializeLoop();
+			//PlanetChunck.InitializeLoop();
 			Game.AnimateWater();
 			
 			fpsInfoElement.innerText = Game.Engine.getFps().toFixed(0) + " fps";
@@ -122,7 +126,7 @@ window.addEventListener("DOMContentLoaded", () => {
 	let game: Game = new Game("renderCanvas");
 	game.createScene();
 
-	let planetTest: Planet = new Planet("Paulita", 4);
+	let planetTest: Planet = new Planet("Paulita", 4, game.chunckManager);
 
 	let heightMap = PlanetHeightMap.CreateMap(PlanetTools.KPosToDegree(4), 50, 5);
 	let heightMap4 = PlanetHeightMap.CreateMap(PlanetTools.KPosToDegree(4), 50, 15, {
@@ -164,7 +168,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
 	Game.CameraManager.setMode(CameraMode.Sky);
 
-	planetTest.AsyncInitialize();
+	//planetTest.AsyncInitialize();
 	
 	game.animate();
 
