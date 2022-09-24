@@ -43,7 +43,7 @@ class PlanetGeneratorChaos extends PlanetGenerator {
             }
         });
 
-        let heightMap3 = PlanetHeightMap.CreateMap(PlanetTools.KPosToDegree(5), hMax * 0.5, hMax * 0.25, {
+        let heightMap3 = PlanetHeightMap.CreateMap(PlanetTools.KPosToDegree(this.planet.kPosMax), hMax * 0.5, hMax * 0.25, {
             firstNoiseDegree: 3,
             postComputation: (v) => {
                 let delta = Math.abs(hMax * 0.5 - v);
