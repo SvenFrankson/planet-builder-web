@@ -41,6 +41,10 @@ class PlanetChunck extends BABYLON.Mesh {
         };
     }
 
+    private _dataInitialized: boolean = false;
+    public get dataInitialized(): boolean {
+        return this._dataInitialized;
+    }
     private data: number[][][];
     public GetData(i: number, j: number, k: number): number {
         if (this.data[i]) {
@@ -70,7 +74,15 @@ class PlanetChunck extends BABYLON.Mesh {
     public GetNormal(): BABYLON.Vector3 {
         return this.normal;
     }
-    
+    private _isEmpty: boolean = true;
+    public get isEmpty(): boolean {
+        return this._isEmpty;
+    }
+    private _isFull: boolean = false;
+    public get isFull(): boolean {
+        return this._isFull;
+    }
+
     private bedrock: BABYLON.Mesh;
 
     constructor(
@@ -106,19 +118,68 @@ class PlanetChunck extends BABYLON.Mesh {
         this.chunckManager.requestDraw(this);
     }
     
-    public Initialize(): void {
-        let data = localStorage.getItem(this.name);
-        if (data && false) {
-            this.deserialize(data);
-        }
-        else {
+    public initialize(): void {
+        this.initializeData();
+        this.initializeMesh();
+    }
+
+    public initializeData(): void {
+        if (!this.dataInitialized) {
             this.data = this.planetSide.planet.generator.makeData(this);
+            this.updateIsEmptyIsFull();
             this.saveToLocalStorage();
+            this._dataInitialized = true;
         }
-        this.SetMesh();
+    }
+
+    public initializeMesh(): void {
+        if (this.dataInitialized) {
+            this.SetMesh();
+        }
+    }
+
+    public updateIsEmptyIsFull(): void {
+        this._isEmpty = true;
+        this._isFull = true;
+        for (let i = 0; i < PlanetTools.CHUNCKSIZE; i++) {
+            for (let j = 0; j < PlanetTools.CHUNCKSIZE; j++) {
+                for (let k = 0; k < PlanetTools.CHUNCKSIZE; k++) {
+                    let block = this.data[i][j][k] > 0;
+                    this._isFull = this._isFull && block;
+                    this._isEmpty = this._isEmpty && !block;
+                    if (!this._isFull && !this._isEmpty) {
+                        return;
+                    }
+                }
+            }
+        }
     }
 
     public SetMesh(): void {
+        if (this.isFull || this.isEmpty) {
+            let iPrev = this.planetSide.GetChunck(this.iPos - 1, this.jPos, this.kPos);
+            let iNext = this.planetSide.GetChunck(this.iPos + 1, this.jPos, this.kPos);
+            let jPrev = this.planetSide.GetChunck(this.iPos, this.jPos - 1, this.kPos);
+            let jNext = this.planetSide.GetChunck(this.iPos, this.jPos + 1, this.kPos);
+            let kPrev = this.planetSide.GetChunck(this.iPos, this.jPos, this.kPos - 1);
+            let kNext = this.planetSide.GetChunck(this.iPos, this.jPos, this.kPos + 1);
+            if (iPrev && iNext && jPrev && jNext && kPrev && kNext) {
+                iPrev.initializeData();
+                iNext.initializeData();
+                jPrev.initializeData();
+                jNext.initializeData();
+                kPrev.initializeData();
+                kNext.initializeData();
+                if (this.isFull && iPrev.isFull && iNext.isFull && jPrev.isFull && jNext.isFull && kPrev.isFull && kNext.isFull) {
+                    console.log("opti");
+                    return;
+                }
+                if (this.isEmpty && iPrev.isEmpty && iNext.isEmpty && jPrev.isEmpty && jNext.isEmpty && kPrev.isEmpty && kNext.isEmpty) {
+                    console.log("opti");
+                    return;
+                }
+            }
+        }
         let vertexData: BABYLON.VertexData = PlanetChunckMeshBuilder.BuildVertexData(
             this.GetSize(),
             this.iPos,

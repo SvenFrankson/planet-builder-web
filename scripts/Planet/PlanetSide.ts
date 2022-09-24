@@ -27,8 +27,12 @@ class PlanetSide extends BABYLON.Mesh {
     private chuncksLength: number;
     private chuncks: Array<Array<Array<PlanetChunck>>>;
 
-    public GetChunck(i: number, j: number, k: number): PlanetChunck {
-        return this.chuncks[k][i][j];
+    public GetChunck(iPos: number, jPos: number, kPos: number): PlanetChunck {
+        if (this.chuncks[kPos]) {
+            if (this.chuncks[kPos][iPos]) {
+                return this.chuncks[kPos][iPos][jPos];
+            }
+        }
     }
 
     public GetData(iGlobal: number, jGlobal: number, kGlobal: number): number {

@@ -126,10 +126,10 @@ window.addEventListener("DOMContentLoaded", () => {
 	let game: Game = new Game("renderCanvas");
 	game.createScene();
 
-	let planetTest: Planet = new Planet("Paulita", 4, game.chunckManager);
+	let planetTest: Planet = new Planet("Paulita", 6, game.chunckManager);
 
-	let heightMap = PlanetHeightMap.CreateMap(PlanetTools.KPosToDegree(4), 50, 5);
-	let heightMap4 = PlanetHeightMap.CreateMap(PlanetTools.KPosToDegree(4), 50, 15, {
+	let heightMap = PlanetHeightMap.CreateMap(PlanetTools.KPosToDegree(6), 60, 5);
+	let heightMap4 = PlanetHeightMap.CreateMap(PlanetTools.KPosToDegree(6), 60, 15, {
 		firstNoiseDegree: 1,
 		postComputation: (v) => {
 			let delta = Math.abs(50 - v);
@@ -140,7 +140,7 @@ window.addEventListener("DOMContentLoaded", () => {
 		}
 	});
 	heightMap.substractInPlace(heightMap4);
-	let heightMap5 = PlanetHeightMap.CreateMap(PlanetTools.KPosToDegree(4), 50, 15, {
+	let heightMap5 = PlanetHeightMap.CreateMap(PlanetTools.KPosToDegree(6), 60, 15, {
 		firstNoiseDegree: 4,
 		postComputation: (v) => {
 			if (v > 60) {

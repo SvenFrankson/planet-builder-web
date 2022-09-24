@@ -170,9 +170,9 @@ Game.ClientYOnLock = -1;
 window.addEventListener("DOMContentLoaded", () => {
     let game = new Game("renderCanvas");
     game.createScene();
-    let planetTest = new Planet("Paulita", 4, game.chunckManager);
-    let heightMap = PlanetHeightMap.CreateMap(PlanetTools.KPosToDegree(4), 50, 5);
-    let heightMap4 = PlanetHeightMap.CreateMap(PlanetTools.KPosToDegree(4), 50, 15, {
+    let planetTest = new Planet("Paulita", 6, game.chunckManager);
+    let heightMap = PlanetHeightMap.CreateMap(PlanetTools.KPosToDegree(6), 60, 5);
+    let heightMap4 = PlanetHeightMap.CreateMap(PlanetTools.KPosToDegree(6), 60, 15, {
         firstNoiseDegree: 1,
         postComputation: (v) => {
             let delta = Math.abs(50 - v);
@@ -183,7 +183,7 @@ window.addEventListener("DOMContentLoaded", () => {
         }
     });
     heightMap.substractInPlace(heightMap4);
-    let heightMap5 = PlanetHeightMap.CreateMap(PlanetTools.KPosToDegree(4), 50, 15, {
+    let heightMap5 = PlanetHeightMap.CreateMap(PlanetTools.KPosToDegree(6), 60, 15, {
         firstNoiseDegree: 4,
         postComputation: (v) => {
             if (v > 60) {
@@ -2206,6 +2206,9 @@ var Neighbour;
 class PlanetChunck extends BABYLON.Mesh {
     constructor(iPos, jPos, kPos, planetSide) {
         super("chunck-" + iPos + "-" + jPos + "-" + kPos, Game.Scene);
+        this._dataInitialized = false;
+        this._isEmpty = true;
+        this._isFull = false;
         this.planetSide = planetSide;
         this.iPos = iPos;
         this.jPos = jPos;
@@ -2245,6 +2248,9 @@ class PlanetChunck extends BABYLON.Mesh {
             k: this.kPos,
         };
     }
+    get dataInitialized() {
+        return this._dataInitialized;
+    }
     GetData(i, j, k) {
         if (this.data[i]) {
             if (this.data[i][j]) {
@@ -2267,18 +2273,70 @@ class PlanetChunck extends BABYLON.Mesh {
     GetNormal() {
         return this.normal;
     }
-    Initialize() {
-        let data = localStorage.getItem(this.name);
-        if (data && false) {
-            this.deserialize(data);
-        }
-        else {
+    get isEmpty() {
+        return this._isEmpty;
+    }
+    get isFull() {
+        return this._isFull;
+    }
+    initialize() {
+        this.initializeData();
+        this.initializeMesh();
+    }
+    initializeData() {
+        if (!this.dataInitialized) {
             this.data = this.planetSide.planet.generator.makeData(this);
+            this.updateIsEmptyIsFull();
             this.saveToLocalStorage();
+            this._dataInitialized = true;
         }
-        this.SetMesh();
+    }
+    initializeMesh() {
+        if (this.dataInitialized) {
+            this.SetMesh();
+        }
+    }
+    updateIsEmptyIsFull() {
+        this._isEmpty = true;
+        this._isFull = true;
+        for (let i = 0; i < PlanetTools.CHUNCKSIZE; i++) {
+            for (let j = 0; j < PlanetTools.CHUNCKSIZE; j++) {
+                for (let k = 0; k < PlanetTools.CHUNCKSIZE; k++) {
+                    let block = this.data[i][j][k] > 0;
+                    this._isFull = this._isFull && block;
+                    this._isEmpty = this._isEmpty && !block;
+                    if (!this._isFull && !this._isEmpty) {
+                        return;
+                    }
+                }
+            }
+        }
     }
     SetMesh() {
+        if (this.isFull || this.isEmpty) {
+            let iPrev = this.planetSide.GetChunck(this.iPos - 1, this.jPos, this.kPos);
+            let iNext = this.planetSide.GetChunck(this.iPos + 1, this.jPos, this.kPos);
+            let jPrev = this.planetSide.GetChunck(this.iPos, this.jPos - 1, this.kPos);
+            let jNext = this.planetSide.GetChunck(this.iPos, this.jPos + 1, this.kPos);
+            let kPrev = this.planetSide.GetChunck(this.iPos, this.jPos, this.kPos - 1);
+            let kNext = this.planetSide.GetChunck(this.iPos, this.jPos, this.kPos + 1);
+            if (iPrev && iNext && jPrev && jNext && kPrev && kNext) {
+                iPrev.initializeData();
+                iNext.initializeData();
+                jPrev.initializeData();
+                jNext.initializeData();
+                kPrev.initializeData();
+                kNext.initializeData();
+                if (this.isFull && iPrev.isFull && iNext.isFull && jPrev.isFull && jNext.isFull && kPrev.isFull && kNext.isFull) {
+                    console.log("opti");
+                    return;
+                }
+                if (this.isEmpty && iPrev.isEmpty && iNext.isEmpty && jPrev.isEmpty && jNext.isEmpty && kPrev.isEmpty && kNext.isEmpty) {
+                    console.log("opti");
+                    return;
+                }
+            }
+        }
         let vertexData = PlanetChunckMeshBuilder.BuildVertexData(this.GetSize(), this.iPos, this.jPos, this.kPos, this.data);
         if (vertexData.positions.length > 0) {
             vertexData.applyToMesh(this);
@@ -2344,7 +2402,7 @@ class PlanetChunckManager {
             let t = t0;
             while (this._needRedraw.length > 0 && (t - t0) < 1) {
                 let request = this._needRedraw.pop();
-                request.chunck.Initialize();
+                request.chunck.initialize();
                 t = performance.now();
             }
         };
@@ -2671,8 +2729,12 @@ class PlanetSide extends BABYLON.Mesh {
     get kPosMax() {
         return this.planet.kPosMax;
     }
-    GetChunck(i, j, k) {
-        return this.chuncks[k][i][j];
+    GetChunck(iPos, jPos, kPos) {
+        if (this.chuncks[kPos]) {
+            if (this.chuncks[kPos][iPos]) {
+                return this.chuncks[kPos][iPos][jPos];
+            }
+        }
     }
     GetData(iGlobal, jGlobal, kGlobal) {
         let chuncksCount = PlanetTools.DegreeToChuncksCount(PlanetTools.KGlobalToDegree(kGlobal));

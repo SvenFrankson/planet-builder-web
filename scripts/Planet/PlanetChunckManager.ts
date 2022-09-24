@@ -40,7 +40,7 @@ class PlanetChunckManager {
         let t = t0;
         while (this._needRedraw.length > 0 && (t - t0) < 1) {
             let request = this._needRedraw.pop();
-            request.chunck.Initialize();
+            request.chunck.initialize();
             t = performance.now();
         }
     }
