@@ -282,15 +282,22 @@ class PlanetTools {
         }
     }
 
+    private static _KPosToDegree: Map<number, number> = new Map<number, number>();
     public static KPosToDegree8(kPos: number): number {
+        let v = PlanetTools._KPosToDegree.get(kPos);
+        if (isFinite(v)) {
+            return v;
+        }
         let degree = 4;
+        let tmpKpos = kPos;
         while (degree < PlanetTools.BSizes.length) {
             let size = PlanetTools.BSizes[degree].length / PlanetTools.CHUNCKSIZE;
-            if (kPos < size) {
+            if (tmpKpos < size) {
+                PlanetTools._KPosToDegree.set(kPos, degree);
                 return degree;
             }
             else {
-                kPos -= size;
+                tmpKpos -= size;
                 degree++;
             }
         }
