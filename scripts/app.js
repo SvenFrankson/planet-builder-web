@@ -170,7 +170,7 @@ Game.ClientYOnLock = -1;
 window.addEventListener("DOMContentLoaded", () => {
     let game = new Game("renderCanvas");
     game.createScene();
-    let planetTest = new Planet("Paulita", 8, game.chunckManager);
+    let planetTest = new Planet("Paulita", 14, game.chunckManager);
     planetTest.generator = new PlanetGeneratorEarth(planetTest, 0.70, 0.15);
     planetTest.generator.showDebug();
     //Game.Player = new Player(new BABYLON.Vector3(10, 60, 0), planetTest);
@@ -1474,14 +1474,14 @@ class PlanetChunck {
         this.jPos = jPos;
         this.kPos = kPos;
         this.name = "chunck:" + this.side + ":" + this.iPos + "-" + this.jPos + "-" + this.kPos;
-        this.barycenter = PlanetTools.EvaluateVertex(this.GetSize(), PlanetTools.CHUNCKSIZE * this.iPos + PlanetTools.CHUNCKSIZE / 2, PlanetTools.CHUNCKSIZE * this.jPos + PlanetTools.CHUNCKSIZE / 2).scale(PlanetTools.CHUNCKSIZE * this.kPos + PlanetTools.CHUNCKSIZE / 2);
+        this.barycenter = PlanetTools.EvaluateVertex(this.GetSize(), PlanetTools.CHUNCKSIZE * this.iPos + PlanetTools.CHUNCKSIZE / 2, PlanetTools.CHUNCKSIZE * this.jPos + PlanetTools.CHUNCKSIZE / 2).scale(PlanetTools.KGlobalToAltitude((this.kPos + 0.5) * PlanetTools.CHUNCKSIZE));
         this.barycenter = BABYLON.Vector3.TransformCoordinates(this.barycenter, planetSide.computeWorldMatrix());
         this.normal = BABYLON.Vector3.Normalize(this.barycenter);
         if (this.kPos === 0) {
             this.bedrock = new BABYLON.Mesh(this.name + "-bedrock", Game.Scene);
             this.bedrock.parent = this.planetSide;
         }
-        this.chunckManager.requestDraw(this);
+        this.chunckManager.registerChunck(this);
     }
     get side() {
         return this.planetSide.side;
@@ -1539,6 +1539,12 @@ class PlanetChunck {
     get isFull() {
         return this._isFull;
     }
+    isMeshDrawn() {
+        return this.mesh && !this.mesh.isDisposed();
+    }
+    isMeshDisposed() {
+        return !this.mesh || this.mesh.isDisposed();
+    }
     initialize() {
         this.initializeData();
         this.initializeMesh();
@@ -1595,7 +1601,7 @@ class PlanetChunck {
                 }
             }
         }
-        if (!this.mesh) {
+        if (this.isMeshDisposed()) {
             this.mesh = new BABYLON.Mesh("chunck-" + this.iPos + "-" + this.jPos + "-" + this.kPos, Game.Scene);
         }
         let vertexData = PlanetChunckMeshBuilder.BuildVertexData(this.GetSize(), this.iPos, this.jPos, this.kPos, this.data);
@@ -1612,7 +1618,7 @@ class PlanetChunck {
         this.mesh.computeWorldMatrix();
         this.mesh.refreshBoundingInfo();
     }
-    Dispose() {
+    disposeMesh() {
         if (this.mesh) {
             this.mesh.dispose();
         }
@@ -1657,11 +1663,87 @@ class PlanetChunckRedrawRequest {
 class PlanetChunckManager {
     constructor(scene) {
         this.scene = scene;
+        this._chuncks = [];
         this._needRedraw = [];
+        this._maxChunckCount = 12 * 12 * 12;
+        this._chunckIndexDistCompute = 0;
+        this._chunckIndexSort = 0;
+        this._chunckIndexRefreshLod0 = 0;
+        this._chunckIndexRefreshLod1 = 0;
         this._update = () => {
+            this._viewpoint.copyFrom(this.scene.activeCamera.globalPosition);
+            let l = this._chuncks.length;
             let t0 = performance.now();
             let t = t0;
-            while (this._needRedraw.length > 0 && (t - t0) < 1000 / 24) {
+            /*
+            while (this._chuncks.length > 0 && (t - t0) < 1) {
+                let chunck = this._chuncks[this._chunckIndexDistCompute];
+                chunck.sqrDistanceToViewpoint = BABYLON.Vector3.DistanceSquared(this._viewpoint, chunck.GetBaryCenter());
+                this._chunckIndexDistCompute = (this._chunckIndexDistCompute + 1) % l;
+                t = performance.now();
+            }
+            */
+            t0 = performance.now();
+            t = t0;
+            while (this._chuncks.length > 0 && (t - t0) < 5) {
+                let n1 = Math.floor(Math.random() * l);
+                let n2 = Math.floor(Math.random() * l);
+                let nMin = Math.min(n1, n2);
+                let nMax = Math.max(n1, n2);
+                let chunckMin = this._chuncks[nMin];
+                chunckMin.sqrDistanceToViewpoint = BABYLON.Vector3.DistanceSquared(this._viewpoint, chunckMin.GetBaryCenter());
+                let chunckMax = this._chuncks[nMax];
+                chunckMax.sqrDistanceToViewpoint = BABYLON.Vector3.DistanceSquared(this._viewpoint, chunckMax.GetBaryCenter());
+                if (chunckMax.sqrDistanceToViewpoint > chunckMin.sqrDistanceToViewpoint) {
+                    this._chuncks[nMin] = chunckMax;
+                    this._chuncks[nMax] = chunckMin;
+                }
+                t = performance.now();
+            }
+            t0 = performance.now();
+            t = t0;
+            while (this._chuncks.length > 0 && (t - t0) < 5) {
+                let chunck = this._chuncks[this._chunckIndexSort];
+                chunck.sqrDistanceToViewpoint = BABYLON.Vector3.DistanceSquared(this._viewpoint, chunck.GetBaryCenter());
+                let nextChunck = this._chuncks[this._chunckIndexSort + 1];
+                nextChunck.sqrDistanceToViewpoint = BABYLON.Vector3.DistanceSquared(this._viewpoint, nextChunck.GetBaryCenter());
+                if (nextChunck.sqrDistanceToViewpoint > chunck.sqrDistanceToViewpoint) {
+                    this._chuncks[this._chunckIndexSort] = nextChunck;
+                    this._chuncks[this._chunckIndexSort + 1] = chunck;
+                }
+                this._chunckIndexSort = (this._chunckIndexSort + 1) % (l - 1);
+                t = performance.now();
+            }
+            t0 = performance.now();
+            t = t0;
+            while (this._chuncks.length > 0 && (t - t0) < 0.5) {
+                let chunck = this._chuncks[this._chunckIndexRefreshLod0 + (l - this._maxChunckCount)];
+                if (chunck && !chunck.isMeshDrawn()) {
+                    this.requestDraw(chunck);
+                }
+                this._chunckIndexRefreshLod0 = (this._chunckIndexRefreshLod0 + 1) % this._maxChunckCount;
+                t = performance.now();
+            }
+            t0 = performance.now();
+            t = t0;
+            while (this._chuncks.length > 0 && (t - t0) < 0.5) {
+                let chunck = this._chuncks[this._chunckIndexRefreshLod1];
+                if (this._chunckIndexRefreshLod1 > l - this._maxChunckCount) {
+                    if (!chunck.isMeshDrawn()) {
+                        this.requestDraw(chunck);
+                    }
+                }
+                else if (this._chunckIndexRefreshLod1 < l - this._maxChunckCount * 1.2) {
+                    if (!chunck.isMeshDisposed()) {
+                        chunck.disposeMesh();
+                    }
+                }
+                this._chunckIndexRefreshLod1 = (this._chunckIndexRefreshLod1 + 1) % l;
+                t = performance.now();
+            }
+            t0 = performance.now();
+            t = t0;
+            while (this._needRedraw.length > 0 && (t - t0) < 1000 / 60) {
                 let request = this._needRedraw.pop();
                 request.chunck.initialize();
                 t = performance.now();
@@ -1669,10 +1751,22 @@ class PlanetChunckManager {
         };
     }
     initialize() {
+        this._viewpoint = this.scene.activeCamera.globalPosition.clone();
         this.scene.onBeforeRenderObservable.add(this._update);
     }
     dispose() {
         this.scene.onBeforeRenderObservable.removeCallback(this._update);
+    }
+    registerChunck(chunck) {
+        chunck.sqrDistanceToViewpoint = BABYLON.Vector3.DistanceSquared(this._viewpoint, chunck.GetBaryCenter());
+        if (this._chuncks.indexOf(chunck) === -1) {
+            if (chunck.sqrDistanceToViewpoint < 100 * 100) {
+                this._chuncks.push(chunck);
+            }
+            else {
+                this._chuncks.splice(0, 0, chunck);
+            }
+        }
     }
     async requestDraw(chunck) {
         return new Promise(resolve => {

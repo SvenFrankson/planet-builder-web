@@ -126,7 +126,7 @@ window.addEventListener("DOMContentLoaded", () => {
 	let game: Game = new Game("renderCanvas");
 	game.createScene();
 
-	let planetTest: Planet = new Planet("Paulita", 8, game.chunckManager);
+	let planetTest: Planet = new Planet("Paulita", 14, game.chunckManager);
 
 	planetTest.generator = new PlanetGeneratorEarth(planetTest, 0.70, 0.15);
 	planetTest.generator.showDebug();

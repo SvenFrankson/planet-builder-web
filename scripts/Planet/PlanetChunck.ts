@@ -76,6 +76,8 @@ class PlanetChunck {
     public GetNormal(): BABYLON.Vector3 {
         return this.normal;
     }
+    public sqrDistanceToViewpoint: number;
+
     private _isEmpty: boolean = true;
     public get isEmpty(): boolean {
         return this._isEmpty;
@@ -88,6 +90,12 @@ class PlanetChunck {
     private bedrock: BABYLON.Mesh;
 
     public mesh: BABYLON.Mesh;
+    public isMeshDrawn(): boolean {
+        return this.mesh && !this.mesh.isDisposed();
+    }
+    public isMeshDisposed(): boolean {
+        return !this.mesh || this.mesh.isDisposed();
+    }
 
     constructor(
         iPos: number,
@@ -105,7 +113,7 @@ class PlanetChunck {
             PlanetTools.CHUNCKSIZE * this.iPos + PlanetTools.CHUNCKSIZE / 2,
             PlanetTools.CHUNCKSIZE * this.jPos + PlanetTools.CHUNCKSIZE / 2
         ).scale(
-            PlanetTools.CHUNCKSIZE * this.kPos + PlanetTools.CHUNCKSIZE / 2
+            PlanetTools.KGlobalToAltitude((this.kPos + 0.5) * PlanetTools.CHUNCKSIZE)
         );
         this.barycenter = BABYLON.Vector3.TransformCoordinates(
             this.barycenter,
@@ -118,7 +126,7 @@ class PlanetChunck {
             this.bedrock.parent = this.planetSide;
         }
 
-        this.chunckManager.requestDraw(this);
+        this.chunckManager.registerChunck(this);
     }
     
     public initialize(): void {
@@ -181,7 +189,7 @@ class PlanetChunck {
                 }
             }
         }
-        if (!this.mesh) {
+        if (this.isMeshDisposed()) {
             this.mesh = new BABYLON.Mesh("chunck-" + this.iPos + "-" + this.jPos + "-" + this.kPos, Game.Scene);
         }
         let vertexData: BABYLON.VertexData = PlanetChunckMeshBuilder.BuildVertexData(
@@ -214,7 +222,7 @@ class PlanetChunck {
         this.mesh.refreshBoundingInfo();
     }
 
-    public Dispose(): void {
+    public disposeMesh(): void {
         if (this.mesh) {
             this.mesh.dispose();
         }
