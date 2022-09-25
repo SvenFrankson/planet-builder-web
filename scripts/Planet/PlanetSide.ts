@@ -27,10 +27,31 @@ class PlanetSide extends BABYLON.Mesh {
     private chuncksLength: number;
     private chuncks: Array<Array<Array<PlanetChunck>>>;
 
-    public GetChunck(iPos: number, jPos: number, kPos: number): PlanetChunck {
+    public getChunck(iPos: number, jPos: number, kPos: number, degree: number): PlanetChunck {
+        if (PlanetTools.KPosToDegree(kPos) < degree) {
+            return this.getChunck(Math.floor(iPos / 2), Math.floor(jPos / 2), kPos, degree - 1);
+        }
         if (this.chuncks[kPos]) {
             if (this.chuncks[kPos][iPos]) {
-                return this.chuncks[kPos][iPos][jPos];
+                let chunck = this.chuncks[kPos][iPos][jPos];
+                if (chunck && chunck.degree === degree) {
+                    return chunck;
+                }
+            }
+        }
+        if (kPos >= 0 && kPos < this.kPosMax) {
+            let chunckCount = this.chuncks[kPos].length;
+            if (iPos < 0) {
+                if (this.side <= Side.Left) {
+                    let side = this.planet.GetSide((this.side + 3) % 4);
+                    return side.getChunck(iPos + chunckCount, jPos, kPos, degree);
+                }
+            }
+            else if (iPos >= chunckCount) {
+                if (this.side <= Side.Left) {
+                    let side = this.planet.GetSide((this.side + 3) % 4);
+                    return side.getChunck(iPos - chunckCount, jPos, kPos, degree);
+                }
             }
         }
     }

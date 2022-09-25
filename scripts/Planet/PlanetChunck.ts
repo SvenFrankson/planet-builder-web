@@ -17,11 +17,11 @@ class PlanetChunck extends BABYLON.Mesh {
     public get chunckManager(): PlanetChunckManager {
         return this.planetSide.chunckManager;
     }
-    public GetDegree(): number {
+    public get degree(): number {
         return PlanetTools.KPosToDegree(this.kPos);
     }
     public GetSize(): number {
-        return PlanetTools.DegreeToSize(this.GetDegree());
+        return PlanetTools.DegreeToSize(this.degree);
     }
     public GetPlanetName(): string {
         return this.planetSide.GetPlanetName();
@@ -115,7 +115,9 @@ class PlanetChunck extends BABYLON.Mesh {
             this.bedrock.parent = this;
         }
 
-        this.chunckManager.requestDraw(this);
+        if (this.side != Side.Front) {
+            this.chunckManager.requestDraw(this);
+        }
     }
     
     public initialize(): void {
@@ -157,12 +159,12 @@ class PlanetChunck extends BABYLON.Mesh {
 
     public SetMesh(): void {
         if (this.isFull || this.isEmpty) {
-            let iPrev = this.planetSide.GetChunck(this.iPos - 1, this.jPos, this.kPos);
-            let iNext = this.planetSide.GetChunck(this.iPos + 1, this.jPos, this.kPos);
-            let jPrev = this.planetSide.GetChunck(this.iPos, this.jPos - 1, this.kPos);
-            let jNext = this.planetSide.GetChunck(this.iPos, this.jPos + 1, this.kPos);
-            let kPrev = this.planetSide.GetChunck(this.iPos, this.jPos, this.kPos - 1);
-            let kNext = this.planetSide.GetChunck(this.iPos, this.jPos, this.kPos + 1);
+            let iPrev = this.planetSide.getChunck(this.iPos - 1, this.jPos, this.kPos, this.degree);
+            let iNext = this.planetSide.getChunck(this.iPos + 1, this.jPos, this.kPos, this.degree);
+            let jPrev = this.planetSide.getChunck(this.iPos, this.jPos - 1, this.kPos, this.degree);
+            let jNext = this.planetSide.getChunck(this.iPos, this.jPos + 1, this.kPos, this.degree);
+            let kPrev = this.planetSide.getChunck(this.iPos, this.jPos, this.kPos - 1, this.degree);
+            let kNext = this.planetSide.getChunck(this.iPos, this.jPos, this.kPos + 1, this.degree);
             if (iPrev && iNext && jPrev && jNext && kPrev && kNext) {
                 iPrev.initializeData();
                 iNext.initializeData();

@@ -170,12 +170,12 @@ Game.ClientYOnLock = -1;
 window.addEventListener("DOMContentLoaded", () => {
     let game = new Game("renderCanvas");
     game.createScene();
-    let planetTest = new Planet("Paulita", 8, game.chunckManager);
-    let heightMap = PlanetHeightMap.CreateMap(PlanetTools.KPosToDegree(8), 80, 5);
-    let heightMap4 = PlanetHeightMap.CreateMap(PlanetTools.KPosToDegree(8), 80, 15, {
+    let planetTest = new Planet("Paulita", 7, game.chunckManager);
+    let heightMap = PlanetHeightMap.CreateMap(PlanetTools.KPosToDegree(7), 70, 5);
+    let heightMap4 = PlanetHeightMap.CreateMap(PlanetTools.KPosToDegree(7), 70, 15, {
         firstNoiseDegree: 1,
         postComputation: (v) => {
-            let delta = Math.abs(70 - v);
+            let delta = Math.abs(60 - v);
             if (delta > 2) {
                 return 1;
             }
@@ -183,17 +183,17 @@ window.addEventListener("DOMContentLoaded", () => {
         }
     });
     heightMap.substractInPlace(heightMap4);
-    let heightMap5 = PlanetHeightMap.CreateMap(PlanetTools.KPosToDegree(8), 80, 15, {
+    let heightMap5 = PlanetHeightMap.CreateMap(PlanetTools.KPosToDegree(7), 70, 15, {
         firstNoiseDegree: 4,
         postComputation: (v) => {
-            if (v > 80) {
-                return (v - 80) * 1.5;
+            if (v > 70) {
+                return (v - 70) * 1.5;
             }
             return 1;
         }
     });
     heightMap.addInPlace(heightMap5);
-    planetTest.generator = new PlanetGeneratorChaos(planetTest);
+    planetTest.generator = new PlanetGeneratorDebug2(planetTest);
     //planetTest.generator.showDebug();
     //Game.Player = new Player(new BABYLON.Vector3(10, 60, 0), planetTest);
     //Game.Player.registerControl();
@@ -1039,6 +1039,17 @@ class PlanetGeneratorDebug extends PlanetGenerator {
                 return BlockType.RedDust;
             }
             return 0;
+        });
+    }
+}
+class PlanetGeneratorDebug2 extends PlanetGenerator {
+    constructor(planet) {
+        super(planet);
+    }
+    makeData(chunck) {
+        let c = Math.floor(Math.random() * 7 + 1);
+        return PlanetTools.Data((i, j, k) => {
+            return c;
         });
     }
 }
@@ -1903,7 +1914,9 @@ class PlanetChunck extends BABYLON.Mesh {
             this.bedrock = new BABYLON.Mesh(this.name + "-bedrock", Game.Scene);
             this.bedrock.parent = this;
         }
-        this.chunckManager.requestDraw(this);
+        if (this.side != Side.Front) {
+            this.chunckManager.requestDraw(this);
+        }
     }
     get side() {
         return this.planetSide.side;
@@ -1911,11 +1924,11 @@ class PlanetChunck extends BABYLON.Mesh {
     get chunckManager() {
         return this.planetSide.chunckManager;
     }
-    GetDegree() {
+    get degree() {
         return PlanetTools.KPosToDegree(this.kPos);
     }
     GetSize() {
-        return PlanetTools.DegreeToSize(this.GetDegree());
+        return PlanetTools.DegreeToSize(this.degree);
     }
     GetPlanetName() {
         return this.planetSide.GetPlanetName();
@@ -1996,12 +2009,12 @@ class PlanetChunck extends BABYLON.Mesh {
     }
     SetMesh() {
         if (this.isFull || this.isEmpty) {
-            let iPrev = this.planetSide.GetChunck(this.iPos - 1, this.jPos, this.kPos);
-            let iNext = this.planetSide.GetChunck(this.iPos + 1, this.jPos, this.kPos);
-            let jPrev = this.planetSide.GetChunck(this.iPos, this.jPos - 1, this.kPos);
-            let jNext = this.planetSide.GetChunck(this.iPos, this.jPos + 1, this.kPos);
-            let kPrev = this.planetSide.GetChunck(this.iPos, this.jPos, this.kPos - 1);
-            let kNext = this.planetSide.GetChunck(this.iPos, this.jPos, this.kPos + 1);
+            let iPrev = this.planetSide.getChunck(this.iPos - 1, this.jPos, this.kPos, this.degree);
+            let iNext = this.planetSide.getChunck(this.iPos + 1, this.jPos, this.kPos, this.degree);
+            let jPrev = this.planetSide.getChunck(this.iPos, this.jPos - 1, this.kPos, this.degree);
+            let jNext = this.planetSide.getChunck(this.iPos, this.jPos + 1, this.kPos, this.degree);
+            let kPrev = this.planetSide.getChunck(this.iPos, this.jPos, this.kPos - 1, this.degree);
+            let kNext = this.planetSide.getChunck(this.iPos, this.jPos, this.kPos + 1, this.degree);
             if (iPrev && iNext && jPrev && jNext && kPrev && kNext) {
                 iPrev.initializeData();
                 iNext.initializeData();
@@ -2411,10 +2424,31 @@ class PlanetSide extends BABYLON.Mesh {
     get kPosMax() {
         return this.planet.kPosMax;
     }
-    GetChunck(iPos, jPos, kPos) {
+    getChunck(iPos, jPos, kPos, degree) {
+        if (PlanetTools.KPosToDegree(kPos) < degree) {
+            return this.getChunck(Math.floor(iPos / 2), Math.floor(jPos / 2), kPos, degree - 1);
+        }
         if (this.chuncks[kPos]) {
             if (this.chuncks[kPos][iPos]) {
-                return this.chuncks[kPos][iPos][jPos];
+                let chunck = this.chuncks[kPos][iPos][jPos];
+                if (chunck && chunck.degree === degree) {
+                    return chunck;
+                }
+            }
+        }
+        if (kPos >= 0 && kPos < this.kPosMax) {
+            let chunckCount = this.chuncks[kPos].length;
+            if (iPos < 0) {
+                if (this.side <= Side.Left) {
+                    let side = this.planet.GetSide((this.side + 3) % 4);
+                    return side.getChunck(iPos + chunckCount, jPos, kPos, degree);
+                }
+            }
+            else if (iPos >= chunckCount) {
+                if (this.side <= Side.Left) {
+                    let side = this.planet.GetSide((this.side + 3) % 4);
+                    return side.getChunck(iPos - chunckCount, jPos, kPos, degree);
+                }
             }
         }
     }
@@ -2618,8 +2652,10 @@ class PlanetTools {
         return { i: i, j: j, k: k };
     }
     static GlobalIJKToLocalIJK(planetSide, global) {
+        let kPos = Math.floor(global.k / PlanetTools.CHUNCKSIZE);
+        let degree = PlanetTools.KPosToDegree(kPos);
         return {
-            planetChunck: planetSide.GetChunck(Math.floor(global.i / PlanetTools.CHUNCKSIZE), Math.floor(global.j / PlanetTools.CHUNCKSIZE), Math.floor(global.k / PlanetTools.CHUNCKSIZE)),
+            planetChunck: planetSide.getChunck(Math.floor(global.i / PlanetTools.CHUNCKSIZE), Math.floor(global.j / PlanetTools.CHUNCKSIZE), kPos, degree),
             i: global.i % PlanetTools.CHUNCKSIZE,
             j: global.j % PlanetTools.CHUNCKSIZE,
             k: global.k % PlanetTools.CHUNCKSIZE,
@@ -2684,17 +2720,18 @@ class PlanetTools {
     static KPosToDegree8(kPos) {
         let v = PlanetTools._KPosToDegree.get(kPos);
         if (isFinite(v)) {
-            //return v;
+            return v;
         }
         let degree = 4;
+        let tmpKpos = kPos;
         while (degree < PlanetTools.BSizes.length) {
             let size = PlanetTools.BSizes[degree].length / PlanetTools.CHUNCKSIZE;
-            if (kPos < size) {
+            if (tmpKpos < size) {
                 PlanetTools._KPosToDegree.set(kPos, degree);
                 return degree;
             }
             else {
-                kPos -= size;
+                tmpKpos -= size;
                 degree++;
             }
         }

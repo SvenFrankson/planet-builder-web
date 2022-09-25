@@ -128,3 +128,19 @@ class PlanetGeneratorDebug extends PlanetGenerator {
         );
     }
 }
+
+class PlanetGeneratorDebug2 extends PlanetGenerator {
+
+    constructor(planet: Planet) {
+        super(planet);
+    }
+
+    public makeData(chunck: PlanetChunck): number[][][] {
+        let c = Math.floor(Math.random() * 7 + 1)
+        return PlanetTools.Data(
+            (i, j, k) => {
+                return c;
+            }
+        );
+    }
+}

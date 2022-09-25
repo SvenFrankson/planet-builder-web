@@ -211,8 +211,10 @@ class PlanetTools {
         planetSide: PlanetSide,
         global: { i: number; j: number; k: number }
     ): { planetChunck: PlanetChunck; i: number; j: number; k: number } {
+        let kPos = Math.floor(global.k / PlanetTools.CHUNCKSIZE);
+        let degree = PlanetTools.KPosToDegree(kPos);
         return {
-            planetChunck: planetSide.GetChunck(Math.floor(global.i / PlanetTools.CHUNCKSIZE), Math.floor(global.j / PlanetTools.CHUNCKSIZE), Math.floor(global.k / PlanetTools.CHUNCKSIZE)),
+            planetChunck: planetSide.getChunck(Math.floor(global.i / PlanetTools.CHUNCKSIZE), Math.floor(global.j / PlanetTools.CHUNCKSIZE), kPos, degree),
             i: global.i % PlanetTools.CHUNCKSIZE,
             j: global.j % PlanetTools.CHUNCKSIZE,
             k: global.k % PlanetTools.CHUNCKSIZE,
