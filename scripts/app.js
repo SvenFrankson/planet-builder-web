@@ -1914,7 +1914,7 @@ class PlanetChunck extends BABYLON.Mesh {
             this.bedrock = new BABYLON.Mesh(this.name + "-bedrock", Game.Scene);
             this.bedrock.parent = this;
         }
-        if (this.side != Side.Front) {
+        if (this.side != Side.Top && this.side != Side.Bottom) {
             this.chunckManager.requestDraw(this);
         }
     }
@@ -2441,13 +2441,49 @@ class PlanetSide extends BABYLON.Mesh {
             if (iPos < 0) {
                 if (this.side <= Side.Left) {
                     let side = this.planet.GetSide((this.side + 3) % 4);
-                    return side.getChunck(iPos + chunckCount, jPos, kPos, degree);
+                    return side.getChunck(chunckCount + iPos, jPos, kPos, degree);
+                }
+                else if (this.side === Side.Top) {
+                    let side = this.planet.GetSide(Side.Back);
+                    return side.getChunck(chunckCount - 1 - jPos, chunckCount + iPos, kPos, degree);
+                }
+                else if (this.side === Side.Bottom) {
+                    let side = this.planet.GetSide(Side.Back);
+                    return side.getChunck(jPos, -1 - iPos, kPos, degree);
                 }
             }
             else if (iPos >= chunckCount) {
                 if (this.side <= Side.Left) {
                     let side = this.planet.GetSide((this.side + 3) % 4);
-                    return side.getChunck(iPos - chunckCount, jPos, kPos, degree);
+                    return side.getChunck(-chunckCount + iPos, jPos, kPos, degree);
+                }
+                else if (this.side === Side.Top) {
+                    let side = this.planet.GetSide(Side.Front);
+                    return side.getChunck(jPos, 2 * chunckCount - iPos - 1, kPos, degree);
+                }
+                else if (this.side === Side.Bottom) {
+                    let side = this.planet.GetSide(Side.Front);
+                    return side.getChunck(chunckCount - 1 - jPos, chunckCount - iPos, kPos, degree);
+                }
+            }
+            else if (jPos < 0) {
+                if (this.side === Side.Front) {
+                    let side = this.planet.GetSide(Side.Bottom);
+                    return side.getChunck(chunckCount + jPos, chunckCount - 1 - iPos, kPos, degree);
+                }
+                else if (this.side === Side.Right) {
+                    let side = this.planet.GetSide(Side.Bottom);
+                    return side.getChunck(iPos, chunckCount + jPos, kPos, degree);
+                }
+            }
+            else if (jPos >= chunckCount) {
+                if (this.side === Side.Front) {
+                    let side = this.planet.GetSide(Side.Top);
+                    return side.getChunck(2 * chunckCount - 1 - jPos, iPos, kPos, degree);
+                }
+                else if (this.side === Side.Right) {
+                    let side = this.planet.GetSide(Side.Top);
+                    return side.getChunck(iPos, -chunckCount + jPos, kPos, degree);
                 }
             }
         }

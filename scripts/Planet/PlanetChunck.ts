@@ -115,7 +115,7 @@ class PlanetChunck extends BABYLON.Mesh {
             this.bedrock.parent = this;
         }
 
-        if (this.side != Side.Front) {
+        if (this.side != Side.Top && this.side != Side.Bottom) {
             this.chunckManager.requestDraw(this);
         }
     }
