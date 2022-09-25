@@ -38,7 +38,7 @@ class PlanetChunckManager {
     private _update = () => {
         let t0 = performance.now();
         let t = t0;
-        while (this._needRedraw.length > 0 && (t - t0) < 1) {
+        while (this._needRedraw.length > 0 && (t - t0) < 1000 / 24) {
             let request = this._needRedraw.pop();
             request.chunck.initialize();
             t = performance.now();

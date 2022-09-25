@@ -115,9 +115,7 @@ class PlanetChunck extends BABYLON.Mesh {
             this.bedrock.parent = this;
         }
 
-        if (this.side != Side.Top && this.side != Side.Bottom) {
-            this.chunckManager.requestDraw(this);
-        }
+        this.chunckManager.requestDraw(this);
     }
     
     public initialize(): void {
@@ -173,11 +171,9 @@ class PlanetChunck extends BABYLON.Mesh {
                 kPrev.initializeData();
                 kNext.initializeData();
                 if (this.isFull && iPrev.isFull && iNext.isFull && jPrev.isFull && jNext.isFull && kPrev.isFull && kNext.isFull) {
-                    console.log("opti");
                     return;
                 }
                 if (this.isEmpty && iPrev.isEmpty && iNext.isEmpty && jPrev.isEmpty && jNext.isEmpty && kPrev.isEmpty && kNext.isEmpty) {
-                    console.log("opti");
                     return;
                 }
             }
