@@ -7,9 +7,11 @@ enum Neighbour {
     KMinus = 5,
 }
 
-class PlanetChunck extends BABYLON.Mesh {
+class PlanetChunck {
     
     public planetSide: PlanetSide;
+
+    public name: string;
 
     public get side(): Side {
         return this.planetSide.side;
@@ -85,13 +87,14 @@ class PlanetChunck extends BABYLON.Mesh {
 
     private bedrock: BABYLON.Mesh;
 
+    public mesh: BABYLON.Mesh;
+
     constructor(
         iPos: number,
         jPos: number,
         kPos: number,
         planetSide: PlanetSide
     ) {
-        super("chunck-" + iPos + "-" + jPos + "-" + kPos, Game.Scene);
         this.planetSide = planetSide;
         this.iPos = iPos;
         this.jPos = jPos;
@@ -112,7 +115,7 @@ class PlanetChunck extends BABYLON.Mesh {
         
         if (this.kPos === 0) {
             this.bedrock = new BABYLON.Mesh(this.name + "-bedrock", Game.Scene);
-            this.bedrock.parent = this;
+            this.bedrock.parent = this.planetSide;
         }
 
         this.chunckManager.requestDraw(this);
@@ -127,7 +130,7 @@ class PlanetChunck extends BABYLON.Mesh {
         if (!this.dataInitialized) {
             this.data = this.planetSide.planet.generator.makeData(this);
             this.updateIsEmptyIsFull();
-            this.saveToLocalStorage();
+            //this.saveToLocalStorage();
             this._dataInitialized = true;
         }
     }
@@ -178,6 +181,9 @@ class PlanetChunck extends BABYLON.Mesh {
                 }
             }
         }
+        if (!this.mesh) {
+            this.mesh = new BABYLON.Mesh("chunck-" + this.iPos + "-" + this.jPos + "-" + this.kPos, Game.Scene);
+        }
         let vertexData: BABYLON.VertexData = PlanetChunckMeshBuilder.BuildVertexData(
             this.GetSize(),
             this.iPos,
@@ -186,8 +192,8 @@ class PlanetChunck extends BABYLON.Mesh {
             this.data
         );
         if (vertexData.positions.length > 0) {
-            vertexData.applyToMesh(this);
-            this.material = SharedMaterials.MainMaterial();
+            vertexData.applyToMesh(this.mesh);
+            this.mesh.material = SharedMaterials.MainMaterial();
         }
     
         if (this.kPos === 0) {
@@ -203,14 +209,14 @@ class PlanetChunck extends BABYLON.Mesh {
             this.bedrock.material = SharedMaterials.BedrockMaterial();
         }
 
-        this.computeWorldMatrix();
-        this.refreshBoundingInfo();
+        this.mesh.parent = this.planetSide;
+        this.mesh.computeWorldMatrix();
+        this.mesh.refreshBoundingInfo();
     }
 
     public Dispose(): void {
-        PlanetTools.EmptyVertexData().applyToMesh(this);
-        if (this.bedrock) {
-            PlanetTools.EmptyVertexData().applyToMesh(this.bedrock);
+        if (this.mesh) {
+            this.mesh.dispose();
         }
     }
 

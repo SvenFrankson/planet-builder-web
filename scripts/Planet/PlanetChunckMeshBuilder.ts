@@ -7,6 +7,10 @@ class PlanetChunckMeshBuilder {
     public static get BlockColor(): Map<number, BABYLON.Color3> {
         if (!PlanetChunckMeshBuilder._BlockColor) {
             PlanetChunckMeshBuilder._BlockColor = new Map<number, BABYLON.Color3>();
+            PlanetChunckMeshBuilder._BlockColor.set(BlockType.Grass, BABYLON.Color3.FromHexString("#50723C"));
+            PlanetChunckMeshBuilder._BlockColor.set(BlockType.Dirt, BABYLON.Color3.FromHexString("#462521"));
+            PlanetChunckMeshBuilder._BlockColor.set(BlockType.Sand, BABYLON.Color3.FromHexString("#F5B700"));
+            PlanetChunckMeshBuilder._BlockColor.set(BlockType.Rock, BABYLON.Color3.FromHexString("#9DB5B2"));
             PlanetChunckMeshBuilder._BlockColor.set(BlockType.RedDirt, BABYLON.Color3.FromHexString("#fa591e"));
             PlanetChunckMeshBuilder._BlockColor.set(BlockType.RedDust, BABYLON.Color3.FromHexString("#ad7c6a"));
             PlanetChunckMeshBuilder._BlockColor.set(BlockType.RedRock, BABYLON.Color3.FromHexString("#4f1a06"));

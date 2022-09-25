@@ -170,31 +170,9 @@ Game.ClientYOnLock = -1;
 window.addEventListener("DOMContentLoaded", () => {
     let game = new Game("renderCanvas");
     game.createScene();
-    let planetTest = new Planet("Paulita", 9, game.chunckManager);
-    let heightMap = PlanetHeightMap.CreateMap(PlanetTools.KPosToDegree(8), 80, 5);
-    let heightMap4 = PlanetHeightMap.CreateMap(PlanetTools.KPosToDegree(8), 80, 15, {
-        firstNoiseDegree: 1,
-        postComputation: (v) => {
-            let delta = Math.abs(60 - v);
-            if (delta > 2) {
-                return 1;
-            }
-            return 4 - delta;
-        }
-    });
-    heightMap.substractInPlace(heightMap4);
-    let heightMap5 = PlanetHeightMap.CreateMap(PlanetTools.KPosToDegree(8), 80, 15, {
-        firstNoiseDegree: 4,
-        postComputation: (v) => {
-            if (v > 80) {
-                return (v - 80) * 1.5;
-            }
-            return 1;
-        }
-    });
-    heightMap.addInPlace(heightMap5);
-    planetTest.generator = new PlanetGeneratorDebug2(planetTest);
-    //planetTest.generator.showDebug();
+    let planetTest = new Planet("Paulita", 8, game.chunckManager);
+    planetTest.generator = new PlanetGeneratorEarth(planetTest, 0.70, 0.15);
+    planetTest.generator.showDebug();
     //Game.Player = new Player(new BABYLON.Vector3(10, 60, 0), planetTest);
     //Game.Player.registerControl();
     Game.PlanetEditor = new PlanetEditor(planetTest);
@@ -942,416 +920,6 @@ class PlanetEditor {
         }
     }
 }
-class PlanetGenerator {
-    constructor(planet) {
-        this.planet = planet;
-    }
-    showDebug() {
-        for (let i = 0; i < this.heightMaps.length; i++) {
-            let x = -3.5 + Math.floor(i / 3) * 7;
-            if (i === 1) {
-                x -= 1;
-            }
-            if (i === 4) {
-                x += 1;
-            }
-            Utils.showDebugPlanetHeightMap(this.heightMaps[i], x, 1.5 - 1.5 * (i % 3));
-        }
-    }
-}
-class PlanetGeneratorChaos extends PlanetGenerator {
-    constructor(planet) {
-        super(planet);
-        let hMax = this.planet.kPosMax * PlanetTools.CHUNCKSIZE;
-        let heightMap1 = PlanetHeightMap.CreateMap(PlanetTools.KPosToDegree(this.planet.kPosMax), hMax * 0.5, hMax * 0.15);
-        let heightMap2 = PlanetHeightMap.CreateMap(PlanetTools.KPosToDegree(this.planet.kPosMax), hMax * 0.5, hMax * 0.25, {
-            firstNoiseDegree: 4,
-            postComputation: (v) => {
-                if (v > hMax * 0.60) {
-                    return (v - hMax * 0.60) * 1.5;
-                }
-                return 0;
-            }
-        });
-        let heightMap3 = PlanetHeightMap.CreateMap(PlanetTools.KPosToDegree(this.planet.kPosMax), hMax * 0.5, hMax * 0.25, {
-            firstNoiseDegree: 3,
-            postComputation: (v) => {
-                let delta = Math.abs(hMax * 0.5 - v);
-                if (delta > 2) {
-                    return 0;
-                }
-                return 3 - delta;
-            }
-        });
-        this.heightMaps = [heightMap1, heightMap2, heightMap3];
-        if (Game.ShowDebugPlanetHeightMap) {
-            this.showDebug();
-        }
-    }
-    makeData(chunck) {
-        let f = Math.pow(2, this.heightMaps[0].degree - PlanetTools.KPosToDegree(chunck.kPos));
-        let hMax = this.planet.kPosMax * PlanetTools.CHUNCKSIZE;
-        return PlanetTools.Data((i, j, k) => {
-            let h1 = this.heightMaps[0].getForSide(chunck.side, (chunck.iPos * PlanetTools.CHUNCKSIZE + i) * f, (chunck.jPos * PlanetTools.CHUNCKSIZE + j) * f);
-            let h2 = this.heightMaps[1].getForSide(chunck.side, (chunck.iPos * PlanetTools.CHUNCKSIZE + i) * f, (chunck.jPos * PlanetTools.CHUNCKSIZE + j) * f);
-            let h3 = this.heightMaps[2].getForSide(chunck.side, (chunck.iPos * PlanetTools.CHUNCKSIZE + i) * f, (chunck.jPos * PlanetTools.CHUNCKSIZE + j) * f);
-            let globalK = k + chunck.kPos * PlanetTools.CHUNCKSIZE;
-            let hGround = h1 - h3;
-            if (globalK < hGround) {
-                if (h3 > 0) {
-                    return BlockType.RedRock;
-                }
-                if (globalK < hMax * 0.5) {
-                    return BlockType.RedDust;
-                }
-                return BlockType.RedDirt;
-            }
-            if (globalK < hGround + h2) {
-                return BlockType.RedRock;
-            }
-            return 0;
-        });
-    }
-}
-class PlanetGeneratorDebug extends PlanetGenerator {
-    constructor(planet) {
-        super(planet);
-    }
-    makeData(chunck) {
-        return PlanetTools.Data((i, j, k) => {
-            let iGlobal = i + chunck.iPos * PlanetTools.CHUNCKSIZE;
-            let jGlobal = j + chunck.jPos * PlanetTools.CHUNCKSIZE;
-            let kGlobal = k + chunck.kPos * PlanetTools.CHUNCKSIZE;
-            let h = 25;
-            if (chunck.side === Side.Front) {
-                h = 28;
-            }
-            if (jGlobal < 5) {
-                h = 30;
-            }
-            if (kGlobal < h) {
-                if (iGlobal < 5) {
-                    return BlockType.RedDirt;
-                }
-                if (jGlobal < 5) {
-                    return BlockType.RedRock;
-                }
-                return BlockType.RedDust;
-            }
-            return 0;
-        });
-    }
-}
-class PlanetGeneratorDebug2 extends PlanetGenerator {
-    constructor(planet) {
-        super(planet);
-    }
-    makeData(chunck) {
-        let c = Math.floor(Math.random() * 7 + 1);
-        return PlanetTools.Data((i, j, k) => {
-            return c;
-        });
-    }
-}
-class PlanetHeightMap {
-    constructor(degree) {
-        this.degree = degree;
-        this.map = [];
-        this.size = Math.pow(2, this.degree);
-    }
-    static CreateMap(degree, seaLevel, maxAltitude, options) {
-        let map = new PlanetHeightMap(0);
-        let firstNoiseDegree = 1;
-        if (options && isFinite(options.firstNoiseDegree)) {
-            firstNoiseDegree = options.firstNoiseDegree;
-        }
-        for (let i = 0; i <= map.size; i++) {
-            for (let j = 0; j <= map.size; j++) {
-                for (let k = 0; k <= map.size; k++) {
-                    if (map.isValid(i, j, k)) {
-                        map.setValue(seaLevel, i, j, k);
-                    }
-                }
-            }
-        }
-        let noise = maxAltitude;
-        while (map.degree < degree) {
-            map = map.scale2();
-            if (map.degree >= firstNoiseDegree) {
-                noise = noise * 0.5;
-                map.noise(noise);
-            }
-        }
-        if (options && options.postComputation) {
-            for (let i = 0; i <= map.size; i++) {
-                for (let j = 0; j <= map.size; j++) {
-                    for (let k = 0; k <= map.size; k++) {
-                        if (map.isValid(i, j, k)) {
-                            let v = map.getValue(i, j, k);
-                            map.setValue(options.postComputation(v), i, j, k);
-                        }
-                    }
-                }
-            }
-        }
-        map.seaLevel = seaLevel;
-        map.maxAltitude = maxAltitude;
-        return map;
-    }
-    noise(range) {
-        for (let i = 0; i <= this.size; i++) {
-            for (let j = 0; j <= this.size; j++) {
-                for (let k = 0; k <= this.size; k++) {
-                    if (this.isValid(i, j, k)) {
-                        let v = this.getValue(i, j, k);
-                        v += (Math.random() * 2 - 1) * range;
-                        this.setValue(v, i, j, k);
-                    }
-                }
-            }
-        }
-    }
-    addInPlace(other) {
-        if (other.degree = this.degree) {
-            for (let i = 0; i <= this.size; i++) {
-                for (let j = 0; j <= this.size; j++) {
-                    for (let k = 0; k <= this.size; k++) {
-                        if (this.isValid(i, j, k)) {
-                            let v = this.getValue(i, j, k);
-                            v += other.getValue(i, j, k);
-                            this.setValue(v, i, j, k);
-                        }
-                    }
-                }
-            }
-        }
-    }
-    substractInPlace(other) {
-        if (other.degree = this.degree) {
-            for (let i = 0; i <= this.size; i++) {
-                for (let j = 0; j <= this.size; j++) {
-                    for (let k = 0; k <= this.size; k++) {
-                        if (this.isValid(i, j, k)) {
-                            let v = this.getValue(i, j, k);
-                            v -= other.getValue(i, j, k);
-                            this.setValue(v, i, j, k);
-                        }
-                    }
-                }
-            }
-        }
-    }
-    scale2() {
-        let scaledMap = new PlanetHeightMap(this.degree + 1);
-        for (let I = 0; I <= this.size; I++) {
-            for (let J = 0; J <= this.size; J++) {
-                for (let K = 0; K <= this.size; K++) {
-                    if (this.isValid(I, J, K)) {
-                        let v = this.getValue(I, J, K);
-                        scaledMap.setValue(v, 2 * I, 2 * J, 2 * K);
-                    }
-                }
-            }
-        }
-        for (let i = 0; i <= this.size; i++) {
-            for (let j = 0; j <= this.size; j++) {
-                for (let k = 0; k <= this.size; k++) {
-                    if (scaledMap.isValid(2 * i + 1, 2 * j, 2 * k)) {
-                        let v1 = scaledMap.getValue(2 * i, 2 * j, 2 * k);
-                        let v2 = scaledMap.getValue(2 * i + 2, 2 * j, 2 * k);
-                        if (isFinite(v1) && isFinite(v2)) {
-                            scaledMap.setValue((v1 + v2) * 0.5, 2 * i + 1, 2 * j, 2 * k);
-                        }
-                    }
-                    if (scaledMap.isValid(2 * i, 2 * j + 1, 2 * k)) {
-                        let v1 = scaledMap.getValue(2 * i, 2 * j, 2 * k);
-                        let v2 = scaledMap.getValue(2 * i, 2 * j + 2, 2 * k);
-                        if (isFinite(v1) && isFinite(v2)) {
-                            scaledMap.setValue((v1 + v2) * 0.5, 2 * i, 2 * j + 1, 2 * k);
-                        }
-                    }
-                    if (scaledMap.isValid(2 * i, 2 * j, 2 * k + 1)) {
-                        let v1 = scaledMap.getValue(2 * i, 2 * j, 2 * k);
-                        let v2 = scaledMap.getValue(2 * i, 2 * j, 2 * k + 2);
-                        if (isFinite(v1) && isFinite(v2)) {
-                            scaledMap.setValue((v1 + v2) * 0.5, 2 * i, 2 * j, 2 * k + 1);
-                        }
-                    }
-                }
-            }
-        }
-        for (let i = 0; i <= this.size; i++) {
-            for (let j = 0; j <= this.size; j++) {
-                for (let k = 0; k <= this.size; k++) {
-                    if (scaledMap.isValid(2 * i + 1, 2 * j + 1, 2 * k)) {
-                        let v1 = scaledMap.getValue(2 * i, 2 * j + 1, 2 * k);
-                        let v2 = scaledMap.getValue(2 * i + 2, 2 * j + 1, 2 * k);
-                        let v3 = scaledMap.getValue(2 * i + 1, 2 * j + 2, 2 * k);
-                        let v4 = scaledMap.getValue(2 * i + 1, 2 * j, 2 * k);
-                        let c = 0;
-                        let v = 0;
-                        if (isFinite(v1)) {
-                            c++;
-                            v += v1;
-                        }
-                        if (isFinite(v2)) {
-                            c++;
-                            v += v2;
-                        }
-                        if (isFinite(v3)) {
-                            c++;
-                            v += v3;
-                        }
-                        if (isFinite(v4)) {
-                            c++;
-                            v += v4;
-                        }
-                        v /= c;
-                        if (isNaN(v)) {
-                            debugger;
-                        }
-                        scaledMap.setValue(v, 2 * i + 1, 2 * j + 1, 2 * k);
-                    }
-                    if (scaledMap.isValid(2 * i + 1, 2 * j, 2 * k + 1)) {
-                        let v1 = scaledMap.getValue(2 * i, 2 * j, 2 * k + 1);
-                        let v2 = scaledMap.getValue(2 * i + 2, 2 * j, 2 * k + 1);
-                        let v3 = scaledMap.getValue(2 * i + 1, 2 * j, 2 * k);
-                        let v4 = scaledMap.getValue(2 * i + 1, 2 * j, 2 * k + 2);
-                        let c = 0;
-                        let v = 0;
-                        if (isFinite(v1)) {
-                            c++;
-                            v += v1;
-                        }
-                        if (isFinite(v2)) {
-                            c++;
-                            v += v2;
-                        }
-                        if (isFinite(v3)) {
-                            c++;
-                            v += v3;
-                        }
-                        if (isFinite(v4)) {
-                            c++;
-                            v += v4;
-                        }
-                        v /= c;
-                        if (isNaN(v)) {
-                            debugger;
-                        }
-                        scaledMap.setValue(v, 2 * i + 1, 2 * j, 2 * k + 1);
-                    }
-                    if (scaledMap.isValid(2 * i, 2 * j + 1, 2 * k + 1)) {
-                        let v1 = scaledMap.getValue(2 * i, 2 * j, 2 * k + 1);
-                        let v2 = scaledMap.getValue(2 * i, 2 * j + 2, 2 * k + 1);
-                        let v3 = scaledMap.getValue(2 * i, 2 * j + 1, 2 * k);
-                        let v4 = scaledMap.getValue(2 * i, 2 * j + 1, 2 * k + 2);
-                        let c = 0;
-                        let v = 0;
-                        if (isFinite(v1)) {
-                            c++;
-                            v += v1;
-                        }
-                        if (isFinite(v2)) {
-                            c++;
-                            v += v2;
-                        }
-                        if (isFinite(v3)) {
-                            c++;
-                            v += v3;
-                        }
-                        if (isFinite(v4)) {
-                            c++;
-                            v += v4;
-                        }
-                        v /= c;
-                        if (isNaN(v)) {
-                            debugger;
-                        }
-                        scaledMap.setValue(v, 2 * i, 2 * j + 1, 2 * k + 1);
-                    }
-                }
-            }
-        }
-        if (!scaledMap.sanityCheck()) {
-            debugger;
-        }
-        return scaledMap;
-    }
-    isValid(i, j, k) {
-        return (i === 0 || j === 0 || k === 0 || i === this.size || j === this.size || k === this.size) && (i >= 0 && j >= 0 && k >= 0 && i <= this.size && j <= this.size && k <= this.size);
-    }
-    sanityCheck() {
-        for (let i = 0; i <= this.size; i++) {
-            for (let j = 0; j <= this.size; j++) {
-                for (let k = 0; k <= this.size; k++) {
-                    if (this.isValid(i, j, k)) {
-                        if (isNaN(this.getValue(i, j, k))) {
-                            return false;
-                        }
-                    }
-                }
-            }
-        }
-        return true;
-    }
-    getForSide(side, i, j) {
-        if (side === Side.Top) {
-            return this.getValue(this.size - j, this.size, i);
-        }
-        else if (side === Side.Right) {
-            return this.getValue(this.size, j, i);
-        }
-        else if (side === Side.Front) {
-            return this.getValue(this.size - i, j, this.size);
-        }
-        else if (side === Side.Left) {
-            return this.getValue(0, j, this.size - i);
-        }
-        else if (side === Side.Back) {
-            return this.getValue(i, j, 0);
-        }
-        if (side === Side.Bottom) {
-            return this.getValue(j, 0, i);
-        }
-        else {
-            return 0;
-        }
-    }
-    getValue(i, j, k) {
-        if (this.map[i]) {
-            if (this.map[i][j]) {
-                return this.map[i][j][k];
-            }
-        }
-    }
-    setValue(v, i, j, k) {
-        if (!this.map[i]) {
-            this.map[i] = [];
-        }
-        if (!this.map[i][j]) {
-            this.map[i][j] = [];
-        }
-        this.map[i][j][k] = v;
-    }
-    getTexture(side, maxValue) {
-        let texture = new BABYLON.DynamicTexture("texture-" + side, this.size, Game.Scene, false);
-        let context = texture.getContext();
-        if (!isFinite(maxValue)) {
-            maxValue = this.seaLevel + this.maxAltitude;
-        }
-        for (let i = 0; i < this.size; i++) {
-            for (let j = 0; j < this.size; j++) {
-                let v = this.getForSide(side, i, j);
-                let c = v / maxValue * 256;
-                context.fillStyle = "rgb(" + c.toFixed(0) + ", " + c.toFixed(0) + ", " + c.toFixed(0) + ")";
-                context.fillRect(i, j, 1, 1);
-            }
-        }
-        texture.update(false);
-        return texture;
-    }
-}
 class PlanetToolsTest {
     static Run() {
         if (PlanetToolsTest.Corner00()) {
@@ -1896,9 +1464,8 @@ var Neighbour;
     Neighbour[Neighbour["JMinus"] = 4] = "JMinus";
     Neighbour[Neighbour["KMinus"] = 5] = "KMinus";
 })(Neighbour || (Neighbour = {}));
-class PlanetChunck extends BABYLON.Mesh {
+class PlanetChunck {
     constructor(iPos, jPos, kPos, planetSide) {
-        super("chunck-" + iPos + "-" + jPos + "-" + kPos, Game.Scene);
         this._dataInitialized = false;
         this._isEmpty = true;
         this._isFull = false;
@@ -1912,7 +1479,7 @@ class PlanetChunck extends BABYLON.Mesh {
         this.normal = BABYLON.Vector3.Normalize(this.barycenter);
         if (this.kPos === 0) {
             this.bedrock = new BABYLON.Mesh(this.name + "-bedrock", Game.Scene);
-            this.bedrock.parent = this;
+            this.bedrock.parent = this.planetSide;
         }
         this.chunckManager.requestDraw(this);
     }
@@ -1980,7 +1547,7 @@ class PlanetChunck extends BABYLON.Mesh {
         if (!this.dataInitialized) {
             this.data = this.planetSide.planet.generator.makeData(this);
             this.updateIsEmptyIsFull();
-            this.saveToLocalStorage();
+            //this.saveToLocalStorage();
             this._dataInitialized = true;
         }
     }
@@ -2028,23 +1595,26 @@ class PlanetChunck extends BABYLON.Mesh {
                 }
             }
         }
+        if (!this.mesh) {
+            this.mesh = new BABYLON.Mesh("chunck-" + this.iPos + "-" + this.jPos + "-" + this.kPos, Game.Scene);
+        }
         let vertexData = PlanetChunckMeshBuilder.BuildVertexData(this.GetSize(), this.iPos, this.jPos, this.kPos, this.data);
         if (vertexData.positions.length > 0) {
-            vertexData.applyToMesh(this);
-            this.material = SharedMaterials.MainMaterial();
+            vertexData.applyToMesh(this.mesh);
+            this.mesh.material = SharedMaterials.MainMaterial();
         }
         if (this.kPos === 0) {
             vertexData = PlanetChunckMeshBuilder.BuildBedrockVertexData(this.GetSize(), this.iPos, this.jPos, this.kPos, 8, this.data);
             vertexData.applyToMesh(this.bedrock);
             this.bedrock.material = SharedMaterials.BedrockMaterial();
         }
-        this.computeWorldMatrix();
-        this.refreshBoundingInfo();
+        this.mesh.parent = this.planetSide;
+        this.mesh.computeWorldMatrix();
+        this.mesh.refreshBoundingInfo();
     }
     Dispose() {
-        PlanetTools.EmptyVertexData().applyToMesh(this);
-        if (this.bedrock) {
-            PlanetTools.EmptyVertexData().applyToMesh(this.bedrock);
+        if (this.mesh) {
+            this.mesh.dispose();
         }
     }
     serialize() {
@@ -2116,6 +1686,10 @@ class PlanetChunckMeshBuilder {
     static get BlockColor() {
         if (!PlanetChunckMeshBuilder._BlockColor) {
             PlanetChunckMeshBuilder._BlockColor = new Map();
+            PlanetChunckMeshBuilder._BlockColor.set(BlockType.Grass, BABYLON.Color3.FromHexString("#50723C"));
+            PlanetChunckMeshBuilder._BlockColor.set(BlockType.Dirt, BABYLON.Color3.FromHexString("#462521"));
+            PlanetChunckMeshBuilder._BlockColor.set(BlockType.Sand, BABYLON.Color3.FromHexString("#F5B700"));
+            PlanetChunckMeshBuilder._BlockColor.set(BlockType.Rock, BABYLON.Color3.FromHexString("#9DB5B2"));
             PlanetChunckMeshBuilder._BlockColor.set(BlockType.RedDirt, BABYLON.Color3.FromHexString("#fa591e"));
             PlanetChunckMeshBuilder._BlockColor.set(BlockType.RedDust, BABYLON.Color3.FromHexString("#ad7c6a"));
             PlanetChunckMeshBuilder._BlockColor.set(BlockType.RedRock, BABYLON.Color3.FromHexString("#4f1a06"));
@@ -2375,6 +1949,399 @@ class PlanetChunckMeshBuilder {
     }
 }
 PlanetChunckMeshBuilder._tmpBlockCenter = BABYLON.Vector3.Zero();
+class PlanetGenerator {
+    constructor(planet) {
+        this.planet = planet;
+    }
+    showDebug() {
+        for (let i = 0; i < this.heightMaps.length; i++) {
+            let x = -3.5 + Math.floor(i / 3) * 7;
+            if (i === 1) {
+                x -= 1;
+            }
+            if (i === 4) {
+                x += 1;
+            }
+            Utils.showDebugPlanetHeightMap(this.heightMaps[i], x, 1.5 - 1.5 * (i % 3));
+        }
+    }
+}
+class PlanetGeneratorEarth extends PlanetGenerator {
+    constructor(planet, _seaLevel, _mountainHeight) {
+        super(planet);
+        this._seaLevel = _seaLevel;
+        this._mountainHeight = _mountainHeight;
+        this._mainHeightMap = PlanetHeightMap.CreateMap(PlanetTools.KPosToDegree(planet.kPosMax));
+        this.heightMaps = [this._mainHeightMap];
+    }
+    makeData(chunck) {
+        let f = Math.pow(2, this._mainHeightMap.degree - PlanetTools.KPosToDegree(chunck.kPos));
+        return PlanetTools.Data((i, j, k) => {
+            let v = this._mainHeightMap.getForSide(chunck.side, (chunck.iPos * PlanetTools.CHUNCKSIZE + i) * f, (chunck.jPos * PlanetTools.CHUNCKSIZE + j) * f);
+            let altitude = Math.floor((this._seaLevel + v * this._mountainHeight) * this.planet.kPosMax * PlanetTools.CHUNCKSIZE);
+            let globalK = k + chunck.kPos * PlanetTools.CHUNCKSIZE;
+            if (globalK <= altitude) {
+                if (globalK > altitude - 2) {
+                    if (globalK < this._seaLevel * (this.planet.kPosMax * PlanetTools.CHUNCKSIZE) + 1) {
+                        return BlockType.Sand;
+                    }
+                    return BlockType.Grass;
+                }
+                return BlockType.Rock;
+            }
+            return 0;
+        });
+    }
+}
+class PlanetGeneratorDebug extends PlanetGenerator {
+    constructor(planet) {
+        super(planet);
+    }
+    makeData(chunck) {
+        return PlanetTools.Data((i, j, k) => {
+            let iGlobal = i + chunck.iPos * PlanetTools.CHUNCKSIZE;
+            let jGlobal = j + chunck.jPos * PlanetTools.CHUNCKSIZE;
+            let kGlobal = k + chunck.kPos * PlanetTools.CHUNCKSIZE;
+            let h = 25;
+            if (chunck.side === Side.Front) {
+                h = 28;
+            }
+            if (jGlobal < 5) {
+                h = 30;
+            }
+            if (kGlobal < h) {
+                if (iGlobal < 5) {
+                    return BlockType.RedDirt;
+                }
+                if (jGlobal < 5) {
+                    return BlockType.RedRock;
+                }
+                return BlockType.RedDust;
+            }
+            return 0;
+        });
+    }
+}
+class PlanetGeneratorDebug2 extends PlanetGenerator {
+    constructor(planet) {
+        super(planet);
+    }
+    makeData(chunck) {
+        let c = Math.floor(Math.random() * 7 + 1);
+        return PlanetTools.Data((i, j, k) => {
+            return c;
+        });
+    }
+}
+class PlanetGeneratorDebug3 extends PlanetGenerator {
+    constructor(planet) {
+        super(planet);
+    }
+    makeData(chunck) {
+        return PlanetTools.Data((i, j, k) => {
+            let c = Math.floor(Math.random() * 7 + 1);
+            return c;
+        });
+    }
+}
+class PlanetHeightMap {
+    constructor(degree) {
+        this.degree = degree;
+        this.map = [];
+        this.size = Math.pow(2, this.degree);
+    }
+    static CreateMap(degree, options) {
+        let map = new PlanetHeightMap(0);
+        let firstNoiseDegree = 1;
+        if (options && isFinite(options.firstNoiseDegree)) {
+            firstNoiseDegree = options.firstNoiseDegree;
+        }
+        for (let i = 0; i <= map.size; i++) {
+            for (let j = 0; j <= map.size; j++) {
+                for (let k = 0; k <= map.size; k++) {
+                    if (map.isValid(i, j, k)) {
+                        map.setValue(0, i, j, k);
+                    }
+                }
+            }
+        }
+        let noise = 1;
+        while (map.degree < degree) {
+            map = map.scale2();
+            if (map.degree >= firstNoiseDegree) {
+                noise = noise * 0.5;
+                map.noise(noise);
+            }
+        }
+        if (options && options.postComputation) {
+            for (let i = 0; i <= map.size; i++) {
+                for (let j = 0; j <= map.size; j++) {
+                    for (let k = 0; k <= map.size; k++) {
+                        if (map.isValid(i, j, k)) {
+                            let v = map.getValue(i, j, k);
+                            map.setValue(options.postComputation(v), i, j, k);
+                        }
+                    }
+                }
+            }
+        }
+        return map;
+    }
+    noise(range) {
+        for (let i = 0; i <= this.size; i++) {
+            for (let j = 0; j <= this.size; j++) {
+                for (let k = 0; k <= this.size; k++) {
+                    if (this.isValid(i, j, k)) {
+                        let v = this.getValue(i, j, k);
+                        v += (Math.random() * 2 - 1) * range;
+                        this.setValue(v, i, j, k);
+                    }
+                }
+            }
+        }
+    }
+    addInPlace(other) {
+        if (other.degree = this.degree) {
+            for (let i = 0; i <= this.size; i++) {
+                for (let j = 0; j <= this.size; j++) {
+                    for (let k = 0; k <= this.size; k++) {
+                        if (this.isValid(i, j, k)) {
+                            let v = this.getValue(i, j, k);
+                            v += other.getValue(i, j, k);
+                            this.setValue(v, i, j, k);
+                        }
+                    }
+                }
+            }
+        }
+    }
+    substractInPlace(other) {
+        if (other.degree = this.degree) {
+            for (let i = 0; i <= this.size; i++) {
+                for (let j = 0; j <= this.size; j++) {
+                    for (let k = 0; k <= this.size; k++) {
+                        if (this.isValid(i, j, k)) {
+                            let v = this.getValue(i, j, k);
+                            v -= other.getValue(i, j, k);
+                            this.setValue(v, i, j, k);
+                        }
+                    }
+                }
+            }
+        }
+    }
+    scale2() {
+        let scaledMap = new PlanetHeightMap(this.degree + 1);
+        for (let I = 0; I <= this.size; I++) {
+            for (let J = 0; J <= this.size; J++) {
+                for (let K = 0; K <= this.size; K++) {
+                    if (this.isValid(I, J, K)) {
+                        let v = this.getValue(I, J, K);
+                        scaledMap.setValue(v, 2 * I, 2 * J, 2 * K);
+                    }
+                }
+            }
+        }
+        for (let i = 0; i <= this.size; i++) {
+            for (let j = 0; j <= this.size; j++) {
+                for (let k = 0; k <= this.size; k++) {
+                    if (scaledMap.isValid(2 * i + 1, 2 * j, 2 * k)) {
+                        let v1 = scaledMap.getValue(2 * i, 2 * j, 2 * k);
+                        let v2 = scaledMap.getValue(2 * i + 2, 2 * j, 2 * k);
+                        if (isFinite(v1) && isFinite(v2)) {
+                            scaledMap.setValue((v1 + v2) * 0.5, 2 * i + 1, 2 * j, 2 * k);
+                        }
+                    }
+                    if (scaledMap.isValid(2 * i, 2 * j + 1, 2 * k)) {
+                        let v1 = scaledMap.getValue(2 * i, 2 * j, 2 * k);
+                        let v2 = scaledMap.getValue(2 * i, 2 * j + 2, 2 * k);
+                        if (isFinite(v1) && isFinite(v2)) {
+                            scaledMap.setValue((v1 + v2) * 0.5, 2 * i, 2 * j + 1, 2 * k);
+                        }
+                    }
+                    if (scaledMap.isValid(2 * i, 2 * j, 2 * k + 1)) {
+                        let v1 = scaledMap.getValue(2 * i, 2 * j, 2 * k);
+                        let v2 = scaledMap.getValue(2 * i, 2 * j, 2 * k + 2);
+                        if (isFinite(v1) && isFinite(v2)) {
+                            scaledMap.setValue((v1 + v2) * 0.5, 2 * i, 2 * j, 2 * k + 1);
+                        }
+                    }
+                }
+            }
+        }
+        for (let i = 0; i <= this.size; i++) {
+            for (let j = 0; j <= this.size; j++) {
+                for (let k = 0; k <= this.size; k++) {
+                    if (scaledMap.isValid(2 * i + 1, 2 * j + 1, 2 * k)) {
+                        let v1 = scaledMap.getValue(2 * i, 2 * j + 1, 2 * k);
+                        let v2 = scaledMap.getValue(2 * i + 2, 2 * j + 1, 2 * k);
+                        let v3 = scaledMap.getValue(2 * i + 1, 2 * j + 2, 2 * k);
+                        let v4 = scaledMap.getValue(2 * i + 1, 2 * j, 2 * k);
+                        let c = 0;
+                        let v = 0;
+                        if (isFinite(v1)) {
+                            c++;
+                            v += v1;
+                        }
+                        if (isFinite(v2)) {
+                            c++;
+                            v += v2;
+                        }
+                        if (isFinite(v3)) {
+                            c++;
+                            v += v3;
+                        }
+                        if (isFinite(v4)) {
+                            c++;
+                            v += v4;
+                        }
+                        v /= c;
+                        if (isNaN(v)) {
+                            debugger;
+                        }
+                        scaledMap.setValue(v, 2 * i + 1, 2 * j + 1, 2 * k);
+                    }
+                    if (scaledMap.isValid(2 * i + 1, 2 * j, 2 * k + 1)) {
+                        let v1 = scaledMap.getValue(2 * i, 2 * j, 2 * k + 1);
+                        let v2 = scaledMap.getValue(2 * i + 2, 2 * j, 2 * k + 1);
+                        let v3 = scaledMap.getValue(2 * i + 1, 2 * j, 2 * k);
+                        let v4 = scaledMap.getValue(2 * i + 1, 2 * j, 2 * k + 2);
+                        let c = 0;
+                        let v = 0;
+                        if (isFinite(v1)) {
+                            c++;
+                            v += v1;
+                        }
+                        if (isFinite(v2)) {
+                            c++;
+                            v += v2;
+                        }
+                        if (isFinite(v3)) {
+                            c++;
+                            v += v3;
+                        }
+                        if (isFinite(v4)) {
+                            c++;
+                            v += v4;
+                        }
+                        v /= c;
+                        if (isNaN(v)) {
+                            debugger;
+                        }
+                        scaledMap.setValue(v, 2 * i + 1, 2 * j, 2 * k + 1);
+                    }
+                    if (scaledMap.isValid(2 * i, 2 * j + 1, 2 * k + 1)) {
+                        let v1 = scaledMap.getValue(2 * i, 2 * j, 2 * k + 1);
+                        let v2 = scaledMap.getValue(2 * i, 2 * j + 2, 2 * k + 1);
+                        let v3 = scaledMap.getValue(2 * i, 2 * j + 1, 2 * k);
+                        let v4 = scaledMap.getValue(2 * i, 2 * j + 1, 2 * k + 2);
+                        let c = 0;
+                        let v = 0;
+                        if (isFinite(v1)) {
+                            c++;
+                            v += v1;
+                        }
+                        if (isFinite(v2)) {
+                            c++;
+                            v += v2;
+                        }
+                        if (isFinite(v3)) {
+                            c++;
+                            v += v3;
+                        }
+                        if (isFinite(v4)) {
+                            c++;
+                            v += v4;
+                        }
+                        v /= c;
+                        if (isNaN(v)) {
+                            debugger;
+                        }
+                        scaledMap.setValue(v, 2 * i, 2 * j + 1, 2 * k + 1);
+                    }
+                }
+            }
+        }
+        if (!scaledMap.sanityCheck()) {
+            debugger;
+        }
+        return scaledMap;
+    }
+    isValid(i, j, k) {
+        return (i === 0 || j === 0 || k === 0 || i === this.size || j === this.size || k === this.size) && (i >= 0 && j >= 0 && k >= 0 && i <= this.size && j <= this.size && k <= this.size);
+    }
+    sanityCheck() {
+        for (let i = 0; i <= this.size; i++) {
+            for (let j = 0; j <= this.size; j++) {
+                for (let k = 0; k <= this.size; k++) {
+                    if (this.isValid(i, j, k)) {
+                        if (isNaN(this.getValue(i, j, k))) {
+                            return false;
+                        }
+                    }
+                }
+            }
+        }
+        return true;
+    }
+    getForSide(side, i, j) {
+        if (side === Side.Top) {
+            return this.getValue(this.size - j, this.size, i);
+        }
+        else if (side === Side.Right) {
+            return this.getValue(this.size, j, i);
+        }
+        else if (side === Side.Front) {
+            return this.getValue(this.size - i, j, this.size);
+        }
+        else if (side === Side.Left) {
+            return this.getValue(0, j, this.size - i);
+        }
+        else if (side === Side.Back) {
+            return this.getValue(i, j, 0);
+        }
+        if (side === Side.Bottom) {
+            return this.getValue(j, 0, i);
+        }
+        else {
+            return 0;
+        }
+    }
+    getValue(i, j, k) {
+        if (this.map[i]) {
+            if (this.map[i][j]) {
+                return this.map[i][j][k];
+            }
+        }
+        debugger;
+    }
+    setValue(v, i, j, k) {
+        if (!this.map[i]) {
+            this.map[i] = [];
+        }
+        if (!this.map[i][j]) {
+            this.map[i][j] = [];
+        }
+        this.map[i][j][k] = v;
+    }
+    getTexture(side, maxValue) {
+        let texture = new BABYLON.DynamicTexture("texture-" + side, this.size, Game.Scene, false);
+        let context = texture.getContext();
+        if (!isFinite(maxValue)) {
+            maxValue = 1;
+        }
+        for (let i = 0; i < this.size; i++) {
+            for (let j = 0; j < this.size; j++) {
+                let v = this.getForSide(side, i, j);
+                let c = (v + 1) * 0.5 / maxValue * 256;
+                context.fillStyle = "rgb(" + c.toFixed(0) + ", " + c.toFixed(0) + ", " + c.toFixed(0) + ")";
+                context.fillRect(i, j, 1, 1);
+            }
+        }
+        texture.update(false);
+        return texture;
+    }
+}
 var Side;
 (function (Side) {
     Side[Side["Front"] = 0] = "Front";
@@ -2401,9 +2368,6 @@ class PlanetSide extends BABYLON.Mesh {
                 this.chuncks[k][i] = new Array();
                 for (let j = 0; j < chuncksCount; j++) {
                     this.chuncks[k][i][j] = new PlanetChunck(i, j, k, this);
-                    this.chuncks[k][i][j].parent = this;
-                    this.chuncks[k][i][j].computeWorldMatrix();
-                    this.chuncks[k][i][j].freezeWorldMatrix();
                 }
             }
         }

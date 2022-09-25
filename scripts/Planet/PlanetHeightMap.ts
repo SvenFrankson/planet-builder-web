@@ -7,8 +7,6 @@ class PlanetHeightMap {
 
     public map: number[][][] = [];
     public size: number;
-    public seaLevel: number;
-    public maxAltitude: number;
 
     constructor(
         public degree: number
@@ -16,7 +14,7 @@ class PlanetHeightMap {
         this.size = Math.pow(2, this.degree);
     }
 
-    public static CreateMap(degree: number, seaLevel: number, maxAltitude: number, options?: IPlanetHeightMapOptions): PlanetHeightMap {
+    public static CreateMap(degree: number, options?: IPlanetHeightMapOptions): PlanetHeightMap {
         let map = new PlanetHeightMap(0);
 
         let firstNoiseDegree: number = 1;
@@ -28,12 +26,12 @@ class PlanetHeightMap {
             for (let j = 0; j <= map.size; j++) {
                 for (let k = 0; k <= map.size; k++) {
                     if (map.isValid(i, j, k)) {
-                        map.setValue(seaLevel, i, j, k);
+                        map.setValue(0, i, j, k);
                     }
                 }
             }
         }
-        let noise = maxAltitude;
+        let noise = 1;
         while (map.degree < degree) {
             map = map.scale2();
             if (map.degree >= firstNoiseDegree) {
@@ -56,8 +54,6 @@ class PlanetHeightMap {
             }
         }
 
-        map.seaLevel = seaLevel;
-        map.maxAltitude = maxAltitude;
         return map;
     }
 
@@ -308,6 +304,7 @@ class PlanetHeightMap {
                 return this.map[i][j][k];
             }
         }
+        debugger;
     }
 
     public setValue(v: number, i: number, j: number, k: number): void {
@@ -325,13 +322,13 @@ class PlanetHeightMap {
         let context = texture.getContext();
 
         if (!isFinite(maxValue)) {
-            maxValue = this.seaLevel + this.maxAltitude;
+            maxValue = 1;
         }
 
         for (let i = 0; i < this.size; i++) {
             for (let j = 0; j < this.size; j++) {
                 let v = this.getForSide(side, i, j);
-                let c = v / maxValue * 256;
+                let c = (v + 1) * 0.5 / maxValue * 256;
                 context.fillStyle = "rgb(" + c.toFixed(0) + ", " + c.toFixed(0) + ", " + c.toFixed(0) + ")" 
                 context.fillRect(i, j, 1, 1);
             }

@@ -126,33 +126,10 @@ window.addEventListener("DOMContentLoaded", () => {
 	let game: Game = new Game("renderCanvas");
 	game.createScene();
 
-	let planetTest: Planet = new Planet("Paulita", 9, game.chunckManager);
+	let planetTest: Planet = new Planet("Paulita", 8, game.chunckManager);
 
-	let heightMap = PlanetHeightMap.CreateMap(PlanetTools.KPosToDegree(8), 80, 5);
-	let heightMap4 = PlanetHeightMap.CreateMap(PlanetTools.KPosToDegree(8), 80, 15, {
-		firstNoiseDegree: 1,
-		postComputation: (v) => {
-			let delta = Math.abs(60 - v);
-			if (delta > 2) {
-				return 1;
-			}
-			return 4 - delta;
-		}
-	});
-	heightMap.substractInPlace(heightMap4);
-	let heightMap5 = PlanetHeightMap.CreateMap(PlanetTools.KPosToDegree(8), 80, 15, {
-		firstNoiseDegree: 4,
-		postComputation: (v) => {
-			if (v > 80) {
-				return (v - 80) * 1.5;
-			}
-			return 1;
-		}
-	});
-	heightMap.addInPlace(heightMap5);
-	
-	planetTest.generator = new PlanetGeneratorDebug2(planetTest);
-	//planetTest.generator.showDebug();
+	planetTest.generator = new PlanetGeneratorEarth(planetTest, 0.70, 0.15);
+	planetTest.generator.showDebug();
 
 	//Game.Player = new Player(new BABYLON.Vector3(10, 60, 0), planetTest);
 	//Game.Player.registerControl();
