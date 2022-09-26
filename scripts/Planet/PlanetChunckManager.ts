@@ -32,11 +32,8 @@ class PlanetChunckManager {
     public registerChunck(chunck: PlanetChunck): void {
         chunck.sqrDistanceToViewpoint = BABYLON.Vector3.DistanceSquared(this._viewpoint, chunck.GetBaryCenter());
         if (this._chuncks.indexOf(chunck) === -1) {
-            if (chunck.sqrDistanceToViewpoint < 100 * 100) {
+            if (!chunck.isEmptyOrHidden()) {
                 this._chuncks.push(chunck);
-            }
-            else {
-                this._chuncks.splice(0, 0, chunck);
             }
         }
     }

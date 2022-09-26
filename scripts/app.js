@@ -173,6 +173,7 @@ window.addEventListener("DOMContentLoaded", () => {
     let planetTest = new Planet("Paulita", 14, game.chunckManager);
     planetTest.generator = new PlanetGeneratorEarth(planetTest, 0.70, 0.15);
     planetTest.generator.showDebug();
+    planetTest.register();
     //Game.Player = new Player(new BABYLON.Vector3(10, 60, 0), planetTest);
     //Game.Player.registerControl();
     Game.PlanetEditor = new PlanetEditor(planetTest);
@@ -1454,6 +1455,11 @@ class Planet extends BABYLON.Mesh {
     GetPlanetName() {
         return this.name;
     }
+    register() {
+        for (let i = 0; i < this.sides.length; i++) {
+            this.sides[i].register();
+        }
+    }
 }
 var Neighbour;
 (function (Neighbour) {
@@ -1481,7 +1487,6 @@ class PlanetChunck {
             this.bedrock = new BABYLON.Mesh(this.name + "-bedrock", Game.Scene);
             this.bedrock.parent = this.planetSide;
         }
-        this.chunckManager.registerChunck(this);
     }
     get side() {
         return this.planetSide.side;
@@ -1545,6 +1550,9 @@ class PlanetChunck {
     isMeshDisposed() {
         return !this.mesh || this.mesh.isDisposed();
     }
+    register() {
+        this.chunckManager.registerChunck(this);
+    }
     initialize() {
         this.initializeData();
         this.initializeMesh();
@@ -1578,7 +1586,7 @@ class PlanetChunck {
             }
         }
     }
-    SetMesh() {
+    isEmptyOrHidden() {
         if (this.isFull || this.isEmpty) {
             let iPrev = this.planetSide.getChunck(this.iPos - 1, this.jPos, this.kPos, this.degree);
             let iNext = this.planetSide.getChunck(this.iPos + 1, this.jPos, this.kPos, this.degree);
@@ -1594,12 +1602,18 @@ class PlanetChunck {
                 kPrev.initializeData();
                 kNext.initializeData();
                 if (this.isFull && iPrev.isFull && iNext.isFull && jPrev.isFull && jNext.isFull && kPrev.isFull && kNext.isFull) {
-                    return;
+                    return true;
                 }
                 if (this.isEmpty && iPrev.isEmpty && iNext.isEmpty && jPrev.isEmpty && jNext.isEmpty && kPrev.isEmpty && kNext.isEmpty) {
-                    return;
+                    return true;
                 }
             }
+        }
+        return false;
+    }
+    SetMesh() {
+        if (this.isEmptyOrHidden()) {
+            return;
         }
         if (this.isMeshDisposed()) {
             this.mesh = new BABYLON.Mesh("chunck-" + this.iPos + "-" + this.jPos + "-" + this.kPos, Game.Scene);
@@ -1760,11 +1774,8 @@ class PlanetChunckManager {
     registerChunck(chunck) {
         chunck.sqrDistanceToViewpoint = BABYLON.Vector3.DistanceSquared(this._viewpoint, chunck.GetBaryCenter());
         if (this._chuncks.indexOf(chunck) === -1) {
-            if (chunck.sqrDistanceToViewpoint < 100 * 100) {
+            if (!chunck.isEmptyOrHidden()) {
                 this._chuncks.push(chunck);
-            }
-            else {
-                this._chuncks.splice(0, 0, chunck);
             }
         }
     }
@@ -2619,6 +2630,15 @@ class PlanetSide extends BABYLON.Mesh {
             }
         }
         return 0;
+    }
+    register() {
+        for (let k = 0; k <= this.kPosMax; k++) {
+            for (let i = 0; i < this.chuncks[k].length; i++) {
+                for (let j = 0; j < this.chuncks[k][i].length; j++) {
+                    this.chuncks[k][i][j].register();
+                }
+            }
+        }
     }
 }
 var PI4 = Math.PI / 4;

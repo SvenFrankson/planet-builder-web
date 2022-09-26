@@ -29,4 +29,10 @@ class Planet extends BABYLON.Mesh {
         this.sides[Side.Top] = new PlanetSide(Side.Top, this);
         this.sides[Side.Bottom] = new PlanetSide(Side.Bottom, this);
     }
+
+    public register(): void {
+        for (let i = 0; i < this.sides.length; i++) {
+            this.sides[i].register();
+        }
+    }
 }

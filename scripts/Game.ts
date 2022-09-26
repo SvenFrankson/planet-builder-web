@@ -131,6 +131,8 @@ window.addEventListener("DOMContentLoaded", () => {
 	planetTest.generator = new PlanetGeneratorEarth(planetTest, 0.70, 0.15);
 	planetTest.generator.showDebug();
 
+	planetTest.register();
+
 	//Game.Player = new Player(new BABYLON.Vector3(10, 60, 0), planetTest);
 	//Game.Player.registerControl();
 

@@ -125,7 +125,9 @@ class PlanetChunck {
             this.bedrock = new BABYLON.Mesh(this.name + "-bedrock", Game.Scene);
             this.bedrock.parent = this.planetSide;
         }
+    }
 
+    public register(): void {
         this.chunckManager.registerChunck(this);
     }
     
@@ -166,7 +168,7 @@ class PlanetChunck {
         }
     }
 
-    public SetMesh(): void {
+    public isEmptyOrHidden(): boolean {
         if (this.isFull || this.isEmpty) {
             let iPrev = this.planetSide.getChunck(this.iPos - 1, this.jPos, this.kPos, this.degree);
             let iNext = this.planetSide.getChunck(this.iPos + 1, this.jPos, this.kPos, this.degree);
@@ -182,12 +184,19 @@ class PlanetChunck {
                 kPrev.initializeData();
                 kNext.initializeData();
                 if (this.isFull && iPrev.isFull && iNext.isFull && jPrev.isFull && jNext.isFull && kPrev.isFull && kNext.isFull) {
-                    return;
+                    return true;
                 }
                 if (this.isEmpty && iPrev.isEmpty && iNext.isEmpty && jPrev.isEmpty && jNext.isEmpty && kPrev.isEmpty && kNext.isEmpty) {
-                    return;
+                    return true;
                 }
             }
+        }
+        return false;
+    }
+
+    public SetMesh(): void {
+        if (this.isEmptyOrHidden()) {
+            return;
         }
         if (this.isMeshDisposed()) {
             this.mesh = new BABYLON.Mesh("chunck-" + this.iPos + "-" + this.jPos + "-" + this.kPos, Game.Scene);
