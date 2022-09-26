@@ -117,7 +117,7 @@ class PlanetChunck {
         );
         this.barycenter = BABYLON.Vector3.TransformCoordinates(
             this.barycenter,
-            planetSide.computeWorldMatrix()
+            planetSide.computeWorldMatrix(true)
         );
         this.normal = BABYLON.Vector3.Normalize(this.barycenter);
         

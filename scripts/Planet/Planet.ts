@@ -31,8 +31,11 @@ class Planet extends BABYLON.Mesh {
     }
 
     public register(): void {
+        let t0 = performance.now();
         for (let i = 0; i < this.sides.length; i++) {
             this.sides[i].register();
         }
+        let t1 = performance.now();
+        console.log("Planet " + this.name + " registered in " + (t1 - t0).toFixed(1) + "ms");
     }
 }

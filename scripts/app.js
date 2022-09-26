@@ -51,6 +51,7 @@ class CameraManager {
                 this.freeCamera.parent = this.player.camPos;
                 this.freeCamera.position.copyFromFloats(0, 0, 0);
                 this.freeCamera.rotationQuaternion.copyFrom(BABYLON.Quaternion.Identity());
+                this.freeCamera.computeWorldMatrix();
                 Game.Scene.activeCamera = this.freeCamera;
             }
             if (this.cameraMode === CameraMode.Plane) {
@@ -91,10 +92,8 @@ class Game {
         Game.Scene.clearColor.copyFromFloats(166 / 255, 231 / 255, 255 / 255, 1);
         Game.Light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0.6, 1, 0.3), Game.Scene);
         Game.Light.diffuse = new BABYLON.Color3(1, 1, 1);
-        Game.Light.groundColor = new BABYLON.Color3(0.5, 0.5, 0.5);
+        Game.Light.groundColor = new BABYLON.Color3(0, 0, 0);
         Game.CameraManager = new CameraManager();
-        this.chunckManager = new PlanetChunckManager(Game.Scene);
-        this.chunckManager.initialize();
         /*
         let water = BABYLON.MeshBuilder.CreateSphere("water", { diameter: 78 - 0.4 }, Game.Scene);
         let waterMaterial = new BABYLON.StandardMaterial("water-material", Game.Scene);
@@ -170,12 +169,16 @@ Game.ClientYOnLock = -1;
 window.addEventListener("DOMContentLoaded", () => {
     let game = new Game("renderCanvas");
     game.createScene();
-    let planetTest = new Planet("Paulita", 16, game.chunckManager);
+    game.chunckManager = new PlanetChunckManager(Game.Scene);
+    let degree = 18;
+    let planetTest = new Planet("Paulita", degree, game.chunckManager);
     planetTest.generator = new PlanetGeneratorEarth(planetTest, 0.70, 0.15);
-    planetTest.generator.showDebug();
-    planetTest.register();
-    Game.Player = new Player(new BABYLON.Vector3(0, 16 * PlanetTools.CHUNCKSIZE, 0), planetTest);
+    //planetTest.generator.showDebug();
+    Game.Player = new Player(new BABYLON.Vector3(0, degree * PlanetTools.CHUNCKSIZE, 0), planetTest);
     Game.Player.registerControl();
+    game.chunckManager.onNextInactive(() => {
+        Game.Player.initialize();
+    });
     Game.PlanetEditor = new PlanetEditor(planetTest);
     //Game.PlanetEditor.initialize();
     //Game.Plane = new Plane(new BABYLON.Vector3(0, 80, 0), planetTest);
@@ -184,6 +187,8 @@ window.addEventListener("DOMContentLoaded", () => {
     Game.CameraManager.player = Game.Player;
     Game.CameraManager.setMode(CameraMode.Player);
     //planetTest.AsyncInitialize();
+    game.chunckManager.initialize();
+    planetTest.register();
     game.animate();
     Game.Canvas.addEventListener("pointerup", (event) => {
         if (Game.CameraManager.cameraMode === CameraMode.Sky) {
@@ -965,253 +970,6 @@ window.addEventListener("DOMContentLoaded", () => {
     console.log("TEST : PlanetToolsTest");
     PlanetToolsTest.Run();
 });
-class Player extends BABYLON.Mesh {
-    constructor(position, planet) {
-        super("Player", Game.Scene);
-        this.mass = 1;
-        this.speed = 5;
-        this.velocity = BABYLON.Vector3.Zero();
-        this.underWater = false;
-        this._keyDown = (e) => {
-            if (e.key === "z" || e.key === "w") {
-                this.pForward = true;
-            }
-            if (e.key === "s") {
-                this.back = true;
-            }
-            if (e.key === "q" || e.key === "a") {
-                this.left = true;
-            }
-            if (e.key === "d") {
-                this.pRight = true;
-            }
-            if (e.keyCode === 32) {
-                this.fly = true;
-            }
-        };
-        this._keyUp = (e) => {
-            if (e.key === "z" || e.key === "w") {
-                this.pForward = false;
-            }
-            if (e.key === "s") {
-                this.back = false;
-            }
-            if (e.key === "q" || e.key === "a") {
-                this.left = false;
-            }
-            if (e.key === "d") {
-                this.pRight = false;
-            }
-            if (e.keyCode === 32) {
-                if (this._isGrounded) {
-                    this.velocity.addInPlace(this.getDirection(BABYLON.Axis.Y).scale(5));
-                    this._isGrounded = false;
-                    this._jumpTimer = 0.2;
-                }
-            }
-            if (e.code === "KeyX") {
-                this.pilot();
-            }
-        };
-        this._mouseMove = (event) => {
-            if (Game.LockedMouse) {
-                let movementX = event.movementX;
-                let movementY = event.movementY;
-                if (movementX > 20) {
-                    movementX = 20;
-                }
-                if (movementX < -20) {
-                    movementX = -20;
-                }
-                if (movementY > 20) {
-                    movementY = 20;
-                }
-                if (movementY < -20) {
-                    movementY = -20;
-                }
-                let rotationPower = movementX / 500;
-                let localY = BABYLON.Vector3.TransformNormal(BABYLON.Axis.Y, this.getWorldMatrix());
-                let rotation = BABYLON.Quaternion.RotationAxis(localY, rotationPower);
-                this.rotationQuaternion = rotation.multiply(this.rotationQuaternion);
-                let rotationCamPower = movementY / 500;
-                this.camPos.rotation.x += rotationCamPower;
-                this.camPos.rotation.x = Math.max(this.camPos.rotation.x, -Math.PI / 2);
-                this.camPos.rotation.x = Math.min(this.camPos.rotation.x, Math.PI / 2);
-            }
-        };
-        this._gravityFactor = BABYLON.Vector3.Zero();
-        this._groundFactor = BABYLON.Vector3.Zero();
-        this._surfaceFactor = BABYLON.Vector3.Zero();
-        this._controlFactor = BABYLON.Vector3.Zero();
-        this._rightDirection = new BABYLON.Vector3(1, 0, 0);
-        this._leftDirection = new BABYLON.Vector3(-1, 0, 0);
-        this._upDirection = new BABYLON.Vector3(0, 1, 0);
-        this._downDirection = new BABYLON.Vector3(0, -1, 0);
-        this._forwardDirection = new BABYLON.Vector3(0, 0, 1);
-        this._backwardDirection = new BABYLON.Vector3(0, 0, -1);
-        this._feetPosition = BABYLON.Vector3.Zero();
-        this._collisionAxis = [];
-        this._collisionPositions = [];
-        this._jumpTimer = 0;
-        this._isGrounded = false;
-        this._update = () => {
-            if (Game.CameraManager.cameraMode != CameraMode.Player) {
-                return;
-            }
-            let deltaTime = Game.Engine.getDeltaTime() / 1000;
-            this._jumpTimer = Math.max(this._jumpTimer - deltaTime, 0);
-            this._keepUp();
-            this._collisionPositions[0] = this.position;
-            this._collisionPositions[1] = this._feetPosition;
-            this._collisionAxis[0] = this._rightDirection;
-            this._collisionAxis[1] = this._leftDirection;
-            this._collisionAxis[2] = this._forwardDirection;
-            this._collisionAxis[3] = this._backwardDirection;
-            this.getDirectionToRef(BABYLON.Axis.X, this._rightDirection);
-            this._leftDirection.copyFrom(this._rightDirection);
-            this._leftDirection.scaleInPlace(-1);
-            this._upDirection.copyFrom(this.position);
-            this._upDirection.normalize();
-            this._downDirection.copyFrom(this._upDirection);
-            this._downDirection.scaleInPlace(-1);
-            this.getDirectionToRef(BABYLON.Axis.Z, this._forwardDirection);
-            this._backwardDirection.copyFrom(this._forwardDirection);
-            this._backwardDirection.scaleInPlace(-1);
-            this._feetPosition.copyFrom(this.position);
-            this._feetPosition.addInPlace(this._downDirection);
-            // Add gravity and ground reaction.
-            this._gravityFactor.copyFrom(this._downDirection).scaleInPlace(9.8 * deltaTime);
-            this._groundFactor.copyFromFloats(0, 0, 0);
-            let fVert = 1;
-            if (this._jumpTimer === 0) {
-                let ray = new BABYLON.Ray(this.position, this._downDirection, 1.7);
-                let hit = Game.Scene.pickWithRay(ray, (mesh) => {
-                    return mesh.name.indexOf("chunck") != -1;
-                });
-                if (hit.pickedPoint) {
-                    let d = hit.pickedPoint.subtract(this.position).length();
-                    if (d > 0.01) {
-                        this._groundFactor
-                            .copyFrom(this._gravityFactor)
-                            .scaleInPlace(-1)
-                            .scaleInPlace(Math.pow(1.5 / d, 1));
-                    }
-                    fVert = 0.005;
-                    this._isGrounded = true;
-                }
-            }
-            this.velocity.addInPlace(this._gravityFactor);
-            this.velocity.addInPlace(this._groundFactor);
-            // Add input force.
-            this._controlFactor.copyFromFloats(0, 0, 0);
-            if (this.pRight) {
-                this._controlFactor.addInPlace(this._rightDirection);
-            }
-            if (this.left) {
-                this._controlFactor.addInPlace(this._leftDirection);
-            }
-            if (this.pForward) {
-                this._controlFactor.addInPlace(this._forwardDirection);
-            }
-            if (this.back) {
-                this._controlFactor.addInPlace(this._backwardDirection);
-            }
-            if (this._controlFactor.lengthSquared() > 0.1) {
-                this._controlFactor.normalize();
-            }
-            this._controlFactor.scaleInPlace((20 / this.mass) * deltaTime);
-            this.velocity.addInPlace(this._controlFactor);
-            // Check wall collisions.
-            let fLat = 1;
-            this._surfaceFactor.copyFromFloats(0, 0, 0);
-            for (let i = 0; i < this._collisionPositions.length; i++) {
-                let pos = this._collisionPositions[i];
-                for (let j = 0; j < this._collisionAxis.length; j++) {
-                    let axis = this._collisionAxis[j];
-                    let ray = new BABYLON.Ray(pos, axis, 0.35);
-                    let hit = Game.Scene.pickWithRay(ray, (mesh) => {
-                        return mesh instanceof PlanetChunck;
-                    });
-                    if (hit.pickedPoint) {
-                        let d = hit.pickedPoint.subtract(pos).length();
-                        if (d > 0.01) {
-                            this._surfaceFactor.addInPlace(axis.scale((((-10 / this.mass) * 0.3) / d) * deltaTime));
-                            fLat = 0.1;
-                        }
-                        else {
-                            // In case where it stuck to the surface, force push.
-                            this.position.addInPlace(hit.getNormal(true).scale(0.01));
-                        }
-                    }
-                }
-            }
-            this.velocity.addInPlace(this._surfaceFactor);
-            // Add friction
-            let downVelocity = this._downDirection.scale(BABYLON.Vector3.Dot(this.velocity, this._downDirection));
-            this.velocity.subtractInPlace(downVelocity);
-            downVelocity.scaleInPlace(Math.pow(0.5 * fVert, deltaTime));
-            this.velocity.scaleInPlace(Math.pow(0.01 * fLat, deltaTime));
-            this.velocity.addInPlace(downVelocity);
-            // Safety check.
-            if (!VMath.IsFinite(this.velocity)) {
-                this.velocity.copyFromFloats(-0.1 + 0.2 * Math.random(), -0.1 + 0.2 * Math.random(), -0.1 + 0.2 * Math.random());
-            }
-            this.position.addInPlace(this.velocity.scale(deltaTime));
-        };
-        console.log("Create Player");
-        this.planet = planet;
-        this.position = position;
-        this.rotationQuaternion = BABYLON.Quaternion.Identity();
-        this.camPos = new BABYLON.Mesh("Dummy", Game.Scene);
-        this.camPos.parent = this;
-        this.camPos.position = new BABYLON.Vector3(0, 0, 0);
-        Game.Scene.onBeforeRenderObservable.add(this._update);
-    }
-    PositionLeg() {
-        let posLeg = this.position.add(BABYLON.Vector3.TransformNormal(BABYLON.Axis.Y, this.getWorldMatrix()).scale(-1));
-        return posLeg;
-    }
-    PositionRoot() {
-        return this.position.add(this._downDirection.scale(0.75));
-    }
-    PositionHead() {
-        return this.position;
-    }
-    registerControl() {
-        Game.Canvas.addEventListener("keydown", this._keyDown);
-        Game.Canvas.addEventListener("keyup", this._keyUp);
-        Game.Canvas.addEventListener("mousemove", this._mouseMove);
-    }
-    unregisterControl() {
-        Game.Canvas.removeEventListener("keydown", this._keyDown);
-        Game.Canvas.removeEventListener("keyup", this._keyUp);
-        Game.Canvas.removeEventListener("mousemove", this._mouseMove);
-    }
-    _keepUp() {
-        if (!this) {
-            return;
-        }
-        let currentUp = BABYLON.Vector3.Normalize(BABYLON.Vector3.TransformNormal(BABYLON.Axis.Y, this.getWorldMatrix()));
-        let targetUp = BABYLON.Vector3.Normalize(this.position);
-        let correctionAxis = BABYLON.Vector3.Cross(currentUp, targetUp);
-        let correctionAngle = Math.abs(Math.asin(correctionAxis.length()));
-        if (correctionAngle > 0.001) {
-            let rotation = BABYLON.Quaternion.RotationAxis(correctionAxis, correctionAngle / 5);
-            this.rotationQuaternion = rotation.multiply(this.rotationQuaternion);
-        }
-    }
-    pilot(plane) {
-        if (!plane) {
-            plane = Game.Plane;
-        }
-        if (!plane) {
-            return;
-        }
-        this.unregisterControl();
-        plane.registerControl();
-        Game.CameraManager.setMode(CameraMode.Plane);
-    }
-}
 class SharedMaterials {
     static MainMaterial() {
         if (!SharedMaterials.mainMaterial) {
@@ -1456,9 +1214,12 @@ class Planet extends BABYLON.Mesh {
         return this.name;
     }
     register() {
+        let t0 = performance.now();
         for (let i = 0; i < this.sides.length; i++) {
             this.sides[i].register();
         }
+        let t1 = performance.now();
+        console.log("Planet " + this.name + " registered in " + (t1 - t0).toFixed(1) + "ms");
     }
 }
 var Neighbour;
@@ -1481,7 +1242,7 @@ class PlanetChunck {
         this.kPos = kPos;
         this.name = "chunck:" + this.side + ":" + this.iPos + "-" + this.jPos + "-" + this.kPos;
         this.barycenter = PlanetTools.EvaluateVertex(this.GetSize(), PlanetTools.CHUNCKSIZE * this.iPos + PlanetTools.CHUNCKSIZE / 2, PlanetTools.CHUNCKSIZE * this.jPos + PlanetTools.CHUNCKSIZE / 2).scale(PlanetTools.KGlobalToAltitude((this.kPos + 0.5) * PlanetTools.CHUNCKSIZE));
-        this.barycenter = BABYLON.Vector3.TransformCoordinates(this.barycenter, planetSide.computeWorldMatrix());
+        this.barycenter = BABYLON.Vector3.TransformCoordinates(this.barycenter, planetSide.computeWorldMatrix(true));
         this.normal = BABYLON.Vector3.Normalize(this.barycenter);
         if (this.kPos === 0) {
             this.bedrock = new BABYLON.Mesh(this.name + "-bedrock", Game.Scene);
@@ -1684,8 +1445,11 @@ class PlanetChunckManager {
         this._chunckIndexSort = 0;
         this._chunckIndexRefreshLod0 = 0;
         this._chunckIndexRefreshLod1 = 0;
+        this._maxActivity = 30;
+        this._activity = this._maxActivity;
         this._update = () => {
             this._viewpoint.copyFrom(this.scene.activeCamera.globalPosition);
+            console.log(this._viewpoint.asArray());
             let l = this._chuncks.length;
             let t0 = performance.now();
             let t = t0;
@@ -1699,7 +1463,7 @@ class PlanetChunckManager {
             */
             t0 = performance.now();
             t = t0;
-            while (this._chuncks.length > 0 && (t - t0) < 5) {
+            while (this._chuncks.length > 0 && (t - t0) < 0.5 + 1 * this._activity / this._maxActivity) {
                 let n1 = Math.floor(Math.random() * l);
                 let n2 = Math.floor(Math.random() * l);
                 let nMin = Math.min(n1, n2);
@@ -1716,7 +1480,7 @@ class PlanetChunckManager {
             }
             t0 = performance.now();
             t = t0;
-            while (this._chuncks.length > 0 && (t - t0) < 5) {
+            while (this._chuncks.length > 0 && (t - t0) < 0.5 + 1 * this._activity / this._maxActivity) {
                 let chunck = this._chuncks[this._chunckIndexSort];
                 chunck.sqrDistanceToViewpoint = BABYLON.Vector3.DistanceSquared(this._viewpoint, chunck.GetBaryCenter());
                 let nextChunck = this._chuncks[this._chunckIndexSort + 1];
@@ -1730,7 +1494,7 @@ class PlanetChunckManager {
             }
             t0 = performance.now();
             t = t0;
-            while (this._chuncks.length > 0 && (t - t0) < 0.5) {
+            while (this._chuncks.length > 0 && (t - t0) < 0.5 + 1 * this._activity / this._maxActivity) {
                 let chunck = this._chuncks[this._chunckIndexRefreshLod0 + (l - this._maxChunckCount)];
                 if (chunck && !chunck.isMeshDrawn()) {
                     this.requestDraw(chunck);
@@ -1740,7 +1504,7 @@ class PlanetChunckManager {
             }
             t0 = performance.now();
             t = t0;
-            while (this._chuncks.length > 0 && (t - t0) < 0.5) {
+            while (this._chuncks.length > 0 && (t - t0) < 0.5 + 1 * this._activity / this._maxActivity) {
                 let chunck = this._chuncks[this._chunckIndexRefreshLod1];
                 if (this._chunckIndexRefreshLod1 > l - this._maxChunckCount) {
                     if (!chunck.isMeshDrawn()) {
@@ -1755,9 +1519,26 @@ class PlanetChunckManager {
                 this._chunckIndexRefreshLod1 = (this._chunckIndexRefreshLod1 + 1) % l;
                 t = performance.now();
             }
+            if (this._needRedraw.length > 0) {
+                this._activity++;
+                this._activity = Math.min(this._activity, this._maxActivity);
+                console.log("active");
+            }
+            else {
+                this._activity--;
+                this._activity = Math.max(this._activity, 0);
+                console.log(this._activity.toFixed(3));
+                if (this._activity < 1) {
+                    console.log("inactive");
+                    if (this._onNextInactiveCallback) {
+                        this._onNextInactiveCallback();
+                        this._onNextInactiveCallback = undefined;
+                    }
+                }
+            }
             t0 = performance.now();
             t = t0;
-            while (this._needRedraw.length > 0 && (t - t0) < 1000 / 60) {
+            while (this._needRedraw.length > 0 && (t - t0) < 1 + 10 * this._activity / 60) {
                 let request = this._needRedraw.pop();
                 request.chunck.initialize();
                 t = performance.now();
@@ -1766,17 +1547,35 @@ class PlanetChunckManager {
     }
     initialize() {
         this._viewpoint = this.scene.activeCamera.globalPosition.clone();
+        console.log(this._viewpoint.asArray());
         this.scene.onBeforeRenderObservable.add(this._update);
     }
     dispose() {
         this.scene.onBeforeRenderObservable.removeCallback(this._update);
     }
     registerChunck(chunck) {
-        chunck.sqrDistanceToViewpoint = BABYLON.Vector3.DistanceSquared(this._viewpoint, chunck.GetBaryCenter());
         if (this._chuncks.indexOf(chunck) === -1) {
             if (!chunck.isEmptyOrHidden()) {
-                this._chuncks.push(chunck);
+                chunck.sqrDistanceToViewpoint = BABYLON.Vector3.DistanceSquared(this._viewpoint, chunck.GetBaryCenter());
+                if (this._chuncks.length > 0) {
+                    let i = 0;
+                    let ithChunck = this._chuncks[i];
+                    while (ithChunck && ithChunck.sqrDistanceToViewpoint > chunck.sqrDistanceToViewpoint) {
+                        i++;
+                        ithChunck = this._chuncks[i];
+                    }
+                    this._chuncks.splice(i, 0, chunck);
+                }
+                else {
+                    this._chuncks.push(chunck);
+                }
             }
+        }
+    }
+    requestDrawLastN(n) {
+        let l = this._chuncks.length;
+        for (let i = l - n; i < l; i++) {
+            this.requestDraw(this._chuncks[i]);
         }
     }
     async requestDraw(chunck) {
@@ -1785,6 +1584,18 @@ class PlanetChunckManager {
                 this._needRedraw.push(new PlanetChunckRedrawRequest(chunck, resolve));
             }
         });
+    }
+    isActive() {
+        return this._activity > 1;
+    }
+    onNextInactive(callback) {
+        if (!this.isActive()) {
+            console.log("direct onNextInactive");
+            callback();
+        }
+        else {
+            this._onNextInactiveCallback = callback;
+        }
     }
 }
 class PlanetChunckMeshBuilder {
@@ -2968,3 +2779,252 @@ PlanetTools.CHUNCKSIZE = 8;
 PlanetTools.ALPHALIMIT = Math.PI / 4;
 PlanetTools.DISTANCELIMITSQUARED = 128 * 128;
 PlanetTools._KPosToDegree = new Map();
+class Player extends BABYLON.Mesh {
+    constructor(position, planet) {
+        super("Player", Game.Scene);
+        this.mass = 1;
+        this.speed = 5;
+        this.velocity = BABYLON.Vector3.Zero();
+        this.underWater = false;
+        this._keyDown = (e) => {
+            if (e.key === "z" || e.key === "w") {
+                this.pForward = true;
+            }
+            if (e.key === "s") {
+                this.back = true;
+            }
+            if (e.key === "q" || e.key === "a") {
+                this.left = true;
+            }
+            if (e.key === "d") {
+                this.pRight = true;
+            }
+            if (e.keyCode === 32) {
+                this.fly = true;
+            }
+        };
+        this._keyUp = (e) => {
+            if (e.key === "z" || e.key === "w") {
+                this.pForward = false;
+            }
+            if (e.key === "s") {
+                this.back = false;
+            }
+            if (e.key === "q" || e.key === "a") {
+                this.left = false;
+            }
+            if (e.key === "d") {
+                this.pRight = false;
+            }
+            if (e.keyCode === 32) {
+                if (this._isGrounded) {
+                    this.velocity.addInPlace(this.getDirection(BABYLON.Axis.Y).scale(5));
+                    this._isGrounded = false;
+                    this._jumpTimer = 0.2;
+                }
+            }
+            if (e.code === "KeyX") {
+                this.pilot();
+            }
+        };
+        this._mouseMove = (event) => {
+            if (Game.LockedMouse) {
+                let movementX = event.movementX;
+                let movementY = event.movementY;
+                if (movementX > 20) {
+                    movementX = 20;
+                }
+                if (movementX < -20) {
+                    movementX = -20;
+                }
+                if (movementY > 20) {
+                    movementY = 20;
+                }
+                if (movementY < -20) {
+                    movementY = -20;
+                }
+                let rotationPower = movementX / 500;
+                let localY = BABYLON.Vector3.TransformNormal(BABYLON.Axis.Y, this.getWorldMatrix());
+                let rotation = BABYLON.Quaternion.RotationAxis(localY, rotationPower);
+                this.rotationQuaternion = rotation.multiply(this.rotationQuaternion);
+                let rotationCamPower = movementY / 500;
+                this.camPos.rotation.x += rotationCamPower;
+                this.camPos.rotation.x = Math.max(this.camPos.rotation.x, -Math.PI / 2);
+                this.camPos.rotation.x = Math.min(this.camPos.rotation.x, Math.PI / 2);
+            }
+        };
+        this._gravityFactor = BABYLON.Vector3.Zero();
+        this._groundFactor = BABYLON.Vector3.Zero();
+        this._surfaceFactor = BABYLON.Vector3.Zero();
+        this._controlFactor = BABYLON.Vector3.Zero();
+        this._rightDirection = new BABYLON.Vector3(1, 0, 0);
+        this._leftDirection = new BABYLON.Vector3(-1, 0, 0);
+        this._upDirection = new BABYLON.Vector3(0, 1, 0);
+        this._downDirection = new BABYLON.Vector3(0, -1, 0);
+        this._forwardDirection = new BABYLON.Vector3(0, 0, 1);
+        this._backwardDirection = new BABYLON.Vector3(0, 0, -1);
+        this._feetPosition = BABYLON.Vector3.Zero();
+        this._collisionAxis = [];
+        this._collisionPositions = [];
+        this._jumpTimer = 0;
+        this._isGrounded = false;
+        this._update = () => {
+            if (Game.CameraManager.cameraMode != CameraMode.Player) {
+                return;
+            }
+            let deltaTime = Game.Engine.getDeltaTime() / 1000;
+            this._jumpTimer = Math.max(this._jumpTimer - deltaTime, 0);
+            this._keepUp();
+            this._collisionPositions[0] = this.position;
+            this._collisionPositions[1] = this._feetPosition;
+            this._collisionAxis[0] = this._rightDirection;
+            this._collisionAxis[1] = this._leftDirection;
+            this._collisionAxis[2] = this._forwardDirection;
+            this._collisionAxis[3] = this._backwardDirection;
+            this.getDirectionToRef(BABYLON.Axis.X, this._rightDirection);
+            this._leftDirection.copyFrom(this._rightDirection);
+            this._leftDirection.scaleInPlace(-1);
+            this._upDirection.copyFrom(this.position);
+            this._upDirection.normalize();
+            this._downDirection.copyFrom(this._upDirection);
+            this._downDirection.scaleInPlace(-1);
+            this.getDirectionToRef(BABYLON.Axis.Z, this._forwardDirection);
+            this._backwardDirection.copyFrom(this._forwardDirection);
+            this._backwardDirection.scaleInPlace(-1);
+            this._feetPosition.copyFrom(this.position);
+            this._feetPosition.addInPlace(this._downDirection);
+            // Add gravity and ground reaction.
+            this._gravityFactor.copyFrom(this._downDirection).scaleInPlace(9.8 * deltaTime);
+            this._groundFactor.copyFromFloats(0, 0, 0);
+            let fVert = 1;
+            if (this._jumpTimer === 0) {
+                let ray = new BABYLON.Ray(this.position, this._downDirection, 1.7);
+                let hit = Game.Scene.pickWithRay(ray, (mesh) => {
+                    return mesh.name.indexOf("chunck") != -1;
+                });
+                if (hit.pickedPoint) {
+                    let d = hit.pickedPoint.subtract(this.position).length();
+                    if (d > 0.01) {
+                        this._groundFactor
+                            .copyFrom(this._gravityFactor)
+                            .scaleInPlace(-1)
+                            .scaleInPlace(Math.pow(1.5 / d, 1));
+                    }
+                    fVert = 0.005;
+                    this._isGrounded = true;
+                }
+            }
+            this.velocity.addInPlace(this._gravityFactor);
+            this.velocity.addInPlace(this._groundFactor);
+            // Add input force.
+            this._controlFactor.copyFromFloats(0, 0, 0);
+            if (this.pRight) {
+                this._controlFactor.addInPlace(this._rightDirection);
+            }
+            if (this.left) {
+                this._controlFactor.addInPlace(this._leftDirection);
+            }
+            if (this.pForward) {
+                this._controlFactor.addInPlace(this._forwardDirection);
+            }
+            if (this.back) {
+                this._controlFactor.addInPlace(this._backwardDirection);
+            }
+            if (this._controlFactor.lengthSquared() > 0.1) {
+                this._controlFactor.normalize();
+            }
+            this._controlFactor.scaleInPlace((20 / this.mass) * deltaTime);
+            this.velocity.addInPlace(this._controlFactor);
+            // Check wall collisions.
+            let fLat = 1;
+            this._surfaceFactor.copyFromFloats(0, 0, 0);
+            for (let i = 0; i < this._collisionPositions.length; i++) {
+                let pos = this._collisionPositions[i];
+                for (let j = 0; j < this._collisionAxis.length; j++) {
+                    let axis = this._collisionAxis[j];
+                    let ray = new BABYLON.Ray(pos, axis, 0.35);
+                    let hit = Game.Scene.pickWithRay(ray, (mesh) => {
+                        return mesh instanceof PlanetChunck;
+                    });
+                    if (hit.pickedPoint) {
+                        let d = hit.pickedPoint.subtract(pos).length();
+                        if (d > 0.01) {
+                            this._surfaceFactor.addInPlace(axis.scale((((-10 / this.mass) * 0.3) / d) * deltaTime));
+                            fLat = 0.1;
+                        }
+                        else {
+                            // In case where it stuck to the surface, force push.
+                            this.position.addInPlace(hit.getNormal(true).scale(0.01));
+                        }
+                    }
+                }
+            }
+            this.velocity.addInPlace(this._surfaceFactor);
+            // Add friction
+            let downVelocity = this._downDirection.scale(BABYLON.Vector3.Dot(this.velocity, this._downDirection));
+            this.velocity.subtractInPlace(downVelocity);
+            downVelocity.scaleInPlace(Math.pow(0.5 * fVert, deltaTime));
+            this.velocity.scaleInPlace(Math.pow(0.01 * fLat, deltaTime));
+            this.velocity.addInPlace(downVelocity);
+            // Safety check.
+            if (!VMath.IsFinite(this.velocity)) {
+                this.velocity.copyFromFloats(-0.1 + 0.2 * Math.random(), -0.1 + 0.2 * Math.random(), -0.1 + 0.2 * Math.random());
+            }
+            this.position.addInPlace(this.velocity.scale(deltaTime));
+        };
+        console.log("Create Player");
+        this.planet = planet;
+        this.position = position;
+        this.rotationQuaternion = BABYLON.Quaternion.Identity();
+        this.camPos = new BABYLON.Mesh("Dummy", Game.Scene);
+        this.camPos.parent = this;
+        this.camPos.position = new BABYLON.Vector3(0, 1, 0);
+    }
+    PositionLeg() {
+        let posLeg = this.position.add(BABYLON.Vector3.TransformNormal(BABYLON.Axis.Y, this.getWorldMatrix()).scale(-1));
+        return posLeg;
+    }
+    PositionRoot() {
+        return this.position.add(this._downDirection.scale(0.75));
+    }
+    PositionHead() {
+        return this.position;
+    }
+    initialize() {
+        Game.Scene.onBeforeRenderObservable.add(this._update);
+    }
+    registerControl() {
+        Game.Canvas.addEventListener("keydown", this._keyDown);
+        Game.Canvas.addEventListener("keyup", this._keyUp);
+        Game.Canvas.addEventListener("mousemove", this._mouseMove);
+    }
+    unregisterControl() {
+        Game.Canvas.removeEventListener("keydown", this._keyDown);
+        Game.Canvas.removeEventListener("keyup", this._keyUp);
+        Game.Canvas.removeEventListener("mousemove", this._mouseMove);
+    }
+    _keepUp() {
+        if (!this) {
+            return;
+        }
+        let currentUp = BABYLON.Vector3.Normalize(BABYLON.Vector3.TransformNormal(BABYLON.Axis.Y, this.getWorldMatrix()));
+        let targetUp = BABYLON.Vector3.Normalize(this.position);
+        let correctionAxis = BABYLON.Vector3.Cross(currentUp, targetUp);
+        let correctionAngle = Math.abs(Math.asin(correctionAxis.length()));
+        if (correctionAngle > 0.001) {
+            let rotation = BABYLON.Quaternion.RotationAxis(correctionAxis, correctionAngle / 5);
+            this.rotationQuaternion = rotation.multiply(this.rotationQuaternion);
+        }
+    }
+    pilot(plane) {
+        if (!plane) {
+            plane = Game.Plane;
+        }
+        if (!plane) {
+            return;
+        }
+        this.unregisterControl();
+        plane.registerControl();
+        Game.CameraManager.setMode(CameraMode.Plane);
+    }
+}

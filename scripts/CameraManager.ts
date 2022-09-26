@@ -62,6 +62,7 @@ class CameraManager {
                 this.freeCamera.parent = this.player.camPos;
                 this.freeCamera.position.copyFromFloats(0, 0, 0);
                 this.freeCamera.rotationQuaternion.copyFrom(BABYLON.Quaternion.Identity());
+                this.freeCamera.computeWorldMatrix();
                 Game.Scene.activeCamera = this.freeCamera;
             }
             if (this.cameraMode === CameraMode.Plane) {

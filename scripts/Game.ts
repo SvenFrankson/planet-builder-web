@@ -38,12 +38,9 @@ class Game {
 		);
 
 		Game.Light.diffuse = new BABYLON.Color3(1, 1, 1);
-		Game.Light.groundColor = new BABYLON.Color3(0.5, 0.5, 0.5);
+		Game.Light.groundColor = new BABYLON.Color3(0, 0, 0);
 
 		Game.CameraManager = new CameraManager();
-
-		this.chunckManager = new PlanetChunckManager(Game.Scene);
-		this.chunckManager.initialize();
 
 		/*
 		let water = BABYLON.MeshBuilder.CreateSphere("water", { diameter: 78 - 0.4 }, Game.Scene);
@@ -126,15 +123,19 @@ window.addEventListener("DOMContentLoaded", () => {
 	let game: Game = new Game("renderCanvas");
 	game.createScene();
 
-	let planetTest: Planet = new Planet("Paulita", 16, game.chunckManager);
+	game.chunckManager = new PlanetChunckManager(Game.Scene);
+
+	let degree = 18;
+	let planetTest: Planet = new Planet("Paulita", degree, game.chunckManager);
 
 	planetTest.generator = new PlanetGeneratorEarth(planetTest, 0.70, 0.15);
-	planetTest.generator.showDebug();
+	//planetTest.generator.showDebug();
 
-	planetTest.register();
-
-	Game.Player = new Player(new BABYLON.Vector3(0, 16 * PlanetTools.CHUNCKSIZE, 0), planetTest);
+	Game.Player = new Player(new BABYLON.Vector3(0, degree * PlanetTools.CHUNCKSIZE, 0), planetTest);
 	Game.Player.registerControl();
+	game.chunckManager.onNextInactive(() => {
+		Game.Player.initialize();
+	})
 
 	Game.PlanetEditor = new PlanetEditor(planetTest);
 	//Game.PlanetEditor.initialize();
@@ -147,6 +148,9 @@ window.addEventListener("DOMContentLoaded", () => {
 	Game.CameraManager.setMode(CameraMode.Player);
 
 	//planetTest.AsyncInitialize();
+
+	game.chunckManager.initialize();
+	planetTest.register();
 	
 	game.animate();
 
