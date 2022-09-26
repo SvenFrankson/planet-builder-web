@@ -181,7 +181,7 @@ class Player extends BABYLON.Mesh {
         if (this._jumpTimer === 0) {
             let ray: BABYLON.Ray = new BABYLON.Ray(this.position, this._downDirection, 1.7);
             let hit: BABYLON.PickingInfo = Game.Scene.pickWithRay(ray, (mesh: BABYLON.Mesh) => {
-                return mesh instanceof PlanetChunck;
+                return mesh.name.indexOf("chunck") != -1;
             });
             if (hit.pickedPoint) {
                 let d: number = hit.pickedPoint.subtract(this.position).length();

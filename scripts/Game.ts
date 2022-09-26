@@ -126,15 +126,15 @@ window.addEventListener("DOMContentLoaded", () => {
 	let game: Game = new Game("renderCanvas");
 	game.createScene();
 
-	let planetTest: Planet = new Planet("Paulita", 14, game.chunckManager);
+	let planetTest: Planet = new Planet("Paulita", 16, game.chunckManager);
 
 	planetTest.generator = new PlanetGeneratorEarth(planetTest, 0.70, 0.15);
 	planetTest.generator.showDebug();
 
 	planetTest.register();
 
-	//Game.Player = new Player(new BABYLON.Vector3(10, 60, 0), planetTest);
-	//Game.Player.registerControl();
+	Game.Player = new Player(new BABYLON.Vector3(0, 16 * PlanetTools.CHUNCKSIZE, 0), planetTest);
+	Game.Player.registerControl();
 
 	Game.PlanetEditor = new PlanetEditor(planetTest);
 	//Game.PlanetEditor.initialize();
@@ -143,9 +143,8 @@ window.addEventListener("DOMContentLoaded", () => {
 	//Game.Plane.instantiate();
 
 	//Game.CameraManager.plane = Game.Plane;
-	//Game.CameraManager.player = Game.Player;
-
-	Game.CameraManager.setMode(CameraMode.Sky);
+	Game.CameraManager.player = Game.Player;
+	Game.CameraManager.setMode(CameraMode.Player);
 
 	//planetTest.AsyncInitialize();
 	
