@@ -15,20 +15,13 @@ var CameraMode;
     CameraMode[CameraMode["Plane"] = 2] = "Plane";
 })(CameraMode || (CameraMode = {}));
 class CameraManager {
-    cameraMode = CameraMode.Sky;
-    arcRotateCamera;
-    freeCamera;
-    plane;
-    player;
-    get absolutePosition() {
-        if (this.cameraMode === CameraMode.Sky) {
-            return this.arcRotateCamera.position;
-        }
-        else {
-            return this.freeCamera.globalPosition;
-        }
-    }
     constructor() {
+        this.cameraMode = CameraMode.Sky;
+        this._update = () => {
+            if (this.cameraMode === CameraMode.Plane) {
+                this._planeCameraUpdate();
+            }
+        };
         this.arcRotateCamera = new BABYLON.ArcRotateCamera("Camera", 0, Math.PI / 2, 100, BABYLON.Vector3.Zero(), Game.Scene);
         this.arcRotateCamera.attachControl(Game.Canvas);
         this.freeCamera = new BABYLON.FreeCamera("Camera", BABYLON.Vector3.Zero(), Game.Scene);
@@ -36,6 +29,14 @@ class CameraManager {
         this.freeCamera.minZ = 0.1;
         Game.Scene.onBeforeRenderObservable.add(this._update);
         OutlinePostProcess.AddOutlinePostProcess(this.freeCamera);
+    }
+    get absolutePosition() {
+        if (this.cameraMode === CameraMode.Sky) {
+            return this.arcRotateCamera.position;
+        }
+        else {
+            return this.freeCamera.globalPosition;
+        }
     }
     setMode(newCameraMode) {
         if (newCameraMode != this.cameraMode) {
@@ -65,11 +66,6 @@ class CameraManager {
             }
         }
     }
-    _update = () => {
-        if (this.cameraMode === CameraMode.Plane) {
-            this._planeCameraUpdate();
-        }
-    };
     _planeCameraUpdate() {
         if (this.plane) {
             let targetPosition = this.plane.camPosition.absolutePosition;
@@ -85,22 +81,6 @@ class CameraManager {
 }
 /// <reference path="../lib/babylon.d.ts"/>
 class Game {
-    static ShowDebugPlanetHeightMap = false;
-    static DebugLodDistanceFactor = 100;
-    static Instance;
-    static Canvas;
-    static Engine;
-    static Scene;
-    static Light;
-    static Sky;
-    static PlanetEditor;
-    static CameraManager;
-    static Player;
-    static Plane;
-    chunckManager;
-    static LockedMouse = false;
-    static ClientXOnLock = -1;
-    static ClientYOnLock = -1;
     constructor(canvasElement) {
         Game.Instance = this;
         Game.Canvas = document.getElementById(canvasElement);
@@ -181,6 +161,11 @@ class Game {
         console.log("Unlock");
     }
 }
+Game.ShowDebugPlanetHeightMap = false;
+Game.DebugLodDistanceFactor = 100;
+Game.LockedMouse = false;
+Game.ClientXOnLock = -1;
+Game.ClientYOnLock = -1;
 window.addEventListener("DOMContentLoaded", () => {
     let game = new Game("renderCanvas");
     game.createScene();
@@ -418,44 +403,262 @@ class OutlinePostProcess {
     }
 }
 class Plane extends BABYLON.Mesh {
-    static Instance;
-    static Position() {
-        return Plane.Instance.position;
-    }
-    mass = 1;
-    velocity = BABYLON.Vector3.Zero();
-    alphaSpeed = 0;
-    pitchSpeed = 0;
-    rollSpeed = 0;
-    camTarget;
-    camPosition;
-    planet;
-    camPos;
-    pForward;
-    back;
-    pRight;
-    left;
-    fly;
-    planeMesh;
-    leftEngine;
-    leftEngineThrust;
-    rightEngine;
-    rightEngineThrust;
-    landingGearMesh;
-    lift = 0.05;
-    thrust = 0;
-    alpha = Math.PI / 4;
-    //public targetAltitude: number = 60;
-    targetPitch = 0;
-    targetRoll = Math.PI / 8;
-    targetAirspeed = 0;
-    planeHud;
-    xInput = 0;
-    yInput = 0;
-    throttleUpInput = false;
-    throttleDownInput = false;
     constructor(position, planet) {
         super("Plane", Game.Scene);
+        this.mass = 1;
+        this.velocity = BABYLON.Vector3.Zero();
+        this.alphaSpeed = 0;
+        this.pitchSpeed = 0;
+        this.rollSpeed = 0;
+        this.lift = 0.05;
+        this.thrust = 0;
+        this.alpha = Math.PI / 4;
+        //public targetAltitude: number = 60;
+        this.targetPitch = 0;
+        this.targetRoll = Math.PI / 8;
+        this.targetAirspeed = 0;
+        this.xInput = 0;
+        this.yInput = 0;
+        this.throttleUpInput = false;
+        this.throttleDownInput = false;
+        this._keyDown = (e) => {
+            if (e.code === "Space") {
+                this.throttleUpInput = true;
+            }
+            if (e.code === "ControlLeft") {
+                this.throttleDownInput = true;
+            }
+        };
+        this._keyUp = (e) => {
+            if (e.code === "Space") {
+                this.throttleUpInput = false;
+            }
+            if (e.code === "ControlLeft") {
+                this.throttleDownInput = false;
+            }
+            if (e.code === "KeyX") {
+                this.exit();
+            }
+        };
+        this._mouseMove = (event) => {
+            if (Game.LockedMouse) {
+                let movementX = event.movementX;
+                let movementY = event.movementY;
+                if (movementX > 20) {
+                    movementX = 20;
+                }
+                if (movementX < -20) {
+                    movementX = -20;
+                }
+                if (movementY > 20) {
+                    movementY = 20;
+                }
+                if (movementY < -20) {
+                    movementY = -20;
+                }
+                if (!isNaN(movementX)) {
+                    this.xInput += movementX / 200;
+                }
+                if (!isNaN(movementY)) {
+                    this.yInput += -movementY / 200;
+                }
+                this.xInput = Math.min(Math.max(this.xInput, -1), 1);
+                this.yInput = Math.min(Math.max(this.yInput, -1), 1);
+                let ll = this.xInput * this.xInput + this.yInput * this.yInput;
+                if (ll > 1) {
+                    let l = Math.sqrt(ll);
+                    this.xInput /= l;
+                    this.yInput /= l;
+                }
+                this.planeHud.target.setAttribute("cx", (500 + this.xInput * 450).toFixed(0));
+                this.planeHud.target.setAttribute("cy", (500 - this.yInput * 450).toFixed(0));
+            }
+        };
+        this._gravityFactor = BABYLON.Vector3.Zero();
+        this._groundFactor = BABYLON.Vector3.Zero();
+        this._thrustYFactor = BABYLON.Vector3.Zero();
+        this._thrustZFactor = BABYLON.Vector3.Zero();
+        this._liftFactor = BABYLON.Vector3.Zero();
+        this._rightDirection = new BABYLON.Vector3(1, 0, 0);
+        this._leftDirection = new BABYLON.Vector3(-1, 0, 0);
+        this._upDirection = new BABYLON.Vector3(0, 1, 0);
+        this._downDirection = new BABYLON.Vector3(0, -1, 0);
+        this._forwardDirection = new BABYLON.Vector3(0, 0, 1);
+        this._backwardDirection = new BABYLON.Vector3(0, 0, -1);
+        this.planetRight = new BABYLON.Vector3(1, 0, 0);
+        this.planetUp = new BABYLON.Vector3(0, 1, 0);
+        this.planetForward = new BABYLON.Vector3(0, 0, 1);
+        this._feetPosition = BABYLON.Vector3.Zero();
+        this._collisionAxis = [];
+        this._collisionPositions = [];
+        this._jumpTimer = 0;
+        this._isGrounded = false;
+        this._update = () => {
+            if (Game.CameraManager.cameraMode != CameraMode.Plane) {
+                return;
+            }
+            let deltaTime = Game.Engine.getDeltaTime() / 1000;
+            this.planetUp.copyFrom(this.position).normalize();
+            this.getDirectionToRef(BABYLON.Axis.X, this._rightDirection);
+            this._leftDirection.copyFrom(this._rightDirection);
+            this._leftDirection.scaleInPlace(-1);
+            this.getDirectionToRef(BABYLON.Axis.Y, this._upDirection);
+            this._downDirection.copyFrom(this._upDirection);
+            this._downDirection.scaleInPlace(-1);
+            this.getDirectionToRef(BABYLON.Axis.Z, this._forwardDirection);
+            this._backwardDirection.copyFrom(this._forwardDirection);
+            this._backwardDirection.scaleInPlace(-1);
+            BABYLON.Vector3.CrossToRef(this.planetUp, this._forwardDirection, this.planetRight);
+            BABYLON.Vector3.CrossToRef(this.planetRight, this.planetUp, this.planetForward);
+            this.camPosition.position.copyFrom(this.position);
+            //this.camPosition.position.addInPlace(this.planetRight.scale(25));
+            this.camPosition.position.addInPlace(this.planetUp.scale(7));
+            this.camPosition.position.addInPlace(this.planetForward.scale(-10));
+            this.camTarget.position.copyFrom(this.position);
+            this.camTarget.position.addInPlace(this.planetUp.scale(2));
+            this.camTarget.position.addInPlace(this.planetForward.scale(2));
+            // Add gravity and ground reaction.
+            this._gravityFactor.copyFrom(this.planetUp).scaleInPlace(-this.mass * 9.8 * deltaTime);
+            this._groundFactor.copyFromFloats(0, 0, 0);
+            let ray = new BABYLON.Ray(this.position, this._downDirection, 1);
+            let hit = Game.Scene.pickWithRay(ray, (mesh) => {
+                return (mesh instanceof PlanetChunck);
+            });
+            if (hit.pickedPoint) {
+                let d = hit.pickedPoint.subtract(this.position).length();
+                if (d > 0.01) {
+                    this._groundFactor.copyFrom(this._gravityFactor).scaleInPlace(-1).scaleInPlace(Math.pow(1.5 / d, 1));
+                }
+            }
+            this._thrustYFactor.copyFrom(this._upDirection).scaleInPlace(this.mass * Math.cos(this.alpha) * this.thrust * deltaTime);
+            this._thrustZFactor.copyFrom(this._forwardDirection).scaleInPlace(this.mass * Math.sin(this.alpha) * this.thrust * deltaTime);
+            if (!VMath.IsFinite(this._gravityFactor)) {
+                debugger;
+            }
+            this.velocity.addInPlace(this._gravityFactor);
+            this.velocity.addInPlace(this._groundFactor);
+            if (!VMath.IsFinite(this._thrustYFactor)) {
+                debugger;
+            }
+            this.velocity.addInPlace(this._thrustYFactor);
+            if (!VMath.IsFinite(this._thrustZFactor)) {
+                debugger;
+            }
+            this.velocity.addInPlace(this._thrustZFactor);
+            // Add friction
+            let downVelocity = this._downDirection.scale(BABYLON.Vector3.Dot(this.velocity, this._downDirection));
+            if (!VMath.IsFinite(downVelocity)) {
+                debugger;
+            }
+            this.velocity.subtractInPlace(downVelocity);
+            downVelocity.scaleInPlace(Math.pow(0.5, deltaTime));
+            this.velocity.scaleInPlace(Math.pow(0.01, deltaTime));
+            if (!VMath.IsFinite(downVelocity)) {
+                debugger;
+            }
+            this.velocity.addInPlace(downVelocity);
+            //Plane.Instance.targetAltitude = Plane.Instance.targetAltitude + this.yInput * deltaTime;
+            let vSpeed = BABYLON.Vector3.Dot(this.velocity, this.planetUp);
+            //let deltaAltitude = this.position.length() + vSpeed * 2 - this.targetAltitude;
+            let airspeed = BABYLON.Vector3.Dot(this.velocity, this._forwardDirection);
+            let pitch = VMath.AngleFromToAround(this._upDirection, this.planetUp, this._rightDirection);
+            if (isNaN(pitch)) {
+                pitch = 0;
+            }
+            let roll = VMath.AngleFromToAround(this.planetUp, this._upDirection, this._forwardDirection);
+            if (isNaN(roll)) {
+                roll = 0;
+            }
+            this._liftFactor.copyFrom(this._upDirection).scaleInPlace(airspeed * this.lift * deltaTime);
+            if (!VMath.IsFinite(this._liftFactor)) {
+                debugger;
+            }
+            this.velocity.addInPlace(this._liftFactor);
+            //let targetVSpeed: number = (this.targetAltitude - this.position.length()) * 0.5;
+            let targetVSpeed = this.yInput * 5;
+            if (this.throttleUpInput) {
+                this.targetAirspeed += 2 * deltaTime;
+            }
+            else if (this.throttleDownInput) {
+                this.targetAirspeed -= 2 * deltaTime;
+            }
+            this.targetAirspeed = Math.max(Math.min(this.targetAirspeed, 20), 0);
+            this.targetPitch = 0;
+            let tVS = 3;
+            if (airspeed < 3) {
+                tVS += 3 - airspeed;
+            }
+            if (vSpeed < targetVSpeed) {
+                this.thrust += tVS * deltaTime;
+            }
+            else if (vSpeed > targetVSpeed) {
+                this.thrust -= tVS * deltaTime;
+            }
+            let tAS = 3;
+            if (airspeed > 3) {
+                tAS += airspeed - 3;
+            }
+            if (airspeed < this.targetAirspeed) {
+                this.thrust += tAS * deltaTime;
+            }
+            else if (airspeed > this.targetAirspeed) {
+                this.thrust -= tAS * deltaTime;
+            }
+            this.thrust = Math.max(0.1, this.thrust);
+            let cos = (Math.cos(pitch) * this.mass * 9.8 - this.targetAirspeed * this.lift) / this.thrust;
+            cos = Math.max(Math.min(cos, 1), -1);
+            this.alpha = Math.acos(cos);
+            this.alpha = Math.min(Math.max(this.alpha, (-3 * Math.PI) / 4), (3 * Math.PI) / 4);
+            if (isNaN(this.alpha)) {
+                debugger;
+            }
+            this.targetPitch = (Math.PI / 4) * this.yInput + 3 / 180 * Math.PI;
+            if (this.targetAirspeed < 3) {
+                this.targetPitch *= (this.targetAirspeed + 1) / 4;
+            }
+            let dPitch = pitch - this.targetPitch;
+            this.pitchSpeed += dPitch * 10 * deltaTime;
+            this.pitchSpeed *= Math.pow(0.1, deltaTime);
+            this.rotationQuaternion = BABYLON.Quaternion.RotationAxis(this._rightDirection, this.pitchSpeed * deltaTime).multiply(this.rotationQuaternion);
+            this.targetRoll = (-Math.PI / 4) * this.xInput;
+            if (isFinite(roll)) {
+                let dRoll = this.targetRoll - roll;
+                this.rollSpeed += dRoll * 10 * deltaTime;
+                this.rollSpeed *= Math.pow(0.1, deltaTime);
+                this.rotationQuaternion = BABYLON.Quaternion.RotationAxis(this._forwardDirection, this.rollSpeed * deltaTime).multiply(this.rotationQuaternion);
+                this.rotationQuaternion = BABYLON.Quaternion.RotationAxis(this._upDirection, -roll * 0.2 * Math.PI * deltaTime).multiply(this.rotationQuaternion);
+            }
+            let a2 = Math.asin((Math.sin(pitch) * this.mass * 9.8 + 0.01 * airspeed) / this.thrust);
+            // Safety check.
+            if (!VMath.IsFinite(this.velocity)) {
+                debugger;
+                this.velocity.copyFromFloats(-0.1 + 0.2 * Math.random(), -0.1 + 0.2 * Math.random(), -0.1 + 0.2 * Math.random());
+            }
+            this.position.addInPlace(this.velocity.scale(deltaTime));
+            if (this.leftEngine) {
+                this.leftEngine.rotation.x = this.alpha;
+            }
+            if (this.rightEngine) {
+                this.rightEngine.rotation.x = this.alpha;
+            }
+            document.getElementById("plane-altitude").innerText = this.position.length().toFixed(1) + " m";
+            document.getElementById("plane-airspeed").innerText = airspeed.toFixed(1) + " m/s";
+            document.getElementById("plane-vspeed").innerText = vSpeed.toFixed(1) + " (" + targetVSpeed.toFixed(1) + ") m/s";
+            document.getElementById("plane-pitch").innerText = (pitch / Math.PI * 180).toFixed(1) + " (" + (this.targetPitch / Math.PI * 180).toFixed(1) + ") °";
+            document.getElementById("plane-roll").innerText = roll.toFixed(1) + " (" + this.targetRoll.toFixed(1) + ") °";
+            document.getElementById("x-input").innerText = this.xInput.toFixed(4);
+            document.getElementById("y-input").innerText = this.yInput.toFixed(4);
+            if (this.leftEngineThrust) {
+                this.leftEngineThrust.position.y = -this.thrust * 0.125;
+                this.leftEngineThrust.scaling.y = this.thrust * 0.5;
+            }
+            if (this.rightEngineThrust) {
+                this.rightEngineThrust.position.y = -this.thrust * 0.125;
+                this.rightEngineThrust.scaling.y = this.thrust * 0.5;
+            }
+            this.planeHud.updateAirspeed(airspeed);
+            this.planeHud.updateTargetAirspeed(this.targetAirspeed);
+        };
         console.log("Create Plane");
         this.planet = planet;
         this.position = position;
@@ -467,6 +670,9 @@ class Plane extends BABYLON.Mesh {
         this.planeHud.instantiate();
         this.planeHud.hide();
         Game.Scene.onBeforeRenderObservable.add(this._update);
+    }
+    static Position() {
+        return Plane.Instance.position;
     }
     instantiate() {
         BABYLON.SceneLoader.ImportMesh("", "./resources/models/plane.babylon", "", Game.Scene, (meshes) => {
@@ -496,59 +702,6 @@ class Plane extends BABYLON.Mesh {
         Game.Canvas.addEventListener("keyup", this._keyUp);
         Game.Canvas.addEventListener("mousemove", this._mouseMove);
     }
-    _keyDown = (e) => {
-        if (e.code === "Space") {
-            this.throttleUpInput = true;
-        }
-        if (e.code === "ControlLeft") {
-            this.throttleDownInput = true;
-        }
-    };
-    _keyUp = (e) => {
-        if (e.code === "Space") {
-            this.throttleUpInput = false;
-        }
-        if (e.code === "ControlLeft") {
-            this.throttleDownInput = false;
-        }
-        if (e.code === "KeyX") {
-            this.exit();
-        }
-    };
-    _mouseMove = (event) => {
-        if (Game.LockedMouse) {
-            let movementX = event.movementX;
-            let movementY = event.movementY;
-            if (movementX > 20) {
-                movementX = 20;
-            }
-            if (movementX < -20) {
-                movementX = -20;
-            }
-            if (movementY > 20) {
-                movementY = 20;
-            }
-            if (movementY < -20) {
-                movementY = -20;
-            }
-            if (!isNaN(movementX)) {
-                this.xInput += movementX / 200;
-            }
-            if (!isNaN(movementY)) {
-                this.yInput += -movementY / 200;
-            }
-            this.xInput = Math.min(Math.max(this.xInput, -1), 1);
-            this.yInput = Math.min(Math.max(this.yInput, -1), 1);
-            let ll = this.xInput * this.xInput + this.yInput * this.yInput;
-            if (ll > 1) {
-                let l = Math.sqrt(ll);
-                this.xInput /= l;
-                this.yInput /= l;
-            }
-            this.planeHud.target.setAttribute("cx", (500 + this.xInput * 450).toFixed(0));
-            this.planeHud.target.setAttribute("cy", (500 - this.yInput * 450).toFixed(0));
-        }
-    };
     unregisterControl() {
         Game.Canvas.removeEventListener("keydown", this._keyDown);
         Game.Canvas.removeEventListener("keyup", this._keyUp);
@@ -559,198 +712,8 @@ class Plane extends BABYLON.Mesh {
         Game.Player.registerControl();
         Game.CameraManager.setMode(CameraMode.Player);
     }
-    _gravityFactor = BABYLON.Vector3.Zero();
-    _groundFactor = BABYLON.Vector3.Zero();
-    _thrustYFactor = BABYLON.Vector3.Zero();
-    _thrustZFactor = BABYLON.Vector3.Zero();
-    _liftFactor = BABYLON.Vector3.Zero();
-    _rightDirection = new BABYLON.Vector3(1, 0, 0);
-    _leftDirection = new BABYLON.Vector3(-1, 0, 0);
-    _upDirection = new BABYLON.Vector3(0, 1, 0);
-    _downDirection = new BABYLON.Vector3(0, -1, 0);
-    _forwardDirection = new BABYLON.Vector3(0, 0, 1);
-    _backwardDirection = new BABYLON.Vector3(0, 0, -1);
-    planetRight = new BABYLON.Vector3(1, 0, 0);
-    planetUp = new BABYLON.Vector3(0, 1, 0);
-    planetForward = new BABYLON.Vector3(0, 0, 1);
-    _feetPosition = BABYLON.Vector3.Zero();
-    _collisionAxis = [];
-    _collisionPositions = [];
-    _jumpTimer = 0;
-    _isGrounded = false;
-    _update = () => {
-        if (Game.CameraManager.cameraMode != CameraMode.Plane) {
-            return;
-        }
-        let deltaTime = Game.Engine.getDeltaTime() / 1000;
-        this.planetUp.copyFrom(this.position).normalize();
-        this.getDirectionToRef(BABYLON.Axis.X, this._rightDirection);
-        this._leftDirection.copyFrom(this._rightDirection);
-        this._leftDirection.scaleInPlace(-1);
-        this.getDirectionToRef(BABYLON.Axis.Y, this._upDirection);
-        this._downDirection.copyFrom(this._upDirection);
-        this._downDirection.scaleInPlace(-1);
-        this.getDirectionToRef(BABYLON.Axis.Z, this._forwardDirection);
-        this._backwardDirection.copyFrom(this._forwardDirection);
-        this._backwardDirection.scaleInPlace(-1);
-        BABYLON.Vector3.CrossToRef(this.planetUp, this._forwardDirection, this.planetRight);
-        BABYLON.Vector3.CrossToRef(this.planetRight, this.planetUp, this.planetForward);
-        this.camPosition.position.copyFrom(this.position);
-        //this.camPosition.position.addInPlace(this.planetRight.scale(25));
-        this.camPosition.position.addInPlace(this.planetUp.scale(7));
-        this.camPosition.position.addInPlace(this.planetForward.scale(-10));
-        this.camTarget.position.copyFrom(this.position);
-        this.camTarget.position.addInPlace(this.planetUp.scale(2));
-        this.camTarget.position.addInPlace(this.planetForward.scale(2));
-        // Add gravity and ground reaction.
-        this._gravityFactor.copyFrom(this.planetUp).scaleInPlace(-this.mass * 9.8 * deltaTime);
-        this._groundFactor.copyFromFloats(0, 0, 0);
-        let ray = new BABYLON.Ray(this.position, this._downDirection, 1);
-        let hit = Game.Scene.pickWithRay(ray, (mesh) => {
-            return (mesh instanceof PlanetChunck);
-        });
-        if (hit.pickedPoint) {
-            let d = hit.pickedPoint.subtract(this.position).length();
-            if (d > 0.01) {
-                this._groundFactor.copyFrom(this._gravityFactor).scaleInPlace(-1).scaleInPlace(Math.pow(1.5 / d, 1));
-            }
-        }
-        this._thrustYFactor.copyFrom(this._upDirection).scaleInPlace(this.mass * Math.cos(this.alpha) * this.thrust * deltaTime);
-        this._thrustZFactor.copyFrom(this._forwardDirection).scaleInPlace(this.mass * Math.sin(this.alpha) * this.thrust * deltaTime);
-        if (!VMath.IsFinite(this._gravityFactor)) {
-            debugger;
-        }
-        this.velocity.addInPlace(this._gravityFactor);
-        this.velocity.addInPlace(this._groundFactor);
-        if (!VMath.IsFinite(this._thrustYFactor)) {
-            debugger;
-        }
-        this.velocity.addInPlace(this._thrustYFactor);
-        if (!VMath.IsFinite(this._thrustZFactor)) {
-            debugger;
-        }
-        this.velocity.addInPlace(this._thrustZFactor);
-        // Add friction
-        let downVelocity = this._downDirection.scale(BABYLON.Vector3.Dot(this.velocity, this._downDirection));
-        if (!VMath.IsFinite(downVelocity)) {
-            debugger;
-        }
-        this.velocity.subtractInPlace(downVelocity);
-        downVelocity.scaleInPlace(Math.pow(0.5, deltaTime));
-        this.velocity.scaleInPlace(Math.pow(0.01, deltaTime));
-        if (!VMath.IsFinite(downVelocity)) {
-            debugger;
-        }
-        this.velocity.addInPlace(downVelocity);
-        //Plane.Instance.targetAltitude = Plane.Instance.targetAltitude + this.yInput * deltaTime;
-        let vSpeed = BABYLON.Vector3.Dot(this.velocity, this.planetUp);
-        //let deltaAltitude = this.position.length() + vSpeed * 2 - this.targetAltitude;
-        let airspeed = BABYLON.Vector3.Dot(this.velocity, this._forwardDirection);
-        let pitch = VMath.AngleFromToAround(this._upDirection, this.planetUp, this._rightDirection);
-        if (isNaN(pitch)) {
-            pitch = 0;
-        }
-        let roll = VMath.AngleFromToAround(this.planetUp, this._upDirection, this._forwardDirection);
-        if (isNaN(roll)) {
-            roll = 0;
-        }
-        this._liftFactor.copyFrom(this._upDirection).scaleInPlace(airspeed * this.lift * deltaTime);
-        if (!VMath.IsFinite(this._liftFactor)) {
-            debugger;
-        }
-        this.velocity.addInPlace(this._liftFactor);
-        //let targetVSpeed: number = (this.targetAltitude - this.position.length()) * 0.5;
-        let targetVSpeed = this.yInput * 5;
-        if (this.throttleUpInput) {
-            this.targetAirspeed += 2 * deltaTime;
-        }
-        else if (this.throttleDownInput) {
-            this.targetAirspeed -= 2 * deltaTime;
-        }
-        this.targetAirspeed = Math.max(Math.min(this.targetAirspeed, 20), 0);
-        this.targetPitch = 0;
-        let tVS = 3;
-        if (airspeed < 3) {
-            tVS += 3 - airspeed;
-        }
-        if (vSpeed < targetVSpeed) {
-            this.thrust += tVS * deltaTime;
-        }
-        else if (vSpeed > targetVSpeed) {
-            this.thrust -= tVS * deltaTime;
-        }
-        let tAS = 3;
-        if (airspeed > 3) {
-            tAS += airspeed - 3;
-        }
-        if (airspeed < this.targetAirspeed) {
-            this.thrust += tAS * deltaTime;
-        }
-        else if (airspeed > this.targetAirspeed) {
-            this.thrust -= tAS * deltaTime;
-        }
-        this.thrust = Math.max(0.1, this.thrust);
-        let cos = (Math.cos(pitch) * this.mass * 9.8 - this.targetAirspeed * this.lift) / this.thrust;
-        cos = Math.max(Math.min(cos, 1), -1);
-        this.alpha = Math.acos(cos);
-        this.alpha = Math.min(Math.max(this.alpha, (-3 * Math.PI) / 4), (3 * Math.PI) / 4);
-        if (isNaN(this.alpha)) {
-            debugger;
-        }
-        this.targetPitch = (Math.PI / 4) * this.yInput + 3 / 180 * Math.PI;
-        if (this.targetAirspeed < 3) {
-            this.targetPitch *= (this.targetAirspeed + 1) / 4;
-        }
-        let dPitch = pitch - this.targetPitch;
-        this.pitchSpeed += dPitch * 10 * deltaTime;
-        this.pitchSpeed *= Math.pow(0.1, deltaTime);
-        this.rotationQuaternion = BABYLON.Quaternion.RotationAxis(this._rightDirection, this.pitchSpeed * deltaTime).multiply(this.rotationQuaternion);
-        this.targetRoll = (-Math.PI / 4) * this.xInput;
-        if (isFinite(roll)) {
-            let dRoll = this.targetRoll - roll;
-            this.rollSpeed += dRoll * 10 * deltaTime;
-            this.rollSpeed *= Math.pow(0.1, deltaTime);
-            this.rotationQuaternion = BABYLON.Quaternion.RotationAxis(this._forwardDirection, this.rollSpeed * deltaTime).multiply(this.rotationQuaternion);
-            this.rotationQuaternion = BABYLON.Quaternion.RotationAxis(this._upDirection, -roll * 0.2 * Math.PI * deltaTime).multiply(this.rotationQuaternion);
-        }
-        let a2 = Math.asin((Math.sin(pitch) * this.mass * 9.8 + 0.01 * airspeed) / this.thrust);
-        // Safety check.
-        if (!VMath.IsFinite(this.velocity)) {
-            debugger;
-            this.velocity.copyFromFloats(-0.1 + 0.2 * Math.random(), -0.1 + 0.2 * Math.random(), -0.1 + 0.2 * Math.random());
-        }
-        this.position.addInPlace(this.velocity.scale(deltaTime));
-        if (this.leftEngine) {
-            this.leftEngine.rotation.x = this.alpha;
-        }
-        if (this.rightEngine) {
-            this.rightEngine.rotation.x = this.alpha;
-        }
-        document.getElementById("plane-altitude").innerText = this.position.length().toFixed(1) + " m";
-        document.getElementById("plane-airspeed").innerText = airspeed.toFixed(1) + " m/s";
-        document.getElementById("plane-vspeed").innerText = vSpeed.toFixed(1) + " (" + targetVSpeed.toFixed(1) + ") m/s";
-        document.getElementById("plane-pitch").innerText = (pitch / Math.PI * 180).toFixed(1) + " (" + (this.targetPitch / Math.PI * 180).toFixed(1) + ") °";
-        document.getElementById("plane-roll").innerText = roll.toFixed(1) + " (" + this.targetRoll.toFixed(1) + ") °";
-        document.getElementById("x-input").innerText = this.xInput.toFixed(4);
-        document.getElementById("y-input").innerText = this.yInput.toFixed(4);
-        if (this.leftEngineThrust) {
-            this.leftEngineThrust.position.y = -this.thrust * 0.125;
-            this.leftEngineThrust.scaling.y = this.thrust * 0.5;
-        }
-        if (this.rightEngineThrust) {
-            this.rightEngineThrust.position.y = -this.thrust * 0.125;
-            this.rightEngineThrust.scaling.y = this.thrust * 0.5;
-        }
-        this.planeHud.updateAirspeed(airspeed);
-        this.planeHud.updateTargetAirspeed(this.targetAirspeed);
-    };
 }
 class PlaneHud {
-    svg;
-    target;
-    mainFrame;
-    airspeedValue;
-    targetAirspeedValue;
     _alphaRadiusToX(a, r) {
         return 500 + r * Math.cos(a);
     }
@@ -871,9 +834,36 @@ class PlanetChunckMeshBuilderNew {
     }
 }
 class PlanetEditor {
-    planet;
-    data = 0;
-    _previewMesh;
+    constructor(planet) {
+        this.planet = planet;
+        this.data = 0;
+        this._update = () => {
+            let removeMode = this.data === 0;
+            let worldPos = PlanetEditor.GetHitWorldPos(removeMode);
+            if (worldPos) {
+                if (this.data === 0 || worldPos.subtract(Game.Player.PositionHead()).lengthSquared() > 1) {
+                    if (this.data === 0 || worldPos.subtract(Game.Player.PositionLeg()).lengthSquared() > 1) {
+                        let planetSide = PlanetTools.WorldPositionToPlanetSide(this.planet, worldPos);
+                        if (planetSide) {
+                            let global = PlanetTools.WorldPositionToGlobalIJK(planetSide, worldPos);
+                            if (!this._previewMesh) {
+                                this._previewMesh = new BABYLON.Mesh("preview-mesh");
+                                this._previewMesh.visibility = 0.5;
+                            }
+                            let vertexData = PlanetChunckMeshBuilder.BuildBlockVertexData(PlanetTools.DegreeToSize(PlanetTools.KGlobalToDegree(global.k)), global.i, global.j, global.k, 140, this.data === 0 ? 1.1 : 0.9);
+                            vertexData.applyToMesh(this._previewMesh);
+                            this._previewMesh.rotationQuaternion = PlanetTools.QuaternionForSide(planetSide.side);
+                            return;
+                        }
+                    }
+                }
+            }
+            if (this._previewMesh) {
+                this._previewMesh.dispose();
+                this._previewMesh = undefined;
+            }
+        };
+    }
     static GetHitWorldPos(remove = false) {
         let pickInfo = Game.Scene.pick(Game.Canvas.width / 2, Game.Canvas.height / 2, (mesh) => {
             return !(mesh.name === "preview-mesh");
@@ -888,9 +878,6 @@ class PlanetEditor {
             }
         }
         return undefined;
-    }
-    constructor(planet) {
-        this.planet = planet;
     }
     initialize() {
         Game.Scene.onBeforeRenderObservable.add(this._update);
@@ -920,32 +907,6 @@ class PlanetEditor {
     dispose() {
         Game.Scene.onBeforeRenderObservable.removeCallback(this._update);
     }
-    _update = () => {
-        let removeMode = this.data === 0;
-        let worldPos = PlanetEditor.GetHitWorldPos(removeMode);
-        if (worldPos) {
-            if (this.data === 0 || worldPos.subtract(Game.Player.PositionHead()).lengthSquared() > 1) {
-                if (this.data === 0 || worldPos.subtract(Game.Player.PositionLeg()).lengthSquared() > 1) {
-                    let planetSide = PlanetTools.WorldPositionToPlanetSide(this.planet, worldPos);
-                    if (planetSide) {
-                        let global = PlanetTools.WorldPositionToGlobalIJK(planetSide, worldPos);
-                        if (!this._previewMesh) {
-                            this._previewMesh = new BABYLON.Mesh("preview-mesh");
-                            this._previewMesh.visibility = 0.5;
-                        }
-                        let vertexData = PlanetChunckMeshBuilder.BuildBlockVertexData(PlanetTools.DegreeToSize(PlanetTools.KGlobalToDegree(global.k)), global.i, global.j, global.k, 140, this.data === 0 ? 1.1 : 0.9);
-                        vertexData.applyToMesh(this._previewMesh);
-                        this._previewMesh.rotationQuaternion = PlanetTools.QuaternionForSide(planetSide.side);
-                        return;
-                    }
-                }
-            }
-        }
-        if (this._previewMesh) {
-            this._previewMesh.dispose();
-            this._previewMesh = undefined;
-        }
-    };
     _pointerUp() {
         let removeMode = this.data === 0;
         let worldPos = PlanetEditor.GetHitWorldPos(removeMode);
@@ -1010,7 +971,6 @@ window.addEventListener("DOMContentLoaded", () => {
     PlanetToolsTest.Run();
 });
 class SharedMaterials {
-    static mainMaterial;
     static MainMaterial() {
         if (!SharedMaterials.mainMaterial) {
             SharedMaterials.mainMaterial = new BABYLON.StandardMaterial("mainMaterial", Game.Scene);
@@ -1019,7 +979,6 @@ class SharedMaterials {
         }
         return SharedMaterials.mainMaterial;
     }
-    static waterMaterial;
     static WaterMaterial() {
         if (!SharedMaterials.waterMaterial) {
             SharedMaterials.waterMaterial = new BABYLON.StandardMaterial("waterMaterial", Game.Scene);
@@ -1029,7 +988,6 @@ class SharedMaterials {
         }
         return SharedMaterials.waterMaterial;
     }
-    static bedrockMaterial;
     static BedrockMaterial() {
         if (!SharedMaterials.bedrockMaterial) {
             SharedMaterials.bedrockMaterial = new BABYLON.StandardMaterial("waterMaterial", Game.Scene);
@@ -1038,7 +996,6 @@ class SharedMaterials {
         }
         return SharedMaterials.bedrockMaterial;
     }
-    static skyMaterial;
     static SkyMaterial() {
         if (!SharedMaterials.skyMaterial) {
             SharedMaterials.skyMaterial = new BABYLON.StandardMaterial("skyMaterial", Game.Scene);
@@ -1238,16 +1195,6 @@ class VMath {
     }
 }
 class Planet extends BABYLON.Mesh {
-    chunckManager;
-    sides;
-    GetSide(side) {
-        return this.sides[side];
-    }
-    kPosMax;
-    GetPlanetName() {
-        return this.name;
-    }
-    generator;
     constructor(name, kPosMax, chunckManager) {
         super(name, Game.Scene);
         this.chunckManager = chunckManager;
@@ -1259,6 +1206,12 @@ class Planet extends BABYLON.Mesh {
         this.sides[Side.Left] = new PlanetSide(Side.Left, this);
         this.sides[Side.Top] = new PlanetSide(Side.Top, this);
         this.sides[Side.Bottom] = new PlanetSide(Side.Bottom, this);
+    }
+    GetSide(side) {
+        return this.sides[side];
+    }
+    GetPlanetName() {
+        return this.name;
     }
     register() {
         let t0 = performance.now();
@@ -1279,8 +1232,23 @@ var Neighbour;
     Neighbour[Neighbour["KMinus"] = 5] = "KMinus";
 })(Neighbour || (Neighbour = {}));
 class PlanetChunck {
-    planetSide;
-    name;
+    constructor(iPos, jPos, kPos, planetSide) {
+        this._dataInitialized = false;
+        this._isEmpty = true;
+        this._isFull = false;
+        this.planetSide = planetSide;
+        this.iPos = iPos;
+        this.jPos = jPos;
+        this.kPos = kPos;
+        this.name = "chunck:" + this.side + ":" + this.iPos + "-" + this.jPos + "-" + this.kPos;
+        this.barycenter = PlanetTools.EvaluateVertex(this.GetSize(), PlanetTools.CHUNCKSIZE * this.iPos + PlanetTools.CHUNCKSIZE / 2, PlanetTools.CHUNCKSIZE * this.jPos + PlanetTools.CHUNCKSIZE / 2).scale(PlanetTools.KGlobalToAltitude((this.kPos + 0.5) * PlanetTools.CHUNCKSIZE));
+        this.barycenter = BABYLON.Vector3.TransformCoordinates(this.barycenter, planetSide.computeWorldMatrix(true));
+        this.normal = BABYLON.Vector3.Normalize(this.barycenter);
+        if (this.kPos === 0) {
+            this.bedrock = new BABYLON.Mesh(this.name + "-bedrock", Game.Scene);
+            this.bedrock.parent = this.planetSide;
+        }
+    }
     get side() {
         return this.planetSide.side;
     }
@@ -1299,9 +1267,6 @@ class PlanetChunck {
     get kPosMax() {
         return this.planetSide.kPosMax;
     }
-    iPos;
-    jPos;
-    kPos;
     Position() {
         return {
             i: this.iPos,
@@ -1309,11 +1274,9 @@ class PlanetChunck {
             k: this.kPos,
         };
     }
-    _dataInitialized = false;
     get dataInitialized() {
         return this._dataInitialized;
     }
-    data;
     GetData(i, j, k) {
         if (this.data[i]) {
             if (this.data[i][j]) {
@@ -1330,44 +1293,23 @@ class PlanetChunck {
     SetData(i, j, k, value) {
         this.data[i][j][k] = value;
     }
-    barycenter;
     GetBaryCenter() {
         return this.barycenter;
     }
-    normal;
     GetNormal() {
         return this.normal;
     }
-    sqrDistanceToViewpoint;
-    _isEmpty = true;
     get isEmpty() {
         return this._isEmpty;
     }
-    _isFull = false;
     get isFull() {
         return this._isFull;
     }
-    bedrock;
-    mesh;
     isMeshDrawn() {
         return this.mesh && !this.mesh.isDisposed();
     }
     isMeshDisposed() {
         return !this.mesh || this.mesh.isDisposed();
-    }
-    constructor(iPos, jPos, kPos, planetSide) {
-        this.planetSide = planetSide;
-        this.iPos = iPos;
-        this.jPos = jPos;
-        this.kPos = kPos;
-        this.name = "chunck:" + this.side + ":" + this.iPos + "-" + this.jPos + "-" + this.kPos;
-        this.barycenter = PlanetTools.EvaluateVertex(this.GetSize(), PlanetTools.CHUNCKSIZE * this.iPos + PlanetTools.CHUNCKSIZE / 2, PlanetTools.CHUNCKSIZE * this.jPos + PlanetTools.CHUNCKSIZE / 2).scale(PlanetTools.KGlobalToAltitude((this.kPos + 0.5) * PlanetTools.CHUNCKSIZE));
-        this.barycenter = BABYLON.Vector3.TransformCoordinates(this.barycenter, planetSide.computeWorldMatrix(true));
-        this.normal = BABYLON.Vector3.Normalize(this.barycenter);
-        if (this.kPos === 0) {
-            this.bedrock = new BABYLON.Mesh(this.name + "-bedrock", Game.Scene);
-            this.bedrock.parent = this.planetSide;
-        }
     }
     register() {
         this.chunckManager.registerChunck(this);
@@ -1488,20 +1430,141 @@ class PlanetChunck {
     }
 }
 class PlanetChunckRedrawRequest {
-    chunck;
-    callback;
     constructor(chunck, callback) {
         this.chunck = chunck;
         this.callback = callback;
     }
 }
 class PlanetChunckManager {
-    scene;
-    _viewpoint;
-    _chuncks = [];
-    _needRedraw = [];
     constructor(scene) {
         this.scene = scene;
+        this._chuncks = [];
+        this._needRedraw = [];
+        this._maxChunckCount = 12 * 12 * 12;
+        this._chunckIndexDistCompute = 0;
+        this._chunckIndexSortLod0 = 0;
+        this._chunckIndexSortLod1 = 0;
+        this._chunckIndexRefreshLod0 = 0;
+        this._chunckIndexRefreshLod1 = 0;
+        this._maxActivity = 30;
+        this._activity = this._maxActivity;
+        this._update = () => {
+            this._viewpoint.copyFrom(this.scene.activeCamera.globalPosition);
+            console.log(this._viewpoint.asArray());
+            let l = this._chuncks.length;
+            let t0 = performance.now();
+            let t = t0;
+            /*
+            while (this._chuncks.length > 0 && (t - t0) < 1) {
+                let chunck = this._chuncks[this._chunckIndexDistCompute];
+                chunck.sqrDistanceToViewpoint = BABYLON.Vector3.DistanceSquared(this._viewpoint, chunck.GetBaryCenter());
+                this._chunckIndexDistCompute = (this._chunckIndexDistCompute + 1) % l;
+                t = performance.now();
+            }
+            */
+            t0 = performance.now();
+            t = t0;
+            while (this._chuncks.length > 0 && (t - t0) < 0.5 + 1 * this._activity / this._maxActivity) {
+                let n1 = Math.floor(Math.random() * l);
+                let n2 = Math.floor(Math.random() * l);
+                let nMin = Math.min(n1, n2);
+                let nMax = Math.max(n1, n2);
+                let chunckMin = this._chuncks[nMin];
+                chunckMin.sqrDistanceToViewpoint = BABYLON.Vector3.DistanceSquared(this._viewpoint, chunckMin.GetBaryCenter());
+                let chunckMax = this._chuncks[nMax];
+                chunckMax.sqrDistanceToViewpoint = BABYLON.Vector3.DistanceSquared(this._viewpoint, chunckMax.GetBaryCenter());
+                if (chunckMax.sqrDistanceToViewpoint > chunckMin.sqrDistanceToViewpoint) {
+                    this._chuncks[nMin] = chunckMax;
+                    this._chuncks[nMax] = chunckMin;
+                }
+                t = performance.now();
+            }
+            /*
+            t0 = performance.now();
+            t = t0;
+            let chunck = this._chuncks[this._chunckIndexSortLod0];
+            chunck.sqrDistanceToViewpoint = BABYLON.Vector3.DistanceSquared(this._viewpoint, chunck.GetBaryCenter());
+            while (this._chuncks.length > 0 && (t - t0) < 0.5 + 1 * this._activity / this._maxActivity) {
+                let index = l - this._maxChunckCount + this._chunckIndexSortLod0;
+                let chunck = this._chuncks[index];
+                let nextChunck = this._chuncks[index + 1];
+                nextChunck.sqrDistanceToViewpoint = BABYLON.Vector3.DistanceSquared(this._viewpoint, nextChunck.GetBaryCenter());
+                if (nextChunck.sqrDistanceToViewpoint > chunck.sqrDistanceToViewpoint) {
+                    this._chuncks[index] = nextChunck;
+                    this._chuncks[index + 1] = chunck;
+                }
+                this._chunckIndexSortLod0 = (this._chunckIndexSortLod0 + 1) % (this._maxChunckCount - 1);
+                t = performance.now();
+            }
+    
+            t0 = performance.now();
+            t = t0;
+            chunck = this._chuncks[this._chunckIndexSortLod1];
+            chunck.sqrDistanceToViewpoint = BABYLON.Vector3.DistanceSquared(this._viewpoint, chunck.GetBaryCenter());
+            while (this._chuncks.length > 0 && (t - t0) < 1 + 1 * this._activity / this._maxActivity) {
+                let chunck = this._chuncks[this._chunckIndexSortLod1];
+                let nextChunck = this._chuncks[this._chunckIndexSortLod1 + 1];
+                nextChunck.sqrDistanceToViewpoint = BABYLON.Vector3.DistanceSquared(this._viewpoint, nextChunck.GetBaryCenter());
+                if (nextChunck.sqrDistanceToViewpoint > chunck.sqrDistanceToViewpoint) {
+                    this._chuncks[this._chunckIndexSortLod1] = nextChunck;
+                    this._chuncks[this._chunckIndexSortLod1 + 1] = chunck;
+                }
+                this._chunckIndexSortLod1 = (this._chunckIndexSortLod1 + 1) % (l - 1);
+                t = performance.now();
+            }
+            */
+            t0 = performance.now();
+            t = t0;
+            while (this._chuncks.length > 0 && (t - t0) < 0.5 + 1 * this._activity / this._maxActivity) {
+                let chunck = this._chuncks[this._chunckIndexRefreshLod0 + (l - this._maxChunckCount)];
+                if (chunck && !chunck.isMeshDrawn()) {
+                    this.requestDraw(chunck);
+                }
+                this._chunckIndexRefreshLod0 = (this._chunckIndexRefreshLod0 + 1) % this._maxChunckCount;
+                t = performance.now();
+            }
+            t0 = performance.now();
+            t = t0;
+            while (this._chuncks.length > 0 && (t - t0) < 0.5 + 1 * this._activity / this._maxActivity) {
+                let chunck = this._chuncks[this._chunckIndexRefreshLod1];
+                if (this._chunckIndexRefreshLod1 > l - this._maxChunckCount) {
+                    if (!chunck.isMeshDrawn()) {
+                        this.requestDraw(chunck);
+                    }
+                }
+                else if (this._chunckIndexRefreshLod1 < l - this._maxChunckCount * 1.2) {
+                    if (!chunck.isMeshDisposed()) {
+                        chunck.disposeMesh();
+                    }
+                }
+                this._chunckIndexRefreshLod1 = (this._chunckIndexRefreshLod1 + 1) % l;
+                t = performance.now();
+            }
+            if (this._needRedraw.length > 0) {
+                this._activity++;
+                this._activity = Math.min(this._activity, this._maxActivity);
+                console.log("active");
+            }
+            else {
+                this._activity--;
+                this._activity = Math.max(this._activity, 0);
+                console.log(this._activity.toFixed(3));
+                if (this._activity < 1) {
+                    console.log("inactive");
+                    if (this._onNextInactiveCallback) {
+                        this._onNextInactiveCallback();
+                        this._onNextInactiveCallback = undefined;
+                    }
+                }
+            }
+            t0 = performance.now();
+            t = t0;
+            while (this._needRedraw.length > 0 && (t - t0) < 0.5 + 1 * this._activity / this._maxActivity) {
+                let request = this._needRedraw.pop();
+                request.chunck.initialize();
+                t = performance.now();
+            }
+        };
     }
     initialize() {
         this._viewpoint = this.scene.activeCamera.globalPosition.clone();
@@ -1543,135 +1606,9 @@ class PlanetChunckManager {
             }
         });
     }
-    _maxChunckCount = 12 * 12 * 12;
-    _chunckIndexDistCompute = 0;
-    _chunckIndexSortLod0 = 0;
-    _chunckIndexSortLod1 = 0;
-    _chunckIndexRefreshLod0 = 0;
-    _chunckIndexRefreshLod1 = 0;
-    _maxActivity = 30;
-    _activity = this._maxActivity;
-    _update = () => {
-        this._viewpoint.copyFrom(this.scene.activeCamera.globalPosition);
-        console.log(this._viewpoint.asArray());
-        let l = this._chuncks.length;
-        let t0 = performance.now();
-        let t = t0;
-        /*
-        while (this._chuncks.length > 0 && (t - t0) < 1) {
-            let chunck = this._chuncks[this._chunckIndexDistCompute];
-            chunck.sqrDistanceToViewpoint = BABYLON.Vector3.DistanceSquared(this._viewpoint, chunck.GetBaryCenter());
-            this._chunckIndexDistCompute = (this._chunckIndexDistCompute + 1) % l;
-            t = performance.now();
-        }
-        */
-        t0 = performance.now();
-        t = t0;
-        while (this._chuncks.length > 0 && (t - t0) < 0.5 + 1 * this._activity / this._maxActivity) {
-            let n1 = Math.floor(Math.random() * l);
-            let n2 = Math.floor(Math.random() * l);
-            let nMin = Math.min(n1, n2);
-            let nMax = Math.max(n1, n2);
-            let chunckMin = this._chuncks[nMin];
-            chunckMin.sqrDistanceToViewpoint = BABYLON.Vector3.DistanceSquared(this._viewpoint, chunckMin.GetBaryCenter());
-            let chunckMax = this._chuncks[nMax];
-            chunckMax.sqrDistanceToViewpoint = BABYLON.Vector3.DistanceSquared(this._viewpoint, chunckMax.GetBaryCenter());
-            if (chunckMax.sqrDistanceToViewpoint > chunckMin.sqrDistanceToViewpoint) {
-                this._chuncks[nMin] = chunckMax;
-                this._chuncks[nMax] = chunckMin;
-            }
-            t = performance.now();
-        }
-        /*
-        t0 = performance.now();
-        t = t0;
-        let chunck = this._chuncks[this._chunckIndexSortLod0];
-        chunck.sqrDistanceToViewpoint = BABYLON.Vector3.DistanceSquared(this._viewpoint, chunck.GetBaryCenter());
-        while (this._chuncks.length > 0 && (t - t0) < 0.5 + 1 * this._activity / this._maxActivity) {
-            let index = l - this._maxChunckCount + this._chunckIndexSortLod0;
-            let chunck = this._chuncks[index];
-            let nextChunck = this._chuncks[index + 1];
-            nextChunck.sqrDistanceToViewpoint = BABYLON.Vector3.DistanceSquared(this._viewpoint, nextChunck.GetBaryCenter());
-            if (nextChunck.sqrDistanceToViewpoint > chunck.sqrDistanceToViewpoint) {
-                this._chuncks[index] = nextChunck;
-                this._chuncks[index + 1] = chunck;
-            }
-            this._chunckIndexSortLod0 = (this._chunckIndexSortLod0 + 1) % (this._maxChunckCount - 1);
-            t = performance.now();
-        }
-
-        t0 = performance.now();
-        t = t0;
-        chunck = this._chuncks[this._chunckIndexSortLod1];
-        chunck.sqrDistanceToViewpoint = BABYLON.Vector3.DistanceSquared(this._viewpoint, chunck.GetBaryCenter());
-        while (this._chuncks.length > 0 && (t - t0) < 1 + 1 * this._activity / this._maxActivity) {
-            let chunck = this._chuncks[this._chunckIndexSortLod1];
-            let nextChunck = this._chuncks[this._chunckIndexSortLod1 + 1];
-            nextChunck.sqrDistanceToViewpoint = BABYLON.Vector3.DistanceSquared(this._viewpoint, nextChunck.GetBaryCenter());
-            if (nextChunck.sqrDistanceToViewpoint > chunck.sqrDistanceToViewpoint) {
-                this._chuncks[this._chunckIndexSortLod1] = nextChunck;
-                this._chuncks[this._chunckIndexSortLod1 + 1] = chunck;
-            }
-            this._chunckIndexSortLod1 = (this._chunckIndexSortLod1 + 1) % (l - 1);
-            t = performance.now();
-        }
-        */
-        t0 = performance.now();
-        t = t0;
-        while (this._chuncks.length > 0 && (t - t0) < 0.5 + 1 * this._activity / this._maxActivity) {
-            let chunck = this._chuncks[this._chunckIndexRefreshLod0 + (l - this._maxChunckCount)];
-            if (chunck && !chunck.isMeshDrawn()) {
-                this.requestDraw(chunck);
-            }
-            this._chunckIndexRefreshLod0 = (this._chunckIndexRefreshLod0 + 1) % this._maxChunckCount;
-            t = performance.now();
-        }
-        t0 = performance.now();
-        t = t0;
-        while (this._chuncks.length > 0 && (t - t0) < 0.5 + 1 * this._activity / this._maxActivity) {
-            let chunck = this._chuncks[this._chunckIndexRefreshLod1];
-            if (this._chunckIndexRefreshLod1 > l - this._maxChunckCount) {
-                if (!chunck.isMeshDrawn()) {
-                    this.requestDraw(chunck);
-                }
-            }
-            else if (this._chunckIndexRefreshLod1 < l - this._maxChunckCount * 1.2) {
-                if (!chunck.isMeshDisposed()) {
-                    chunck.disposeMesh();
-                }
-            }
-            this._chunckIndexRefreshLod1 = (this._chunckIndexRefreshLod1 + 1) % l;
-            t = performance.now();
-        }
-        if (this._needRedraw.length > 0) {
-            this._activity++;
-            this._activity = Math.min(this._activity, this._maxActivity);
-            console.log("active");
-        }
-        else {
-            this._activity--;
-            this._activity = Math.max(this._activity, 0);
-            console.log(this._activity.toFixed(3));
-            if (this._activity < 1) {
-                console.log("inactive");
-                if (this._onNextInactiveCallback) {
-                    this._onNextInactiveCallback();
-                    this._onNextInactiveCallback = undefined;
-                }
-            }
-        }
-        t0 = performance.now();
-        t = t0;
-        while (this._needRedraw.length > 0 && (t - t0) < 0.5 + 1 * this._activity / this._maxActivity) {
-            let request = this._needRedraw.pop();
-            request.chunck.initialize();
-            t = performance.now();
-        }
-    };
     isActive() {
         return this._activity > 1;
     }
-    _onNextInactiveCallback;
     onNextInactive(callback) {
         if (!this.isActive()) {
             console.log("direct onNextInactive");
@@ -1683,9 +1620,6 @@ class PlanetChunckManager {
     }
 }
 class PlanetChunckMeshBuilder {
-    static cachedVertices;
-    static tmpVertices;
-    static _BlockColor;
     static get BlockColor() {
         if (!PlanetChunckMeshBuilder._BlockColor) {
             PlanetChunckMeshBuilder._BlockColor = new Map();
@@ -1724,7 +1658,6 @@ class PlanetChunckMeshBuilder {
         out.copyFrom(PlanetChunckMeshBuilder.cachedVertices[size][i][j]);
         return out;
     }
-    static _tmpBlockCenter = BABYLON.Vector3.Zero();
     static BuildBlockVertexData(size, iGlobal, jGlobal, hGlobal, data, scale = 1) {
         let vertexData = new BABYLON.VertexData();
         if (!PlanetChunckMeshBuilder.tmpVertices) {
@@ -1952,9 +1885,8 @@ class PlanetChunckMeshBuilder {
         return vertexData;
     }
 }
+PlanetChunckMeshBuilder._tmpBlockCenter = BABYLON.Vector3.Zero();
 class PlanetGenerator {
-    planet;
-    heightMaps;
     constructor(planet) {
         this.planet = planet;
     }
@@ -1972,9 +1904,6 @@ class PlanetGenerator {
     }
 }
 class PlanetGeneratorEarth extends PlanetGenerator {
-    _seaLevel;
-    _mountainHeight;
-    _mainHeightMap;
     constructor(planet, _seaLevel, _mountainHeight) {
         super(planet);
         this._seaLevel = _seaLevel;
@@ -2053,11 +1982,9 @@ class PlanetGeneratorDebug3 extends PlanetGenerator {
     }
 }
 class PlanetHeightMap {
-    degree;
-    map = [];
-    size;
     constructor(degree) {
         this.degree = degree;
+        this.map = [];
         this.size = Math.pow(2, this.degree);
     }
     static CreateMap(degree, options) {
@@ -2362,22 +2289,38 @@ var Side;
     Side[Side["Bottom"] = 5] = "Bottom";
 })(Side || (Side = {}));
 class PlanetSide extends BABYLON.Mesh {
-    _side;
+    constructor(side, planet) {
+        let name = "side-" + side;
+        super(name, Game.Scene);
+        this.planet = planet;
+        this._side = side;
+        this.rotationQuaternion = PlanetTools.QuaternionForSide(this._side);
+        this.computeWorldMatrix();
+        this.freezeWorldMatrix();
+        this.chuncks = new Array();
+        for (let k = 0; k <= this.kPosMax; k++) {
+            this.chuncks[k] = new Array();
+            let chuncksCount = PlanetTools.DegreeToChuncksCount(PlanetTools.KPosToDegree(k));
+            for (let i = 0; i < chuncksCount; i++) {
+                this.chuncks[k][i] = new Array();
+                for (let j = 0; j < chuncksCount; j++) {
+                    this.chuncks[k][i][j] = new PlanetChunck(i, j, k, this);
+                }
+            }
+        }
+    }
     get side() {
         return this._side;
     }
     get chunckManager() {
         return this.planet.chunckManager;
     }
-    planet;
     GetPlanetName() {
         return this.planet.GetPlanetName();
     }
     get kPosMax() {
         return this.planet.kPosMax;
     }
-    chuncksLength;
-    chuncks;
     getChunck(iPos, jPos, kPos, degree) {
         if (PlanetTools.KPosToDegree(kPos) < degree) {
             return this.getChunck(Math.floor(iPos / 2), Math.floor(jPos / 2), kPos, degree - 1);
@@ -2520,26 +2463,6 @@ class PlanetSide extends BABYLON.Mesh {
         }
         return 0;
     }
-    constructor(side, planet) {
-        let name = "side-" + side;
-        super(name, Game.Scene);
-        this.planet = planet;
-        this._side = side;
-        this.rotationQuaternion = PlanetTools.QuaternionForSide(this._side);
-        this.computeWorldMatrix();
-        this.freezeWorldMatrix();
-        this.chuncks = new Array();
-        for (let k = 0; k <= this.kPosMax; k++) {
-            this.chuncks[k] = new Array();
-            let chuncksCount = PlanetTools.DegreeToChuncksCount(PlanetTools.KPosToDegree(k));
-            for (let i = 0; i < chuncksCount; i++) {
-                this.chuncks[k][i] = new Array();
-                for (let j = 0; j < chuncksCount; j++) {
-                    this.chuncks[k][i][j] = new PlanetChunck(i, j, k, this);
-                }
-            }
-        }
-    }
     register() {
         for (let k = 0; k <= this.kPosMax; k++) {
             for (let i = 0; i < this.chuncks[k].length; i++) {
@@ -2554,10 +2477,6 @@ var PI4 = Math.PI / 4;
 var PI2 = Math.PI / 2;
 var PI = Math.PI;
 class PlanetTools {
-    static CHUNCKSIZE = 8;
-    static ALPHALIMIT = Math.PI / 4;
-    static DISTANCELIMITSQUARED = 128 * 128;
-    static _emptyVertexData;
     static EmptyVertexData() {
         if (!PlanetTools._emptyVertexData) {
             let emptyMesh = new BABYLON.Mesh("Empty", Game.Scene);
@@ -2722,21 +2641,18 @@ class PlanetTools {
     static KPosToDegree(kPos) {
         return PlanetTools.KPosToDegree8(kPos);
     }
-    static _BSizes;
     static get BSizes() {
         if (!PlanetTools._BSizes) {
             PlanetTools._ComputeBSizes();
         }
         return PlanetTools._BSizes;
     }
-    static _Altitudes;
     static get Altitudes() {
         if (!PlanetTools._Altitudes) {
             PlanetTools._ComputeBSizes();
         }
         return PlanetTools._Altitudes;
     }
-    static _SummedBSizesLength;
     static get SummedBSizesLength() {
         if (!PlanetTools._SummedBSizesLength) {
             PlanetTools._ComputeBSizes();
@@ -2775,7 +2691,6 @@ class PlanetTools {
             }
         }
     }
-    static _KPosToDegree = new Map();
     static KPosToDegree8(kPos) {
         let v = PlanetTools._KPosToDegree.get(kPos);
         if (isFinite(v)) {
@@ -2881,18 +2796,230 @@ class PlanetTools {
         return PlanetTools.DegreeToSize(degree) / PlanetTools.CHUNCKSIZE;
     }
 }
+PlanetTools.CHUNCKSIZE = 8;
+PlanetTools.ALPHALIMIT = Math.PI / 4;
+PlanetTools.DISTANCELIMITSQUARED = 128 * 128;
+PlanetTools._KPosToDegree = new Map();
 class Player extends BABYLON.Mesh {
-    mass = 1;
-    speed = 5;
-    velocity = BABYLON.Vector3.Zero();
-    planet;
-    underWater = false;
-    camPos;
-    pForward;
-    back;
-    pRight;
-    left;
-    fly;
+    constructor(position, planet) {
+        super("Player", Game.Scene);
+        this.mass = 1;
+        this.speed = 5;
+        this.velocity = BABYLON.Vector3.Zero();
+        this.underWater = false;
+        this._initialized = false;
+        this._keyDown = (e) => {
+            if (e.code === "KeyW") {
+                this.pForward = true;
+            }
+            if (e.code === "KeyS") {
+                this.back = true;
+            }
+            if (e.code === "KeyA") {
+                this.left = true;
+            }
+            if (e.code === "KeyD") {
+                this.pRight = true;
+            }
+        };
+        this._keyUp = (e) => {
+            if (e.code === "KeyW") {
+                this.pForward = false;
+            }
+            if (e.code === "KeyS") {
+                this.back = false;
+            }
+            if (e.code === "KeyA") {
+                this.left = false;
+            }
+            if (e.code === "KeyD") {
+                this.pRight = false;
+            }
+            if (e.code === "KeyG") {
+                if (!this._initialized) {
+                    this.initialize();
+                }
+                this.godMode = !this.godMode;
+            }
+            if (e.code === "Space") {
+                if (this._isGrounded || this.godMode) {
+                    this.velocity.addInPlace(this.getDirection(BABYLON.Axis.Y).scale(5));
+                    this._isGrounded = false;
+                    this._jumpTimer = 0.2;
+                }
+            }
+            if (e.code === "ControlLeft") {
+                if (this.godMode) {
+                    this.velocity.subtractInPlace(this.getDirection(BABYLON.Axis.Y).scale(5));
+                    this._isGrounded = false;
+                    this._jumpTimer = 0.2;
+                }
+            }
+            if (e.code === "KeyX") {
+                this.pilot();
+            }
+        };
+        this._mouseMove = (event) => {
+            if (Game.LockedMouse) {
+                let movementX = event.movementX;
+                let movementY = event.movementY;
+                if (movementX > 20) {
+                    movementX = 20;
+                }
+                if (movementX < -20) {
+                    movementX = -20;
+                }
+                if (movementY > 20) {
+                    movementY = 20;
+                }
+                if (movementY < -20) {
+                    movementY = -20;
+                }
+                let rotationPower = movementX / 500;
+                let localY = BABYLON.Vector3.TransformNormal(BABYLON.Axis.Y, this.getWorldMatrix());
+                let rotation = BABYLON.Quaternion.RotationAxis(localY, rotationPower);
+                this.rotationQuaternion = rotation.multiply(this.rotationQuaternion);
+                let rotationCamPower = movementY / 500;
+                this.camPos.rotation.x += rotationCamPower;
+                this.camPos.rotation.x = Math.max(this.camPos.rotation.x, -Math.PI / 2);
+                this.camPos.rotation.x = Math.min(this.camPos.rotation.x, Math.PI / 2);
+            }
+        };
+        this._gravityFactor = BABYLON.Vector3.Zero();
+        this._groundFactor = BABYLON.Vector3.Zero();
+        this._surfaceFactor = BABYLON.Vector3.Zero();
+        this._controlFactor = BABYLON.Vector3.Zero();
+        this._rightDirection = new BABYLON.Vector3(1, 0, 0);
+        this._leftDirection = new BABYLON.Vector3(-1, 0, 0);
+        this._upDirection = new BABYLON.Vector3(0, 1, 0);
+        this._downDirection = new BABYLON.Vector3(0, -1, 0);
+        this._forwardDirection = new BABYLON.Vector3(0, 0, 1);
+        this._backwardDirection = new BABYLON.Vector3(0, 0, -1);
+        this._feetPosition = BABYLON.Vector3.Zero();
+        this._collisionAxis = [];
+        this._collisionPositions = [];
+        this._jumpTimer = 0;
+        this._isGrounded = false;
+        this._update = () => {
+            if (Game.CameraManager.cameraMode != CameraMode.Player) {
+                return;
+            }
+            let deltaTime = Game.Engine.getDeltaTime() / 1000;
+            this._jumpTimer = Math.max(this._jumpTimer - deltaTime, 0);
+            this._keepUp();
+            this._collisionPositions[0] = this.position;
+            this._collisionPositions[1] = this._feetPosition;
+            this._collisionAxis[0] = this._rightDirection;
+            this._collisionAxis[1] = this._leftDirection;
+            this._collisionAxis[2] = this._forwardDirection;
+            this._collisionAxis[3] = this._backwardDirection;
+            this.getDirectionToRef(BABYLON.Axis.X, this._rightDirection);
+            this._leftDirection.copyFrom(this._rightDirection);
+            this._leftDirection.scaleInPlace(-1);
+            this._upDirection.copyFrom(this.position);
+            this._upDirection.normalize();
+            this._downDirection.copyFrom(this._upDirection);
+            this._downDirection.scaleInPlace(-1);
+            this.getDirectionToRef(BABYLON.Axis.Z, this._forwardDirection);
+            this._backwardDirection.copyFrom(this._forwardDirection);
+            this._backwardDirection.scaleInPlace(-1);
+            this._feetPosition.copyFrom(this.position);
+            this._feetPosition.addInPlace(this._downDirection);
+            // Add gravity and ground reaction.
+            if (this.godMode) {
+                this._gravityFactor.copyFromFloats(0, 0, 0);
+            }
+            else {
+                this._gravityFactor.copyFrom(this._downDirection).scaleInPlace(9.8 * deltaTime);
+            }
+            this._groundFactor.copyFromFloats(0, 0, 0);
+            let fVert = 1;
+            if (this._jumpTimer === 0) {
+                let ray = new BABYLON.Ray(this.position, this._downDirection, 1.7);
+                let hit = Game.Scene.pickWithRay(ray, (mesh) => {
+                    return mesh.name.indexOf("chunck") != -1;
+                });
+                if (hit.pickedPoint) {
+                    let d = hit.pickedPoint.subtract(this.position).length();
+                    if (d > 0.01) {
+                        this._groundFactor
+                            .copyFrom(this._gravityFactor)
+                            .scaleInPlace(-1)
+                            .scaleInPlace(Math.pow(1.5 / d, 1));
+                    }
+                    fVert = 0.005;
+                    this._isGrounded = true;
+                }
+            }
+            this.velocity.addInPlace(this._gravityFactor);
+            this.velocity.addInPlace(this._groundFactor);
+            // Add input force.
+            this._controlFactor.copyFromFloats(0, 0, 0);
+            if (this.pRight) {
+                this._controlFactor.addInPlace(this._rightDirection);
+            }
+            if (this.left) {
+                this._controlFactor.addInPlace(this._leftDirection);
+            }
+            if (this.pForward) {
+                this._controlFactor.addInPlace(this._forwardDirection);
+            }
+            if (this.back) {
+                this._controlFactor.addInPlace(this._backwardDirection);
+            }
+            if (this._controlFactor.lengthSquared() > 0.1) {
+                this._controlFactor.normalize();
+            }
+            this._controlFactor.scaleInPlace((20 / this.mass) * deltaTime);
+            if (this.godMode) {
+                this._controlFactor.scaleInPlace(5);
+            }
+            this.velocity.addInPlace(this._controlFactor);
+            // Check wall collisions.
+            let fLat = 1;
+            this._surfaceFactor.copyFromFloats(0, 0, 0);
+            for (let i = 0; i < this._collisionPositions.length; i++) {
+                let pos = this._collisionPositions[i];
+                for (let j = 0; j < this._collisionAxis.length; j++) {
+                    let axis = this._collisionAxis[j];
+                    let ray = new BABYLON.Ray(pos, axis, 0.35);
+                    let hit = Game.Scene.pickWithRay(ray, (mesh) => {
+                        return mesh instanceof PlanetChunck;
+                    });
+                    if (hit.pickedPoint) {
+                        let d = hit.pickedPoint.subtract(pos).length();
+                        if (d > 0.01) {
+                            this._surfaceFactor.addInPlace(axis.scale((((-10 / this.mass) * 0.3) / d) * deltaTime));
+                            fLat = 0.1;
+                        }
+                        else {
+                            // In case where it stuck to the surface, force push.
+                            this.position.addInPlace(hit.getNormal(true).scale(0.01));
+                        }
+                    }
+                }
+            }
+            this.velocity.addInPlace(this._surfaceFactor);
+            // Add friction
+            let downVelocity = this._downDirection.scale(BABYLON.Vector3.Dot(this.velocity, this._downDirection));
+            this.velocity.subtractInPlace(downVelocity);
+            downVelocity.scaleInPlace(Math.pow(0.5 * fVert, deltaTime));
+            this.velocity.scaleInPlace(Math.pow(0.01 * fLat, deltaTime));
+            this.velocity.addInPlace(downVelocity);
+            // Safety check.
+            if (!VMath.IsFinite(this.velocity)) {
+                this.velocity.copyFromFloats(-0.1 + 0.2 * Math.random(), -0.1 + 0.2 * Math.random(), -0.1 + 0.2 * Math.random());
+            }
+            this.position.addInPlace(this.velocity.scale(deltaTime));
+        };
+        console.log("Create Player");
+        this.planet = planet;
+        this.position = position;
+        this.rotationQuaternion = BABYLON.Quaternion.Identity();
+        this.camPos = new BABYLON.Mesh("Dummy", Game.Scene);
+        this.camPos.parent = this;
+        this.camPos.position = new BABYLON.Vector3(0, 1, 0);
+    }
     PositionLeg() {
         let posLeg = this.position.add(BABYLON.Vector3.TransformNormal(BABYLON.Axis.Y, this.getWorldMatrix()).scale(-1));
         return posLeg;
@@ -2903,215 +3030,22 @@ class Player extends BABYLON.Mesh {
     PositionHead() {
         return this.position;
     }
-    constructor(position, planet) {
-        super("Player", Game.Scene);
-        console.log("Create Player");
-        this.planet = planet;
-        this.position = position;
-        this.rotationQuaternion = BABYLON.Quaternion.Identity();
-        this.camPos = new BABYLON.Mesh("Dummy", Game.Scene);
-        this.camPos.parent = this;
-        this.camPos.position = new BABYLON.Vector3(0, 1, 0);
-    }
     initialize() {
-        Game.Scene.onBeforeRenderObservable.add(this._update);
+        if (!this._initialized) {
+            Game.Scene.onBeforeRenderObservable.add(this._update);
+            this._initialized = true;
+        }
     }
     registerControl() {
         Game.Canvas.addEventListener("keydown", this._keyDown);
         Game.Canvas.addEventListener("keyup", this._keyUp);
         Game.Canvas.addEventListener("mousemove", this._mouseMove);
     }
-    _keyDown = (e) => {
-        if (e.key === "z" || e.key === "w") {
-            this.pForward = true;
-        }
-        if (e.key === "s") {
-            this.back = true;
-        }
-        if (e.key === "q" || e.key === "a") {
-            this.left = true;
-        }
-        if (e.key === "d") {
-            this.pRight = true;
-        }
-        if (e.keyCode === 32) {
-            this.fly = true;
-        }
-    };
-    _keyUp = (e) => {
-        if (e.key === "z" || e.key === "w") {
-            this.pForward = false;
-        }
-        if (e.key === "s") {
-            this.back = false;
-        }
-        if (e.key === "q" || e.key === "a") {
-            this.left = false;
-        }
-        if (e.key === "d") {
-            this.pRight = false;
-        }
-        if (e.keyCode === 32) {
-            if (this._isGrounded) {
-                this.velocity.addInPlace(this.getDirection(BABYLON.Axis.Y).scale(5));
-                this._isGrounded = false;
-                this._jumpTimer = 0.2;
-            }
-        }
-        if (e.code === "KeyX") {
-            this.pilot();
-        }
-    };
-    _mouseMove = (event) => {
-        if (Game.LockedMouse) {
-            let movementX = event.movementX;
-            let movementY = event.movementY;
-            if (movementX > 20) {
-                movementX = 20;
-            }
-            if (movementX < -20) {
-                movementX = -20;
-            }
-            if (movementY > 20) {
-                movementY = 20;
-            }
-            if (movementY < -20) {
-                movementY = -20;
-            }
-            let rotationPower = movementX / 500;
-            let localY = BABYLON.Vector3.TransformNormal(BABYLON.Axis.Y, this.getWorldMatrix());
-            let rotation = BABYLON.Quaternion.RotationAxis(localY, rotationPower);
-            this.rotationQuaternion = rotation.multiply(this.rotationQuaternion);
-            let rotationCamPower = movementY / 500;
-            this.camPos.rotation.x += rotationCamPower;
-            this.camPos.rotation.x = Math.max(this.camPos.rotation.x, -Math.PI / 2);
-            this.camPos.rotation.x = Math.min(this.camPos.rotation.x, Math.PI / 2);
-        }
-    };
     unregisterControl() {
         Game.Canvas.removeEventListener("keydown", this._keyDown);
         Game.Canvas.removeEventListener("keyup", this._keyUp);
         Game.Canvas.removeEventListener("mousemove", this._mouseMove);
     }
-    _gravityFactor = BABYLON.Vector3.Zero();
-    _groundFactor = BABYLON.Vector3.Zero();
-    _surfaceFactor = BABYLON.Vector3.Zero();
-    _controlFactor = BABYLON.Vector3.Zero();
-    _rightDirection = new BABYLON.Vector3(1, 0, 0);
-    _leftDirection = new BABYLON.Vector3(-1, 0, 0);
-    _upDirection = new BABYLON.Vector3(0, 1, 0);
-    _downDirection = new BABYLON.Vector3(0, -1, 0);
-    _forwardDirection = new BABYLON.Vector3(0, 0, 1);
-    _backwardDirection = new BABYLON.Vector3(0, 0, -1);
-    _feetPosition = BABYLON.Vector3.Zero();
-    _collisionAxis = [];
-    _collisionPositions = [];
-    _jumpTimer = 0;
-    _isGrounded = false;
-    _update = () => {
-        if (Game.CameraManager.cameraMode != CameraMode.Player) {
-            return;
-        }
-        let deltaTime = Game.Engine.getDeltaTime() / 1000;
-        this._jumpTimer = Math.max(this._jumpTimer - deltaTime, 0);
-        this._keepUp();
-        this._collisionPositions[0] = this.position;
-        this._collisionPositions[1] = this._feetPosition;
-        this._collisionAxis[0] = this._rightDirection;
-        this._collisionAxis[1] = this._leftDirection;
-        this._collisionAxis[2] = this._forwardDirection;
-        this._collisionAxis[3] = this._backwardDirection;
-        this.getDirectionToRef(BABYLON.Axis.X, this._rightDirection);
-        this._leftDirection.copyFrom(this._rightDirection);
-        this._leftDirection.scaleInPlace(-1);
-        this._upDirection.copyFrom(this.position);
-        this._upDirection.normalize();
-        this._downDirection.copyFrom(this._upDirection);
-        this._downDirection.scaleInPlace(-1);
-        this.getDirectionToRef(BABYLON.Axis.Z, this._forwardDirection);
-        this._backwardDirection.copyFrom(this._forwardDirection);
-        this._backwardDirection.scaleInPlace(-1);
-        this._feetPosition.copyFrom(this.position);
-        this._feetPosition.addInPlace(this._downDirection);
-        // Add gravity and ground reaction.
-        this._gravityFactor.copyFrom(this._downDirection).scaleInPlace(9.8 * deltaTime);
-        this._groundFactor.copyFromFloats(0, 0, 0);
-        let fVert = 1;
-        if (this._jumpTimer === 0) {
-            let ray = new BABYLON.Ray(this.position, this._downDirection, 1.7);
-            let hit = Game.Scene.pickWithRay(ray, (mesh) => {
-                return mesh.name.indexOf("chunck") != -1;
-            });
-            if (hit.pickedPoint) {
-                let d = hit.pickedPoint.subtract(this.position).length();
-                if (d > 0.01) {
-                    this._groundFactor
-                        .copyFrom(this._gravityFactor)
-                        .scaleInPlace(-1)
-                        .scaleInPlace(Math.pow(1.5 / d, 1));
-                }
-                fVert = 0.005;
-                this._isGrounded = true;
-            }
-        }
-        this.velocity.addInPlace(this._gravityFactor);
-        this.velocity.addInPlace(this._groundFactor);
-        // Add input force.
-        this._controlFactor.copyFromFloats(0, 0, 0);
-        if (this.pRight) {
-            this._controlFactor.addInPlace(this._rightDirection);
-        }
-        if (this.left) {
-            this._controlFactor.addInPlace(this._leftDirection);
-        }
-        if (this.pForward) {
-            this._controlFactor.addInPlace(this._forwardDirection);
-        }
-        if (this.back) {
-            this._controlFactor.addInPlace(this._backwardDirection);
-        }
-        if (this._controlFactor.lengthSquared() > 0.1) {
-            this._controlFactor.normalize();
-        }
-        this._controlFactor.scaleInPlace((20 / this.mass) * deltaTime);
-        this.velocity.addInPlace(this._controlFactor);
-        // Check wall collisions.
-        let fLat = 1;
-        this._surfaceFactor.copyFromFloats(0, 0, 0);
-        for (let i = 0; i < this._collisionPositions.length; i++) {
-            let pos = this._collisionPositions[i];
-            for (let j = 0; j < this._collisionAxis.length; j++) {
-                let axis = this._collisionAxis[j];
-                let ray = new BABYLON.Ray(pos, axis, 0.35);
-                let hit = Game.Scene.pickWithRay(ray, (mesh) => {
-                    return mesh instanceof PlanetChunck;
-                });
-                if (hit.pickedPoint) {
-                    let d = hit.pickedPoint.subtract(pos).length();
-                    if (d > 0.01) {
-                        this._surfaceFactor.addInPlace(axis.scale((((-10 / this.mass) * 0.3) / d) * deltaTime));
-                        fLat = 0.1;
-                    }
-                    else {
-                        // In case where it stuck to the surface, force push.
-                        this.position.addInPlace(hit.getNormal(true).scale(0.01));
-                    }
-                }
-            }
-        }
-        this.velocity.addInPlace(this._surfaceFactor);
-        // Add friction
-        let downVelocity = this._downDirection.scale(BABYLON.Vector3.Dot(this.velocity, this._downDirection));
-        this.velocity.subtractInPlace(downVelocity);
-        downVelocity.scaleInPlace(Math.pow(0.5 * fVert, deltaTime));
-        this.velocity.scaleInPlace(Math.pow(0.01 * fLat, deltaTime));
-        this.velocity.addInPlace(downVelocity);
-        // Safety check.
-        if (!VMath.IsFinite(this.velocity)) {
-            this.velocity.copyFromFloats(-0.1 + 0.2 * Math.random(), -0.1 + 0.2 * Math.random(), -0.1 + 0.2 * Math.random());
-        }
-        this.position.addInPlace(this.velocity.scale(deltaTime));
-    };
     _keepUp() {
         if (!this) {
             return;

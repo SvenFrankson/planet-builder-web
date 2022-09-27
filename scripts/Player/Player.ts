@@ -11,7 +11,7 @@ class Player extends BABYLON.Mesh {
     public back: boolean;
     public pRight: boolean;
     public left: boolean;
-    public fly: boolean;
+    public godMode: boolean;
 
     public PositionLeg(): BABYLON.Vector3 {
         let posLeg: BABYLON.Vector3 = this.position.add(BABYLON.Vector3.TransformNormal(BABYLON.Axis.Y, this.getWorldMatrix()).scale(-1));
@@ -37,8 +37,12 @@ class Player extends BABYLON.Mesh {
         this.camPos.position = new BABYLON.Vector3(0, 1, 0);
     }
 
+    private _initialized: boolean = false;
     public initialize(): void {
-        Game.Scene.onBeforeRenderObservable.add(this._update);
+        if (!this._initialized) {
+            Game.Scene.onBeforeRenderObservable.add(this._update);
+            this._initialized = true;
+        }
     }
 
     public registerControl(): void {
@@ -48,39 +52,49 @@ class Player extends BABYLON.Mesh {
     }
 
     private _keyDown = (e: KeyboardEvent) => {
-        if (e.key === "z" || e.key === "w") {
+        if (e.code === "KeyW") {
             this.pForward = true;
         }
-        if (e.key === "s") {
+        if (e.code === "KeyS") {
             this.back = true;
         }
-        if (e.key === "q" || e.key === "a") {
+        if (e.code === "KeyA") {
             this.left = true;
         }
-        if (e.key === "d") {
+        if (e.code === "KeyD") {
             this.pRight = true;
-        }
-        if (e.keyCode === 32) {
-            this.fly = true;
         }
     };
 
     private _keyUp = (e: KeyboardEvent) => {
-        if (e.key === "z" || e.key === "w") {
+        if (e.code === "KeyW") {
             this.pForward = false;
         }
-        if (e.key === "s") {
+        if (e.code === "KeyS") {
             this.back = false;
         }
-        if (e.key === "q" || e.key === "a") {
+        if (e.code === "KeyA") {
             this.left = false;
         }
-        if (e.key === "d") {
+        if (e.code === "KeyD") {
             this.pRight = false;
         }
-        if (e.keyCode === 32) {
-            if (this._isGrounded) {
+        if (e.code === "KeyG") {
+            if (!this._initialized) {
+                this.initialize();
+            }
+            this.godMode = !this.godMode;
+        }
+        if (e.code === "Space") {
+            if (this._isGrounded || this.godMode) {
                 this.velocity.addInPlace(this.getDirection(BABYLON.Axis.Y).scale(5));
+                this._isGrounded = false;
+                this._jumpTimer = 0.2;
+            }
+        }
+        if (e.code === "ControlLeft") {
+            if (this.godMode) {
+                this.velocity.subtractInPlace(this.getDirection(BABYLON.Axis.Y).scale(5));
                 this._isGrounded = false;
                 this._jumpTimer = 0.2;
             }
@@ -177,7 +191,12 @@ class Player extends BABYLON.Mesh {
         this._feetPosition.addInPlace(this._downDirection);
 
         // Add gravity and ground reaction.
-        this._gravityFactor.copyFrom(this._downDirection).scaleInPlace(9.8 * deltaTime);
+        if (this.godMode) {
+            this._gravityFactor.copyFromFloats(0, 0, 0);
+        }
+        else {
+            this._gravityFactor.copyFrom(this._downDirection).scaleInPlace(9.8 * deltaTime);
+        }
         this._groundFactor.copyFromFloats(0, 0, 0);
         let fVert = 1;
         if (this._jumpTimer === 0) {
@@ -219,6 +238,9 @@ class Player extends BABYLON.Mesh {
             this._controlFactor.normalize();
         }
         this._controlFactor.scaleInPlace((20 / this.mass) * deltaTime);
+        if (this.godMode) {
+            this._controlFactor.scaleInPlace(5);
+        }
         this.velocity.addInPlace(this._controlFactor);
 
         // Check wall collisions.
