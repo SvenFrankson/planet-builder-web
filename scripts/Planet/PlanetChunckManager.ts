@@ -67,7 +67,8 @@ class PlanetChunckManager {
 
     private _maxChunckCount = 12 * 12 * 12;
     private _chunckIndexDistCompute: number = 0;
-    private _chunckIndexSort: number = 0;
+    private _chunckIndexSortLod0: number = 0;
+    private _chunckIndexSortLod1: number = 0;
     private _chunckIndexRefreshLod0: number = 0;
     private _chunckIndexRefreshLod1: number = 0;
     private _maxActivity: number = 30;
@@ -107,20 +108,40 @@ class PlanetChunckManager {
             t = performance.now();
         }
         
+        /*
         t0 = performance.now();
         t = t0;
+        let chunck = this._chuncks[this._chunckIndexSortLod0];
+        chunck.sqrDistanceToViewpoint = BABYLON.Vector3.DistanceSquared(this._viewpoint, chunck.GetBaryCenter());
         while (this._chuncks.length > 0 && (t - t0) < 0.5 + 1 * this._activity / this._maxActivity) {
-            let chunck = this._chuncks[this._chunckIndexSort];
-            chunck.sqrDistanceToViewpoint = BABYLON.Vector3.DistanceSquared(this._viewpoint, chunck.GetBaryCenter());
-            let nextChunck = this._chuncks[this._chunckIndexSort + 1];
+            let index = l - this._maxChunckCount + this._chunckIndexSortLod0;
+            let chunck = this._chuncks[index];
+            let nextChunck = this._chuncks[index + 1];
             nextChunck.sqrDistanceToViewpoint = BABYLON.Vector3.DistanceSquared(this._viewpoint, nextChunck.GetBaryCenter());
             if (nextChunck.sqrDistanceToViewpoint > chunck.sqrDistanceToViewpoint) {
-                this._chuncks[this._chunckIndexSort] = nextChunck;
-                this._chuncks[this._chunckIndexSort + 1] = chunck;
+                this._chuncks[index] = nextChunck;
+                this._chuncks[index + 1] = chunck;
             }
-            this._chunckIndexSort = (this._chunckIndexSort + 1) % (l - 1);
+            this._chunckIndexSortLod0 = (this._chunckIndexSortLod0 + 1) % (this._maxChunckCount - 1);
             t = performance.now();
         }
+
+        t0 = performance.now();
+        t = t0;
+        chunck = this._chuncks[this._chunckIndexSortLod1];
+        chunck.sqrDistanceToViewpoint = BABYLON.Vector3.DistanceSquared(this._viewpoint, chunck.GetBaryCenter());
+        while (this._chuncks.length > 0 && (t - t0) < 1 + 1 * this._activity / this._maxActivity) {
+            let chunck = this._chuncks[this._chunckIndexSortLod1];
+            let nextChunck = this._chuncks[this._chunckIndexSortLod1 + 1];
+            nextChunck.sqrDistanceToViewpoint = BABYLON.Vector3.DistanceSquared(this._viewpoint, nextChunck.GetBaryCenter());
+            if (nextChunck.sqrDistanceToViewpoint > chunck.sqrDistanceToViewpoint) {
+                this._chuncks[this._chunckIndexSortLod1] = nextChunck;
+                this._chuncks[this._chunckIndexSortLod1 + 1] = chunck;
+            }
+            this._chunckIndexSortLod1 = (this._chunckIndexSortLod1 + 1) % (l - 1);
+            t = performance.now();
+        }
+        */
 
         t0 = performance.now();
         t = t0;
@@ -171,7 +192,7 @@ class PlanetChunckManager {
 
         t0 = performance.now();
         t = t0;
-        while (this._needRedraw.length > 0 && (t - t0) < 1 + 10 * this._activity / 60) {
+        while (this._needRedraw.length > 0 && (t - t0) < 0.5 + 1 * this._activity / this._maxActivity) {
             let request = this._needRedraw.pop();
             request.chunck.initialize();
             t = performance.now();
