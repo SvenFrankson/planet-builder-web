@@ -75,7 +75,6 @@ class PlanetChunckManager {
     private _activity: number = this._maxActivity;
     private _update = () => {
         this._viewpoint.copyFrom(this.scene.activeCamera.globalPosition);
-        console.log(this._viewpoint.asArray());
 
         let l = this._chuncks.length;
         
@@ -175,14 +174,11 @@ class PlanetChunckManager {
         if (this._needRedraw.length > 0) {
             this._activity ++;
             this._activity = Math.min(this._activity, this._maxActivity);
-            console.log("active");
         }
         else {
             this._activity--;
             this._activity = Math.max(this._activity, 0);
-            console.log(this._activity.toFixed(3));
             if (this._activity < 1) {
-                console.log("inactive");
                 if (this._onNextInactiveCallback) {
                     this._onNextInactiveCallback();
                     this._onNextInactiveCallback = undefined;

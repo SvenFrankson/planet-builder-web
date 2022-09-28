@@ -58,6 +58,7 @@ class Game {
 
 	animate(): void {
 		let fpsInfoElement = document.getElementById("fps-info");
+		let fpsGraphElement = document.getElementById("frame-rate") as DebugDisplayFrameValue;
 		let meshesInfoTotalElement = document.getElementById("meshes-info-total");
 		let meshesInfoNonStaticUniqueElement = document.getElementById("meshes-info-nonstatic-unique");
 		let meshesInfoStaticUniqueElement = document.getElementById("meshes-info-static-unique");
@@ -70,6 +71,7 @@ class Game {
 			Game.AnimateWater();
 			
 			fpsInfoElement.innerText = Game.Engine.getFps().toFixed(0) + " fps";
+			fpsGraphElement.addValue(Game.Engine.getFps());
 			let uniques = Game.Scene.meshes.filter(m => { return !(m instanceof BABYLON.InstancedMesh); });
 			let uniquesNonStatic = uniques.filter(m => { return !m.isWorldMatrixFrozen; });
 			let uniquesStatic = uniques.filter(m => { return m.isWorldMatrixFrozen; });
@@ -125,7 +127,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
 	game.chunckManager = new PlanetChunckManager(Game.Scene);
 
-	let degree = 18;
+	let degree = 12;
 	let planetTest: Planet = new Planet("Paulita", degree, game.chunckManager);
 
 	planetTest.generator = new PlanetGeneratorEarth(planetTest, 0.70, 0.15);
