@@ -89,6 +89,9 @@ class PlanetChunckManager {
         }
         */
 
+        let sortedCount = 0;
+        let unsortedCount = 0;
+
         t0 = performance.now();
         t = t0;
         while (this._chuncks.length > 0 && (t - t0) < 0.5 + 1 * this._activity / this._maxActivity) {
@@ -103,6 +106,10 @@ class PlanetChunckManager {
             if (chunckMax.sqrDistanceToViewpoint > chunckMin.sqrDistanceToViewpoint) {
                 this._chuncks[nMin] = chunckMax;
                 this._chuncks[nMax] = chunckMin;
+                unsortedCount++;
+            }
+            else {
+                sortedCount++;
             }
             t = performance.now();
         }
@@ -193,6 +200,8 @@ class PlanetChunckManager {
             request.chunck.initialize();
             t = performance.now();
         }
+
+        (document.getElementById("chunck-sort") as DebugDisplayFrameValue).addValue(sortedCount / (sortedCount + unsortedCount) * 100);
     }
 
     public isActive(): boolean {

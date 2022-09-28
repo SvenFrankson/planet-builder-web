@@ -13,7 +13,6 @@
 		<canvas id="renderCanvas"></canvas>
 		<img id="cursor" src="./img/cursor.png">
 	</body>
-	<div id="fps-info"></div>
 	<div id="meshes-info">
 		<div>MESHES INFO</div>
 		<div><span>Total : </span><span id="meshes-info-total">432</span></div>
@@ -21,13 +20,7 @@
 		<div><span>Static & Unique : </span><span id="meshes-info-static-unique">12</span></div>
 		<div><span>Non-Static & Instance : </span><span id="meshes-info-nonstatic-instance">124</span></div>
 		<div><span>Static & Instance : </span><span id="meshes-info-static-instance">212</span></div>
-		<div><span>Altitude : </span><span id="plane-altitude">212</span></div>
-		<div><span>Airspeed : </span><span id="plane-airspeed">212</span></div>
-		<div><span>VSpeed : </span><span id="plane-vspeed">212</span></div>
-		<div><span>Pitch : </span><span id="plane-pitch">212</span></div>
-		<div><span>Roll : </span><span id="plane-roll">212</span></div>
-		<div><span>X : </span><span id="x-input">212</span></div>
-		<div><span>Y : </span><span id="y-input">212</span></div>
-		<debug-display-frame-value id="frame-rate"></debug-display-frame-value>
+		<debug-display-frame-value id="frame-rate" label="Frame Rate fps" min="0" max="60"></debug-display-frame-value>
+		<debug-display-frame-value id="chunck-sort" label="Chuncks Sort %" min="90" max="100"></debug-display-frame-value>
 	</div>
 </html>

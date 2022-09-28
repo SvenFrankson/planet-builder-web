@@ -13,7 +13,6 @@ class Game {
 	public static PlanetEditor: PlanetEditor;
 	public static CameraManager: CameraManager;
 	public static Player: Player;
-	public static Plane: Plane;
 	public chunckManager: PlanetChunckManager;
 
 	public static LockedMouse: boolean = false;
@@ -70,7 +69,6 @@ class Game {
 			//PlanetChunck.InitializeLoop();
 			Game.AnimateWater();
 			
-			fpsInfoElement.innerText = Game.Engine.getFps().toFixed(0) + " fps";
 			fpsGraphElement.addValue(Game.Engine.getFps());
 			let uniques = Game.Scene.meshes.filter(m => { return !(m instanceof BABYLON.InstancedMesh); });
 			let uniquesNonStatic = uniques.filter(m => { return !m.isWorldMatrixFrozen; });
@@ -127,7 +125,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
 	game.chunckManager = new PlanetChunckManager(Game.Scene);
 
-	let degree = 12;
+	let degree = 18;
 	let planetTest: Planet = new Planet("Paulita", degree, game.chunckManager);
 
 	planetTest.generator = new PlanetGeneratorEarth(planetTest, 0.70, 0.15);

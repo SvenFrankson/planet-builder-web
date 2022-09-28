@@ -99,9 +99,6 @@ class Player extends BABYLON.Mesh {
                 this._jumpTimer = 0.2;
             }
         }
-        if (e.code === "KeyX") {
-            this.pilot();
-        }
     };
 
     private _mouseMove = (event: MouseEvent) => {
@@ -295,17 +292,5 @@ class Player extends BABYLON.Mesh {
             let rotation: BABYLON.Quaternion = BABYLON.Quaternion.RotationAxis(correctionAxis, correctionAngle / 5);
             this.rotationQuaternion = rotation.multiply(this.rotationQuaternion);
         }
-    }
-
-    public pilot(plane?: Plane): void {
-        if (!plane) {
-            plane = Game.Plane;
-        }
-        if (!plane) {
-            return;
-        }
-        this.unregisterControl();
-        plane.registerControl();
-        Game.CameraManager.setMode(CameraMode.Plane);
     }
 }

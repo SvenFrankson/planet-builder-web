@@ -44,10 +44,16 @@ html, body {
 	position: fixed;
 	top: 35px;
 	right: 10px;
-	width: 250px;
+	width: 40%;
 	font-size: 16px;
-	color: red;
+	color: #00FF00;
 	text-align: right;
 	font-family: monospace;
 	z-index: 1;
+}
+
+debug-display-frame-value {
+	display: inline-block;
+	width: 400px;
+	margin-bottom: 5px;
 }
