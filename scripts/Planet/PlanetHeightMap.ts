@@ -1,6 +1,6 @@
 interface IPlanetHeightMapOptions {
-    firstNoiseDegree: number;
-    postComputation: (v: number) => number;
+    firstNoiseDegree?: number;
+    postComputation?: (v: number) => number;
 }
 
 class PlanetHeightMap {

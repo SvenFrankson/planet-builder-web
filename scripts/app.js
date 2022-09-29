@@ -1,13 +1,3 @@
-var BlockType;
-(function (BlockType) {
-    BlockType[BlockType["Grass"] = 1] = "Grass";
-    BlockType[BlockType["Dirt"] = 2] = "Dirt";
-    BlockType[BlockType["Sand"] = 3] = "Sand";
-    BlockType[BlockType["Rock"] = 4] = "Rock";
-    BlockType[BlockType["RedDirt"] = 5] = "RedDirt";
-    BlockType[BlockType["RedDust"] = 6] = "RedDust";
-    BlockType[BlockType["RedRock"] = 7] = "RedRock";
-})(BlockType || (BlockType = {}));
 var CameraMode;
 (function (CameraMode) {
     CameraMode[CameraMode["Sky"] = 0] = "Sky";
@@ -240,11 +230,9 @@ class MeshTools {
     static PushTopQuadUvs(block, uvs) {
         let i = 1;
         let j = 0;
-        if (block != BlockType.RedDirt) {
-            block = Math.min(block, 128 + 8);
-            i = (block - 128 - 1) % 4;
-            j = Math.floor((block - 128 - 1) / 4);
-        }
+        block = Math.min(block, 128 + 8);
+        i = (block - 128 - 1) % 4;
+        j = Math.floor((block - 128 - 1) / 4);
         uvs.push(0 + i * 0.25);
         uvs.push(0.75 - j * 0.25);
         uvs.push(0 + i * 0.25);
@@ -257,11 +245,9 @@ class MeshTools {
     static PushSideQuadUvs(block, uvs) {
         let i = 1;
         let j = 0;
-        if (block != BlockType.RedDirt) {
-            block = Math.min(block, 128 + 8);
-            i = (block - 128 - 1) % 4;
-            j = Math.floor((block - 128 - 1) / 4);
-        }
+        block = Math.min(block, 128 + 8);
+        i = (block - 128 - 1) % 4;
+        j = Math.floor((block - 128 - 1) / 4);
         uvs.push(0 + i * 0.25);
         uvs.push(0.25 - j * 0.25);
         uvs.push(0 + i * 0.25);
@@ -855,6 +841,16 @@ class DebugDisplayFrameValue extends HTMLElement {
     }
 }
 customElements.define("debug-display-frame-value", DebugDisplayFrameValue);
+var BlockType;
+(function (BlockType) {
+    BlockType[BlockType["None"] = 0] = "None";
+    BlockType[BlockType["Grass"] = 1] = "Grass";
+    BlockType[BlockType["Dirt"] = 2] = "Dirt";
+    BlockType[BlockType["Sand"] = 3] = "Sand";
+    BlockType[BlockType["Rock"] = 4] = "Rock";
+    BlockType[BlockType["Wood"] = 5] = "Wood";
+    BlockType[BlockType["Leaf"] = 6] = "Leaf";
+})(BlockType || (BlockType = {}));
 class Planet extends BABYLON.Mesh {
     constructor(name, kPosMax, chunckManager) {
         super(name, Game.Scene);
@@ -1240,14 +1236,8 @@ class PlanetChunckMeshBuilder {
             PlanetChunckMeshBuilder._BlockColor.set(BlockType.Dirt, BABYLON.Color3.FromHexString("#462521"));
             PlanetChunckMeshBuilder._BlockColor.set(BlockType.Sand, BABYLON.Color3.FromHexString("#F5B700"));
             PlanetChunckMeshBuilder._BlockColor.set(BlockType.Rock, BABYLON.Color3.FromHexString("#9DB5B2"));
-            PlanetChunckMeshBuilder._BlockColor.set(BlockType.RedDirt, BABYLON.Color3.FromHexString("#fa591e"));
-            PlanetChunckMeshBuilder._BlockColor.set(BlockType.RedDust, BABYLON.Color3.FromHexString("#ad7c6a"));
-            PlanetChunckMeshBuilder._BlockColor.set(BlockType.RedRock, BABYLON.Color3.FromHexString("#4f1a06"));
-            PlanetChunckMeshBuilder._BlockColor.set(128 + 8, BABYLON.Color3.FromHexString("#FFFFFF"));
-            PlanetChunckMeshBuilder._BlockColor.set(128 + 9, BABYLON.Color3.FromHexString("#81FF36"));
-            PlanetChunckMeshBuilder._BlockColor.set(128 + 10, BABYLON.Color3.FromHexString("#36E6FF"));
-            PlanetChunckMeshBuilder._BlockColor.set(128 + 11, BABYLON.Color3.FromHexString("#B436FF"));
-            PlanetChunckMeshBuilder._BlockColor.set(128 + 12, BABYLON.Color3.FromHexString("#FF4F36"));
+            PlanetChunckMeshBuilder._BlockColor.set(BlockType.Wood, BABYLON.Color3.FromHexString("#965106"));
+            PlanetChunckMeshBuilder._BlockColor.set(BlockType.Leaf, BABYLON.Color3.FromHexString("#27a800"));
         }
         return PlanetChunckMeshBuilder._BlockColor;
     }
@@ -1522,12 +1512,14 @@ class PlanetGeneratorEarth extends PlanetGenerator {
         this._seaLevel = _seaLevel;
         this._mountainHeight = _mountainHeight;
         this._mainHeightMap = PlanetHeightMap.CreateMap(PlanetTools.KPosToDegree(planet.kPosMax));
+        this._treeMap = PlanetHeightMap.CreateMap(PlanetTools.KPosToDegree(planet.kPosMax), { firstNoiseDegree: PlanetTools.KPosToDegree(planet.kPosMax) - 2 });
         this.heightMaps = [this._mainHeightMap];
     }
     makeData(chunck) {
         let f = Math.pow(2, this._mainHeightMap.degree - PlanetTools.KPosToDegree(chunck.kPos));
         return PlanetTools.Data((i, j, k) => {
             let v = this._mainHeightMap.getForSide(chunck.side, (chunck.iPos * PlanetTools.CHUNCKSIZE + i) * f, (chunck.jPos * PlanetTools.CHUNCKSIZE + j) * f);
+            let tree = this._treeMap.getForSide(chunck.side, (chunck.iPos * PlanetTools.CHUNCKSIZE + i) * f, (chunck.jPos * PlanetTools.CHUNCKSIZE + j) * f);
             let altitude = Math.floor((this._seaLevel + v * this._mountainHeight) * this.planet.kPosMax * PlanetTools.CHUNCKSIZE);
             let globalK = k + chunck.kPos * PlanetTools.CHUNCKSIZE;
             if (globalK <= altitude) {
@@ -1539,7 +1531,22 @@ class PlanetGeneratorEarth extends PlanetGenerator {
                 }
                 return BlockType.Rock;
             }
-            return 0;
+            if (altitude >= this._seaLevel * this.planet.kPosMax * PlanetTools.CHUNCKSIZE) {
+                if (tree > 0.6) {
+                    if (globalK <= altitude + 7) {
+                        return BlockType.Wood;
+                    }
+                    if (globalK <= altitude + 9) {
+                        return BlockType.Leaf;
+                    }
+                }
+                else if (tree > 0.5) {
+                    if (globalK <= altitude + 1) {
+                        return BlockType.Wood;
+                    }
+                }
+            }
+            return BlockType.None;
         });
     }
 }
@@ -1561,12 +1568,12 @@ class PlanetGeneratorDebug extends PlanetGenerator {
             }
             if (kGlobal < h) {
                 if (iGlobal < 5) {
-                    return BlockType.RedDirt;
+                    return BlockType.Grass;
                 }
                 if (jGlobal < 5) {
-                    return BlockType.RedRock;
+                    return BlockType.Rock;
                 }
-                return BlockType.RedDust;
+                return BlockType.Sand;
             }
             return 0;
         });

@@ -27,10 +27,12 @@ abstract class PlanetGenerator {
 class PlanetGeneratorEarth extends PlanetGenerator {
 
     private _mainHeightMap: PlanetHeightMap;
+    private _treeMap: PlanetHeightMap;
 
     constructor(planet: Planet, private _seaLevel: number, private _mountainHeight: number) {
         super(planet);
         this._mainHeightMap = PlanetHeightMap.CreateMap(PlanetTools.KPosToDegree(planet.kPosMax));
+        this._treeMap = PlanetHeightMap.CreateMap(PlanetTools.KPosToDegree(planet.kPosMax), { firstNoiseDegree : PlanetTools.KPosToDegree(planet.kPosMax) - 2 });
         this.heightMaps = [this._mainHeightMap];
     }
 
@@ -41,6 +43,7 @@ class PlanetGeneratorEarth extends PlanetGenerator {
             (i, j, k) => {
                 
                 let v = this._mainHeightMap.getForSide(chunck.side, (chunck.iPos * PlanetTools.CHUNCKSIZE + i) * f, (chunck.jPos * PlanetTools.CHUNCKSIZE + j) * f);
+                let tree = this._treeMap.getForSide(chunck.side, (chunck.iPos * PlanetTools.CHUNCKSIZE + i) * f, (chunck.jPos * PlanetTools.CHUNCKSIZE + j) * f);
                 let altitude = Math.floor((this._seaLevel + v * this._mountainHeight) * this.planet.kPosMax * PlanetTools.CHUNCKSIZE);
                 let globalK = k + chunck.kPos * PlanetTools.CHUNCKSIZE;
 
@@ -53,8 +56,23 @@ class PlanetGeneratorEarth extends PlanetGenerator {
                     }
                     return BlockType.Rock;
                 }
+                if (altitude >= this._seaLevel  * this.planet.kPosMax * PlanetTools.CHUNCKSIZE) {
+                    if (tree > 0.6) {
+                        if (globalK <= altitude + 7) {
+                            return BlockType.Wood;
+                        }
+                        if (globalK <= altitude + 9) {
+                            return BlockType.Leaf;
+                        }
+                    }
+                    else if (tree > 0.5) {
+                        if (globalK <= altitude + 1) {
+                            return BlockType.Wood;
+                        }
+                    }
+                }
 
-                return 0;
+                return BlockType.None;
             }
         );
     }
@@ -82,12 +100,12 @@ class PlanetGeneratorDebug extends PlanetGenerator {
                 }
                 if (kGlobal < h) {
                     if (iGlobal < 5) {
-                        return BlockType.RedDirt;
+                        return BlockType.Grass;
                     }
                     if (jGlobal < 5) {
-                        return BlockType.RedRock;
+                        return BlockType.Rock;
                     }
-                    return BlockType.RedDust;
+                    return BlockType.Sand;
                 }
                 return 0;
             }

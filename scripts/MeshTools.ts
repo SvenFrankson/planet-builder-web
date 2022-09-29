@@ -79,12 +79,10 @@ class MeshTools {
         let i = 1;
         let j = 0;
 
-        if (block != BlockType.RedDirt) {
-            block = Math.min(block, 128 + 8);
+        block = Math.min(block, 128 + 8);
     
-            i = (block - 128 - 1) % 4;
-            j = Math.floor((block - 128 - 1) / 4);
-        }
+        i = (block - 128 - 1) % 4;
+        j = Math.floor((block - 128 - 1) / 4);
 
         uvs.push(0 + i * 0.25);
         uvs.push(0.75 - j * 0.25);
@@ -103,12 +101,10 @@ class MeshTools {
         
         let i = 1;
         let j = 0;
-        if (block != BlockType.RedDirt) {
-            block = Math.min(block, 128 + 8);
-    
-            i = (block - 128 - 1) % 4;
-            j = Math.floor((block - 128 - 1) / 4);
-        }
+        block = Math.min(block, 128 + 8);
+
+        i = (block - 128 - 1) % 4;
+        j = Math.floor((block - 128 - 1) / 4);
 
         uvs.push(0 + i * 0.25);
         uvs.push(0.25 - j * 0.25);
