@@ -65,6 +65,7 @@ class PlanetChunckManager {
         });
     }
 
+    public chunckSort: number = 0;
     private _maxChunckCount = 12 * 12 * 12;
     private _chunckIndexDistCompute: number = 0;
     private _chunckIndexSortLod0: number = 0;
@@ -92,26 +93,60 @@ class PlanetChunckManager {
         let sortedCount = 0;
         let unsortedCount = 0;
 
-        t0 = performance.now();
-        t = t0;
-        while (this._chuncks.length > 0 && (t - t0) < 0.5 + 1 * this._activity / this._maxActivity) {
-            let n1 = Math.floor(Math.random() * l);
-            let n2 = Math.floor(Math.random() * l);
-            let nMin = Math.min(n1, n2);
-            let nMax = Math.max(n1, n2);
-            let chunckMin = this._chuncks[nMin];
-            chunckMin.sqrDistanceToViewpoint = BABYLON.Vector3.DistanceSquared(this._viewpoint, chunckMin.GetBaryCenter());
-            let chunckMax = this._chuncks[nMax];
-            chunckMax.sqrDistanceToViewpoint = BABYLON.Vector3.DistanceSquared(this._viewpoint, chunckMax.GetBaryCenter());
-            if (chunckMax.sqrDistanceToViewpoint > chunckMin.sqrDistanceToViewpoint) {
-                this._chuncks[nMin] = chunckMax;
-                this._chuncks[nMax] = chunckMin;
-                unsortedCount++;
+        if (false) {
+            t0 = performance.now();
+            t = t0;
+            let duration = 0.5 + 150 * (1 - this.chunckSort);
+            duration = Math.min(duration, 1000 / 24);
+            while (this._chuncks.length > 0 && (t - t0) < duration) {
+                let n1 = Math.floor(Math.random() * l);
+                let n2 = Math.floor(Math.random() * l);
+                let nMin = Math.min(n1, n2);
+                let nMax = Math.max(n1, n2);
+                let chunckMin = this._chuncks[nMin];
+                chunckMin.sqrDistanceToViewpoint = BABYLON.Vector3.DistanceSquared(this._viewpoint, chunckMin.GetBaryCenter());
+                let chunckMax = this._chuncks[nMax];
+                chunckMax.sqrDistanceToViewpoint = BABYLON.Vector3.DistanceSquared(this._viewpoint, chunckMax.GetBaryCenter());
+                if (chunckMax.sqrDistanceToViewpoint > chunckMin.sqrDistanceToViewpoint) {
+                    this._chuncks[nMin] = chunckMax;
+                    this._chuncks[nMax] = chunckMin;
+                    unsortedCount++;
+                }
+                else {
+                    sortedCount++;
+                }
+                t = performance.now();
             }
-            else {
-                sortedCount++;
+        }
+        else {
+            t0 = performance.now();
+            t = t0;
+            let duration = 0.5 + 150 * (1 - this.chunckSort);
+            duration = Math.min(duration, 1000 / 24);
+            while (this._chuncks.length > 0 && (t - t0) < duration) {
+                let ns = [];
+                let chuncks: PlanetChunck[] = [];
+                for (let i = 0; i < 10; i++) {
+                    ns[i] = Math.floor(Math.random() * l);
+                }
+                ns = ns.sort((a, b) => { return b - a; });
+                for (let i = 0; i < 10; i++) {
+                    chuncks[i] = this._chuncks[ns[i]];
+                    chuncks[i].sqrDistanceToViewpoint = BABYLON.Vector3.DistanceSquared(this._viewpoint, chuncks[i].GetBaryCenter());
+                }
+                chuncks = chuncks.sort((c1, c2) => { return c1.sqrDistanceToViewpoint - c2.sqrDistanceToViewpoint; });
+
+                for (let i = 0; i < 10; i++) {
+                    if (this._chuncks[ns[i]] != chuncks[i]) {
+                        this._chuncks[ns[i]] = chuncks[i];
+                        unsortedCount++;
+                    }
+                    else {
+                        sortedCount++;
+                    }
+                }
+                t = performance.now();
             }
-            t = performance.now();
         }
         
         /*
@@ -127,6 +162,10 @@ class PlanetChunckManager {
             if (nextChunck.sqrDistanceToViewpoint > chunck.sqrDistanceToViewpoint) {
                 this._chuncks[index] = nextChunck;
                 this._chuncks[index + 1] = chunck;
+                unsortedCount++;
+            }
+            else {
+                sortedCount++;
             }
             this._chunckIndexSortLod0 = (this._chunckIndexSortLod0 + 1) % (this._maxChunckCount - 1);
             t = performance.now();
@@ -134,7 +173,7 @@ class PlanetChunckManager {
 
         t0 = performance.now();
         t = t0;
-        chunck = this._chuncks[this._chunckIndexSortLod1];
+        let chunck = this._chuncks[this._chunckIndexSortLod1];
         chunck.sqrDistanceToViewpoint = BABYLON.Vector3.DistanceSquared(this._viewpoint, chunck.GetBaryCenter());
         while (this._chuncks.length > 0 && (t - t0) < 1 + 1 * this._activity / this._maxActivity) {
             let chunck = this._chuncks[this._chunckIndexSortLod1];
@@ -143,6 +182,10 @@ class PlanetChunckManager {
             if (nextChunck.sqrDistanceToViewpoint > chunck.sqrDistanceToViewpoint) {
                 this._chuncks[this._chunckIndexSortLod1] = nextChunck;
                 this._chuncks[this._chunckIndexSortLod1 + 1] = chunck;
+                unsortedCount++;
+            }
+            else {
+                sortedCount++;
             }
             this._chunckIndexSortLod1 = (this._chunckIndexSortLod1 + 1) % (l - 1);
             t = performance.now();
@@ -201,7 +244,8 @@ class PlanetChunckManager {
             t = performance.now();
         }
 
-        (document.getElementById("chunck-sort") as DebugDisplayFrameValue).addValue(sortedCount / (sortedCount + unsortedCount) * 100);
+        this.chunckSort = (this.chunckSort + sortedCount / (sortedCount + unsortedCount))* 0.5;
+        (document.getElementById("chunck-sort") as DebugDisplayFrameValue).addValue(this.chunckSort * 100);
     }
 
     public isActive(): boolean {
