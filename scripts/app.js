@@ -145,7 +145,9 @@ window.addEventListener("DOMContentLoaded", () => {
     game.chunckManager = new PlanetChunckManager(Game.Scene);
     let degree = 20;
     let planetTest = new Planet("Paulita", degree, game.chunckManager);
-    planetTest.generator = new PlanetGeneratorEarth(planetTest, 0.70, 0.15);
+    planetTest.generator = new PlanetGeneratorEarth(planetTest, 0.70, 0.2);
+    let r = degree * PlanetTools.CHUNCKSIZE * 0.7;
+    document.querySelector("#planet-surface").textContent = (4 * Math.PI * r * r / 1000 / 1000).toFixed(2) + " km²";
     //planetTest.generator.showDebug();
     Game.Player = new Player(new BABYLON.Vector3(0, degree * PlanetTools.CHUNCKSIZE, 0), planetTest);
     Game.Player.registerControl();
@@ -873,12 +875,14 @@ class Planet extends BABYLON.Mesh {
         return this.name;
     }
     register() {
+        let chunckCount = 0;
         let t0 = performance.now();
         for (let i = 0; i < this.sides.length; i++) {
-            this.sides[i].register();
+            chunckCount += this.sides[i].register();
         }
         let t1 = performance.now();
         console.log("Planet " + this.name + " registered in " + (t1 - t0).toFixed(1) + "ms");
+        console.log("Planet " + this.name + " has " + chunckCount.toFixed(0) + " chuncks");
     }
 }
 var Neighbour;
@@ -1049,7 +1053,7 @@ class PlanetChunck {
             this.bedrock.material = SharedMaterials.BedrockMaterial();
         }
         this.mesh.parent = this.planetSide;
-        this.mesh.computeWorldMatrix();
+        this.mesh.freezeWorldMatrix();
         this.mesh.refreshBoundingInfo();
     }
     disposeMesh() {
@@ -1175,7 +1179,7 @@ class PlanetChunckManager {
         this._lodLayersCursors = [];
         this._lodLayersSqrDistances = [];
         for (let i = 0; i < this._lodLayersCount - 1; i++) {
-            let d = (i + 1) * 70;
+            let d = (i + 1) * 100;
             this._lodLayers[i] = [];
             this._lodLayersCursors[i] = 0;
             this._lodLayersSqrDistances[i] = d * d;
@@ -2073,13 +2077,16 @@ class PlanetSide extends BABYLON.Mesh {
         return 0;
     }
     register() {
+        let chunckCount = 0;
         for (let k = 0; k <= this.kPosMax; k++) {
             for (let i = 0; i < this.chuncks[k].length; i++) {
                 for (let j = 0; j < this.chuncks[k][i].length; j++) {
                     this.chuncks[k][i][j].register();
+                    chunckCount++;
                 }
             }
         }
+        return chunckCount;
     }
 }
 var PI4 = Math.PI / 4;
@@ -2532,12 +2539,7 @@ class Player extends BABYLON.Mesh {
             this._feetPosition.copyFrom(this.position);
             this._feetPosition.addInPlace(this._downDirection);
             // Add gravity and ground reaction.
-            if (this.godMode) {
-                this._gravityFactor.copyFromFloats(0, 0, 0);
-            }
-            else {
-                this._gravityFactor.copyFrom(this._downDirection).scaleInPlace(9.8 * deltaTime);
-            }
+            this._gravityFactor.copyFrom(this._downDirection).scaleInPlace(9.8 * deltaTime);
             this._groundFactor.copyFromFloats(0, 0, 0);
             let fVert = 1;
             if (this._jumpTimer === 0) {
@@ -2617,6 +2619,7 @@ class Player extends BABYLON.Mesh {
                 this.velocity.copyFromFloats(-0.1 + 0.2 * Math.random(), -0.1 + 0.2 * Math.random(), -0.1 + 0.2 * Math.random());
             }
             this.position.addInPlace(this.velocity.scale(deltaTime));
+            document.querySelector("#camera-altitude").textContent = this.camPos.absolutePosition.length().toFixed(1);
         };
         console.log("Create Player");
         this.planet = planet;

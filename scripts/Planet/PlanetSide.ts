@@ -203,13 +203,16 @@ class PlanetSide extends BABYLON.Mesh {
         }
     }
 
-    public register(): void {
+    public register(): number {
+        let chunckCount: number = 0;
         for (let k: number = 0; k <= this.kPosMax; k++) {
             for (let i: number = 0; i < this.chuncks[k].length; i++) {
                 for (let j: number = 0; j < this.chuncks[k][i].length; j++) {
                     this.chuncks[k][i][j].register();
+                    chunckCount++;
                 }
             }
         }
+        return chunckCount;
     }
 }

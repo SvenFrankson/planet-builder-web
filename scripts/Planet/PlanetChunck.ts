@@ -227,7 +227,7 @@ class PlanetChunck {
         }
 
         this.mesh.parent = this.planetSide;
-        this.mesh.computeWorldMatrix();
+        this.mesh.freezeWorldMatrix();
         this.mesh.refreshBoundingInfo();
     }
 

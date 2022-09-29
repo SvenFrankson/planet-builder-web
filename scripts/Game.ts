@@ -128,7 +128,9 @@ window.addEventListener("DOMContentLoaded", () => {
 	let degree = 20;
 	let planetTest: Planet = new Planet("Paulita", degree, game.chunckManager);
 
-	planetTest.generator = new PlanetGeneratorEarth(planetTest, 0.70, 0.15);
+	planetTest.generator = new PlanetGeneratorEarth(planetTest, 0.70, 0.2);
+	let r = degree * PlanetTools.CHUNCKSIZE * 0.7;
+	document.querySelector("#planet-surface").textContent = (4 * Math.PI * r * r / 1000 / 1000).toFixed(2) + " km²"
 	//planetTest.generator.showDebug();
 
 	Game.Player = new Player(new BABYLON.Vector3(0, degree * PlanetTools.CHUNCKSIZE, 0), planetTest);

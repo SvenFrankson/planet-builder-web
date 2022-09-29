@@ -188,12 +188,7 @@ class Player extends BABYLON.Mesh {
         this._feetPosition.addInPlace(this._downDirection);
 
         // Add gravity and ground reaction.
-        if (this.godMode) {
-            this._gravityFactor.copyFromFloats(0, 0, 0);
-        }
-        else {
-            this._gravityFactor.copyFrom(this._downDirection).scaleInPlace(9.8 * deltaTime);
-        }
+        this._gravityFactor.copyFrom(this._downDirection).scaleInPlace(9.8 * deltaTime);
         this._groundFactor.copyFromFloats(0, 0, 0);
         let fVert = 1;
         if (this._jumpTimer === 0) {
@@ -277,6 +272,8 @@ class Player extends BABYLON.Mesh {
             this.velocity.copyFromFloats(-0.1 + 0.2 * Math.random(), -0.1 + 0.2 * Math.random(), -0.1 + 0.2 * Math.random());
         }
         this.position.addInPlace(this.velocity.scale(deltaTime));
+
+        document.querySelector("#camera-altitude").textContent = this.camPos.absolutePosition.length().toFixed(1);
     };
 
     private _keepUp(): void {
