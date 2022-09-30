@@ -176,17 +176,30 @@ class PlanetChunck {
             let jNext = this.planetSide.getChunck(this.iPos, this.jPos + 1, this.kPos, this.degree);
             let kPrev = this.planetSide.getChunck(this.iPos, this.jPos, this.kPos - 1, this.degree);
             let kNext = this.planetSide.getChunck(this.iPos, this.jPos, this.kPos + 1, this.degree);
-            if (iPrev && iNext && jPrev && jNext && kPrev && kNext) {
+            if (iPrev instanceof PlanetChunck && iNext instanceof PlanetChunck && jPrev instanceof PlanetChunck && jNext instanceof PlanetChunck && kPrev instanceof PlanetChunck && kNext) {
                 iPrev.initializeData();
                 iNext.initializeData();
                 jPrev.initializeData();
                 jNext.initializeData();
                 kPrev.initializeData();
-                kNext.initializeData();
-                if (this.isFull && iPrev.isFull && iNext.isFull && jPrev.isFull && jNext.isFull && kPrev.isFull && kNext.isFull) {
+                let kNextIsFull = true;
+                let kNextIsEmpty = true;
+                if (kNext instanceof PlanetChunck) {
+                    kNext.initializeData();
+                    kNextIsFull = kNext.isFull;
+                    kNextIsEmpty = kNext.isEmpty;
+                }
+                else {
+                    kNext.forEach(c => {
+                        c.initializeData();
+                        kNextIsFull = kNextIsFull && c.isFull;
+                        kNextIsEmpty = kNextIsEmpty && c.isEmpty;
+                    })
+                }
+                if (this.isFull && iPrev.isFull && iNext.isFull && jPrev.isFull && jNext.isFull && kPrev.isFull && kNextIsFull) {
                     return true;
                 }
-                if (this.isEmpty && iPrev.isEmpty && iNext.isEmpty && jPrev.isEmpty && jNext.isEmpty && kPrev.isEmpty && kNext.isEmpty) {
+                if (this.isEmpty && iPrev.isEmpty && iNext.isEmpty && jPrev.isEmpty && jNext.isEmpty && kPrev.isEmpty && kNextIsEmpty) {
                     return true;
                 }
             }
