@@ -2,6 +2,7 @@ class PlanetChunckMeshBuilder {
 
     private static cachedVertices: BABYLON.Vector3[][][];
     private static tmpVertices: BABYLON.Vector3[];
+    private static tmpCenter: BABYLON.Vector3;
 
     private static _BlockColor: Map<number, BABYLON.Color3>;
     public static get BlockColor(): Map<number, BABYLON.Color3> {
@@ -71,6 +72,10 @@ class PlanetChunckMeshBuilder {
             }
         }
 
+        if (!PlanetChunckMeshBuilder.tmpCenter) {
+            PlanetChunckMeshBuilder.tmpCenter = BABYLON.Vector3.Zero();
+        }
+
         let positions: number[] = [];
         let indices: number[] = [];
         let uvs: number[] = [];
@@ -81,8 +86,16 @@ class PlanetChunckMeshBuilder {
         PlanetChunckMeshBuilder.GetVertexToRef(size, iGlobal + 1, jGlobal, PlanetChunckMeshBuilder.tmpVertices[2]);
         PlanetChunckMeshBuilder.GetVertexToRef(size, iGlobal + 1, jGlobal + 1, PlanetChunckMeshBuilder.tmpVertices[3]);
 
+        PlanetChunckMeshBuilder.tmpCenter.copyFrom(PlanetChunckMeshBuilder.tmpVertices[0]);
+        PlanetChunckMeshBuilder.tmpCenter.addInPlace(PlanetChunckMeshBuilder.tmpVertices[1]);
+        PlanetChunckMeshBuilder.tmpCenter.addInPlace(PlanetChunckMeshBuilder.tmpVertices[2]);
+        PlanetChunckMeshBuilder.tmpCenter.addInPlace(PlanetChunckMeshBuilder.tmpVertices[3]);
+        PlanetChunckMeshBuilder.tmpCenter.scaleInPlace(0.25);
+
         let hLow = PlanetTools.KGlobalToAltitude(hGlobal);
         let hHigh = PlanetTools.KGlobalToAltitude(hGlobal + 1);
+
+        PlanetChunckMeshBuilder.tmpCenter.scaleInPlace((hLow + hHigh) * 0.5);
 
         PlanetChunckMeshBuilder.tmpVertices[0].scaleToRef(hHigh, PlanetChunckMeshBuilder.tmpVertices[4]);
         PlanetChunckMeshBuilder.tmpVertices[1].scaleToRef(hHigh, PlanetChunckMeshBuilder.tmpVertices[5]);
@@ -169,6 +182,10 @@ class PlanetChunckMeshBuilder {
             }
         }
 
+        if (!PlanetChunckMeshBuilder.tmpCenter) {
+            PlanetChunckMeshBuilder.tmpCenter = BABYLON.Vector3.Zero();
+        }
+
         let positions: number[] = [];
         let indices: number[] = [];
         let uvs: number[] = [];
@@ -185,9 +202,17 @@ class PlanetChunckMeshBuilder {
                         PlanetChunckMeshBuilder.GetVertexToRef(size, y + 1, z, PlanetChunckMeshBuilder.tmpVertices[2]);
                         PlanetChunckMeshBuilder.GetVertexToRef(size, y + 1, z + 1, PlanetChunckMeshBuilder.tmpVertices[3]);
 
-                        let hGlobal = (k + kPos * PlanetTools.CHUNCKSIZE + 1);;
+                        PlanetChunckMeshBuilder.tmpCenter.copyFrom(PlanetChunckMeshBuilder.tmpVertices[0]);
+                        PlanetChunckMeshBuilder.tmpCenter.addInPlace(PlanetChunckMeshBuilder.tmpVertices[1]);
+                        PlanetChunckMeshBuilder.tmpCenter.addInPlace(PlanetChunckMeshBuilder.tmpVertices[2]);
+                        PlanetChunckMeshBuilder.tmpCenter.addInPlace(PlanetChunckMeshBuilder.tmpVertices[3]);
+                        PlanetChunckMeshBuilder.tmpCenter.scaleInPlace(0.25);
+
+                        let hGlobal = (k + kPos * PlanetTools.CHUNCKSIZE + 1);
                         let hLow = PlanetTools.KGlobalToAltitude(hGlobal);
                         let hHigh = PlanetTools.KGlobalToAltitude(hGlobal + 1);
+
+                        PlanetChunckMeshBuilder.tmpCenter.scaleInPlace((hLow + hHigh) * 0.5);
 
                         PlanetChunckMeshBuilder.tmpVertices[0].scaleToRef(hHigh, PlanetChunckMeshBuilder.tmpVertices[4]);
                         PlanetChunckMeshBuilder.tmpVertices[1].scaleToRef(hHigh, PlanetChunckMeshBuilder.tmpVertices[5]);
@@ -198,6 +223,64 @@ class PlanetChunckMeshBuilder {
                         PlanetChunckMeshBuilder.tmpVertices[1].scaleInPlace(hLow);
                         PlanetChunckMeshBuilder.tmpVertices[2].scaleInPlace(hLow);
                         PlanetChunckMeshBuilder.tmpVertices[3].scaleInPlace(hLow);
+                        
+                        if (i - 1 < 0 || data[i - 1][j][k] === 0) {
+                            if (j - 1 < 0 || data[i][j - 1][k] === 0) {
+                                if (k + 1 >= PlanetTools.CHUNCKSIZE || data[i][j][k + 1] === 0) {
+                                    PlanetChunckMeshBuilder.tmpVertices[4].addInPlace(PlanetChunckMeshBuilder.tmpCenter).scaleInPlace(0.5);
+                                }
+                            }
+                        }
+                        if (i - 1 < 0 || data[i - 1][j][k] === 0) {
+                            if (j + 1 >= PlanetTools.CHUNCKSIZE || data[i][j + 1][k] === 0) {
+                                if (k + 1 >= PlanetTools.CHUNCKSIZE || data[i][j][k + 1] === 0) {
+                                    PlanetChunckMeshBuilder.tmpVertices[5].addInPlace(PlanetChunckMeshBuilder.tmpCenter).scaleInPlace(0.5);
+                                }
+                            }
+                        }
+                        if (i + 1 >= PlanetTools.CHUNCKSIZE || data[i + 1][j][k] === 0) {
+                            if (j - 1 < 0 || data[i][j - 1][k] === 0) {
+                                if (k + 1 >= PlanetTools.CHUNCKSIZE || data[i][j][k + 1] === 0) {
+                                    PlanetChunckMeshBuilder.tmpVertices[6].addInPlace(PlanetChunckMeshBuilder.tmpCenter).scaleInPlace(0.5);
+                                }
+                            }
+                        }
+                        if (i + 1 >= PlanetTools.CHUNCKSIZE || data[i + 1][j][k] === 0) {
+                            if (j + 1 >= PlanetTools.CHUNCKSIZE || data[i][j + 1][k] === 0) {
+                                if (k + 1 >= PlanetTools.CHUNCKSIZE || data[i][j][k + 1] === 0) {
+                                    PlanetChunckMeshBuilder.tmpVertices[7].addInPlace(PlanetChunckMeshBuilder.tmpCenter).scaleInPlace(0.5);
+                                }
+                            }
+                        }
+                        if (i - 1 < 0 || data[i - 1][j][k] === 0) {
+                            if (j - 1 < 0 || data[i][j - 1][k] === 0) {
+                        if (k - 1 < 0 || data[i][j][k - 1] === 0) {
+                                    PlanetChunckMeshBuilder.tmpVertices[0].addInPlace(PlanetChunckMeshBuilder.tmpCenter).scaleInPlace(0.5);
+                                }
+                            }
+                        }
+                        if (i - 1 < 0 || data[i - 1][j][k] === 0) {
+                            if (j + 1 >= PlanetTools.CHUNCKSIZE || data[i][j + 1][k] === 0) {
+                        if (k - 1 < 0 || data[i][j][k - 1] === 0) {
+                                    PlanetChunckMeshBuilder.tmpVertices[1].addInPlace(PlanetChunckMeshBuilder.tmpCenter).scaleInPlace(0.5);
+                                }
+                            }
+                        }
+                        if (i + 1 >= PlanetTools.CHUNCKSIZE || data[i + 1][j][k] === 0) {
+                            if (j - 1 < 0 || data[i][j - 1][k] === 0) {
+                        if (k - 1 < 0 || data[i][j][k - 1] === 0) {
+                                    PlanetChunckMeshBuilder.tmpVertices[2].addInPlace(PlanetChunckMeshBuilder.tmpCenter).scaleInPlace(0.5);
+                                }
+                            }
+                        }
+                        if (i + 1 >= PlanetTools.CHUNCKSIZE || data[i + 1][j][k] === 0) {
+                            if (j + 1 >= PlanetTools.CHUNCKSIZE || data[i][j + 1][k] === 0) {
+                        if (k - 1 < 0 || data[i][j][k - 1] === 0) {
+                                    PlanetChunckMeshBuilder.tmpVertices[3].addInPlace(PlanetChunckMeshBuilder.tmpCenter).scaleInPlace(0.5);
+                                }
+                            }
+                        }
+                        
 
                         let c = PlanetChunckMeshBuilder.BlockColor.get(data[i][j][k]);
                         if (!c) {
