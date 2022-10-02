@@ -49,14 +49,17 @@ class PlanetChunck {
     }
     private data: number[][][];
     public GetData(i: number, j: number, k: number): number {
-        if (this.data[i]) {
-            if (this.data[i][j]) {
-                if (this.data[i][j][k]) {
+        if (!this.dataInitialized) {
+            this.initializeData();
+        }
+        if (i >= 0 && i < PlanetTools.CHUNCKSIZE) {
+            if (j >= 0 && j < PlanetTools.CHUNCKSIZE) {
+                if (k >= 0 && k < PlanetTools.CHUNCKSIZE) {
                     return this.data[i][j][k];
                 }
             }
         }
-        return 0;
+        return this.GetDataGlobal(this.iPos * PlanetTools.CHUNCKSIZE + i, this.jPos * PlanetTools.CHUNCKSIZE + j, this.kPos * PlanetTools.CHUNCKSIZE + k);
     }
     public GetDataGlobal(
         iGlobal: number,
@@ -215,11 +218,10 @@ class PlanetChunck {
             this.mesh = new BABYLON.Mesh("chunck-" + this.iPos + "-" + this.jPos + "-" + this.kPos, Game.Scene);
         }
         let vertexData: BABYLON.VertexData = PlanetChunckMeshBuilder.BuildVertexData_V2(
-            this.GetSize(),
+            this,
             this.iPos,
             this.jPos,
-            this.kPos,
-            this.data
+            this.kPos
         );
         if (vertexData.positions.length > 0) {
             vertexData.applyToMesh(this.mesh);

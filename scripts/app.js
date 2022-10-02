@@ -939,14 +939,17 @@ class PlanetChunck {
         return this._dataInitialized;
     }
     GetData(i, j, k) {
-        if (this.data[i]) {
-            if (this.data[i][j]) {
-                if (this.data[i][j][k]) {
+        if (!this.dataInitialized) {
+            this.initializeData();
+        }
+        if (i >= 0 && i < PlanetTools.CHUNCKSIZE) {
+            if (j >= 0 && j < PlanetTools.CHUNCKSIZE) {
+                if (k >= 0 && k < PlanetTools.CHUNCKSIZE) {
                     return this.data[i][j][k];
                 }
             }
         }
-        return 0;
+        return this.GetDataGlobal(this.iPos * PlanetTools.CHUNCKSIZE + i, this.jPos * PlanetTools.CHUNCKSIZE + j, this.kPos * PlanetTools.CHUNCKSIZE + k);
     }
     GetDataGlobal(iGlobal, jGlobal, kGlobal) {
         return this.planetSide.GetData(iGlobal, jGlobal, kGlobal);
@@ -1053,7 +1056,7 @@ class PlanetChunck {
         if (this.isMeshDisposed()) {
             this.mesh = new BABYLON.Mesh("chunck-" + this.iPos + "-" + this.jPos + "-" + this.kPos, Game.Scene);
         }
-        let vertexData = PlanetChunckMeshBuilder.BuildVertexData_V2(this.GetSize(), this.iPos, this.jPos, this.kPos, this.data);
+        let vertexData = PlanetChunckMeshBuilder.BuildVertexData_V2(this, this.iPos, this.jPos, this.kPos);
         if (vertexData.positions.length > 0) {
             vertexData.applyToMesh(this.mesh);
             this.mesh.material = SharedMaterials.MainMaterial();
@@ -1547,7 +1550,8 @@ class PlanetChunckMeshBuilder {
         vertexData.normals = normals;
         return vertexData;
     }
-    static BuildVertexData_V2(size, iPos, jPos, kPos, data) {
+    static BuildVertexData_V2(chunck, iPos, jPos, kPos) {
+        let size = chunck.GetSize();
         let vertexData = new BABYLON.VertexData();
         if (!PlanetChunckMeshBuilder.tmpVertices) {
             PlanetChunckMeshBuilder.tmpVertices = [];
@@ -1576,17 +1580,17 @@ class PlanetChunckMeshBuilder {
         let v5 = PlanetChunckMeshBuilder.tmpVertices[5];
         let v6 = PlanetChunckMeshBuilder.tmpVertices[6];
         let v7 = PlanetChunckMeshBuilder.tmpVertices[7];
-        for (let i = 0; i < PlanetTools.CHUNCKSIZE - 1; i++) {
-            for (let j = 0; j < PlanetTools.CHUNCKSIZE - 1; j++) {
-                for (let k = 0; k < PlanetTools.CHUNCKSIZE - 1; k++) {
-                    let c0 = data[i][j][k];
-                    let c1 = data[i + 1][j][k];
-                    let c2 = data[i + 1][j + 1][k];
-                    let c3 = data[i][j + 1][k];
-                    let c4 = data[i][j][k + 1];
-                    let c5 = data[i + 1][j][k + 1];
-                    let c6 = data[i + 1][j + 1][k + 1];
-                    let c7 = data[i][j + 1][k + 1];
+        for (let i = 0; i < PlanetTools.CHUNCKSIZE; i++) {
+            for (let j = 0; j < PlanetTools.CHUNCKSIZE; j++) {
+                for (let k = 0; k < PlanetTools.CHUNCKSIZE; k++) {
+                    let c0 = chunck.GetData(i, j, k);
+                    let c1 = chunck.GetData(i + 1, j, k);
+                    let c2 = chunck.GetData(i + 1, j + 1, k);
+                    let c3 = chunck.GetData(i, j + 1, k);
+                    let c4 = chunck.GetData(i, j, k + 1);
+                    let c5 = chunck.GetData(i + 1, j, k + 1);
+                    let c6 = chunck.GetData(i + 1, j + 1, k + 1);
+                    let c7 = chunck.GetData(i, j + 1, k + 1);
                     let ref = (c0 ? "1" : "0") + (c1 ? "1" : "0") + (c2 ? "1" : "0") + (c3 ? "1" : "0") + (c4 ? "1" : "0") + (c5 ? "1" : "0") + (c6 ? "1" : "0") + (c7 ? "1" : "0");
                     if (ref === "00000000" || ref === "11111111") {
                         continue;
@@ -1609,7 +1613,7 @@ class PlanetChunckMeshBuilder {
                     PlanetChunckMeshBuilder.tmpVertices[1].scaleInPlace(hLow);
                     PlanetChunckMeshBuilder.tmpVertices[2].scaleInPlace(hLow);
                     PlanetChunckMeshBuilder.tmpVertices[3].scaleInPlace(hLow);
-                    let c = PlanetChunckMeshBuilder.BlockColor.get(data[i][j][k]);
+                    let c = PlanetChunckMeshBuilder.BlockColor.get(chunck.GetData(i, j, k));
                     if (!c) {
                         c = PlanetChunckMeshBuilder.BlockColor.get(136);
                     }
