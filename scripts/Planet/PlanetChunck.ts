@@ -214,7 +214,7 @@ class PlanetChunck {
         if (this.isMeshDisposed()) {
             this.mesh = new BABYLON.Mesh("chunck-" + this.iPos + "-" + this.jPos + "-" + this.kPos, Game.Scene);
         }
-        let vertexData: BABYLON.VertexData = PlanetChunckMeshBuilder.BuildVertexData(
+        let vertexData: BABYLON.VertexData = PlanetChunckMeshBuilder.BuildVertexData_V2(
             this.GetSize(),
             this.iPos,
             this.jPos,

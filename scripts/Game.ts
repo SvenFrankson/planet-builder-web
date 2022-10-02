@@ -151,8 +151,12 @@ window.addEventListener("DOMContentLoaded", () => {
 
 	//planetTest.AsyncInitialize();
 
-	game.chunckManager.initialize();
-	planetTest.register();
+	PlanetChunckVertexData.InitializeData().then(
+		() => {
+			game.chunckManager.initialize();
+			planetTest.register();
+		}
+	)
 	
 	game.animate();
 

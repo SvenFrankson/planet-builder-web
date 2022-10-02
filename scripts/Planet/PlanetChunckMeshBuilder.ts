@@ -81,10 +81,10 @@ class PlanetChunckMeshBuilder {
         let uvs: number[] = [];
         let colors: number[] = [];
 
-        PlanetChunckMeshBuilder.GetVertexToRef(size, iGlobal, jGlobal, PlanetChunckMeshBuilder.tmpVertices[0]);
-        PlanetChunckMeshBuilder.GetVertexToRef(size, iGlobal, jGlobal + 1, PlanetChunckMeshBuilder.tmpVertices[1]);
-        PlanetChunckMeshBuilder.GetVertexToRef(size, iGlobal + 1, jGlobal, PlanetChunckMeshBuilder.tmpVertices[2]);
-        PlanetChunckMeshBuilder.GetVertexToRef(size, iGlobal + 1, jGlobal + 1, PlanetChunckMeshBuilder.tmpVertices[3]);
+        PlanetChunckMeshBuilder.GetVertexToRef(2 * size, 2 * (iGlobal) + 1, 2 * (jGlobal) + 1, PlanetChunckMeshBuilder.tmpVertices[0]);
+        PlanetChunckMeshBuilder.GetVertexToRef(2 * size, 2 * (iGlobal) + 1, 2 * (jGlobal + 1) + 1, PlanetChunckMeshBuilder.tmpVertices[1]);
+        PlanetChunckMeshBuilder.GetVertexToRef(2 * size, 2 * (iGlobal + 1) + 1, 2 * (jGlobal) + 1, PlanetChunckMeshBuilder.tmpVertices[2]);
+        PlanetChunckMeshBuilder.GetVertexToRef(2 * size, 2 * (iGlobal + 1) + 1, 2 * (jGlobal + 1) + 1, PlanetChunckMeshBuilder.tmpVertices[3]);
 
         PlanetChunckMeshBuilder.tmpCenter.copyFrom(PlanetChunckMeshBuilder.tmpVertices[0]);
         PlanetChunckMeshBuilder.tmpCenter.addInPlace(PlanetChunckMeshBuilder.tmpVertices[1]);
@@ -369,6 +369,134 @@ class PlanetChunckMeshBuilder {
         vertexData.colors = colors;
         
         BABYLON.VertexData.ComputeNormals(positions, indices, normals);
+        vertexData.normals = normals;
+
+        return vertexData;
+    }
+
+    
+    public static BuildVertexData_V2(
+        size: number,
+        iPos: number,
+        jPos: number,
+        kPos: number,
+        data: number[][][]
+    ): BABYLON.VertexData {
+        let vertexData: BABYLON.VertexData = new BABYLON.VertexData();
+
+        if (!PlanetChunckMeshBuilder.tmpVertices) {
+            PlanetChunckMeshBuilder.tmpVertices = [];
+            for (let i: number = 0; i < 8; i++) {
+                PlanetChunckMeshBuilder.tmpVertices[i] = BABYLON.Vector3.Zero();
+            }
+        }
+        else {
+            for (let i: number = 0; i < 8; i++) {
+                PlanetChunckMeshBuilder.tmpVertices[i].copyFromFloats(0, 0, 0);
+            }
+        }
+
+        if (!PlanetChunckMeshBuilder.tmpCenter) {
+            PlanetChunckMeshBuilder.tmpCenter = BABYLON.Vector3.Zero();
+        }
+
+        let positions: number[] = [];
+        let indices: number[] = [];
+        let uvs: number[] = [];
+        let normals: number[] = [];
+        let colors: number[] = [];
+
+        let v0 = PlanetChunckMeshBuilder.tmpVertices[0];
+        let v1 = PlanetChunckMeshBuilder.tmpVertices[1];
+        let v2 = PlanetChunckMeshBuilder.tmpVertices[2];
+        let v3 = PlanetChunckMeshBuilder.tmpVertices[3];
+        let v4 = PlanetChunckMeshBuilder.tmpVertices[4];
+        let v5 = PlanetChunckMeshBuilder.tmpVertices[5];
+        let v6 = PlanetChunckMeshBuilder.tmpVertices[6];
+        let v7 = PlanetChunckMeshBuilder.tmpVertices[7];
+
+        for (let i: number = 0; i < PlanetTools.CHUNCKSIZE - 1; i++) {
+            for (let j: number = 0; j < PlanetTools.CHUNCKSIZE - 1; j++) {
+                for (let k: number = 0; k < PlanetTools.CHUNCKSIZE - 1; k++) {
+                    
+                    
+                    let c0 = data[i][j][k];
+                    let c1 = data[i + 1][j][k];
+                    let c2 = data[i + 1][j + 1][k];
+                    let c3 = data[i][j + 1][k];
+                    let c4 = data[i][j][k + 1];
+                    let c5 = data[i + 1][j][k + 1];
+                    let c6 = data[i + 1][j + 1][k + 1];
+                    let c7 = data[i][j + 1][k + 1];
+                    let ref = (c0 ? "1" : "0") + (c1 ? "1" : "0") + (c2 ? "1" : "0") + (c3 ? "1" : "0") + (c4 ? "1" : "0") + (c5 ? "1" : "0") + (c6 ? "1" : "0") + (c7 ? "1" : "0");
+
+                    if (ref === "00000000" || ref === "11111111") {
+                        continue;
+                    }
+                    
+                    let vertexData = PlanetChunckVertexData.Get(ref);
+
+                    let y: number = i + iPos * PlanetTools.CHUNCKSIZE;
+                    let z: number = j + jPos * PlanetTools.CHUNCKSIZE;
+                    PlanetChunckMeshBuilder.GetVertexToRef(size, y, z, PlanetChunckMeshBuilder.tmpVertices[0]);
+                    PlanetChunckMeshBuilder.GetVertexToRef(size, y, z + 1, PlanetChunckMeshBuilder.tmpVertices[1]);
+                    PlanetChunckMeshBuilder.GetVertexToRef(size, y + 1, z, PlanetChunckMeshBuilder.tmpVertices[2]);
+                    PlanetChunckMeshBuilder.GetVertexToRef(size, y + 1, z + 1, PlanetChunckMeshBuilder.tmpVertices[3]);
+
+                    let hGlobal = (k + kPos * PlanetTools.CHUNCKSIZE + 1);
+                    let hLow = PlanetTools.KGlobalToAltitude(hGlobal);
+                    let hHigh = PlanetTools.KGlobalToAltitude(hGlobal + 1);
+
+                    PlanetChunckMeshBuilder.tmpVertices[0].scaleToRef(hHigh, PlanetChunckMeshBuilder.tmpVertices[4]);
+                    PlanetChunckMeshBuilder.tmpVertices[1].scaleToRef(hHigh, PlanetChunckMeshBuilder.tmpVertices[5]);
+                    PlanetChunckMeshBuilder.tmpVertices[2].scaleToRef(hHigh, PlanetChunckMeshBuilder.tmpVertices[6]);
+                    PlanetChunckMeshBuilder.tmpVertices[3].scaleToRef(hHigh, PlanetChunckMeshBuilder.tmpVertices[7]);
+
+                    PlanetChunckMeshBuilder.tmpVertices[0].scaleInPlace(hLow);
+                    PlanetChunckMeshBuilder.tmpVertices[1].scaleInPlace(hLow);
+                    PlanetChunckMeshBuilder.tmpVertices[2].scaleInPlace(hLow);
+                    PlanetChunckMeshBuilder.tmpVertices[3].scaleInPlace(hLow);
+                    
+                    let c = PlanetChunckMeshBuilder.BlockColor.get(data[i][j][k]);
+                    if (!c) {
+                        c = PlanetChunckMeshBuilder.BlockColor.get(136);
+                    }
+
+                    let l = positions.length / 3;
+                    for (let n = 0; n < vertexData.positions.length / 3; n++) {
+                        let x = vertexData.positions[3 * n];
+                        let y = vertexData.positions[3 * n + 1];
+                        let z = vertexData.positions[3 * n + 2];
+                        
+                        let v02 = v2.subtract(v0).scaleInPlace(x).addInPlace(v0);
+                        let v13 = v3.subtract(v1).scaleInPlace(x).addInPlace(v1);
+                        let v46 = v6.subtract(v4).scaleInPlace(x).addInPlace(v4);
+                        let v57 = v7.subtract(v5).scaleInPlace(x).addInPlace(v5);
+
+                        let v0213 = v13.subtract(v02).scaleInPlace(z).addInPlace(v02);
+                        let v4657 = v57.subtract(v46).scaleInPlace(z).addInPlace(v46);
+
+                        let v = v4657.subtract(v0213).scaleInPlace(y).addInPlace(v0213);
+                        
+                        positions.push(v.x);
+                        positions.push(v.y);
+                        positions.push(v.z);
+                        
+                        colors.push(0.5, 0.5, 0.5, 1);
+                    }
+                    normals.push(...vertexData.normals);
+                    for (let n = 0; n < vertexData.indices.length; n++) {
+                        indices.push(vertexData.indices[n] + l);
+                    }
+                }
+            }
+        }
+
+        BABYLON.VertexData.ComputeNormals(positions, indices, normals);
+        vertexData.positions = positions;
+        vertexData.indices = indices;
+        vertexData.uvs = uvs;
+        vertexData.colors = colors;
         vertexData.normals = normals;
 
         return vertexData;

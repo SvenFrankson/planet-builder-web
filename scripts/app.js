@@ -152,8 +152,10 @@ window.addEventListener("DOMContentLoaded", () => {
     Game.CameraManager.player = Game.Player;
     Game.CameraManager.setMode(CameraMode.Player);
     //planetTest.AsyncInitialize();
-    game.chunckManager.initialize();
-    planetTest.register();
+    PlanetChunckVertexData.InitializeData().then(() => {
+        game.chunckManager.initialize();
+        planetTest.register();
+    });
     game.animate();
     Game.Canvas.addEventListener("pointerup", (event) => {
         if (Game.CameraManager.cameraMode === CameraMode.Sky) {
@@ -1051,7 +1053,7 @@ class PlanetChunck {
         if (this.isMeshDisposed()) {
             this.mesh = new BABYLON.Mesh("chunck-" + this.iPos + "-" + this.jPos + "-" + this.kPos, Game.Scene);
         }
-        let vertexData = PlanetChunckMeshBuilder.BuildVertexData(this.GetSize(), this.iPos, this.jPos, this.kPos, this.data);
+        let vertexData = PlanetChunckMeshBuilder.BuildVertexData_V2(this.GetSize(), this.iPos, this.jPos, this.kPos, this.data);
         if (vertexData.positions.length > 0) {
             vertexData.applyToMesh(this.mesh);
             this.mesh.material = SharedMaterials.MainMaterial();
@@ -1294,10 +1296,10 @@ class PlanetChunckMeshBuilder {
         let indices = [];
         let uvs = [];
         let colors = [];
-        PlanetChunckMeshBuilder.GetVertexToRef(size, iGlobal, jGlobal, PlanetChunckMeshBuilder.tmpVertices[0]);
-        PlanetChunckMeshBuilder.GetVertexToRef(size, iGlobal, jGlobal + 1, PlanetChunckMeshBuilder.tmpVertices[1]);
-        PlanetChunckMeshBuilder.GetVertexToRef(size, iGlobal + 1, jGlobal, PlanetChunckMeshBuilder.tmpVertices[2]);
-        PlanetChunckMeshBuilder.GetVertexToRef(size, iGlobal + 1, jGlobal + 1, PlanetChunckMeshBuilder.tmpVertices[3]);
+        PlanetChunckMeshBuilder.GetVertexToRef(2 * size, 2 * (iGlobal) + 1, 2 * (jGlobal) + 1, PlanetChunckMeshBuilder.tmpVertices[0]);
+        PlanetChunckMeshBuilder.GetVertexToRef(2 * size, 2 * (iGlobal) + 1, 2 * (jGlobal + 1) + 1, PlanetChunckMeshBuilder.tmpVertices[1]);
+        PlanetChunckMeshBuilder.GetVertexToRef(2 * size, 2 * (iGlobal + 1) + 1, 2 * (jGlobal) + 1, PlanetChunckMeshBuilder.tmpVertices[2]);
+        PlanetChunckMeshBuilder.GetVertexToRef(2 * size, 2 * (iGlobal + 1) + 1, 2 * (jGlobal + 1) + 1, PlanetChunckMeshBuilder.tmpVertices[3]);
         PlanetChunckMeshBuilder.tmpCenter.copyFrom(PlanetChunckMeshBuilder.tmpVertices[0]);
         PlanetChunckMeshBuilder.tmpCenter.addInPlace(PlanetChunckMeshBuilder.tmpVertices[1]);
         PlanetChunckMeshBuilder.tmpCenter.addInPlace(PlanetChunckMeshBuilder.tmpVertices[2]);
@@ -1545,6 +1547,104 @@ class PlanetChunckMeshBuilder {
         vertexData.normals = normals;
         return vertexData;
     }
+    static BuildVertexData_V2(size, iPos, jPos, kPos, data) {
+        let vertexData = new BABYLON.VertexData();
+        if (!PlanetChunckMeshBuilder.tmpVertices) {
+            PlanetChunckMeshBuilder.tmpVertices = [];
+            for (let i = 0; i < 8; i++) {
+                PlanetChunckMeshBuilder.tmpVertices[i] = BABYLON.Vector3.Zero();
+            }
+        }
+        else {
+            for (let i = 0; i < 8; i++) {
+                PlanetChunckMeshBuilder.tmpVertices[i].copyFromFloats(0, 0, 0);
+            }
+        }
+        if (!PlanetChunckMeshBuilder.tmpCenter) {
+            PlanetChunckMeshBuilder.tmpCenter = BABYLON.Vector3.Zero();
+        }
+        let positions = [];
+        let indices = [];
+        let uvs = [];
+        let normals = [];
+        let colors = [];
+        let v0 = PlanetChunckMeshBuilder.tmpVertices[0];
+        let v1 = PlanetChunckMeshBuilder.tmpVertices[1];
+        let v2 = PlanetChunckMeshBuilder.tmpVertices[2];
+        let v3 = PlanetChunckMeshBuilder.tmpVertices[3];
+        let v4 = PlanetChunckMeshBuilder.tmpVertices[4];
+        let v5 = PlanetChunckMeshBuilder.tmpVertices[5];
+        let v6 = PlanetChunckMeshBuilder.tmpVertices[6];
+        let v7 = PlanetChunckMeshBuilder.tmpVertices[7];
+        for (let i = 0; i < PlanetTools.CHUNCKSIZE - 1; i++) {
+            for (let j = 0; j < PlanetTools.CHUNCKSIZE - 1; j++) {
+                for (let k = 0; k < PlanetTools.CHUNCKSIZE - 1; k++) {
+                    let c0 = data[i][j][k];
+                    let c1 = data[i + 1][j][k];
+                    let c2 = data[i + 1][j + 1][k];
+                    let c3 = data[i][j + 1][k];
+                    let c4 = data[i][j][k + 1];
+                    let c5 = data[i + 1][j][k + 1];
+                    let c6 = data[i + 1][j + 1][k + 1];
+                    let c7 = data[i][j + 1][k + 1];
+                    let ref = (c0 ? "1" : "0") + (c1 ? "1" : "0") + (c2 ? "1" : "0") + (c3 ? "1" : "0") + (c4 ? "1" : "0") + (c5 ? "1" : "0") + (c6 ? "1" : "0") + (c7 ? "1" : "0");
+                    if (ref === "00000000" || ref === "11111111") {
+                        continue;
+                    }
+                    let vertexData = PlanetChunckVertexData.Get(ref);
+                    let y = i + iPos * PlanetTools.CHUNCKSIZE;
+                    let z = j + jPos * PlanetTools.CHUNCKSIZE;
+                    PlanetChunckMeshBuilder.GetVertexToRef(size, y, z, PlanetChunckMeshBuilder.tmpVertices[0]);
+                    PlanetChunckMeshBuilder.GetVertexToRef(size, y, z + 1, PlanetChunckMeshBuilder.tmpVertices[1]);
+                    PlanetChunckMeshBuilder.GetVertexToRef(size, y + 1, z, PlanetChunckMeshBuilder.tmpVertices[2]);
+                    PlanetChunckMeshBuilder.GetVertexToRef(size, y + 1, z + 1, PlanetChunckMeshBuilder.tmpVertices[3]);
+                    let hGlobal = (k + kPos * PlanetTools.CHUNCKSIZE + 1);
+                    let hLow = PlanetTools.KGlobalToAltitude(hGlobal);
+                    let hHigh = PlanetTools.KGlobalToAltitude(hGlobal + 1);
+                    PlanetChunckMeshBuilder.tmpVertices[0].scaleToRef(hHigh, PlanetChunckMeshBuilder.tmpVertices[4]);
+                    PlanetChunckMeshBuilder.tmpVertices[1].scaleToRef(hHigh, PlanetChunckMeshBuilder.tmpVertices[5]);
+                    PlanetChunckMeshBuilder.tmpVertices[2].scaleToRef(hHigh, PlanetChunckMeshBuilder.tmpVertices[6]);
+                    PlanetChunckMeshBuilder.tmpVertices[3].scaleToRef(hHigh, PlanetChunckMeshBuilder.tmpVertices[7]);
+                    PlanetChunckMeshBuilder.tmpVertices[0].scaleInPlace(hLow);
+                    PlanetChunckMeshBuilder.tmpVertices[1].scaleInPlace(hLow);
+                    PlanetChunckMeshBuilder.tmpVertices[2].scaleInPlace(hLow);
+                    PlanetChunckMeshBuilder.tmpVertices[3].scaleInPlace(hLow);
+                    let c = PlanetChunckMeshBuilder.BlockColor.get(data[i][j][k]);
+                    if (!c) {
+                        c = PlanetChunckMeshBuilder.BlockColor.get(136);
+                    }
+                    let l = positions.length / 3;
+                    for (let n = 0; n < vertexData.positions.length / 3; n++) {
+                        let x = vertexData.positions[3 * n];
+                        let y = vertexData.positions[3 * n + 1];
+                        let z = vertexData.positions[3 * n + 2];
+                        let v02 = v2.subtract(v0).scaleInPlace(x).addInPlace(v0);
+                        let v13 = v3.subtract(v1).scaleInPlace(x).addInPlace(v1);
+                        let v46 = v6.subtract(v4).scaleInPlace(x).addInPlace(v4);
+                        let v57 = v7.subtract(v5).scaleInPlace(x).addInPlace(v5);
+                        let v0213 = v13.subtract(v02).scaleInPlace(z).addInPlace(v02);
+                        let v4657 = v57.subtract(v46).scaleInPlace(z).addInPlace(v46);
+                        let v = v4657.subtract(v0213).scaleInPlace(y).addInPlace(v0213);
+                        positions.push(v.x);
+                        positions.push(v.y);
+                        positions.push(v.z);
+                        colors.push(0.5, 0.5, 0.5, 1);
+                    }
+                    normals.push(...vertexData.normals);
+                    for (let n = 0; n < vertexData.indices.length; n++) {
+                        indices.push(vertexData.indices[n] + l);
+                    }
+                }
+            }
+        }
+        BABYLON.VertexData.ComputeNormals(positions, indices, normals);
+        vertexData.positions = positions;
+        vertexData.indices = indices;
+        vertexData.uvs = uvs;
+        vertexData.colors = colors;
+        vertexData.normals = normals;
+        return vertexData;
+    }
     static BuildWaterVertexData(size, iPos, jPos, kPos, rWater) {
         let vertexData = new BABYLON.VertexData();
         let vertices = [];
@@ -1613,6 +1713,295 @@ class PlanetChunckMeshBuilder {
     }
 }
 PlanetChunckMeshBuilder._tmpBlockCenter = BABYLON.Vector3.Zero();
+class PlanetChunckVertexData {
+    static RotateYChunckPartName(name) {
+        let v0 = name[0];
+        let v1 = name[1];
+        let v2 = name[2];
+        let v3 = name[3];
+        let v4 = name[4];
+        let v5 = name[5];
+        let v6 = name[6];
+        let v7 = name[7];
+        return v1 + v2 + v3 + v0 + v5 + v6 + v7 + v4;
+    }
+    static _Flip01(c) {
+        return c === "0" ? "1" : "0";
+    }
+    static FlipChunckPartName(name) {
+        let output = "";
+        for (let i = 0; i < name.length; i++) {
+            output += PlanetChunckVertexData._Flip01(name[i]);
+        }
+        return output;
+    }
+    static MirrorXChunckPartName(name) {
+        let v0 = name[0];
+        let v1 = name[1];
+        let v2 = name[2];
+        let v3 = name[3];
+        let v4 = name[4];
+        let v5 = name[5];
+        let v6 = name[6];
+        let v7 = name[7];
+        return v1 + v0 + v3 + v2 + v5 + v4 + v7 + v6;
+    }
+    static MirrorYChunckPartName(name) {
+        let v0 = name[0];
+        let v1 = name[1];
+        let v2 = name[2];
+        let v3 = name[3];
+        let v4 = name[4];
+        let v5 = name[5];
+        let v6 = name[6];
+        let v7 = name[7];
+        return v4 + v5 + v6 + v7 + v0 + v1 + v2 + v3;
+    }
+    static MirrorZChunckPartName(name) {
+        let v0 = name[0];
+        let v1 = name[1];
+        let v2 = name[2];
+        let v3 = name[3];
+        let v4 = name[4];
+        let v5 = name[5];
+        let v6 = name[6];
+        let v7 = name[7];
+        return v3 + v2 + v1 + v0 + v7 + v6 + v5 + v4;
+    }
+    static _TryAddFlipedChunckPart(name, data) {
+        return false;
+        let flipedName = PlanetChunckVertexData.FlipChunckPartName(name);
+        if (!PlanetChunckVertexData._VertexDatas.has(flipedName)) {
+            let flipedData = PlanetChunckVertexData.Flip(data);
+            PlanetChunckVertexData._VertexDatas.set(flipedName, flipedData);
+            return true;
+        }
+        return false;
+    }
+    static _TryAddMirrorXChunckPart(name, data) {
+        let mirrorXName = PlanetChunckVertexData.MirrorXChunckPartName(name);
+        if (!PlanetChunckVertexData._VertexDatas.has(mirrorXName)) {
+            let mirrorXData = PlanetChunckVertexData.MirrorX(data);
+            PlanetChunckVertexData._VertexDatas.set(mirrorXName, mirrorXData);
+            PlanetChunckVertexData._TryAddMirrorZChunckPart(mirrorXName, mirrorXData);
+            return true;
+        }
+        return false;
+    }
+    static _TryAddMirrorYChunckPart(name, data) {
+        let mirrorYName = PlanetChunckVertexData.MirrorYChunckPartName(name);
+        if (!PlanetChunckVertexData._VertexDatas.has(mirrorYName)) {
+            let mirrorYData = PlanetChunckVertexData.MirrorY(data);
+            PlanetChunckVertexData._VertexDatas.set(mirrorYName, mirrorYData);
+            PlanetChunckVertexData._TryAddMirrorZChunckPart(mirrorYName, mirrorYData);
+            return true;
+        }
+        return false;
+    }
+    static _TryAddMirrorZChunckPart(name, data) {
+        let mirrorZName = PlanetChunckVertexData.MirrorZChunckPartName(name);
+        if (!PlanetChunckVertexData._VertexDatas.has(mirrorZName)) {
+            let mirrorZData = PlanetChunckVertexData.MirrorZ(data);
+            PlanetChunckVertexData._VertexDatas.set(mirrorZName, mirrorZData);
+            return true;
+        }
+        return false;
+    }
+    static async _LoadChunckVertexDatas() {
+        return new Promise(resolve => {
+            BABYLON.SceneLoader.ImportMesh("", "./datas/meshes/chunck-parts.babylon", "", Game.Scene, (meshes) => {
+                for (let i = 0; i < meshes.length; i++) {
+                    let mesh = meshes[i];
+                    if (mesh instanceof BABYLON.Mesh && mesh.name != "zero") {
+                        let useful = false;
+                        let name = mesh.name;
+                        let data = BABYLON.VertexData.ExtractFromMesh(mesh);
+                        if (!data.colors || data.colors.length / 4 != data.positions.length / 3) {
+                            let colors = [];
+                            for (let j = 0; j < data.positions.length / 3; j++) {
+                                colors.push(1, 1, 1, 1);
+                            }
+                            data.colors = colors;
+                        }
+                        mesh.dispose();
+                        if (!PlanetChunckVertexData._VertexDatas.has(name)) {
+                            PlanetChunckVertexData._VertexDatas.set(name, data);
+                            useful = true;
+                        }
+                        useful = PlanetChunckVertexData._TryAddFlipedChunckPart(name, data) || useful;
+                        useful = PlanetChunckVertexData._TryAddMirrorXChunckPart(name, data) || useful;
+                        useful = PlanetChunckVertexData._TryAddMirrorYChunckPart(name, data) || useful;
+                        useful = PlanetChunckVertexData._TryAddMirrorZChunckPart(name, data) || useful;
+                        let rotatedName = name;
+                        for (let j = 0; j < 3; j++) {
+                            rotatedName = PlanetChunckVertexData.RotateYChunckPartName(rotatedName);
+                            data = PlanetChunckVertexData.RotateY(data, -Math.PI / 2);
+                            if (!PlanetChunckVertexData._VertexDatas.has(rotatedName)) {
+                                PlanetChunckVertexData._VertexDatas.set(rotatedName, data);
+                                useful = true;
+                            }
+                            useful = PlanetChunckVertexData._TryAddFlipedChunckPart(rotatedName, data) || useful;
+                            useful = PlanetChunckVertexData._TryAddMirrorXChunckPart(rotatedName, data) || useful;
+                            useful = PlanetChunckVertexData._TryAddMirrorYChunckPart(rotatedName, data) || useful;
+                            useful = PlanetChunckVertexData._TryAddMirrorZChunckPart(rotatedName, data) || useful;
+                        }
+                        if (!useful) {
+                            console.warn("Chunck-Part " + name + " is redundant.");
+                        }
+                    }
+                }
+                resolve();
+            });
+        });
+    }
+    static async InitializeData() {
+        await PlanetChunckVertexData._LoadChunckVertexDatas();
+        return true;
+    }
+    static Clone(data) {
+        let clonedData = new BABYLON.VertexData();
+        clonedData.positions = [...data.positions];
+        clonedData.indices = [...data.indices];
+        clonedData.normals = [...data.normals];
+        if (data.uvs) {
+            clonedData.uvs = [...data.uvs];
+        }
+        if (data.colors) {
+            clonedData.colors = [...data.colors];
+        }
+        return clonedData;
+    }
+    static Get(name) {
+        return PlanetChunckVertexData._VertexDatas.get(name);
+    }
+    static RotateY(baseData, angle) {
+        let data = new BABYLON.VertexData();
+        let positions = [...baseData.positions];
+        let normals;
+        if (baseData.normals && baseData.normals.length === baseData.positions.length) {
+            normals = [...baseData.normals];
+        }
+        data.indices = [...baseData.indices];
+        let cosa = Math.cos(angle);
+        let sina = Math.sin(angle);
+        for (let i = 0; i < positions.length / 3; i++) {
+            let x = positions[3 * i] - 0.5;
+            let z = positions[3 * i + 2] - 0.5;
+            positions[3 * i] = x * cosa - z * sina + 0.5;
+            positions[3 * i + 2] = x * sina + z * cosa + 0.5;
+            if (normals) {
+                let xn = normals[3 * i];
+                let zn = normals[3 * i + 2];
+                normals[3 * i] = xn * cosa - zn * sina;
+                normals[3 * i + 2] = xn * sina + zn * cosa;
+            }
+        }
+        data.positions = positions;
+        if (normals) {
+            data.normals = normals;
+        }
+        if (baseData.colors) {
+            data.colors = [...baseData.colors];
+        }
+        return data;
+    }
+    static Flip(baseData) {
+        let data = new BABYLON.VertexData();
+        data.positions = [...baseData.positions];
+        if (baseData.normals && baseData.normals.length === baseData.positions.length) {
+            let normals = [];
+            for (let i = 0; i < baseData.normals.length / 3; i++) {
+                normals.push(-baseData.normals[3 * i], -baseData.normals[3 * i + 1], -baseData.normals[3 * i + 2]);
+            }
+            data.normals = normals;
+        }
+        let indices = [];
+        for (let i = 0; i < baseData.indices.length / 3; i++) {
+            indices.push(baseData.indices[3 * i], baseData.indices[3 * i + 2], baseData.indices[3 * i + 1]);
+        }
+        data.indices = indices;
+        if (baseData.colors) {
+            data.colors = [...baseData.colors];
+        }
+        return data;
+    }
+    static MirrorX(baseData) {
+        let data = new BABYLON.VertexData();
+        let positions = [];
+        for (let i = 0; i < baseData.positions.length / 3; i++) {
+            positions.push(1 - baseData.positions[3 * i], baseData.positions[3 * i + 1], baseData.positions[3 * i + 2]);
+        }
+        data.positions = positions;
+        if (baseData.normals && baseData.normals.length === baseData.positions.length) {
+            let normals = [];
+            for (let i = 0; i < baseData.normals.length / 3; i++) {
+                normals.push(-baseData.normals[3 * i], baseData.normals[3 * i + 1], baseData.normals[3 * i + 2]);
+            }
+            data.normals = normals;
+        }
+        let indices = [];
+        for (let i = 0; i < baseData.indices.length / 3; i++) {
+            indices.push(baseData.indices[3 * i], baseData.indices[3 * i + 2], baseData.indices[3 * i + 1]);
+        }
+        data.indices = indices;
+        if (baseData.colors) {
+            data.colors = [...baseData.colors];
+        }
+        return data;
+    }
+    static MirrorY(baseData) {
+        let data = new BABYLON.VertexData();
+        let positions = [];
+        for (let i = 0; i < baseData.positions.length / 3; i++) {
+            positions.push(baseData.positions[3 * i], 1 - baseData.positions[3 * i + 1], baseData.positions[3 * i + 2]);
+        }
+        data.positions = positions;
+        if (baseData.normals && baseData.normals.length === baseData.positions.length) {
+            let normals = [];
+            for (let i = 0; i < baseData.normals.length / 3; i++) {
+                normals.push(baseData.normals[3 * i], -baseData.normals[3 * i + 1], baseData.normals[3 * i + 2]);
+            }
+            data.normals = normals;
+        }
+        let indices = [];
+        for (let i = 0; i < baseData.indices.length / 3; i++) {
+            indices.push(baseData.indices[3 * i], baseData.indices[3 * i + 2], baseData.indices[3 * i + 1]);
+        }
+        data.indices = indices;
+        if (baseData.colors) {
+            data.colors = [...baseData.colors];
+        }
+        return data;
+    }
+    static MirrorZ(baseData) {
+        let data = new BABYLON.VertexData();
+        let positions = [];
+        for (let i = 0; i < baseData.positions.length / 3; i++) {
+            positions.push(baseData.positions[3 * i], baseData.positions[3 * i + 1], 1 - baseData.positions[3 * i + 2]);
+        }
+        data.positions = positions;
+        if (baseData.normals && baseData.normals.length === baseData.positions.length) {
+            let normals = [];
+            for (let i = 0; i < baseData.normals.length / 3; i++) {
+                normals.push(baseData.normals[3 * i], baseData.normals[3 * i + 1], -baseData.normals[3 * i + 2]);
+            }
+            data.normals = normals;
+        }
+        let indices = [];
+        for (let i = 0; i < baseData.indices.length / 3; i++) {
+            indices.push(baseData.indices[3 * i], baseData.indices[3 * i + 2], baseData.indices[3 * i + 1]);
+        }
+        data.indices = indices;
+        if (baseData.colors) {
+            data.colors = [...baseData.colors];
+        }
+        return data;
+    }
+    static RotateRef(ref, rotation) {
+        return ref.substr(rotation) + ref.substring(0, rotation);
+    }
+}
+PlanetChunckVertexData._VertexDatas = new Map();
 class PlanetGenerator {
     constructor(planet) {
         this.planet = planet;
