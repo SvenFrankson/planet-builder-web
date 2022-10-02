@@ -143,6 +143,7 @@ class PlanetSide extends BABYLON.Mesh {
         let chuncksCount: number = PlanetTools.DegreeToChuncksCount(PlanetTools.KGlobalToDegree(kGlobal));
         let L = chuncksCount * PlanetTools.CHUNCKSIZE;
 
+        /*
         if (iGlobal < 0) {
             if (this.side <= Side.Left) {
                 let chunck = this.planet.GetSide((this.side + 3) % 4);
@@ -173,6 +174,7 @@ class PlanetSide extends BABYLON.Mesh {
         else if (jGlobal >= L) {
             
         }
+        */
         let iChunck: number = Math.floor(iGlobal / PlanetTools.CHUNCKSIZE);
         let jChunck: number = Math.floor(jGlobal / PlanetTools.CHUNCKSIZE);
         let kChunck: number = Math.floor(kGlobal / PlanetTools.CHUNCKSIZE);
