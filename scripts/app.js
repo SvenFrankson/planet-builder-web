@@ -365,23 +365,6 @@ class OutlinePostProcess {
         };
     }
 }
-class PlanetChunckMeshBuilderNew {
-    static BuildVertexData(size, iPos, jPos, kPos, chunck) {
-        let vertexData = new BABYLON.VertexData();
-        let r = 1;
-        for (let i = -r; i < PlanetTools.CHUNCKSIZE + r; i++) {
-            for (let j = -r; j < PlanetTools.CHUNCKSIZE + r; j++) {
-                for (let k = -r; k < PlanetTools.CHUNCKSIZE + r; k++) {
-                    let iGlobal = i + chunck.iPos * PlanetTools.CHUNCKSIZE;
-                    let jGlobal = j + chunck.jPos * PlanetTools.CHUNCKSIZE;
-                    let kGlobal = k + chunck.kPos * PlanetTools.CHUNCKSIZE;
-                    let data = chunck.planetSide.GetData(iGlobal, jGlobal, kGlobal);
-                }
-            }
-        }
-        return vertexData;
-    }
-}
 class PlanetEditor {
     constructor(planet) {
         this.planet = planet;
@@ -952,7 +935,7 @@ class PlanetChunck {
         return this.GetDataGlobal(this.iPos * PlanetTools.CHUNCKSIZE + i, this.jPos * PlanetTools.CHUNCKSIZE + j, this.kPos * PlanetTools.CHUNCKSIZE + k);
     }
     GetDataGlobal(iGlobal, jGlobal, kGlobal) {
-        return this.planetSide.GetData(iGlobal, jGlobal, kGlobal);
+        return this.planetSide.GetData(iGlobal, jGlobal, kGlobal, this.degree);
     }
     SetData(i, j, k, value) {
         this.data[i][j][k] = value;
@@ -1458,6 +1441,7 @@ class PlanetChunckMeshBuilder {
         let uvs = [];
         let normals = [];
         let colors = [];
+        let colors3 = [BABYLON.Color3.Red(), BABYLON.Color3.Green(), BABYLON.Color3.Blue(), BABYLON.Color3.Magenta(), BABYLON.Color3.Yellow(), BABYLON.Color3.White()];
         let v0 = PlanetChunckMeshBuilder.tmpVertices[0];
         let v1 = PlanetChunckMeshBuilder.tmpVertices[1];
         let v2 = PlanetChunckMeshBuilder.tmpVertices[2];
@@ -1518,7 +1502,7 @@ class PlanetChunckMeshBuilder {
                         positions.push(v.x);
                         positions.push(v.y);
                         positions.push(v.z);
-                        colors.push(0.5, 0.5, 0.5, 1);
+                        colors.push(...colors3[chunck.side].asArray(), 1);
                     }
                     normals.push(...vertexData.normals);
                     for (let n = 0; n < vertexData.indices.length; n++) {
@@ -2455,41 +2439,37 @@ class PlanetSide extends BABYLON.Mesh {
             }
         }
     }
-    GetData(iGlobal, jGlobal, kGlobal) {
+    GetData(iGlobal, jGlobal, kGlobal, degree) {
         let chuncksCount = PlanetTools.DegreeToChuncksCount(PlanetTools.KGlobalToDegree(kGlobal));
         let L = chuncksCount * PlanetTools.CHUNCKSIZE;
-        /*
         if (iGlobal < 0) {
             if (this.side <= Side.Left) {
-                let chunck = this.planet.GetSide((this.side + 3) % 4);
-                return chunck.GetData(iGlobal + L, jGlobal, kGlobal);
+                let side = this.planet.GetSide((this.side + 3) % 4);
+                return side.GetData(L + iGlobal, jGlobal, kGlobal, degree);
             }
             else if (this.side === Side.Top) {
-                return this.planet.GetSide(Side.Back).GetData(L - 1 - jGlobal, L + iGlobal, kGlobal);
+                let side = this.planet.GetSide(Side.Back);
+                return side.GetData(L - 1 - jGlobal, L + iGlobal, kGlobal, degree);
             }
             else if (this.side === Side.Bottom) {
-                return this.planet.GetSide(Side.Back).GetData(jGlobal, - 1 - iGlobal, kGlobal);
+                let side = this.planet.GetSide(Side.Back);
+                return side.GetData(jGlobal, -1 - iGlobal, kGlobal, degree);
             }
         }
         else if (iGlobal >= L) {
             if (this.side <= Side.Left) {
-                let chunck = this.planet.GetSide((this.side + 1) % 4);
-                return chunck.GetData(iGlobal - L, jGlobal, kGlobal);
+                let side = this.planet.GetSide((this.side + 3) % 4);
+                return side.GetData(-L + iGlobal, jGlobal, kGlobal, degree);
             }
             else if (this.side === Side.Top) {
-                return this.planet.GetSide(Side.Front).GetData(jGlobal, 2 * L - 1 - iGlobal, kGlobal);
+                let side = this.planet.GetSide(Side.Front);
+                return side.GetData(jGlobal, 2 * L - iGlobal - 1, kGlobal, degree);
             }
             else if (this.side === Side.Bottom) {
-                return this.planet.GetSide(Side.Front).GetData(L - 1 - jGlobal, iGlobal - L, kGlobal);
+                let side = this.planet.GetSide(Side.Front);
+                return side.GetData(L - 1 - jGlobal, L - iGlobal, kGlobal, degree);
             }
         }
-        if (jGlobal < 0) {
-
-        }
-        else if (jGlobal >= L) {
-            
-        }
-        */
         let iChunck = Math.floor(iGlobal / PlanetTools.CHUNCKSIZE);
         let jChunck = Math.floor(jGlobal / PlanetTools.CHUNCKSIZE);
         let kChunck = Math.floor(kGlobal / PlanetTools.CHUNCKSIZE);
@@ -2551,10 +2531,25 @@ class PlanetTools {
         }
     }
     static EvaluateVertex(size, i, j) {
-        let xRad = PI4;
+        if (i < 0) {
+            let v = PlanetTools.EvaluateVertex(size, i + size, j);
+            return new BABYLON.Vector3(v.z, v.y, -v.x);
+        }
+        if (i > size) {
+            let v = PlanetTools.EvaluateVertex(size, i - size, j);
+            return new BABYLON.Vector3(-v.z, v.y, v.x);
+        }
+        if (j < 0) {
+            let v = PlanetTools.EvaluateVertex(size, i, j + size);
+            return new BABYLON.Vector3(v.y, -v.x, v.z);
+        }
+        if (j > size) {
+            let v = PlanetTools.EvaluateVertex(size, i, j - size);
+            return new BABYLON.Vector3(-v.y, v.x, v.z);
+        }
         let yRad = -PI4 + PI2 * (j / size);
         let zRad = -PI4 + PI2 * (i / size);
-        return new BABYLON.Vector3(Math.tan(xRad), Math.tan(yRad), Math.tan(zRad)).normalize();
+        return new BABYLON.Vector3(1, Math.tan(yRad), Math.tan(zRad)).normalize();
     }
     static Data(callback) {
         let data = [];

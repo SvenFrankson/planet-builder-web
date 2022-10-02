@@ -66,7 +66,7 @@ class PlanetChunck {
         jGlobal: number,
         kGlobal: number
     ): number {
-        return this.planetSide.GetData(iGlobal, jGlobal, kGlobal);
+        return this.planetSide.GetData(iGlobal, jGlobal, kGlobal, this.degree);
     }
     public SetData(i: number, j: number, k: number, value: number): void {
         this.data[i][j][k] = value;

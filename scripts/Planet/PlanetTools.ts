@@ -59,11 +59,26 @@ class PlanetTools {
         i: number,
         j: number
     ): BABYLON.Vector3 {
-        let xRad: number = PI4;
+        if (i < 0) {
+            let v = PlanetTools.EvaluateVertex(size, i + size, j);
+            return new BABYLON.Vector3(v.z, v.y, - v.x);
+        }
+        if (i > size) {
+            let v = PlanetTools.EvaluateVertex(size, i - size, j);
+            return new BABYLON.Vector3(- v.z, v.y, v.x);
+        }
+        if (j < 0) {
+            let v = PlanetTools.EvaluateVertex(size, i, j + size);
+            return new BABYLON.Vector3(v.y, - v.x, v.z);
+        }
+        if (j > size) {
+            let v = PlanetTools.EvaluateVertex(size, i, j - size);
+            return new BABYLON.Vector3(- v.y, v.x, v.z);
+        }
         let yRad: number = - PI4 + PI2 * (j / size);
         let zRad: number = - PI4 + PI2 * (i / size);
 
-        return new BABYLON.Vector3(Math.tan(xRad), Math.tan(yRad), Math.tan(zRad)).normalize();
+        return new BABYLON.Vector3(1, Math.tan(yRad), Math.tan(zRad)).normalize();
     }
 
     public static Data(callback: (i: number, j: number, k: number) => number): number[][][] {

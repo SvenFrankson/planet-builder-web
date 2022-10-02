@@ -139,42 +139,39 @@ class PlanetSide extends BABYLON.Mesh {
         }
     }
 
-    public GetData(iGlobal: number, jGlobal: number, kGlobal: number): number {
+    public GetData(iGlobal: number, jGlobal: number, kGlobal: number, degree): number {
         let chuncksCount: number = PlanetTools.DegreeToChuncksCount(PlanetTools.KGlobalToDegree(kGlobal));
         let L = chuncksCount * PlanetTools.CHUNCKSIZE;
 
-        /*
         if (iGlobal < 0) {
             if (this.side <= Side.Left) {
-                let chunck = this.planet.GetSide((this.side + 3) % 4);
-                return chunck.GetData(iGlobal + L, jGlobal, kGlobal);
+                let side = this.planet.GetSide((this.side + 3) % 4);
+                return side.GetData(L + iGlobal, jGlobal, kGlobal, degree);
             }
             else if (this.side === Side.Top) {
-                return this.planet.GetSide(Side.Back).GetData(L - 1 - jGlobal, L + iGlobal, kGlobal);
+                let side = this.planet.GetSide(Side.Back);
+                return side.GetData(L - 1 - jGlobal, L + iGlobal, kGlobal, degree);
             }
             else if (this.side === Side.Bottom) {
-                return this.planet.GetSide(Side.Back).GetData(jGlobal, - 1 - iGlobal, kGlobal);
+                let side = this.planet.GetSide(Side.Back);
+                return side.GetData(jGlobal, - 1 - iGlobal, kGlobal, degree);
             }
         }
         else if (iGlobal >= L) {
             if (this.side <= Side.Left) {
-                let chunck = this.planet.GetSide((this.side + 1) % 4);
-                return chunck.GetData(iGlobal - L, jGlobal, kGlobal);
+                let side = this.planet.GetSide((this.side + 3) % 4);
+                return side.GetData(- L + iGlobal, jGlobal, kGlobal, degree);
             }
             else if (this.side === Side.Top) {
-                return this.planet.GetSide(Side.Front).GetData(jGlobal, 2 * L - 1 - iGlobal, kGlobal);
+                let side = this.planet.GetSide(Side.Front);
+                return side.GetData(jGlobal, 2 * L - iGlobal - 1, kGlobal, degree);
             }
             else if (this.side === Side.Bottom) {
-                return this.planet.GetSide(Side.Front).GetData(L - 1 - jGlobal, iGlobal - L, kGlobal);
+                let side = this.planet.GetSide(Side.Front);
+                return side.GetData(L - 1 - jGlobal, L - iGlobal, kGlobal, degree);
             }
         }
-        if (jGlobal < 0) {
-
-        }
-        else if (jGlobal >= L) {
-            
-        }
-        */
+        
         let iChunck: number = Math.floor(iGlobal / PlanetTools.CHUNCKSIZE);
         let jChunck: number = Math.floor(jGlobal / PlanetTools.CHUNCKSIZE);
         let kChunck: number = Math.floor(kGlobal / PlanetTools.CHUNCKSIZE);

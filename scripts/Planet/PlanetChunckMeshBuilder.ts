@@ -280,6 +280,8 @@ class PlanetChunckMeshBuilder {
         let normals: number[] = [];
         let colors: number[] = [];
 
+        let colors3 = [BABYLON.Color3.Red(), BABYLON.Color3.Green(), BABYLON.Color3.Blue(), BABYLON.Color3.Magenta(), BABYLON.Color3.Yellow(), BABYLON.Color3.White()];
+
         let v0 = PlanetChunckMeshBuilder.tmpVertices[0];
         let v1 = PlanetChunckMeshBuilder.tmpVertices[1];
         let v2 = PlanetChunckMeshBuilder.tmpVertices[2];
@@ -355,7 +357,7 @@ class PlanetChunckMeshBuilder {
                         positions.push(v.y);
                         positions.push(v.z);
                         
-                        colors.push(0.5, 0.5, 0.5, 1);
+                        colors.push(...colors3[chunck.side].asArray(), 1);
                     }
                     normals.push(...vertexData.normals);
                     for (let n = 0; n < vertexData.indices.length; n++) {
