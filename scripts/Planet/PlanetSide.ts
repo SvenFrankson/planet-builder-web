@@ -139,7 +139,11 @@ class PlanetSide extends BABYLON.Mesh {
         }
     }
 
-    public GetData(iGlobal: number, jGlobal: number, kGlobal: number, degree): number {
+    public GetData(iGlobal: number, jGlobal: number, kGlobal: number, degree: number): number {
+        if (PlanetTools.KGlobalToDegree(kGlobal) != degree) {
+            return 0;
+        }
+
         let chuncksCount: number = PlanetTools.DegreeToChuncksCount(PlanetTools.KGlobalToDegree(kGlobal));
         let L = chuncksCount * PlanetTools.CHUNCKSIZE;
 
@@ -169,6 +173,58 @@ class PlanetSide extends BABYLON.Mesh {
             else if (this.side === Side.Bottom) {
                 let side = this.planet.GetSide(Side.Front);
                 return side.GetData(L - 1 - jGlobal, L - iGlobal, kGlobal, degree);
+            }
+        }
+        else if (jGlobal < 0) {
+            if (this.side === Side.Front) {
+                let side = this.planet.GetSide(Side.Bottom);
+                return side.GetData(L + jGlobal, L - 1 - iGlobal, kGlobal, degree);
+            }
+            else if (this.side === Side.Right) {
+                let side = this.planet.GetSide(Side.Bottom);
+                return side.GetData(iGlobal, L + jGlobal, kGlobal, degree);
+            }
+            else if (this.side === Side.Back) {
+                let side = this.planet.GetSide(Side.Bottom);
+                return side.GetData(- 1 - jGlobal, iGlobal, kGlobal, degree);
+            }
+            else if (this.side === Side.Left) {
+                let side = this.planet.GetSide(Side.Bottom);
+                return side.GetData(L - 1 - iGlobal, - 1 - jGlobal, kGlobal, degree);
+            }
+            else if (this.side === Side.Top) {
+                let side = this.planet.GetSide(Side.Right);
+                return side.GetData(iGlobal, L + jGlobal, kGlobal, degree);
+            }
+            else if (this.side === Side.Bottom) {
+                let side = this.planet.GetSide(Side.Left);
+                return side.GetData(L - 1 - iGlobal, - 1 - jGlobal, kGlobal, degree);
+            }
+        }
+        else if (jGlobal >= L) {
+            if (this.side === Side.Front) {
+                let side = this.planet.GetSide(Side.Top);
+                return side.GetData(2 * L - 1 - jGlobal, iGlobal, kGlobal, degree);
+            }
+            else if (this.side === Side.Right) {
+                let side = this.planet.GetSide(Side.Top);
+                return side.GetData(iGlobal, - L + jGlobal, kGlobal, degree);
+            }
+            else if (this.side === Side.Back) {
+                let side = this.planet.GetSide(Side.Top);
+                return side.GetData(- L + jGlobal, L - 1 - iGlobal, kGlobal, degree);
+            }
+            else if (this.side === Side.Left) {
+                let side = this.planet.GetSide(Side.Top);
+                return side.GetData(L - 1 - iGlobal, 2 * L - 1 - jGlobal, kGlobal, degree);
+            }
+            else if (this.side === Side.Top) {
+                let side = this.planet.GetSide(Side.Left);
+                return side.GetData(L - 1 - iGlobal, 2 * L - 1 - jGlobal, kGlobal, degree);
+            }
+            else if (this.side === Side.Bottom) {
+                let side = this.planet.GetSide(Side.Right);
+                return side.GetData(iGlobal, - L + jGlobal, kGlobal, degree);
             }
         }
         
