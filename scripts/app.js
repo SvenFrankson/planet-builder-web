@@ -139,7 +139,7 @@ window.addEventListener("DOMContentLoaded", () => {
     let r = degree * PlanetTools.CHUNCKSIZE * 0.7;
     document.querySelector("#planet-surface").textContent = (4 * Math.PI * r * r / 1000 / 1000).toFixed(2) + " km²";
     //planetTest.generator.showDebug();
-    Game.Player = new Player(new BABYLON.Vector3(0, degree * PlanetTools.CHUNCKSIZE, 0), planetTest);
+    Game.Player = new Player(new BABYLON.Vector3(0, -degree * PlanetTools.CHUNCKSIZE, 0), planetTest);
     Game.Player.registerControl();
     game.chunckManager.onNextInactive(() => {
         Game.Player.initialize();
@@ -1469,7 +1469,7 @@ class PlanetChunckMeshBuilder {
         let firstJ = 0;
         let lastJ = PlanetTools.CHUNCKSIZE;
         let firstK = 0;
-        if (chunck.side === Side.Top) {
+        if (chunck.side === Side.Top || chunck.side === Side.Bottom) {
             if (chunck.iPos === 0) {
                 firstI = -1;
             }

@@ -133,7 +133,7 @@ window.addEventListener("DOMContentLoaded", () => {
 	document.querySelector("#planet-surface").textContent = (4 * Math.PI * r * r / 1000 / 1000).toFixed(2) + " km²"
 	//planetTest.generator.showDebug();
 
-	Game.Player = new Player(new BABYLON.Vector3(0, degree * PlanetTools.CHUNCKSIZE, 0), planetTest);
+	Game.Player = new Player(new BABYLON.Vector3(0, - degree * PlanetTools.CHUNCKSIZE, 0), planetTest);
 	Game.Player.registerControl();
 	game.chunckManager.onNextInactive(() => {
 		Game.Player.initialize();

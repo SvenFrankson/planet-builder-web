@@ -304,7 +304,7 @@ class PlanetChunckMeshBuilder {
         let firstJ = 0;
         let lastJ = PlanetTools.CHUNCKSIZE;
         let firstK = 0;
-        if (chunck.side === Side.Top) {
+        if (chunck.side === Side.Top || chunck.side === Side.Bottom) {
             if (chunck.iPos === 0) {
                 firstI = - 1;
             }
