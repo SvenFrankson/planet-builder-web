@@ -324,18 +324,33 @@ class PlanetChunckMeshBuilder {
         for (let i: number = firstI; i < PlanetTools.CHUNCKSIZE; i++) {
             for (let j: number = firstJ; j < lastJ; j++) {
                 for (let k: number = firstK; k < PlanetTools.CHUNCKSIZE; k++) {
-                    
-                    let c0 = chunck.GetData(i, j, k);
-                    let c1 = chunck.GetData(i + 1, j, k);
-                    let c2 = chunck.GetData(i + 1, j + 1, k);
-                    let c3 = chunck.GetData(i, j + 1, k);
-                    let c4 = chunck.GetData(i, j, k + 1);
-                    let c5 = chunck.GetData(i + 1, j, k + 1);
-                    let c6 = chunck.GetData(i + 1, j + 1, k + 1);
-                    let c7 = chunck.GetData(i, j + 1, k + 1);
-                    let ref = (c0 ? "1" : "0") + (c1 ? "1" : "0") + (c2 ? "1" : "0") + (c3 ? "1" : "0") + (c4 ? "1" : "0") + (c5 ? "1" : "0") + (c6 ? "1" : "0") + (c7 ? "1" : "0");
+                    let ref = 0b0;
+                    if (chunck.GetData(i, j, k)) {
+                        ref |= 0b1 << 0;
+                    }
+                    if (chunck.GetData(i + 1, j, k)) {
+                        ref |= 0b1 << 1;
+                    }
+                    if (chunck.GetData(i + 1, j + 1, k)) {
+                        ref |= 0b1 << 2;
+                    }
+                    if (chunck.GetData(i, j + 1, k)) {
+                        ref |= 0b1 << 3;
+                    }
+                    if (chunck.GetData(i, j, k + 1)) {
+                        ref |= 0b1 << 4;
+                    }
+                    if (chunck.GetData(i + 1, j, k + 1)) {
+                        ref |= 0b1 << 5;
+                    }
+                    if (chunck.GetData(i + 1, j + 1, k + 1)) {
+                        ref |= 0b1 << 6;
+                    }
+                    if (chunck.GetData(i, j + 1, k + 1)) {
+                        ref |= 0b1 << 7;
+                    }
 
-                    if (ref === "00000000" || ref === "11111111") {
+                    if (ref === 0b0 || ref === 0b11111111) {
                         continue;
                     }
                     
