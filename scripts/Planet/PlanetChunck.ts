@@ -35,6 +35,7 @@ class PlanetChunck {
     public iPos: number;
     public jPos: number;
     public kPos: number;
+    public isDegreeLayerBottom: boolean;
     public Position(): { i: number; j: number; k: number } {
         return {
             i: this.iPos,
@@ -127,6 +128,13 @@ class PlanetChunck {
         if (this.kPos === 0) {
             this.bedrock = new BABYLON.Mesh(this.name + "-bedrock", Game.Scene);
             this.bedrock.parent = this.planetSide;
+            this.isDegreeLayerBottom = true;
+        }
+        else {
+            let degreeBellow = PlanetTools.KPosToDegree(this.kPos - 1);
+            if (degreeBellow != this.degree) {
+                this.isDegreeLayerBottom = true;
+            }
         }
     }
 

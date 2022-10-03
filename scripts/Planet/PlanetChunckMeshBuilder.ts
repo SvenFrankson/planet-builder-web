@@ -280,7 +280,15 @@ class PlanetChunckMeshBuilder {
         let normals: number[] = [];
         let colors: number[] = [];
 
-        let colors3 = [BABYLON.Color3.Red(), BABYLON.Color3.Green(), BABYLON.Color3.Blue(), BABYLON.Color3.Magenta(), BABYLON.Color3.Yellow(), BABYLON.Color3.White()];
+        let colors3 = [
+            new BABYLON.Color3(1, 0.5, 0.5),
+            new BABYLON.Color3(0.5, 1, 0.5),
+            new BABYLON.Color3(0.5, 0.5, 1),
+            new BABYLON.Color3(1, 1, 0.5),
+            new BABYLON.Color3(0.5, 1, 1),
+            new BABYLON.Color3(1, 0.5, 1)
+        ];
+
 
         let v0 = PlanetChunckMeshBuilder.tmpVertices[0];
         let v1 = PlanetChunckMeshBuilder.tmpVertices[1];
@@ -291,9 +299,31 @@ class PlanetChunckMeshBuilder {
         let v6 = PlanetChunckMeshBuilder.tmpVertices[6];
         let v7 = PlanetChunckMeshBuilder.tmpVertices[7];
 
-        for (let i: number = 0; i < PlanetTools.CHUNCKSIZE; i++) {
-            for (let j: number = 0; j < PlanetTools.CHUNCKSIZE; j++) {
-                for (let k: number = 0; k < PlanetTools.CHUNCKSIZE; k++) {
+        let firstI = 0;
+        let lastI = PlanetTools.CHUNCKSIZE;
+        let firstJ = 0;
+        let lastJ = PlanetTools.CHUNCKSIZE;
+        let firstK = 0;
+        if (chunck.side === Side.Top) {
+            if (chunck.iPos === 0) {
+                firstI = - 1;
+            }
+            if (chunck.jPos === 0) {
+                firstJ = - 1;
+            }
+        }
+        if (chunck.side <= Side.Left) {
+            if (chunck.jPos === PlanetTools.DegreeToChuncksCount(chunck.degree) - 1) {
+                lastJ = PlanetTools.CHUNCKSIZE - 1;
+            }
+        }
+        if (chunck.isDegreeLayerBottom) {
+            firstK = - 1;
+        }
+
+        for (let i: number = firstI; i < PlanetTools.CHUNCKSIZE; i++) {
+            for (let j: number = firstJ; j < lastJ; j++) {
+                for (let k: number = firstK; k < PlanetTools.CHUNCKSIZE; k++) {
                     
                     let c0 = chunck.GetData(i, j, k);
                     let c1 = chunck.GetData(i + 1, j, k);

@@ -72,7 +72,7 @@ class Game {
         Game.Scene.clearColor.copyFromFloats(166 / 255, 231 / 255, 255 / 255, 1);
         Game.Light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0.6, 1, 0.3), Game.Scene);
         Game.Light.diffuse = new BABYLON.Color3(1, 1, 1);
-        Game.Light.groundColor = new BABYLON.Color3(0, 0, 0);
+        Game.Light.groundColor = new BABYLON.Color3(0.5, 0.5, 0.5);
         Game.CameraManager = new CameraManager();
         /*
         let water = BABYLON.MeshBuilder.CreateSphere("water", { diameter: 78 - 0.4 }, Game.Scene);
@@ -148,7 +148,7 @@ window.addEventListener("DOMContentLoaded", () => {
     game.chunckManager = new PlanetChunckManager(Game.Scene);
     let degree = 10;
     let planetTest = new Planet("Paulita", degree, game.chunckManager);
-    planetTest.generator = new PlanetGeneratorEarth(planetTest, 0.70, 0.2);
+    planetTest.generator = new PlanetGeneratorEarth(planetTest, 0.60, 0.1);
     let r = degree * PlanetTools.CHUNCKSIZE * 0.7;
     document.querySelector("#planet-surface").textContent = (4 * Math.PI * r * r / 1000 / 1000).toFixed(2) + " km²";
     //planetTest.generator.showDebug();
@@ -924,6 +924,7 @@ class PlanetChunck {
     iPos;
     jPos;
     kPos;
+    isDegreeLayerBottom;
     Position() {
         return {
             i: this.iPos,
@@ -992,6 +993,13 @@ class PlanetChunck {
         if (this.kPos === 0) {
             this.bedrock = new BABYLON.Mesh(this.name + "-bedrock", Game.Scene);
             this.bedrock.parent = this.planetSide;
+            this.isDegreeLayerBottom = true;
+        }
+        else {
+            let degreeBellow = PlanetTools.KPosToDegree(this.kPos - 1);
+            if (degreeBellow != this.degree) {
+                this.isDegreeLayerBottom = true;
+            }
         }
     }
     register() {
@@ -1489,7 +1497,14 @@ class PlanetChunckMeshBuilder {
         let uvs = [];
         let normals = [];
         let colors = [];
-        let colors3 = [BABYLON.Color3.Red(), BABYLON.Color3.Green(), BABYLON.Color3.Blue(), BABYLON.Color3.Magenta(), BABYLON.Color3.Yellow(), BABYLON.Color3.White()];
+        let colors3 = [
+            new BABYLON.Color3(1, 0.5, 0.5),
+            new BABYLON.Color3(0.5, 1, 0.5),
+            new BABYLON.Color3(0.5, 0.5, 1),
+            new BABYLON.Color3(1, 1, 0.5),
+            new BABYLON.Color3(0.5, 1, 1),
+            new BABYLON.Color3(1, 0.5, 1)
+        ];
         let v0 = PlanetChunckMeshBuilder.tmpVertices[0];
         let v1 = PlanetChunckMeshBuilder.tmpVertices[1];
         let v2 = PlanetChunckMeshBuilder.tmpVertices[2];
@@ -1498,9 +1513,30 @@ class PlanetChunckMeshBuilder {
         let v5 = PlanetChunckMeshBuilder.tmpVertices[5];
         let v6 = PlanetChunckMeshBuilder.tmpVertices[6];
         let v7 = PlanetChunckMeshBuilder.tmpVertices[7];
-        for (let i = 0; i < PlanetTools.CHUNCKSIZE; i++) {
-            for (let j = 0; j < PlanetTools.CHUNCKSIZE; j++) {
-                for (let k = 0; k < PlanetTools.CHUNCKSIZE; k++) {
+        let firstI = 0;
+        let lastI = PlanetTools.CHUNCKSIZE;
+        let firstJ = 0;
+        let lastJ = PlanetTools.CHUNCKSIZE;
+        let firstK = 0;
+        if (chunck.side === Side.Top) {
+            if (chunck.iPos === 0) {
+                firstI = -1;
+            }
+            if (chunck.jPos === 0) {
+                firstJ = -1;
+            }
+        }
+        if (chunck.side <= Side.Left) {
+            if (chunck.jPos === PlanetTools.DegreeToChuncksCount(chunck.degree) - 1) {
+                lastJ = PlanetTools.CHUNCKSIZE - 1;
+            }
+        }
+        if (chunck.isDegreeLayerBottom) {
+            firstK = -1;
+        }
+        for (let i = firstI; i < PlanetTools.CHUNCKSIZE; i++) {
+            for (let j = firstJ; j < lastJ; j++) {
+                for (let k = firstK; k < PlanetTools.CHUNCKSIZE; k++) {
                     let c0 = chunck.GetData(i, j, k);
                     let c1 = chunck.GetData(i + 1, j, k);
                     let c2 = chunck.GetData(i + 1, j + 1, k);

@@ -37,7 +37,7 @@ class Game {
 		);
 
 		Game.Light.diffuse = new BABYLON.Color3(1, 1, 1);
-		Game.Light.groundColor = new BABYLON.Color3(0, 0, 0);
+		Game.Light.groundColor = new BABYLON.Color3(0.5, 0.5, 0.5);
 
 		Game.CameraManager = new CameraManager();
 
@@ -128,7 +128,7 @@ window.addEventListener("DOMContentLoaded", () => {
 	let degree = 10;
 	let planetTest: Planet = new Planet("Paulita", degree, game.chunckManager);
 
-	planetTest.generator = new PlanetGeneratorEarth(planetTest, 0.70, 0.2);
+	planetTest.generator = new PlanetGeneratorEarth(planetTest, 0.60, 0.1);
 	let r = degree * PlanetTools.CHUNCKSIZE * 0.7;
 	document.querySelector("#planet-surface").textContent = (4 * Math.PI * r * r / 1000 / 1000).toFixed(2) + " km²"
 	//planetTest.generator.showDebug();
