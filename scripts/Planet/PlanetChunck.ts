@@ -53,6 +53,41 @@ class PlanetChunck {
         if (!this.dataInitialized) {
             this.initializeData();
         }
+        if (this.side <= Side.Left) {
+            if (this.jPos === PlanetTools.DegreeToChuncksCount(this.degree) - 1) {
+                if (this.iPos === 0) {
+                    if (i === 0) {
+                        if (j === PlanetTools.CHUNCKSIZE - 1) {
+                            return this.GetData(0, PlanetTools.CHUNCKSIZE, k);
+                        }
+                    }
+                }
+                if (this.iPos === PlanetTools.DegreeToChuncksCount(this.degree) - 1) {
+                    if (i === PlanetTools.CHUNCKSIZE - 1) {
+                        if (j === PlanetTools.CHUNCKSIZE - 1) {
+                            return this.GetData(PlanetTools.CHUNCKSIZE - 1, PlanetTools.CHUNCKSIZE, k);
+                        }
+                    }
+                }
+            }
+            
+            if (this.jPos === 0) {
+                if (this.iPos === 0) {
+                    if (i === 0) {
+                        if (j === 0) {
+                            return this.GetData(0, - 1, k);
+                        }
+                    }
+                }
+                if (this.iPos === PlanetTools.DegreeToChuncksCount(this.degree) - 1) {
+                    if (i === PlanetTools.CHUNCKSIZE - 1) {
+                        if (j === 0) {
+                            return this.GetData(PlanetTools.CHUNCKSIZE - 1, - 1, k);
+                        }
+                    }
+                }
+            }
+        }
         if (i >= 0 && i < PlanetTools.CHUNCKSIZE) {
             if (j >= 0 && j < PlanetTools.CHUNCKSIZE) {
                 if (k >= 0 && k < PlanetTools.CHUNCKSIZE) {
@@ -156,85 +191,6 @@ class PlanetChunck {
         }
     }
 
-    public synchronizeCornerValue(): void {
-        if (this.side === Side.Top || this.side === Side.Bottom) {
-            if (this.jPos === 0) {
-                if (this.iPos === 0) {
-                    let chunckI = this.planetSide.getChunck(this.iPos - 1, this.jPos, this.kPos, this.degree);
-                    if (chunckI instanceof PlanetChunck) {
-                        chunckI.synchronizeCornerValue();
-                    }
-                    let chunckJ = this.planetSide.getChunck(this.iPos, this.jPos - 1, this.kPos, this.degree);
-                    if (chunckJ instanceof PlanetChunck) {
-                        chunckJ.synchronizeCornerValue();
-                    }
-                }
-                else if (this.iPos === PlanetTools.DegreeToChuncksCount(this.degree) - 1) {
-                    let chunckI = this.planetSide.getChunck(this.iPos + 1, this.jPos, this.kPos, this.degree);
-                    if (chunckI instanceof PlanetChunck) {
-                        chunckI.synchronizeCornerValue();
-                    }
-                    let chunckJ = this.planetSide.getChunck(this.iPos, this.jPos - 1, this.kPos, this.degree);
-                    if (chunckJ instanceof PlanetChunck) {
-                        chunckJ.synchronizeCornerValue();
-                    }
-                }
-            }
-            if (this.jPos === PlanetTools.DegreeToChuncksCount(this.degree) - 1) {
-                if (this.iPos === 0) {
-                    let chunckI = this.planetSide.getChunck(this.iPos - 1, this.jPos, this.kPos, this.degree);
-                    if (chunckI instanceof PlanetChunck) {
-                        chunckI.synchronizeCornerValue();
-                    }
-                    let chunckJ = this.planetSide.getChunck(this.iPos, this.jPos + 1, this.kPos, this.degree);
-                    if (chunckJ instanceof PlanetChunck) {
-                        chunckJ.synchronizeCornerValue();
-                    }
-                }
-                else if (this.iPos === PlanetTools.DegreeToChuncksCount(this.degree) - 1) {
-                    let chunckI = this.planetSide.getChunck(this.iPos + 1, this.jPos, this.kPos, this.degree);
-                    if (chunckI instanceof PlanetChunck) {
-                        chunckI.synchronizeCornerValue();
-                    }
-                    let chunckJ = this.planetSide.getChunck(this.iPos, this.jPos + 1, this.kPos, this.degree);
-                    if (chunckJ instanceof PlanetChunck) {
-                        chunckJ.synchronizeCornerValue();
-                    }
-                }
-            }
-        }
-        if (this.side <= Side.Left) {
-            if (this.jPos === 0) {
-                if (this.iPos === 0) {
-                    for (let k = 0; k < PlanetTools.CHUNCKSIZE; k++) {
-                        this.data[0][0][k] = this.GetData(0, - 1, k);
-                    }
-                    this.updateIsEmptyIsFull();
-                }
-                else if (this.iPos === PlanetTools.DegreeToChuncksCount(this.degree) - 1) {
-                    for (let k = 0; k < PlanetTools.CHUNCKSIZE; k++) {
-                        this.data[PlanetTools.CHUNCKSIZE - 1][0][k] = this.GetData(PlanetTools.CHUNCKSIZE - 1, - 1, k);
-                    }
-                    this.updateIsEmptyIsFull();
-                }
-            }
-            if (this.jPos === PlanetTools.DegreeToChuncksCount(this.degree) - 1) {
-                if (this.iPos === 0) {
-                    for (let k = 0; k < PlanetTools.CHUNCKSIZE; k++) {
-                        this.data[0][PlanetTools.CHUNCKSIZE - 1][k] = this.GetData(0, PlanetTools.CHUNCKSIZE, k);
-                    }
-                    this.updateIsEmptyIsFull();
-                }
-                else if (this.iPos === PlanetTools.DegreeToChuncksCount(this.degree) - 1) {
-                    for (let k = 0; k < PlanetTools.CHUNCKSIZE; k++) {
-                        this.data[PlanetTools.CHUNCKSIZE - 1][PlanetTools.CHUNCKSIZE - 1][k] = this.GetData(PlanetTools.CHUNCKSIZE - 1, PlanetTools.CHUNCKSIZE, k);
-                    }
-                    this.updateIsEmptyIsFull();
-                }
-            }
-        }
-    }
-
     public initializeMesh(): void {
         if (this.dataInitialized) {
             this.SetMesh();
@@ -298,7 +254,6 @@ class PlanetChunck {
     }
 
     public SetMesh(): void {
-        this.synchronizeCornerValue();
         if (this.isEmptyOrHidden()) {
             return;
         }

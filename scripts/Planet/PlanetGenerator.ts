@@ -144,3 +144,32 @@ class PlanetGeneratorDebug3 extends PlanetGenerator {
         );
     }
 }
+
+class PlanetGeneratorDebug4 extends PlanetGenerator {
+
+    constructor(planet: Planet) {
+        super(planet);
+    }
+
+    public makeData(chunck: PlanetChunck): number[][][] {
+        return PlanetTools.Data(
+            (i, j, k) => {
+                let iGlobal = i + chunck.iPos * PlanetTools.CHUNCKSIZE;
+                let jGlobal = j + chunck.jPos * PlanetTools.CHUNCKSIZE;
+                let kGlobal = k + chunck.kPos * PlanetTools.CHUNCKSIZE;
+
+                let h = this.planet.kPosMax * PlanetTools.CHUNCKSIZE * 0.7 + 3 * Math.random();
+                if (iGlobal === 0 || iGlobal === PlanetTools.DegreeToSize(chunck.degree) - 1) {
+                    if (jGlobal === 0 || jGlobal === PlanetTools.DegreeToSize(chunck.degree) - 1) {
+                        //h = this.planet.kPosMax * PlanetTools.CHUNCKSIZE * 0.7 + 4;
+                    }
+                }
+                
+                if (kGlobal < h) {
+                    return BlockType.Rock;
+                }
+                return BlockType.None;
+            }
+        );
+    }
+}

@@ -372,7 +372,7 @@ class PlanetChunckMeshBuilder {
                     let center = PlanetChunckMeshBuilder.tmpVertices[0].add(PlanetChunckMeshBuilder.tmpVertices[1]).add(PlanetChunckMeshBuilder.tmpVertices[2]).add(PlanetChunckMeshBuilder.tmpVertices[3]);
                     center.scaleInPlace(0.25);
                     for (let i = 0; i < 4; i++) {
-                        PlanetChunckMeshBuilder.tmpVertices[i].scaleInPlace(0.97).addInPlace(center.scale(0.03));
+                        PlanetChunckMeshBuilder.tmpVertices[i].scaleInPlace(0.99).addInPlace(center.scale(0.01));
                     }
 
                     let hGlobal = (k + kPos * PlanetTools.CHUNCKSIZE + 1);
