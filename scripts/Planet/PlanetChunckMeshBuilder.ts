@@ -153,119 +153,14 @@ class PlanetChunckMeshBuilder {
 
         return vertexData;
     }
-
-    public static BuildVertexData(
-        size: number,
-        iPos: number,
-        jPos: number,
-        kPos: number,
-        data: number[][][]
-    ): BABYLON.VertexData {
-        let vertexData: BABYLON.VertexData = new BABYLON.VertexData();
-
-        if (!PlanetChunckMeshBuilder.tmpVertices) {
-            PlanetChunckMeshBuilder.tmpVertices = [];
-            for (let i: number = 0; i < 8; i++) {
-                PlanetChunckMeshBuilder.tmpVertices[i] = BABYLON.Vector3.Zero();
-            }
-        }
-        else {
-            for (let i: number = 0; i < 8; i++) {
-                PlanetChunckMeshBuilder.tmpVertices[i].copyFromFloats(0, 0, 0);
-            }
-        }
-
-        let positions: number[] = [];
-        let indices: number[] = [];
-        let uvs: number[] = [];
-        let colors: number[] = [];
-
-        for (let i: number = 0; i < PlanetTools.CHUNCKSIZE; i++) {
-            for (let j: number = 0; j < PlanetTools.CHUNCKSIZE; j++) {
-                for (let k: number = 0; k < PlanetTools.CHUNCKSIZE; k++) {
-                    if (data[i][j][k] !== 0) {
-                        let y: number = i + iPos * PlanetTools.CHUNCKSIZE;
-                        let z: number = j + jPos * PlanetTools.CHUNCKSIZE;
-                        PlanetChunckMeshBuilder.GetVertexToRef(size, y, z, PlanetChunckMeshBuilder.tmpVertices[0]);
-                        PlanetChunckMeshBuilder.GetVertexToRef(size, y, z + 1, PlanetChunckMeshBuilder.tmpVertices[1]);
-                        PlanetChunckMeshBuilder.GetVertexToRef(size, y + 1, z, PlanetChunckMeshBuilder.tmpVertices[2]);
-                        PlanetChunckMeshBuilder.GetVertexToRef(size, y + 1, z + 1, PlanetChunckMeshBuilder.tmpVertices[3]);
-
-                        let hGlobal = (k + kPos * PlanetTools.CHUNCKSIZE + 1);
-                        let hLow = PlanetTools.KGlobalToAltitude(hGlobal);
-                        let hHigh = PlanetTools.KGlobalToAltitude(hGlobal + 1);
-
-                        PlanetChunckMeshBuilder.tmpVertices[0].scaleToRef(hHigh, PlanetChunckMeshBuilder.tmpVertices[4]);
-                        PlanetChunckMeshBuilder.tmpVertices[1].scaleToRef(hHigh, PlanetChunckMeshBuilder.tmpVertices[5]);
-                        PlanetChunckMeshBuilder.tmpVertices[2].scaleToRef(hHigh, PlanetChunckMeshBuilder.tmpVertices[6]);
-                        PlanetChunckMeshBuilder.tmpVertices[3].scaleToRef(hHigh, PlanetChunckMeshBuilder.tmpVertices[7]);
-
-                        PlanetChunckMeshBuilder.tmpVertices[0].scaleInPlace(hLow);
-                        PlanetChunckMeshBuilder.tmpVertices[1].scaleInPlace(hLow);
-                        PlanetChunckMeshBuilder.tmpVertices[2].scaleInPlace(hLow);
-                        PlanetChunckMeshBuilder.tmpVertices[3].scaleInPlace(hLow);
-                        
-
-                        let c = PlanetChunckMeshBuilder.BlockColor.get(data[i][j][k]);
-                        if (!c) {
-                            c = PlanetChunckMeshBuilder.BlockColor.get(136);
-                        }
-
-                        if (i - 1 < 0 || data[i - 1][j][k] === 0) {
-                            MeshTools.PushQuad(PlanetChunckMeshBuilder.tmpVertices, 1, 5, 4, 0, positions, indices);
-                            MeshTools.PushSideQuadUvs(data[i][j][k], uvs);
-                            MeshTools.PushQuadColor(c.r, c.g, c.b, 1, colors);
-                        }
-                        if (j - 1 < 0 || data[i][j - 1][k] === 0) {
-                            MeshTools.PushQuad(PlanetChunckMeshBuilder.tmpVertices, 0, 4, 6, 2, positions, indices);
-                            MeshTools.PushSideQuadUvs(data[i][j][k], uvs);
-                            MeshTools.PushQuadColor(c.r, c.g, c.b, 1, colors);
-                        }
-                        if (k - 1 < 0 || data[i][j][k - 1] === 0) {
-                            MeshTools.PushQuad(PlanetChunckMeshBuilder.tmpVertices, 0, 2, 3, 1, positions, indices);
-                            MeshTools.PushTopQuadUvs(data[i][j][k], uvs);
-                            MeshTools.PushQuadColor(c.r, c.g, c.b, 1, colors);
-                        }
-                        if (i + 1 >= PlanetTools.CHUNCKSIZE || data[i + 1][j][k] === 0) {
-                            MeshTools.PushQuad(PlanetChunckMeshBuilder.tmpVertices, 2, 6, 7, 3, positions, indices);
-                            MeshTools.PushSideQuadUvs(data[i][j][k], uvs);
-                            MeshTools.PushQuadColor(c.r, c.g, c.b, 1, colors);
-                        }
-                        if (j + 1 >= PlanetTools.CHUNCKSIZE || data[i][j + 1][k] === 0) {
-                            MeshTools.PushQuad(PlanetChunckMeshBuilder.tmpVertices, 3, 7, 5, 1, positions, indices);
-                            MeshTools.PushSideQuadUvs(data[i][j][k], uvs);
-                            MeshTools.PushQuadColor(c.r, c.g, c.b, 1, colors);
-                        }
-                        if (k + 1 >= PlanetTools.CHUNCKSIZE || data[i][j][k + 1] === 0) {
-                            MeshTools.PushQuad(PlanetChunckMeshBuilder.tmpVertices, 4, 5, 7, 6, positions, indices);
-                            MeshTools.PushTopQuadUvs(data[i][j][k], uvs);
-                            MeshTools.PushQuadColor(c.r, c.g, c.b, 1, colors);
-                        }
-                    }
-                }
-            }
-        }
-
-        let normals: number[] = [];
-        vertexData.positions = positions;
-        vertexData.indices = indices;
-        vertexData.uvs = uvs;
-        vertexData.colors = colors;
-        
-        BABYLON.VertexData.ComputeNormals(positions, indices, normals);
-        vertexData.normals = normals;
-
-        return vertexData;
-    }
-
     
-    public static BuildVertexData_V2(
+    public static BuildVertexData(
         chunck: PlanetChunck,
         iPos: number,
         jPos: number,
         kPos: number
     ): BABYLON.VertexData {
-        let size = chunck.GetSize();
+        let size = chunck.size;
         let vertexData: BABYLON.VertexData = new BABYLON.VertexData();
 
         if (!PlanetChunckMeshBuilder.tmpVertices || PlanetChunckMeshBuilder.tmpVertices.length < 15) {
@@ -321,27 +216,14 @@ class PlanetChunckMeshBuilder {
         if (chunck.side === Side.Top || chunck.side === Side.Bottom) {
             if (chunck.iPos === 0) {
                 firstI = - 1;
-                if (chunck.jPos === 0) {
-                    chunckCornerCase = true;
-                }
-                if (chunck.jPos === PlanetTools.DegreeToChuncksCount(chunck.degree) - 1) {
-                    chunckCornerCase = true;
-                }
-            }
-            if (chunck.iPos === PlanetTools.DegreeToChuncksCount(chunck.degree) - 1) {
-                if (chunck.jPos === 0) {
-                    chunckCornerCase = true;
-                }
-                if (chunck.jPos === PlanetTools.DegreeToChuncksCount(chunck.degree) - 1) {
-                    chunckCornerCase = true;
-                }
             }
             if (chunck.jPos === 0) {
                 firstJ = - 1;
             }
+            chunckCornerCase = chunck.isCorner;
         }
         if (chunck.side <= Side.Left) {
-            if (chunck.jPos === PlanetTools.DegreeToChuncksCount(chunck.degree) - 1) {
+            if (chunck.jPos === chunck.chunckCount - 1) {
                 lastJ = PlanetTools.CHUNCKSIZE - 1;
             }
         }
@@ -362,7 +244,7 @@ class PlanetChunckMeshBuilder {
                                     }
                                 }
                             }
-                            if (chunck.jPos === PlanetTools.DegreeToChuncksCount(chunck.degree) - 1) {
+                            if (chunck.jPos === chunck.chunckCount - 1) {
                                 if (i === firstI) {
                                     if (j === lastJ - 1) {
                                         cornerCase = true;
@@ -370,7 +252,7 @@ class PlanetChunckMeshBuilder {
                                 }
                             }
                         }
-                        if (chunck.iPos === PlanetTools.DegreeToChuncksCount(chunck.degree) - 1) {
+                        if (chunck.iPos === chunck.chunckCount - 1) {
                             if (chunck.jPos === 0) {
                                 if (i === PlanetTools.CHUNCKSIZE - 1) {
                                     if (j === firstJ) {
@@ -378,7 +260,7 @@ class PlanetChunckMeshBuilder {
                                     }
                                 }
                             }
-                            if (chunck.jPos === PlanetTools.DegreeToChuncksCount(chunck.degree) - 1) {
+                            if (chunck.jPos === chunck.chunckCount - 1) {
                                 if (i === PlanetTools.CHUNCKSIZE - 1) {
                                     if (j === lastJ - 1) {
                                         cornerCase = true;
@@ -473,14 +355,6 @@ class PlanetChunckMeshBuilder {
                         PlanetChunckMeshBuilder.GetVertexToRef(2 * size, 2 * (iGlobal) + 1, 2 * (jGlobal + 1) + 1, PlanetChunckMeshBuilder.tmpVertices[1]);
                         PlanetChunckMeshBuilder.GetVertexToRef(2 * size, 2 * (iGlobal + 1) + 1, 2 * (jGlobal) + 1, PlanetChunckMeshBuilder.tmpVertices[2]);
                         PlanetChunckMeshBuilder.GetVertexToRef(2 * size, 2 * (iGlobal + 1) + 1, 2 * (jGlobal + 1) + 1, PlanetChunckMeshBuilder.tmpVertices[3]);
-    
-                        /*
-                        let center = PlanetChunckMeshBuilder.tmpVertices[0].add(PlanetChunckMeshBuilder.tmpVertices[1]).add(PlanetChunckMeshBuilder.tmpVertices[2]).add(PlanetChunckMeshBuilder.tmpVertices[3]);
-                        center.scaleInPlace(0.25);
-                        for (let i = 0; i < 4; i++) {
-                            PlanetChunckMeshBuilder.tmpVertices[i].scaleInPlace(0.99).addInPlace(center.scale(0.01));
-                        }
-                        */
     
                         let hGlobal = (k + kPos * PlanetTools.CHUNCKSIZE + 1);
                         let hLow = PlanetTools.KGlobalToAltitude(hGlobal) * 0.5 + PlanetTools.KGlobalToAltitude(hGlobal + 1) * 0.5;
@@ -630,6 +504,111 @@ class PlanetChunckMeshBuilder {
         vertexData.indices = indices;
         vertexData.normals = normals;
         vertexData.uvs = uvs;
+
+        return vertexData;
+    }
+    
+
+    public static BuildVertexData_Cubic(
+        size: number,
+        iPos: number,
+        jPos: number,
+        kPos: number,
+        data: number[][][]
+    ): BABYLON.VertexData {
+        let vertexData: BABYLON.VertexData = new BABYLON.VertexData();
+
+        if (!PlanetChunckMeshBuilder.tmpVertices) {
+            PlanetChunckMeshBuilder.tmpVertices = [];
+            for (let i: number = 0; i < 8; i++) {
+                PlanetChunckMeshBuilder.tmpVertices[i] = BABYLON.Vector3.Zero();
+            }
+        }
+        else {
+            for (let i: number = 0; i < 8; i++) {
+                PlanetChunckMeshBuilder.tmpVertices[i].copyFromFloats(0, 0, 0);
+            }
+        }
+
+        let positions: number[] = [];
+        let indices: number[] = [];
+        let uvs: number[] = [];
+        let colors: number[] = [];
+
+        for (let i: number = 0; i < PlanetTools.CHUNCKSIZE; i++) {
+            for (let j: number = 0; j < PlanetTools.CHUNCKSIZE; j++) {
+                for (let k: number = 0; k < PlanetTools.CHUNCKSIZE; k++) {
+                    if (data[i][j][k] !== 0) {
+                        let y: number = i + iPos * PlanetTools.CHUNCKSIZE;
+                        let z: number = j + jPos * PlanetTools.CHUNCKSIZE;
+                        PlanetChunckMeshBuilder.GetVertexToRef(size, y, z, PlanetChunckMeshBuilder.tmpVertices[0]);
+                        PlanetChunckMeshBuilder.GetVertexToRef(size, y, z + 1, PlanetChunckMeshBuilder.tmpVertices[1]);
+                        PlanetChunckMeshBuilder.GetVertexToRef(size, y + 1, z, PlanetChunckMeshBuilder.tmpVertices[2]);
+                        PlanetChunckMeshBuilder.GetVertexToRef(size, y + 1, z + 1, PlanetChunckMeshBuilder.tmpVertices[3]);
+
+                        let hGlobal = (k + kPos * PlanetTools.CHUNCKSIZE + 1);
+                        let hLow = PlanetTools.KGlobalToAltitude(hGlobal);
+                        let hHigh = PlanetTools.KGlobalToAltitude(hGlobal + 1);
+
+                        PlanetChunckMeshBuilder.tmpVertices[0].scaleToRef(hHigh, PlanetChunckMeshBuilder.tmpVertices[4]);
+                        PlanetChunckMeshBuilder.tmpVertices[1].scaleToRef(hHigh, PlanetChunckMeshBuilder.tmpVertices[5]);
+                        PlanetChunckMeshBuilder.tmpVertices[2].scaleToRef(hHigh, PlanetChunckMeshBuilder.tmpVertices[6]);
+                        PlanetChunckMeshBuilder.tmpVertices[3].scaleToRef(hHigh, PlanetChunckMeshBuilder.tmpVertices[7]);
+
+                        PlanetChunckMeshBuilder.tmpVertices[0].scaleInPlace(hLow);
+                        PlanetChunckMeshBuilder.tmpVertices[1].scaleInPlace(hLow);
+                        PlanetChunckMeshBuilder.tmpVertices[2].scaleInPlace(hLow);
+                        PlanetChunckMeshBuilder.tmpVertices[3].scaleInPlace(hLow);
+                        
+
+                        let c = PlanetChunckMeshBuilder.BlockColor.get(data[i][j][k]);
+                        if (!c) {
+                            c = PlanetChunckMeshBuilder.BlockColor.get(136);
+                        }
+
+                        if (i - 1 < 0 || data[i - 1][j][k] === 0) {
+                            MeshTools.PushQuad(PlanetChunckMeshBuilder.tmpVertices, 1, 5, 4, 0, positions, indices);
+                            MeshTools.PushSideQuadUvs(data[i][j][k], uvs);
+                            MeshTools.PushQuadColor(c.r, c.g, c.b, 1, colors);
+                        }
+                        if (j - 1 < 0 || data[i][j - 1][k] === 0) {
+                            MeshTools.PushQuad(PlanetChunckMeshBuilder.tmpVertices, 0, 4, 6, 2, positions, indices);
+                            MeshTools.PushSideQuadUvs(data[i][j][k], uvs);
+                            MeshTools.PushQuadColor(c.r, c.g, c.b, 1, colors);
+                        }
+                        if (k - 1 < 0 || data[i][j][k - 1] === 0) {
+                            MeshTools.PushQuad(PlanetChunckMeshBuilder.tmpVertices, 0, 2, 3, 1, positions, indices);
+                            MeshTools.PushTopQuadUvs(data[i][j][k], uvs);
+                            MeshTools.PushQuadColor(c.r, c.g, c.b, 1, colors);
+                        }
+                        if (i + 1 >= PlanetTools.CHUNCKSIZE || data[i + 1][j][k] === 0) {
+                            MeshTools.PushQuad(PlanetChunckMeshBuilder.tmpVertices, 2, 6, 7, 3, positions, indices);
+                            MeshTools.PushSideQuadUvs(data[i][j][k], uvs);
+                            MeshTools.PushQuadColor(c.r, c.g, c.b, 1, colors);
+                        }
+                        if (j + 1 >= PlanetTools.CHUNCKSIZE || data[i][j + 1][k] === 0) {
+                            MeshTools.PushQuad(PlanetChunckMeshBuilder.tmpVertices, 3, 7, 5, 1, positions, indices);
+                            MeshTools.PushSideQuadUvs(data[i][j][k], uvs);
+                            MeshTools.PushQuadColor(c.r, c.g, c.b, 1, colors);
+                        }
+                        if (k + 1 >= PlanetTools.CHUNCKSIZE || data[i][j][k + 1] === 0) {
+                            MeshTools.PushQuad(PlanetChunckMeshBuilder.tmpVertices, 4, 5, 7, 6, positions, indices);
+                            MeshTools.PushTopQuadUvs(data[i][j][k], uvs);
+                            MeshTools.PushQuadColor(c.r, c.g, c.b, 1, colors);
+                        }
+                    }
+                }
+            }
+        }
+
+        let normals: number[] = [];
+        vertexData.positions = positions;
+        vertexData.indices = indices;
+        vertexData.uvs = uvs;
+        vertexData.colors = colors;
+        
+        BABYLON.VertexData.ComputeNormals(positions, indices, normals);
+        vertexData.normals = normals;
 
         return vertexData;
     }

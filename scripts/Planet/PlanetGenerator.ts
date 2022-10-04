@@ -37,7 +37,7 @@ class PlanetGeneratorEarth extends PlanetGenerator {
     }
 
     public makeData(chunck: PlanetChunck): number[][][] {
-        let f = Math.pow(2, this._mainHeightMap.degree - PlanetTools.KPosToDegree(chunck.kPos));
+        let f = Math.pow(2, this._mainHeightMap.degree - chunck.degree);
 
         return PlanetTools.Data(
             (i, j, k) => {

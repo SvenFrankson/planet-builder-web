@@ -19,11 +19,17 @@ class PlanetChunck {
     public get chunckManager(): PlanetChunckManager {
         return this.planetSide.chunckManager;
     }
+    private _degree: number = 0;
     public get degree(): number {
-        return PlanetTools.KPosToDegree(this.kPos);
+        return this._degree;
     }
-    public GetSize(): number {
-        return PlanetTools.DegreeToSize(this.degree);
+    private _chunckCount: number = 0;
+    public get chunckCount(): number {
+        return this._chunckCount;
+    }
+    private _size: number = 0;
+    public get size(): number {
+        return this._size;
     }
     public GetPlanetName(): string {
         return this.planetSide.GetPlanetName();
@@ -36,6 +42,7 @@ class PlanetChunck {
     public jPos: number;
     public kPos: number;
     public isDegreeLayerBottom: boolean;
+    public isCorner: boolean;
     public Position(): { i: number; j: number; k: number } {
         return {
             i: this.iPos,
@@ -53,8 +60,8 @@ class PlanetChunck {
         if (!this.dataInitialized) {
             this.initializeData();
         }
-        if (this.side <= Side.Left) {
-            if (this.jPos === PlanetTools.DegreeToChuncksCount(this.degree) - 1) {
+        if (this.side <= Side.Left && this.isCorner) {
+            if (this.jPos === this.chunckCount - 1) {
                 if (this.iPos === 0) {
                     if (i === 0) {
                         if (j === PlanetTools.CHUNCKSIZE - 1) {
@@ -62,7 +69,7 @@ class PlanetChunck {
                         }
                     }
                 }
-                if (this.iPos === PlanetTools.DegreeToChuncksCount(this.degree) - 1) {
+                if (this.iPos === this.chunckCount - 1) {
                     if (i === PlanetTools.CHUNCKSIZE - 1) {
                         if (j === PlanetTools.CHUNCKSIZE - 1) {
                             return this.GetData(PlanetTools.CHUNCKSIZE - 1, PlanetTools.CHUNCKSIZE, k);
@@ -79,7 +86,7 @@ class PlanetChunck {
                         }
                     }
                 }
-                if (this.iPos === PlanetTools.DegreeToChuncksCount(this.degree) - 1) {
+                if (this.iPos === this.chunckCount - 1) {
                     if (i === PlanetTools.CHUNCKSIZE - 1) {
                         if (j === 0) {
                             return this.GetData(PlanetTools.CHUNCKSIZE - 1, - 1, k);
@@ -146,9 +153,12 @@ class PlanetChunck {
         this.iPos = iPos;
         this.jPos = jPos;
         this.kPos = kPos;
+        this._degree = PlanetTools.KPosToDegree(this.kPos);
+        this._size = PlanetTools.DegreeToSize(this.degree);
+        this._chunckCount = PlanetTools.DegreeToChuncksCount(this.degree);
         this.name = "chunck:" + this.side + ":" + this.iPos + "-" + this.jPos	+ "-" + this.kPos;
         this.barycenter = PlanetTools.EvaluateVertex(
-            this.GetSize(),
+            this.size,
             PlanetTools.CHUNCKSIZE * this.iPos + PlanetTools.CHUNCKSIZE / 2,
             PlanetTools.CHUNCKSIZE * this.jPos + PlanetTools.CHUNCKSIZE / 2
         ).scale(
@@ -169,6 +179,24 @@ class PlanetChunck {
             let degreeBellow = PlanetTools.KPosToDegree(this.kPos - 1);
             if (degreeBellow != this.degree) {
                 this.isDegreeLayerBottom = true;
+            }
+        }
+
+        this.isCorner = false;
+        if (this.iPos === 0) {
+            if (this.jPos === 0) {
+                this.isCorner = true;
+            }
+            else if (this.jPos === this.chunckCount - 1) {
+                this.isCorner = true;
+            }
+        }
+        if (this.iPos === this.chunckCount - 1) {
+            if (this.jPos === 0) {
+                this.isCorner = true;
+            }
+            else if (this.jPos === this.chunckCount - 1) {
+                this.isCorner = true;
             }
         }
     }
@@ -261,7 +289,7 @@ class PlanetChunck {
             this.mesh = new BABYLON.Mesh("chunck-" + this.iPos + "-" + this.jPos + "-" + this.kPos, Game.Scene);
         }
         let vertexData: BABYLON.VertexData;
-        vertexData = PlanetChunckMeshBuilder.BuildVertexData_V2(this, this.iPos, this.jPos, this.kPos);
+        vertexData = PlanetChunckMeshBuilder.BuildVertexData(this, this.iPos, this.jPos, this.kPos);
         if (vertexData.positions.length > 0) {
             vertexData.applyToMesh(this.mesh);
             this.mesh.material = SharedMaterials.MainMaterial();
@@ -269,7 +297,7 @@ class PlanetChunck {
     
         if (this.kPos === 0) {
             vertexData = PlanetChunckMeshBuilder.BuildBedrockVertexData(
-                this.GetSize(),
+                this.size,
                 this.iPos,
                 this.jPos,
                 this.kPos,
