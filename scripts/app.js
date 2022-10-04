@@ -1302,6 +1302,7 @@ class PlanetChunckMeshBuilder {
     static get BlockColor() {
         if (!PlanetChunckMeshBuilder._BlockColor) {
             PlanetChunckMeshBuilder._BlockColor = new Map();
+            PlanetChunckMeshBuilder._BlockColor.set(BlockType.None, undefined);
             PlanetChunckMeshBuilder._BlockColor.set(BlockType.Grass, BABYLON.Color3.FromHexString("#50723C"));
             PlanetChunckMeshBuilder._BlockColor.set(BlockType.Dirt, BABYLON.Color3.FromHexString("#462521"));
             PlanetChunckMeshBuilder._BlockColor.set(BlockType.Sand, BABYLON.Color3.FromHexString("#F5B700"));
@@ -1600,15 +1601,36 @@ class PlanetChunckMeshBuilder {
                         PlanetChunckMeshBuilder.tmpVertices[1].scaleInPlace(hLow);
                         PlanetChunckMeshBuilder.tmpVertices[2].scaleInPlace(hLow);
                         PlanetChunckMeshBuilder.tmpVertices[3].scaleInPlace(hLow);
-                        let c = PlanetChunckMeshBuilder.BlockColor.get(chunck.GetData(i, j, k));
-                        if (!c) {
-                            c = PlanetChunckMeshBuilder.BlockColor.get(136);
-                        }
+                        let c;
                         let l = positions.length / 3;
                         for (let n = 0; n < partVertexData.positions.length / 3; n++) {
                             let x = partVertexData.positions[3 * n];
                             let y = partVertexData.positions[3 * n + 1];
                             let z = partVertexData.positions[3 * n + 2];
+                            if (x <= 0.5 && y <= 0.5 && z <= 0.5) {
+                                c = PlanetChunckMeshBuilder.BlockColor.get(chunck.GetData(i, j, k));
+                            }
+                            if (!c && x >= 0.5 && y <= 0.5 && z <= 0.5) {
+                                c = PlanetChunckMeshBuilder.BlockColor.get(chunck.GetData(i + 1, j, k));
+                            }
+                            if (!c && x <= 0.5 && y >= 0.5 && z <= 0.5) {
+                                c = PlanetChunckMeshBuilder.BlockColor.get(chunck.GetData(i, j, k + 1));
+                            }
+                            if (!c && x >= 0.5 && y >= 0.5 && z <= 0.5) {
+                                c = PlanetChunckMeshBuilder.BlockColor.get(chunck.GetData(i + 1, j, k + 1));
+                            }
+                            if (!c && x <= 0.5 && y <= 0.5 && z >= 0.5) {
+                                c = PlanetChunckMeshBuilder.BlockColor.get(chunck.GetData(i, j + 1, k));
+                            }
+                            if (!c && x >= 0.5 && y <= 0.5 && z >= 0.5) {
+                                c = PlanetChunckMeshBuilder.BlockColor.get(chunck.GetData(i + 1, j + 1, k));
+                            }
+                            if (!c && x <= 0.5 && y >= 0.5 && z >= 0.5) {
+                                c = PlanetChunckMeshBuilder.BlockColor.get(chunck.GetData(i, j + 1, k + 1));
+                            }
+                            if (!c && x >= 0.5 && y >= 0.5 && z >= 0.5) {
+                                c = PlanetChunckMeshBuilder.BlockColor.get(chunck.GetData(i + 1, j + 1, k + 1));
+                            }
                             v02.copyFrom(v2).subtractInPlace(v0).scaleInPlace(x).addInPlace(v0);
                             v13.copyFrom(v3).subtractInPlace(v1).scaleInPlace(x).addInPlace(v1);
                             v46.copyFrom(v6).subtractInPlace(v4).scaleInPlace(x).addInPlace(v4);
@@ -1619,6 +1641,14 @@ class PlanetChunckMeshBuilder {
                             positions.push(v.x);
                             positions.push(v.y);
                             positions.push(v.z);
+                            /*
+                            if (c) {
+                                colors.push(...c.asArray(), 1);
+                            }
+                            else {
+                                colors.push(1, 0, 1, 1);
+                            }
+                            */
                             colors.push(...colors3[chunck.side].asArray(), 1);
                         }
                         normals.push(...partVertexData.normals);
@@ -2760,45 +2790,45 @@ class PlanetTools {
         return PlanetTools._emptyVertexData;
     }
     static QuaternionForSide(side) {
-        if (side === Side.Right) {
+        if (side === Side.Top) {
             return BABYLON.Quaternion.Identity();
         }
         else if (side === Side.Left) {
-            return BABYLON.Quaternion.RotationAxis(BABYLON.Vector3.Up(), Math.PI);
+            return BABYLON.Quaternion.RotationQuaternionFromAxis(BABYLON.Axis.X.scale(-1), BABYLON.Axis.Z, BABYLON.Axis.Y);
         }
         else if (side === Side.Front) {
-            return BABYLON.Quaternion.RotationAxis(BABYLON.Vector3.Up(), (3 * Math.PI) / 2.0);
+            return BABYLON.Quaternion.RotationQuaternionFromAxis(BABYLON.Axis.Z, BABYLON.Axis.X, BABYLON.Axis.Y);
         }
         else if (side === Side.Back) {
-            return BABYLON.Quaternion.RotationAxis(BABYLON.Vector3.Up(), Math.PI / 2.0);
+            return BABYLON.Quaternion.RotationQuaternionFromAxis(BABYLON.Axis.Z.scale(-1), BABYLON.Axis.X.scale(-1), BABYLON.Axis.Y);
         }
-        else if (side === Side.Top) {
-            return BABYLON.Quaternion.RotationAxis(new BABYLON.Vector3(0, 0, 1), Math.PI / 2.0);
+        else if (side === Side.Right) {
+            return BABYLON.Quaternion.RotationQuaternionFromAxis(BABYLON.Axis.X, BABYLON.Axis.Z.scale(-1), BABYLON.Axis.Y);
         }
         else if (side === Side.Bottom) {
-            return BABYLON.Quaternion.RotationAxis(new BABYLON.Vector3(0, 0, 1), (3 * Math.PI) / 2.0);
+            return BABYLON.Quaternion.RotationQuaternionFromAxis(BABYLON.Axis.X, BABYLON.Axis.Y.scale(-1), BABYLON.Axis.Z.scale(-1));
         }
     }
     static EvaluateVertex(size, i, j) {
         if (i < 0) {
             let v = PlanetTools.EvaluateVertex(size, i + size, j);
-            return new BABYLON.Vector3(v.z, v.y, -v.x);
+            return new BABYLON.Vector3(-v.y, v.x, v.z);
         }
         if (i > size) {
             let v = PlanetTools.EvaluateVertex(size, i - size, j);
-            return new BABYLON.Vector3(-v.z, v.y, v.x);
+            return new BABYLON.Vector3(v.y, -v.x, v.z);
         }
         if (j < 0) {
             let v = PlanetTools.EvaluateVertex(size, i, j + size);
-            return new BABYLON.Vector3(v.y, -v.x, v.z);
+            return new BABYLON.Vector3(v.x, v.z, -v.y);
         }
         if (j > size) {
             let v = PlanetTools.EvaluateVertex(size, i, j - size);
-            return new BABYLON.Vector3(-v.y, v.x, v.z);
+            return new BABYLON.Vector3(v.x, -v.z, v.y);
         }
-        let yRad = -PI4 + PI2 * (j / size);
-        let zRad = -PI4 + PI2 * (i / size);
-        return new BABYLON.Vector3(1, Math.tan(yRad), Math.tan(zRad)).normalize();
+        let xRad = -PI4 + PI2 * (i / size);
+        let zRad = -PI4 + PI2 * (j / size);
+        return new BABYLON.Vector3(Math.tan(xRad), 1, Math.tan(zRad)).normalize();
     }
     static Data(callback) {
         let data = [];

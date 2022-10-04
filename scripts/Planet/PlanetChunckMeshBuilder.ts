@@ -7,6 +7,7 @@ class PlanetChunckMeshBuilder {
     public static get BlockColor(): Map<number, BABYLON.Color3> {
         if (!PlanetChunckMeshBuilder._BlockColor) {
             PlanetChunckMeshBuilder._BlockColor = new Map<number, BABYLON.Color3>();
+            PlanetChunckMeshBuilder._BlockColor.set(BlockType.None, undefined);
             PlanetChunckMeshBuilder._BlockColor.set(BlockType.Grass, BABYLON.Color3.FromHexString("#50723C"));
             PlanetChunckMeshBuilder._BlockColor.set(BlockType.Dirt, BABYLON.Color3.FromHexString("#462521"));
             PlanetChunckMeshBuilder._BlockColor.set(BlockType.Sand, BABYLON.Color3.FromHexString("#F5B700"));
@@ -370,16 +371,38 @@ class PlanetChunckMeshBuilder {
                         PlanetChunckMeshBuilder.tmpVertices[2].scaleInPlace(hLow);
                         PlanetChunckMeshBuilder.tmpVertices[3].scaleInPlace(hLow);
                         
-                        let c = PlanetChunckMeshBuilder.BlockColor.get(chunck.GetData(i, j, k));
-                        if (!c) {
-                            c = PlanetChunckMeshBuilder.BlockColor.get(136);
-                        }
+                        let c: BABYLON.Color3;
     
                         let l = positions.length / 3;
                         for (let n = 0; n < partVertexData.positions.length / 3; n++) {
                             let x = partVertexData.positions[3 * n];
                             let y = partVertexData.positions[3 * n + 1];
                             let z = partVertexData.positions[3 * n + 2];
+
+                            if (x <= 0.5 && y <= 0.5 && z <= 0.5) {
+                                c = PlanetChunckMeshBuilder.BlockColor.get(chunck.GetData(i, j, k));
+                            }
+                            if (!c && x >= 0.5 && y <= 0.5 && z <= 0.5) {
+                                c = PlanetChunckMeshBuilder.BlockColor.get(chunck.GetData(i + 1, j, k));
+                            }
+                            if (!c && x <= 0.5 && y >= 0.5 && z <= 0.5) {
+                                c = PlanetChunckMeshBuilder.BlockColor.get(chunck.GetData(i, j, k + 1));
+                            }
+                            if (!c && x >= 0.5 && y >= 0.5 && z <= 0.5) {
+                                c = PlanetChunckMeshBuilder.BlockColor.get(chunck.GetData(i + 1, j, k + 1));
+                            }
+                            if (!c && x <= 0.5 && y <= 0.5 && z >= 0.5) {
+                                c = PlanetChunckMeshBuilder.BlockColor.get(chunck.GetData(i, j + 1, k));
+                            }
+                            if (!c && x >= 0.5 && y <= 0.5 && z >= 0.5) {
+                                c = PlanetChunckMeshBuilder.BlockColor.get(chunck.GetData(i + 1, j + 1, k));
+                            }
+                            if (!c && x <= 0.5 && y >= 0.5 && z >= 0.5) {
+                                c = PlanetChunckMeshBuilder.BlockColor.get(chunck.GetData(i, j + 1, k + 1));
+                            }
+                            if (!c && x >= 0.5 && y >= 0.5 && z >= 0.5) {
+                                c = PlanetChunckMeshBuilder.BlockColor.get(chunck.GetData(i + 1, j + 1, k + 1));
+                            }
                             
                             v02.copyFrom(v2).subtractInPlace(v0).scaleInPlace(x).addInPlace(v0);
                             v13.copyFrom(v3).subtractInPlace(v1).scaleInPlace(x).addInPlace(v1);
@@ -394,7 +417,14 @@ class PlanetChunckMeshBuilder {
                             positions.push(v.x);
                             positions.push(v.y);
                             positions.push(v.z);
-                            
+                            /*
+                            if (c) {
+                                colors.push(...c.asArray(), 1);
+                            }
+                            else {
+                                colors.push(1, 0, 1, 1);
+                            }
+                            */
                             colors.push(...colors3[chunck.side].asArray(), 1);
                         }
                         normals.push(...partVertexData.normals);

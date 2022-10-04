@@ -19,38 +19,23 @@ class PlanetTools {
     }
 
     public static QuaternionForSide(side: Side): BABYLON.Quaternion {
-        if (side === Side.Right) {
+        if (side === Side.Top) {
             return BABYLON.Quaternion.Identity();
         }
         else if (side === Side.Left) {
-            return BABYLON.Quaternion.RotationAxis(
-                BABYLON.Vector3.Up(),
-                Math.PI
-            );
+            return BABYLON.Quaternion.RotationQuaternionFromAxis(BABYLON.Axis.X.scale(-1), BABYLON.Axis.Z, BABYLON.Axis.Y);
         }
         else if (side === Side.Front) {
-            return BABYLON.Quaternion.RotationAxis(
-                BABYLON.Vector3.Up(),
-                (3 * Math.PI) / 2.0
-            );
+            return BABYLON.Quaternion.RotationQuaternionFromAxis(BABYLON.Axis.Z, BABYLON.Axis.X, BABYLON.Axis.Y);
         }
         else if (side === Side.Back) {
-            return BABYLON.Quaternion.RotationAxis(
-                BABYLON.Vector3.Up(),
-                Math.PI / 2.0
-            );
+            return BABYLON.Quaternion.RotationQuaternionFromAxis(BABYLON.Axis.Z.scale(-1), BABYLON.Axis.X.scale(-1), BABYLON.Axis.Y);
         }
-        else if (side === Side.Top) {
-            return BABYLON.Quaternion.RotationAxis(
-                new BABYLON.Vector3(0, 0, 1),
-                Math.PI / 2.0
-            );
+        else if (side === Side.Right) {
+            return BABYLON.Quaternion.RotationQuaternionFromAxis(BABYLON.Axis.X, BABYLON.Axis.Z.scale(-1), BABYLON.Axis.Y);
         }
         else if (side === Side.Bottom) {
-            return BABYLON.Quaternion.RotationAxis(
-                new BABYLON.Vector3(0, 0, 1),
-                (3 * Math.PI) / 2.0
-            );
+            return BABYLON.Quaternion.RotationQuaternionFromAxis(BABYLON.Axis.X, BABYLON.Axis.Y.scale(-1), BABYLON.Axis.Z.scale(-1));
         }
     }
 
@@ -61,24 +46,24 @@ class PlanetTools {
     ): BABYLON.Vector3 {
         if (i < 0) {
             let v = PlanetTools.EvaluateVertex(size, i + size, j);
-            return new BABYLON.Vector3(v.z, v.y, - v.x);
+            return new BABYLON.Vector3(- v.y, v.x, v.z);
         }
         if (i > size) {
             let v = PlanetTools.EvaluateVertex(size, i - size, j);
-            return new BABYLON.Vector3(- v.z, v.y, v.x);
+            return new BABYLON.Vector3(v.y, - v.x, v.z);
         }
         if (j < 0) {
             let v = PlanetTools.EvaluateVertex(size, i, j + size);
-            return new BABYLON.Vector3(v.y, - v.x, v.z);
+            return new BABYLON.Vector3(v.x, v.z, - v.y);
         }
         if (j > size) {
             let v = PlanetTools.EvaluateVertex(size, i, j - size);
-            return new BABYLON.Vector3(- v.y, v.x, v.z);
+            return new BABYLON.Vector3(v.x, - v.z, v.y);
         }
-        let yRad: number = - PI4 + PI2 * (j / size);
-        let zRad: number = - PI4 + PI2 * (i / size);
+        let xRad: number = - PI4 + PI2 * (i / size);
+        let zRad: number = - PI4 + PI2 * (j / size);
 
-        return new BABYLON.Vector3(1, Math.tan(yRad), Math.tan(zRad)).normalize();
+        return new BABYLON.Vector3(Math.tan(xRad), 1, Math.tan(zRad)).normalize();
     }
 
     public static Data(callback: (i: number, j: number, k: number) => number): number[][][] {
