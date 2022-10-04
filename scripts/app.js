@@ -148,8 +148,8 @@ window.addEventListener("DOMContentLoaded", () => {
     game.chunckManager = new PlanetChunckManager(Game.Scene);
     let degree = 10;
     let planetTest = new Planet("Paulita", degree, game.chunckManager);
-    //planetTest.generator = new PlanetGeneratorEarth(planetTest, 0.60, 0.1);
-    planetTest.generator = new PlanetGeneratorDebug4(planetTest);
+    planetTest.generator = new PlanetGeneratorEarth(planetTest, 0.60, 0.1);
+    //planetTest.generator = new PlanetGeneratorDebug4(planetTest);
     let r = degree * PlanetTools.CHUNCKSIZE * 0.7;
     document.querySelector("#planet-surface").textContent = (4 * Math.PI * r * r / 1000 / 1000).toFixed(2) + " km²";
     //planetTest.generator.showDebug();
@@ -1521,14 +1521,14 @@ class PlanetChunckMeshBuilder {
     static BuildVertexData_V2(chunck, iPos, jPos, kPos) {
         let size = chunck.GetSize();
         let vertexData = new BABYLON.VertexData();
-        if (!PlanetChunckMeshBuilder.tmpVertices) {
+        if (!PlanetChunckMeshBuilder.tmpVertices || PlanetChunckMeshBuilder.tmpVertices.length < 15) {
             PlanetChunckMeshBuilder.tmpVertices = [];
-            for (let i = 0; i < 8; i++) {
+            for (let i = 0; i < 15; i++) {
                 PlanetChunckMeshBuilder.tmpVertices[i] = BABYLON.Vector3.Zero();
             }
         }
         else {
-            for (let i = 0; i < 8; i++) {
+            for (let i = 0; i < 15; i++) {
                 PlanetChunckMeshBuilder.tmpVertices[i].copyFromFloats(0, 0, 0);
             }
         }
@@ -1553,6 +1553,13 @@ class PlanetChunckMeshBuilder {
         let v5 = PlanetChunckMeshBuilder.tmpVertices[5];
         let v6 = PlanetChunckMeshBuilder.tmpVertices[6];
         let v7 = PlanetChunckMeshBuilder.tmpVertices[7];
+        let v02 = PlanetChunckMeshBuilder.tmpVertices[8];
+        let v13 = PlanetChunckMeshBuilder.tmpVertices[9];
+        let v46 = PlanetChunckMeshBuilder.tmpVertices[10];
+        let v57 = PlanetChunckMeshBuilder.tmpVertices[11];
+        let v0213 = PlanetChunckMeshBuilder.tmpVertices[12];
+        let v4657 = PlanetChunckMeshBuilder.tmpVertices[13];
+        let v = PlanetChunckMeshBuilder.tmpVertices[14];
         let firstI = 0;
         let lastI = PlanetTools.CHUNCKSIZE;
         let firstJ = 0;
@@ -1612,11 +1619,13 @@ class PlanetChunckMeshBuilder {
                     PlanetChunckMeshBuilder.GetVertexToRef(2 * size, 2 * (iGlobal) + 1, 2 * (jGlobal + 1) + 1, PlanetChunckMeshBuilder.tmpVertices[1]);
                     PlanetChunckMeshBuilder.GetVertexToRef(2 * size, 2 * (iGlobal + 1) + 1, 2 * (jGlobal) + 1, PlanetChunckMeshBuilder.tmpVertices[2]);
                     PlanetChunckMeshBuilder.GetVertexToRef(2 * size, 2 * (iGlobal + 1) + 1, 2 * (jGlobal + 1) + 1, PlanetChunckMeshBuilder.tmpVertices[3]);
+                    /*
                     let center = PlanetChunckMeshBuilder.tmpVertices[0].add(PlanetChunckMeshBuilder.tmpVertices[1]).add(PlanetChunckMeshBuilder.tmpVertices[2]).add(PlanetChunckMeshBuilder.tmpVertices[3]);
                     center.scaleInPlace(0.25);
                     for (let i = 0; i < 4; i++) {
                         PlanetChunckMeshBuilder.tmpVertices[i].scaleInPlace(0.99).addInPlace(center.scale(0.01));
                     }
+                    */
                     let hGlobal = (k + kPos * PlanetTools.CHUNCKSIZE + 1);
                     let hLow = PlanetTools.KGlobalToAltitude(hGlobal) * 0.5 + PlanetTools.KGlobalToAltitude(hGlobal + 1) * 0.5;
                     let hHigh = PlanetTools.KGlobalToAltitude(hGlobal + 1) * 0.5 + PlanetTools.KGlobalToAltitude(hGlobal + 2) * 0.5;
@@ -1637,13 +1646,13 @@ class PlanetChunckMeshBuilder {
                         let x = vertexData.positions[3 * n];
                         let y = vertexData.positions[3 * n + 1];
                         let z = vertexData.positions[3 * n + 2];
-                        let v02 = v2.subtract(v0).scaleInPlace(x).addInPlace(v0);
-                        let v13 = v3.subtract(v1).scaleInPlace(x).addInPlace(v1);
-                        let v46 = v6.subtract(v4).scaleInPlace(x).addInPlace(v4);
-                        let v57 = v7.subtract(v5).scaleInPlace(x).addInPlace(v5);
-                        let v0213 = v13.subtract(v02).scaleInPlace(z).addInPlace(v02);
-                        let v4657 = v57.subtract(v46).scaleInPlace(z).addInPlace(v46);
-                        let v = v4657.subtract(v0213).scaleInPlace(y).addInPlace(v0213);
+                        v02.copyFrom(v2).subtractInPlace(v0).scaleInPlace(x).addInPlace(v0);
+                        v13.copyFrom(v3).subtractInPlace(v1).scaleInPlace(x).addInPlace(v1);
+                        v46.copyFrom(v6).subtractInPlace(v4).scaleInPlace(x).addInPlace(v4);
+                        v57.copyFrom(v7).subtractInPlace(v5).scaleInPlace(x).addInPlace(v5);
+                        v0213.copyFrom(v13).subtractInPlace(v02).scaleInPlace(z).addInPlace(v02);
+                        v4657.copyFrom(v57).subtractInPlace(v46).scaleInPlace(z).addInPlace(v46);
+                        v.copyFrom(v4657).subtractInPlace(v0213).scaleInPlace(y).addInPlace(v0213);
                         positions.push(v.x);
                         positions.push(v.y);
                         positions.push(v.z);

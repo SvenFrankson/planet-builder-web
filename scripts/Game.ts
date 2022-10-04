@@ -128,8 +128,8 @@ window.addEventListener("DOMContentLoaded", () => {
 	let degree = 10;
 	let planetTest: Planet = new Planet("Paulita", degree, game.chunckManager);
 
-	//planetTest.generator = new PlanetGeneratorEarth(planetTest, 0.60, 0.1);
-	planetTest.generator = new PlanetGeneratorDebug4(planetTest);
+	planetTest.generator = new PlanetGeneratorEarth(planetTest, 0.60, 0.1);
+	//planetTest.generator = new PlanetGeneratorDebug4(planetTest);
 	let r = degree * PlanetTools.CHUNCKSIZE * 0.7;
 	document.querySelector("#planet-surface").textContent = (4 * Math.PI * r * r / 1000 / 1000).toFixed(2) + " km²"
 	//planetTest.generator.showDebug();
