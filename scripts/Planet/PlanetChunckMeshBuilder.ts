@@ -81,6 +81,12 @@ class PlanetChunckMeshBuilder {
         PlanetChunckMeshBuilder.GetVertexToRef(2 * size, 2 * (iGlobal + 1) + 1, 2 * (jGlobal) + 1, PlanetChunckMeshBuilder.tmpVertices[2]);
         PlanetChunckMeshBuilder.GetVertexToRef(2 * size, 2 * (iGlobal + 1) + 1, 2 * (jGlobal + 1) + 1, PlanetChunckMeshBuilder.tmpVertices[3]);
 
+        let center = PlanetChunckMeshBuilder.tmpVertices[0].add(PlanetChunckMeshBuilder.tmpVertices[1]).add(PlanetChunckMeshBuilder.tmpVertices[2]).add(PlanetChunckMeshBuilder.tmpVertices[3]);
+        center.scaleInPlace(0.25);
+        for (let i = 0; i < 4; i++) {
+            PlanetChunckMeshBuilder.tmpVertices[i].scaleInPlace(0.8).addInPlace(center.scale(0.2));
+        }
+
         let hLow = PlanetTools.KGlobalToAltitude(hGlobal);
         let hHigh = PlanetTools.KGlobalToAltitude(hGlobal + 1);
 
@@ -362,6 +368,12 @@ class PlanetChunckMeshBuilder {
                     PlanetChunckMeshBuilder.GetVertexToRef(2 * size, 2 * (iGlobal) + 1, 2 * (jGlobal + 1) + 1, PlanetChunckMeshBuilder.tmpVertices[1]);
                     PlanetChunckMeshBuilder.GetVertexToRef(2 * size, 2 * (iGlobal + 1) + 1, 2 * (jGlobal) + 1, PlanetChunckMeshBuilder.tmpVertices[2]);
                     PlanetChunckMeshBuilder.GetVertexToRef(2 * size, 2 * (iGlobal + 1) + 1, 2 * (jGlobal + 1) + 1, PlanetChunckMeshBuilder.tmpVertices[3]);
+
+                    let center = PlanetChunckMeshBuilder.tmpVertices[0].add(PlanetChunckMeshBuilder.tmpVertices[1]).add(PlanetChunckMeshBuilder.tmpVertices[2]).add(PlanetChunckMeshBuilder.tmpVertices[3]);
+                    center.scaleInPlace(0.25);
+                    for (let i = 0; i < 4; i++) {
+                        PlanetChunckMeshBuilder.tmpVertices[i].scaleInPlace(0.97).addInPlace(center.scale(0.03));
+                    }
 
                     let hGlobal = (k + kPos * PlanetTools.CHUNCKSIZE + 1);
                     let hLow = PlanetTools.KGlobalToAltitude(hGlobal) * 0.5 + PlanetTools.KGlobalToAltitude(hGlobal + 1) * 0.5;
