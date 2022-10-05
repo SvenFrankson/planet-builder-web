@@ -272,8 +272,9 @@ class PlanetChunckMeshBuilder {
                         }
                     }
                     
-                    if (cornerCase) {          
-                        if (chunck.GetData(i, j, k) != BlockType.None) {
+                    if (cornerCase) { 
+                        let d = chunck.GetData(i, j, k);
+                        if (d != BlockType.None) {
                             if (chunck.GetData(i, j, k + 1) === BlockType.None) {
                                 let iGlobal: number = i + iPos * PlanetTools.CHUNCKSIZE;
                                 let jGlobal: number = j + jPos * PlanetTools.CHUNCKSIZE;
@@ -310,8 +311,9 @@ class PlanetChunckMeshBuilder {
             
                                 let l = positions.length / 3;
                                 positions.push(v0.x, v0.y, v0.z, v1.x, v1.y, v1.z, v2.x, v2.y, v2.z)
+                                let color = PlanetChunckMeshBuilder.BlockColor.get(d);
                                 for (let n = 0; n < 3; n++) {
-                                    colors.push(1, 1, 1, 1);
+                                    colors.push(...color.asArray(), 1);
                                 }
                                 normals.push(0, 1, 0, 0, 1, 0, 0, 1, 0);
                                 indices.push(l, l + 2, l + 1);
