@@ -1430,6 +1430,7 @@ class PlanetChunckMeshBuilder {
         let uvs = [];
         let normals = [];
         let colors = [];
+        /*
         let colors3 = [
             new BABYLON.Color3(1, 0.5, 0.5),
             new BABYLON.Color3(0.5, 1, 0.5),
@@ -1438,6 +1439,7 @@ class PlanetChunckMeshBuilder {
             new BABYLON.Color3(0.5, 1, 1),
             new BABYLON.Color3(1, 0.5, 1)
         ];
+        */
         let v0 = PlanetChunckMeshBuilder.tmpVertices[0];
         let v1 = PlanetChunckMeshBuilder.tmpVertices[1];
         let v2 = PlanetChunckMeshBuilder.tmpVertices[2];
@@ -1547,7 +1549,7 @@ class PlanetChunckMeshBuilder {
                                 let l = positions.length / 3;
                                 positions.push(v0.x, v0.y, v0.z, v1.x, v1.y, v1.z, v2.x, v2.y, v2.z);
                                 for (let n = 0; n < 3; n++) {
-                                    colors.push(...colors3[chunck.side].asArray(), 1);
+                                    colors.push(1, 1, 1, 1);
                                 }
                                 normals.push(0, 1, 0, 0, 1, 0, 0, 1, 0);
                                 indices.push(l, l + 2, l + 1);
@@ -1556,28 +1558,36 @@ class PlanetChunckMeshBuilder {
                     }
                     else {
                         let ref = 0b0;
-                        if (chunck.GetData(i, j, k)) {
+                        let d0 = chunck.GetData(i, j, k);
+                        if (d0) {
                             ref |= 0b1 << 0;
                         }
-                        if (chunck.GetData(i + 1, j, k)) {
+                        let d1 = chunck.GetData(i + 1, j, k);
+                        if (d1) {
                             ref |= 0b1 << 1;
                         }
-                        if (chunck.GetData(i + 1, j + 1, k)) {
+                        let d2 = chunck.GetData(i + 1, j + 1, k);
+                        if (d2) {
                             ref |= 0b1 << 2;
                         }
-                        if (chunck.GetData(i, j + 1, k)) {
+                        let d3 = chunck.GetData(i, j + 1, k);
+                        if (d3) {
                             ref |= 0b1 << 3;
                         }
-                        if (chunck.GetData(i, j, k + 1)) {
+                        let d4 = chunck.GetData(i, j, k + 1);
+                        if (d4) {
                             ref |= 0b1 << 4;
                         }
-                        if (chunck.GetData(i + 1, j, k + 1)) {
+                        let d5 = chunck.GetData(i + 1, j, k + 1);
+                        if (d5) {
                             ref |= 0b1 << 5;
                         }
-                        if (chunck.GetData(i + 1, j + 1, k + 1)) {
+                        let d6 = chunck.GetData(i + 1, j + 1, k + 1);
+                        if (d6) {
                             ref |= 0b1 << 6;
                         }
-                        if (chunck.GetData(i, j + 1, k + 1)) {
+                        let d7 = chunck.GetData(i, j + 1, k + 1);
+                        if (d7) {
                             ref |= 0b1 << 7;
                         }
                         if (ref === 0b0 || ref === 0b11111111) {
@@ -1601,36 +1611,71 @@ class PlanetChunckMeshBuilder {
                         PlanetChunckMeshBuilder.tmpVertices[1].scaleInPlace(hLow);
                         PlanetChunckMeshBuilder.tmpVertices[2].scaleInPlace(hLow);
                         PlanetChunckMeshBuilder.tmpVertices[3].scaleInPlace(hLow);
-                        let c;
+                        let color;
                         let l = positions.length / 3;
                         for (let n = 0; n < partVertexData.positions.length / 3; n++) {
                             let x = partVertexData.positions[3 * n];
                             let y = partVertexData.positions[3 * n + 1];
                             let z = partVertexData.positions[3 * n + 2];
-                            if (x <= 0.5 && y <= 0.5 && z <= 0.5) {
-                                c = PlanetChunckMeshBuilder.BlockColor.get(chunck.GetData(i, j, k));
+                            let d = BlockType.None;
+                            let minManDist = Infinity;
+                            if (d0) {
+                                let manDistance = x + y + z;
+                                if (manDistance < minManDist) {
+                                    d = d0;
+                                    minManDist = manDistance;
+                                }
                             }
-                            if (!c && x >= 0.5 && y <= 0.5 && z <= 0.5) {
-                                c = PlanetChunckMeshBuilder.BlockColor.get(chunck.GetData(i + 1, j, k));
+                            if (d1) {
+                                let manDistance = (1 - x) + y + z;
+                                if (manDistance < minManDist) {
+                                    d = d1;
+                                    minManDist = manDistance;
+                                }
                             }
-                            if (!c && x <= 0.5 && y >= 0.5 && z <= 0.5) {
-                                c = PlanetChunckMeshBuilder.BlockColor.get(chunck.GetData(i, j, k + 1));
+                            if (d2) {
+                                let manDistance = (1 - x) + y + (1 - z);
+                                if (manDistance < minManDist) {
+                                    d = d2;
+                                    minManDist = manDistance;
+                                }
                             }
-                            if (!c && x >= 0.5 && y >= 0.5 && z <= 0.5) {
-                                c = PlanetChunckMeshBuilder.BlockColor.get(chunck.GetData(i + 1, j, k + 1));
+                            if (d3) {
+                                let manDistance = x + y + (1 - z);
+                                if (manDistance < minManDist) {
+                                    d = d3;
+                                    minManDist = manDistance;
+                                }
                             }
-                            if (!c && x <= 0.5 && y <= 0.5 && z >= 0.5) {
-                                c = PlanetChunckMeshBuilder.BlockColor.get(chunck.GetData(i, j + 1, k));
+                            if (d4) {
+                                let manDistance = x + (1 - y) + z;
+                                if (manDistance < minManDist) {
+                                    d = d4;
+                                    minManDist = manDistance;
+                                }
                             }
-                            if (!c && x >= 0.5 && y <= 0.5 && z >= 0.5) {
-                                c = PlanetChunckMeshBuilder.BlockColor.get(chunck.GetData(i + 1, j + 1, k));
+                            if (d5) {
+                                let manDistance = (1 - x) + (1 - y) + z;
+                                if (manDistance < minManDist) {
+                                    d = d5;
+                                    minManDist = manDistance;
+                                }
                             }
-                            if (!c && x <= 0.5 && y >= 0.5 && z >= 0.5) {
-                                c = PlanetChunckMeshBuilder.BlockColor.get(chunck.GetData(i, j + 1, k + 1));
+                            if (d6) {
+                                let manDistance = (1 - x) + (1 - y) + (1 - z);
+                                if (manDistance < minManDist) {
+                                    d = d6;
+                                    minManDist = manDistance;
+                                }
                             }
-                            if (!c && x >= 0.5 && y >= 0.5 && z >= 0.5) {
-                                c = PlanetChunckMeshBuilder.BlockColor.get(chunck.GetData(i + 1, j + 1, k + 1));
+                            if (d7) {
+                                let manDistance = x + (1 - y) + (1 - z);
+                                if (manDistance < minManDist) {
+                                    d = d7;
+                                    minManDist = manDistance;
+                                }
                             }
+                            color = PlanetChunckMeshBuilder.BlockColor.get(d);
                             v02.copyFrom(v2).subtractInPlace(v0).scaleInPlace(x).addInPlace(v0);
                             v13.copyFrom(v3).subtractInPlace(v1).scaleInPlace(x).addInPlace(v1);
                             v46.copyFrom(v6).subtractInPlace(v4).scaleInPlace(x).addInPlace(v4);
@@ -1641,15 +1686,12 @@ class PlanetChunckMeshBuilder {
                             positions.push(v.x);
                             positions.push(v.y);
                             positions.push(v.z);
-                            /*
-                            if (c) {
-                                colors.push(...c.asArray(), 1);
+                            if (color) {
+                                colors.push(...color.asArray(), 1);
                             }
                             else {
                                 colors.push(1, 0, 1, 1);
                             }
-                            */
-                            colors.push(...colors3[chunck.side].asArray(), 1);
                         }
                         normals.push(...partVertexData.normals);
                         for (let n = 0; n < partVertexData.indices.length; n++) {
@@ -1884,6 +1926,7 @@ class PlanetChunckVertexData {
                         let name = mesh.name;
                         let ref = PlanetChunckVertexData.NameToRef(name);
                         let data = BABYLON.VertexData.ExtractFromMesh(mesh);
+                        //data.positions = data.positions.map((n: number) => { return n * 0.98 + 0.01; });
                         if (!data.colors || data.colors.length / 4 != data.positions.length / 3) {
                             let colors = [];
                             for (let j = 0; j < data.positions.length / 3; j++) {

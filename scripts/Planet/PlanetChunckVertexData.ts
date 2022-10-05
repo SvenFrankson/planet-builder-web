@@ -95,6 +95,7 @@ class PlanetChunckVertexData {
                                 let name = mesh.name;
                                 let ref = PlanetChunckVertexData.NameToRef(name);
                                 let data = BABYLON.VertexData.ExtractFromMesh(mesh);
+                                //data.positions = data.positions.map((n: number) => { return n * 0.98 + 0.01; });
                                 if (!data.colors || data.colors.length / 4 != data.positions.length / 3) {
                                     let colors = [];
                                     for (let j = 0; j < data.positions.length / 3; j++) {
