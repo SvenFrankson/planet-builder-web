@@ -1,6 +1,6 @@
 class TerrainToonMaterial extends BABYLON.ShaderMaterial {
 
-    constructor(name: string, color: BABYLON.Color3, scene: BABYLON.Scene) {
+    constructor(name: string, scene: BABYLON.Scene) {
         super(
             name,
             scene,

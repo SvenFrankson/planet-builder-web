@@ -1,10 +1,8 @@
 class SharedMaterials {
-    private static mainMaterial: BABYLON.StandardMaterial;
-    public static MainMaterial(): BABYLON.StandardMaterial {
+    private static mainMaterial: TerrainToonMaterial;
+    public static MainMaterial(): TerrainToonMaterial {
         if (!SharedMaterials.mainMaterial) {
-            SharedMaterials.mainMaterial = new BABYLON.StandardMaterial("mainMaterial", Game.Scene);
-            //SharedMaterials.mainMaterial.diffuseTexture = new BABYLON.Texture("./resources/textures/mainTexture.png", Game.Scene);
-            SharedMaterials.mainMaterial.specularColor = BABYLON.Color3.Black();
+            SharedMaterials.mainMaterial = new TerrainToonMaterial("mainMaterial", Game.Scene);
         }
         return SharedMaterials.mainMaterial;
     }

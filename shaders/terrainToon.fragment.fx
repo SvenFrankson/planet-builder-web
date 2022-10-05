@@ -30,10 +30,12 @@ void main(void) {
     ToonBrightnessLevels[4] = 0.36;
 
     // diffuse
+    vec3 up = normalize(vPositionW);
     float ndl = dot(vNormalW, lightInvDirW);
 
-    vec3 color = colDirt;
-    if (vNormalW.y > 0.6) {
+    vec3 color = vColor;
+    /*
+    if (dot(vNormalW, up) > 0.6) {
         color = colGrass;
     }
     float d = vColor.r;
@@ -58,6 +60,7 @@ void main(void) {
             color = colSand * 1.1;
         }
     }
+    */
 
     int index = 0;
     if (ndl > ToonThresholds[0])
@@ -80,7 +83,8 @@ void main(void) {
     {
         index = 4;
     }
-    float hLeft = vPositionW.y - floor(vPositionW.y / 0.96) * 0.96;
+    float altitude = length(vPositionW);
+    float hLeft = altitude - floor(altitude / 0.96) * 0.96;
     if (hLeft > 0.06 && hLeft < 0.14 && index < 4) {
         index++;
     }
