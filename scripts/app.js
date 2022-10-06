@@ -1613,10 +1613,22 @@ class PlanetChunckMeshBuilder {
                         PlanetChunckMeshBuilder.tmpVertices[3].scaleInPlace(hLow);
                         let color;
                         let l = positions.length / 3;
-                        for (let n = 0; n < partVertexData.positions.length / 3; n++) {
-                            let x = partVertexData.positions[3 * n];
-                            let y = partVertexData.positions[3 * n + 1];
-                            let z = partVertexData.positions[3 * n + 2];
+                        for (let n = 0; n < partVertexData.indices.length / 3; n++) {
+                            let n1 = partVertexData.indices[3 * n];
+                            let n2 = partVertexData.indices[3 * n + 1];
+                            let n3 = partVertexData.indices[3 * n + 2];
+                            let x1 = partVertexData.positions[3 * n1];
+                            let y1 = partVertexData.positions[3 * n1 + 1];
+                            let z1 = partVertexData.positions[3 * n1 + 2];
+                            let x2 = partVertexData.positions[3 * n2];
+                            let y2 = partVertexData.positions[3 * n2 + 1];
+                            let z2 = partVertexData.positions[3 * n2 + 2];
+                            let x3 = partVertexData.positions[3 * n3];
+                            let y3 = partVertexData.positions[3 * n3 + 1];
+                            let z3 = partVertexData.positions[3 * n3 + 2];
+                            let x = (x1 + x2 + x3) / 3;
+                            let y = (y1 + y2 + y3) / 3;
+                            let z = (z1 + z2 + z3) / 3;
                             let d = BlockType.None;
                             let minManDist = Infinity;
                             if (d0) {
@@ -1676,6 +1688,23 @@ class PlanetChunckMeshBuilder {
                                 }
                             }
                             color = PlanetChunckMeshBuilder.BlockColor.get(d);
+                            colors[4 * (l + n1)] = color.r;
+                            colors[4 * (l + n1) + 1] = color.g;
+                            colors[4 * (l + n1) + 2] = color.b;
+                            colors[4 * (l + n1) + 3] = 1;
+                            colors[4 * (l + n2)] = color.r;
+                            colors[4 * (l + n2) + 1] = color.g;
+                            colors[4 * (l + n2) + 2] = color.b;
+                            colors[4 * (l + n2) + 3] = 1;
+                            colors[4 * (l + n3)] = color.r;
+                            colors[4 * (l + n3) + 1] = color.g;
+                            colors[4 * (l + n3) + 2] = color.b;
+                            colors[4 * (l + n3) + 3] = 1;
+                        }
+                        for (let n = 0; n < partVertexData.positions.length / 3; n++) {
+                            let x = partVertexData.positions[3 * n];
+                            let y = partVertexData.positions[3 * n + 1];
+                            let z = partVertexData.positions[3 * n + 2];
                             v02.copyFrom(v2).subtractInPlace(v0).scaleInPlace(x).addInPlace(v0);
                             v13.copyFrom(v3).subtractInPlace(v1).scaleInPlace(x).addInPlace(v1);
                             v46.copyFrom(v6).subtractInPlace(v4).scaleInPlace(x).addInPlace(v4);
@@ -1686,12 +1715,6 @@ class PlanetChunckMeshBuilder {
                             positions.push(v.x);
                             positions.push(v.y);
                             positions.push(v.z);
-                            if (color) {
-                                colors.push(...color.asArray(), 1);
-                            }
-                            else {
-                                colors.push(1, 0, 1, 1);
-                            }
                         }
                         normals.push(...partVertexData.normals);
                         for (let n = 0; n < partVertexData.indices.length; n++) {
