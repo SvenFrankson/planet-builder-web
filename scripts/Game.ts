@@ -23,6 +23,7 @@ class Game {
 		Game.Instance = this;
 		Game.Canvas = document.getElementById(canvasElement) as HTMLCanvasElement;
 		Game.Engine = new BABYLON.Engine(Game.Canvas, true);
+		console.log(Game.Engine.webGLVersion);
 	}
 
 	public createScene(): void {

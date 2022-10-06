@@ -47,6 +47,7 @@ class Game {
         Game.Instance = this;
         Game.Canvas = document.getElementById(canvasElement);
         Game.Engine = new BABYLON.Engine(Game.Canvas, true);
+        console.log(Game.Engine.webGLVersion);
     }
     createScene() {
         Game.Scene = new BABYLON.Scene(Game.Engine);
@@ -2582,7 +2583,7 @@ class TerrainToonMaterial extends BABYLON.ShaderMaterial {
             vertex: "terrainToon",
             fragment: "terrainToon",
         }, {
-            attributes: ["position", "normal", "uv", "color"],
+            attributes: ["position"],
             uniforms: ["world", "worldView", "worldViewProjection", "view", "projection"]
         });
         this.setVector3("lightInvDirW", (new BABYLON.Vector3(0.5 + Math.random(), 2.5 + Math.random(), 1.5 + Math.random())).normalize());

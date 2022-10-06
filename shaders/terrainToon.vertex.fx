@@ -1,28 +1,13 @@
-precision highp float;
+#version 300 es
 
-// Attributes
-attribute vec3 position;
-attribute vec3 normal;
-attribute vec2 uv;
-attribute vec3 color;
-
-// Uniforms
-uniform mat4 world;
+in vec3 position;
+in vec4 color;
 uniform mat4 worldViewProjection;
 
-// Varying
-varying vec3 vPositionW;
-varying vec3 vNormalW;
-varying vec2 vUV;
-varying vec3 vColor;
+flat out vec4 VertexColor;
 
-void main(void) {
-    vec4 outPosition = worldViewProjection * vec4(position, 1.0);
-    gl_Position = outPosition;
-
-    vPositionW = vec3(world * vec4(position, 1.0));
-    vNormalW = normalize(vec3(world * vec4(normal, 0.0)));
-
-    vUV = uv;
-    vColor = color;
+void main()
+{
+  gl_Position = worldViewProjection * vec4(position, 1.);
+  VertexColor = color;
 }
