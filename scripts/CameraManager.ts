@@ -40,7 +40,7 @@ class CameraManager {
         this.freeCamera.rotationQuaternion = BABYLON.Quaternion.Identity();
         this.freeCamera.minZ = 0.1;
 
-        OutlinePostProcess.AddOutlinePostProcess(this.freeCamera);
+        //OutlinePostProcess.AddOutlinePostProcess(this.freeCamera);
     }
 
     public setMode(newCameraMode: CameraMode): void {

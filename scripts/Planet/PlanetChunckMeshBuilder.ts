@@ -382,8 +382,6 @@ class PlanetChunckMeshBuilder {
                         PlanetChunckMeshBuilder.tmpVertices[2].scaleInPlace(hLow);
                         PlanetChunckMeshBuilder.tmpVertices[3].scaleInPlace(hLow);
                         
-                        let color: BABYLON.Color3;
-
                         let l = positions.length / 3;
                         for (let n = 0; n < partVertexData.indices.length / 3; n++) {
                             let n1 = partVertexData.indices[3 * n];
@@ -402,77 +400,76 @@ class PlanetChunckMeshBuilder {
                             let y2 = partVertexData.positions[3 * n3 + 1];
                             let z2 = partVertexData.positions[3 * n3 + 2];
 
-                            let x = (x0 + x1 + x2) / 3;
-                            let y = (y0 + y1 + y2) / 3;
-                            let z = (z0 + z1 + z2) / 3;
-                            let xs = [x0, x0, x1];
-                            let ys = [y0, y0, y1];
-                            let zs = [z0, z0, z1];
+                            let xs = [x0, x1, x2];
+                            let ys = [y0, y1, y2];
+                            let zs = [z0, z1, z2];
                             let ds = [];
 
-                            for (let i = 0; i < 3; i++) {
+                            for (let vIndex = 0; vIndex < 3; vIndex++) {
                                 let d = BlockType.None;
                                 let minManDist = Infinity;
                                 if (d0) {
-                                    let manDistance = xs[i] + ys[i] + zs[i];
+                                    let manDistance = xs[vIndex] + ys[vIndex] + zs[vIndex];
                                     if (manDistance < minManDist) {
                                         d = d0;
                                         minManDist = manDistance;
                                     }
                                 }
                                 if (d1) {
-                                    let manDistance = (1 - xs[i]) + ys[i] + zs[i];
+                                    let manDistance = (1 - xs[vIndex]) + ys[vIndex] + zs[vIndex];
                                     if (manDistance < minManDist) {
                                         d = d1;
                                         minManDist = manDistance;
                                     }
                                 }
                                 if (d2) {
-                                    let manDistance = (1 - xs[i]) + ys[i] + (1 - zs[i]);
+                                    let manDistance = (1 - xs[vIndex]) + ys[vIndex] + (1 - zs[vIndex]);
                                     if (manDistance < minManDist) {
                                         d = d2;
                                         minManDist = manDistance;
                                     }
                                 }
                                 if (d3) {
-                                    let manDistance = xs[i] + ys[i] + (1 - zs[i]);
+                                    let manDistance = xs[vIndex] + ys[vIndex] + (1 - zs[vIndex]);
                                     if (manDistance < minManDist) {
                                         d = d3;
                                         minManDist = manDistance;
                                     }
                                 }
                                 if (d4) {
-                                    let manDistance = xs[i] + (1 - ys[i]) + zs[i];
+                                    let manDistance = xs[vIndex] + (1 - ys[vIndex]) + zs[vIndex];
                                     if (manDistance < minManDist) {
                                         d = d4;
                                         minManDist = manDistance;
                                     }
                                 }
                                 if (d5) {
-                                    let manDistance = (1 - xs[i]) + (1 - ys[i]) + zs[i];
+                                    let manDistance = (1 - xs[vIndex]) + (1 - ys[vIndex]) + zs[vIndex];
                                     if (manDistance < minManDist) {
                                         d = d5;
                                         minManDist = manDistance;
                                     }
                                 }
                                 if (d6) {
-                                    let manDistance = (1 - xs[i]) + (1 - ys[i]) + (1 - zs[i]);
+                                    let manDistance = (1 - xs[vIndex]) + (1 - ys[vIndex]) + (1 - zs[vIndex]);
                                     if (manDistance < minManDist) {
                                         d = d6;
                                         minManDist = manDistance;
                                     }
                                 }
                                 if (d7) {
-                                    let manDistance = xs[i] + (1 - ys[i]) + (1 - zs[i]);
+                                    let manDistance = xs[vIndex] + (1 - ys[vIndex]) + (1 - zs[vIndex]);
                                     if (manDistance < minManDist) {
                                         d = d7;
                                         minManDist = manDistance;
                                     }
                                 }
-                                ds[i] = d;
+                                ds[vIndex] = d;
                             }
                             
-                            let alpha = (d0 + 10 * d1 + 100 * d2) / 1000;
+                            let alpha = ds[0] / 8;
+                            let u = ds[1] / 8;
+                            let v = ds[2] / 8;
                             
                             colors[4 * (l + n1)] = 1;
                             colors[4 * (l + n1) + 1] = 0;
@@ -488,6 +485,13 @@ class PlanetChunckMeshBuilder {
                             colors[4 * (l + n3) + 1] = 0;
                             colors[4 * (l + n3) + 2] = 1;
                             colors[4 * (l + n3) + 3] = alpha;
+
+                            uvs[2 * (l + n1)] = u;
+                            uvs[2 * (l + n1) + 1] = v;
+                            uvs[2 * (l + n2)] = u;
+                            uvs[2 * (l + n2) + 1] = v;
+                            uvs[2 * (l + n3)] = u;
+                            uvs[2 * (l + n3) + 1] = v;
                         }
     
                         for (let n = 0; n < partVertexData.positions.length / 3; n++) {

@@ -69,7 +69,6 @@ class OutlinePostProcess {
 				}
 			}
         `;
-		BABYLON.Engine.ShadersRepository = "./shaders/";
         
 		let depthMap = scene.enableDepthRenderer(camera).getDepthMap();
 		

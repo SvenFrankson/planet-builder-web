@@ -50,23 +50,28 @@ class PlanetGeneratorEarth extends PlanetGenerator {
                 if (globalK <= altitude) {
                     if (globalK > altitude - 2) {
                         if (globalK < this._seaLevel * (this.planet.kPosMax * PlanetTools.CHUNCKSIZE) + 1) {
+                            //return BlockType.Grass;
                             return BlockType.Sand;
                         }
                         return BlockType.Grass;
                     }
+                    //return BlockType.Grass;
                     return BlockType.Rock;
                 }
                 if (altitude >= this._seaLevel  * this.planet.kPosMax * PlanetTools.CHUNCKSIZE) {
                     if (tree > 0.6) {
                         if (globalK <= altitude + 7) {
+                            //return BlockType.Grass;
                             return BlockType.Wood;
                         }
                         if (globalK <= altitude + 9) {
+                            //return BlockType.Grass;
                             return BlockType.Leaf;
                         }
                     }
                     else if (tree > 0.5) {
                         if (globalK <= altitude + 1) {
+                            //return BlockType.Grass;
                             return BlockType.Wood;
                         }
                     }

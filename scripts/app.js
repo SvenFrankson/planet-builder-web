@@ -11,7 +11,7 @@ class CameraManager {
         this.freeCamera = new BABYLON.FreeCamera("Camera", BABYLON.Vector3.Zero(), Game.Scene);
         this.freeCamera.rotationQuaternion = BABYLON.Quaternion.Identity();
         this.freeCamera.minZ = 0.1;
-        OutlinePostProcess.AddOutlinePostProcess(this.freeCamera);
+        //OutlinePostProcess.AddOutlinePostProcess(this.freeCamera);
     }
     get absolutePosition() {
         if (this.cameraMode === CameraMode.Sky) {
@@ -47,6 +47,7 @@ class Game {
         Game.Instance = this;
         Game.Canvas = document.getElementById(canvasElement);
         Game.Engine = new BABYLON.Engine(Game.Canvas, true);
+        BABYLON.Engine.ShadersRepository = "./shaders/";
         console.log(Game.Engine.webGLVersion);
     }
     createScene() {
@@ -357,7 +358,6 @@ class OutlinePostProcess {
 				}
 			}
         `;
-        BABYLON.Engine.ShadersRepository = "./shaders/";
         let depthMap = scene.enableDepthRenderer(camera).getDepthMap();
         let postProcess = new BABYLON.PostProcess("Edge", "Edge", ["width", "height"], ["depthSampler"], 1, camera);
         postProcess.onApply = (effect) => {
@@ -1612,7 +1612,6 @@ class PlanetChunckMeshBuilder {
                         PlanetChunckMeshBuilder.tmpVertices[1].scaleInPlace(hLow);
                         PlanetChunckMeshBuilder.tmpVertices[2].scaleInPlace(hLow);
                         PlanetChunckMeshBuilder.tmpVertices[3].scaleInPlace(hLow);
-                        let color;
                         let l = positions.length / 3;
                         for (let n = 0; n < partVertexData.indices.length / 3; n++) {
                             let n1 = partVertexData.indices[3 * n];
@@ -1627,75 +1626,74 @@ class PlanetChunckMeshBuilder {
                             let x2 = partVertexData.positions[3 * n3];
                             let y2 = partVertexData.positions[3 * n3 + 1];
                             let z2 = partVertexData.positions[3 * n3 + 2];
-                            let x = (x0 + x1 + x2) / 3;
-                            let y = (y0 + y1 + y2) / 3;
-                            let z = (z0 + z1 + z2) / 3;
-                            let xs = [x0, x0, x1];
-                            let ys = [y0, y0, y1];
-                            let zs = [z0, z0, z1];
+                            let xs = [x0, x1, x2];
+                            let ys = [y0, y1, y2];
+                            let zs = [z0, z1, z2];
                             let ds = [];
-                            for (let i = 0; i < 3; i++) {
+                            for (let vIndex = 0; vIndex < 3; vIndex++) {
                                 let d = BlockType.None;
                                 let minManDist = Infinity;
                                 if (d0) {
-                                    let manDistance = xs[i] + ys[i] + zs[i];
+                                    let manDistance = xs[vIndex] + ys[vIndex] + zs[vIndex];
                                     if (manDistance < minManDist) {
                                         d = d0;
                                         minManDist = manDistance;
                                     }
                                 }
                                 if (d1) {
-                                    let manDistance = (1 - xs[i]) + ys[i] + zs[i];
+                                    let manDistance = (1 - xs[vIndex]) + ys[vIndex] + zs[vIndex];
                                     if (manDistance < minManDist) {
                                         d = d1;
                                         minManDist = manDistance;
                                     }
                                 }
                                 if (d2) {
-                                    let manDistance = (1 - xs[i]) + ys[i] + (1 - zs[i]);
+                                    let manDistance = (1 - xs[vIndex]) + ys[vIndex] + (1 - zs[vIndex]);
                                     if (manDistance < minManDist) {
                                         d = d2;
                                         minManDist = manDistance;
                                     }
                                 }
                                 if (d3) {
-                                    let manDistance = xs[i] + ys[i] + (1 - zs[i]);
+                                    let manDistance = xs[vIndex] + ys[vIndex] + (1 - zs[vIndex]);
                                     if (manDistance < minManDist) {
                                         d = d3;
                                         minManDist = manDistance;
                                     }
                                 }
                                 if (d4) {
-                                    let manDistance = xs[i] + (1 - ys[i]) + zs[i];
+                                    let manDistance = xs[vIndex] + (1 - ys[vIndex]) + zs[vIndex];
                                     if (manDistance < minManDist) {
                                         d = d4;
                                         minManDist = manDistance;
                                     }
                                 }
                                 if (d5) {
-                                    let manDistance = (1 - xs[i]) + (1 - ys[i]) + zs[i];
+                                    let manDistance = (1 - xs[vIndex]) + (1 - ys[vIndex]) + zs[vIndex];
                                     if (manDistance < minManDist) {
                                         d = d5;
                                         minManDist = manDistance;
                                     }
                                 }
                                 if (d6) {
-                                    let manDistance = (1 - xs[i]) + (1 - ys[i]) + (1 - zs[i]);
+                                    let manDistance = (1 - xs[vIndex]) + (1 - ys[vIndex]) + (1 - zs[vIndex]);
                                     if (manDistance < minManDist) {
                                         d = d6;
                                         minManDist = manDistance;
                                     }
                                 }
                                 if (d7) {
-                                    let manDistance = xs[i] + (1 - ys[i]) + (1 - zs[i]);
+                                    let manDistance = xs[vIndex] + (1 - ys[vIndex]) + (1 - zs[vIndex]);
                                     if (manDistance < minManDist) {
                                         d = d7;
                                         minManDist = manDistance;
                                     }
                                 }
-                                ds[i] = d;
+                                ds[vIndex] = d;
                             }
-                            let alpha = (d0 + 10 * d1 + 100 * d2) / 1000;
+                            let alpha = ds[0] / 8;
+                            let u = ds[1] / 8;
+                            let v = ds[2] / 8;
                             colors[4 * (l + n1)] = 1;
                             colors[4 * (l + n1) + 1] = 0;
                             colors[4 * (l + n1) + 2] = 0;
@@ -1708,6 +1706,12 @@ class PlanetChunckMeshBuilder {
                             colors[4 * (l + n3) + 1] = 0;
                             colors[4 * (l + n3) + 2] = 1;
                             colors[4 * (l + n3) + 3] = alpha;
+                            uvs[2 * (l + n1)] = u;
+                            uvs[2 * (l + n1) + 1] = v;
+                            uvs[2 * (l + n2)] = u;
+                            uvs[2 * (l + n2) + 1] = v;
+                            uvs[2 * (l + n3)] = u;
+                            uvs[2 * (l + n3) + 1] = v;
                         }
                         for (let n = 0; n < partVertexData.positions.length / 3; n++) {
                             let x = partVertexData.positions[3 * n];
@@ -1970,6 +1974,25 @@ class PlanetChunckVertexData {
             let x2 = data.positions[3 * i2];
             let y2 = data.positions[3 * i2 + 1];
             let z2 = data.positions[3 * i2 + 2];
+            /*
+            let x = x0 + x1 + x2;
+            x = x / 3;
+            x0 = 0.95 * x0 + 0.05 * x;
+            x1 = 0.95 * x1 + 0.05 * x;
+            x2 = 0.95 * x2 + 0.05 * x;
+            
+            let y = y0 + y1 + y2;
+            y = y / 3;
+            y0 = 0.95 * y0 + 0.05 * y;
+            y1 = 0.95 * y1 + 0.05 * y;
+            y2 = 0.95 * y2 + 0.05 * y;
+            
+            let z = z0 + z1 + z2;
+            z = z / 3;
+            z0 = 0.95 * z0 + 0.05 * z;
+            z1 = 0.95 * z1 + 0.05 * z;
+            z2 = 0.95 * z2 + 0.05 * z;
+            */
             positions.push(x0, y0, z0);
             positions.push(x1, y1, z1);
             positions.push(x2, y2, z2);
@@ -2286,23 +2309,28 @@ class PlanetGeneratorEarth extends PlanetGenerator {
             if (globalK <= altitude) {
                 if (globalK > altitude - 2) {
                     if (globalK < this._seaLevel * (this.planet.kPosMax * PlanetTools.CHUNCKSIZE) + 1) {
+                        //return BlockType.Grass;
                         return BlockType.Sand;
                     }
                     return BlockType.Grass;
                 }
+                //return BlockType.Grass;
                 return BlockType.Rock;
             }
             if (altitude >= this._seaLevel * this.planet.kPosMax * PlanetTools.CHUNCKSIZE) {
                 if (tree > 0.6) {
                     if (globalK <= altitude + 7) {
+                        //return BlockType.Grass;
                         return BlockType.Wood;
                     }
                     if (globalK <= altitude + 9) {
+                        //return BlockType.Grass;
                         return BlockType.Leaf;
                     }
                 }
                 else if (tree > 0.5) {
                     if (globalK <= altitude + 1) {
+                        //return BlockType.Grass;
                         return BlockType.Wood;
                     }
                 }

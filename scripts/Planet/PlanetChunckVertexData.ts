@@ -108,6 +108,26 @@ class PlanetChunckVertexData {
             let x2 = data.positions[3 * i2];
             let y2 = data.positions[3 * i2 + 1];
             let z2 = data.positions[3 * i2 + 2];
+
+            /*
+            let x = x0 + x1 + x2;
+            x = x / 3;
+            x0 = 0.95 * x0 + 0.05 * x;
+            x1 = 0.95 * x1 + 0.05 * x;
+            x2 = 0.95 * x2 + 0.05 * x;
+            
+            let y = y0 + y1 + y2;
+            y = y / 3;
+            y0 = 0.95 * y0 + 0.05 * y;
+            y1 = 0.95 * y1 + 0.05 * y;
+            y2 = 0.95 * y2 + 0.05 * y;
+            
+            let z = z0 + z1 + z2;
+            z = z / 3;
+            z0 = 0.95 * z0 + 0.05 * z;
+            z1 = 0.95 * z1 + 0.05 * z;
+            z2 = 0.95 * z2 + 0.05 * z;
+            */
             
             positions.push(x0, y0, z0);
             positions.push(x1, y1, z1);
