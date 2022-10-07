@@ -10,7 +10,7 @@ uniform vec3 lightInvDirW;
 
 out vec3 vPositionW;
 out vec3 vNormalW;
-flat out vec4 vColor;
+out vec4 vColor;
 
 void main()
 {
