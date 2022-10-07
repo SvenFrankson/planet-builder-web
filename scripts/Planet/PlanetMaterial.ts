@@ -9,7 +9,7 @@ class TerrainToonMaterial extends BABYLON.ShaderMaterial {
                 fragment: "terrainToon",
             },
             {
-                attributes: ["position"],
+                attributes: ["position", "normal", "uv", "color"],
                 uniforms: ["world", "worldView", "worldViewProjection", "view", "projection"]
             }
         );
