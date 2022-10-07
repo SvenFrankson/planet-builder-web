@@ -79,6 +79,126 @@ class PlanetChunckVertexData {
         return false;
     }
 
+    public static SplitVertexDataTriangles(data: BABYLON.VertexData): BABYLON.VertexData {
+        let splitData = new BABYLON.VertexData();
+        let positions: number[] = [];
+        let indices: number[] = [];
+        let normals: number[] = [];
+        let uvs: number[] = [];
+        let colors: number[] = [];
+
+        let useUvs = data.uvs && data.uvs.length > 0;
+        let useColors = data.colors && data.colors.length > 0;
+        
+        for (let i = 0; i < data.indices.length / 3; i++) {
+            let l = positions.length / 3;
+
+            let i0 = data.indices[3 * i];
+            let i1 = data.indices[3 * i + 1];
+            let i2 = data.indices[3 * i + 2];
+
+            let x0 = data.positions[3 * i0];
+            let y0 = data.positions[3 * i0 + 1];
+            let z0 = data.positions[3 * i0 + 2];
+            
+            let x1 = data.positions[3 * i1];
+            let y1 = data.positions[3 * i1 + 1];
+            let z1 = data.positions[3 * i1 + 2];
+            
+            let x2 = data.positions[3 * i2];
+            let y2 = data.positions[3 * i2 + 1];
+            let z2 = data.positions[3 * i2 + 2];
+            
+            positions.push(x0, y0, z0);
+            positions.push(x1, y1, z1);
+            positions.push(x2, y2, z2);
+
+            let nx0 = data.normals[3 * i0];
+            let ny0 = data.normals[3 * i0 + 1];
+            let nz0 = data.normals[3 * i0 + 2];
+            
+            let nx1 = data.normals[3 * i1];
+            let ny1 = data.normals[3 * i1 + 1];
+            let nz1 = data.normals[3 * i1 + 2];
+            
+            let nx2 = data.normals[3 * i2];
+            let ny2 = data.normals[3 * i2 + 1];
+            let nz2 = data.normals[3 * i2 + 2];
+            
+            normals.push(nx0, ny0, nz0);
+            normals.push(nx1, ny1, nz1);
+            normals.push(nx2, ny2, nz2);
+
+            let u0: number;
+            let v0: number;
+            let u1: number;
+            let v1: number;
+            let u2: number;
+            let v2: number;
+            if (useUvs) {
+                u0 = data.positions[2 * i0];
+                v0 = data.positions[2 * i0 + 1];
+                
+                u1 = data.positions[2 * i1];
+                v1 = data.positions[2 * i1 + 1];
+                
+                u2 = data.positions[2 * i2];
+                v2 = data.positions[2 * i2 + 1];
+
+                uvs.push(u0, v0);
+                uvs.push(u1, v1);
+                uvs.push(u2, v2);
+            }
+
+            let r0: number;
+            let g0: number;
+            let b0: number;
+            let a0: number;
+            let r1: number;
+            let g1: number;
+            let b1: number;
+            let a1: number;
+            let r2: number;
+            let g2: number;
+            let b2: number;
+            let a2: number;
+            if (useColors) {
+                r0 = data.colors[4 * i0];
+                g0 = data.colors[4 * i0 + 1];
+                b0 = data.colors[4 * i0 + 2];
+                a0 = data.colors[4 * i0 + 3];
+
+                r1 = data.colors[4 * i0];
+                g1 = data.colors[4 * i0 + 1];
+                b1 = data.colors[4 * i0 + 2];
+                a1 = data.colors[4 * i0 + 3];
+
+                r2 = data.colors[4 * i0];
+                g2 = data.colors[4 * i0 + 1];
+                b2 = data.colors[4 * i0 + 2];
+                a2 = data.colors[4 * i0 + 3];
+
+                colors.push(r0, g0, b0, a0);
+                colors.push(r1, g1, b1, a1);
+                colors.push(r2, g2, b2, a2);
+            }
+
+            indices.push(l, l + 1, l + 2);
+        }
+
+        splitData.positions = positions;
+        splitData.indices = indices;
+        splitData.normals = normals;
+        if (useUvs) {
+            splitData.uvs = uvs;
+        }
+        if (useColors) {
+            splitData.colors = colors;
+        }
+
+        return splitData;
+    }
+
     private static async _LoadChunckVertexDatas(): Promise<void> {
         return new Promise<void>(
             resolve => {
@@ -95,6 +215,7 @@ class PlanetChunckVertexData {
                                 let name = mesh.name;
                                 let ref = PlanetChunckVertexData.NameToRef(name);
                                 let data = BABYLON.VertexData.ExtractFromMesh(mesh);
+                                data = PlanetChunckVertexData.SplitVertexDataTriangles(data);
                                 //data.positions = data.positions.map((n: number) => { return n * 0.98 + 0.01; });
                                 if (!data.colors || data.colors.length / 4 != data.positions.length / 3) {
                                     let colors = [];

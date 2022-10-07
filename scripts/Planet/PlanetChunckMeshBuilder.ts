@@ -390,96 +390,104 @@ class PlanetChunckMeshBuilder {
                             let n2 = partVertexData.indices[3 * n + 1];
                             let n3 = partVertexData.indices[3 * n + 2];
 
-                            let x1 = partVertexData.positions[3 * n1];
-                            let y1 = partVertexData.positions[3 * n1 + 1];
-                            let z1 = partVertexData.positions[3 * n1 + 2];
+                            let x0 = partVertexData.positions[3 * n1];
+                            let y0 = partVertexData.positions[3 * n1 + 1];
+                            let z0 = partVertexData.positions[3 * n1 + 2];
 
-                            let x2 = partVertexData.positions[3 * n2];
-                            let y2 = partVertexData.positions[3 * n2 + 1];
-                            let z2 = partVertexData.positions[3 * n2 + 2];
+                            let x1 = partVertexData.positions[3 * n2];
+                            let y1 = partVertexData.positions[3 * n2 + 1];
+                            let z1 = partVertexData.positions[3 * n2 + 2];
 
-                            let x3 = partVertexData.positions[3 * n3];
-                            let y3 = partVertexData.positions[3 * n3 + 1];
-                            let z3 = partVertexData.positions[3 * n3 + 2];
+                            let x2 = partVertexData.positions[3 * n3];
+                            let y2 = partVertexData.positions[3 * n3 + 1];
+                            let z2 = partVertexData.positions[3 * n3 + 2];
 
-                            let x = (x1 + x2 + x3) / 3;
-                            let y = (y1 + y2 + y3) / 3;
-                            let z = (z1 + z2 + z3) / 3;
+                            let x = (x0 + x1 + x2) / 3;
+                            let y = (y0 + y1 + y2) / 3;
+                            let z = (z0 + z1 + z2) / 3;
+                            let xs = [x0, x0, x1];
+                            let ys = [y0, y0, y1];
+                            let zs = [z0, z0, z1];
+                            let ds = [];
 
-                            let d = BlockType.None;
-                            let minManDist = Infinity;
-                            if (d0) {
-                                let manDistance = x + y + z;
-                                if (manDistance < minManDist) {
-                                    d = d0;
-                                    minManDist = manDistance;
+                            for (let i = 0; i < 3; i++) {
+                                let d = BlockType.None;
+                                let minManDist = Infinity;
+                                if (d0) {
+                                    let manDistance = xs[i] + ys[i] + zs[i];
+                                    if (manDistance < minManDist) {
+                                        d = d0;
+                                        minManDist = manDistance;
+                                    }
                                 }
-                            }
-                            if (d1) {
-                                let manDistance = (1 - x) + y + z;
-                                if (manDistance < minManDist) {
-                                    d = d1;
-                                    minManDist = manDistance;
+                                if (d1) {
+                                    let manDistance = (1 - xs[i]) + ys[i] + zs[i];
+                                    if (manDistance < minManDist) {
+                                        d = d1;
+                                        minManDist = manDistance;
+                                    }
                                 }
-                            }
-                            if (d2) {
-                                let manDistance = (1 - x) + y + (1 - z);
-                                if (manDistance < minManDist) {
-                                    d = d2;
-                                    minManDist = manDistance;
+                                if (d2) {
+                                    let manDistance = (1 - xs[i]) + ys[i] + (1 - zs[i]);
+                                    if (manDistance < minManDist) {
+                                        d = d2;
+                                        minManDist = manDistance;
+                                    }
                                 }
-                            }
-                            if (d3) {
-                                let manDistance = x + y + (1 - z);
-                                if (manDistance < minManDist) {
-                                    d = d3;
-                                    minManDist = manDistance;
+                                if (d3) {
+                                    let manDistance = xs[i] + ys[i] + (1 - zs[i]);
+                                    if (manDistance < minManDist) {
+                                        d = d3;
+                                        minManDist = manDistance;
+                                    }
                                 }
-                            }
-                            if (d4) {
-                                let manDistance = x + (1 - y) + z;
-                                if (manDistance < minManDist) {
-                                    d = d4;
-                                    minManDist = manDistance;
+                                if (d4) {
+                                    let manDistance = xs[i] + (1 - ys[i]) + zs[i];
+                                    if (manDistance < minManDist) {
+                                        d = d4;
+                                        minManDist = manDistance;
+                                    }
                                 }
-                            }
-                            if (d5) {
-                                let manDistance = (1 - x) + (1 - y) + z;
-                                if (manDistance < minManDist) {
-                                    d = d5;
-                                    minManDist = manDistance;
+                                if (d5) {
+                                    let manDistance = (1 - xs[i]) + (1 - ys[i]) + zs[i];
+                                    if (manDistance < minManDist) {
+                                        d = d5;
+                                        minManDist = manDistance;
+                                    }
                                 }
-                            }
-                            if (d6) {
-                                let manDistance = (1 - x) + (1 - y) + (1 - z);
-                                if (manDistance < minManDist) {
-                                    d = d6;
-                                    minManDist = manDistance;
+                                if (d6) {
+                                    let manDistance = (1 - xs[i]) + (1 - ys[i]) + (1 - zs[i]);
+                                    if (manDistance < minManDist) {
+                                        d = d6;
+                                        minManDist = manDistance;
+                                    }
                                 }
-                            }
-                            if (d7) {
-                                let manDistance = x + (1 - y) + (1 - z);
-                                if (manDistance < minManDist) {
-                                    d = d7;
-                                    minManDist = manDistance;
+                                if (d7) {
+                                    let manDistance = xs[i] + (1 - ys[i]) + (1 - zs[i]);
+                                    if (manDistance < minManDist) {
+                                        d = d7;
+                                        minManDist = manDistance;
+                                    }
                                 }
+                                ds[i] = d;
                             }
-                            color = PlanetChunckMeshBuilder.BlockColor.get(d);
                             
-                            colors[4 * (l + n1)] = color.r;
-                            colors[4 * (l + n1) + 1] = color.g;
-                            colors[4 * (l + n1) + 2] = color.b;
-                            colors[4 * (l + n1) + 3] = 1;
+                            let alpha = (d0 + 10 * d1 + 100 * d2) / 1000;
+                            
+                            colors[4 * (l + n1)] = 1;
+                            colors[4 * (l + n1) + 1] = 0;
+                            colors[4 * (l + n1) + 2] = 0;
+                            colors[4 * (l + n1) + 3] = alpha;
 
-                            colors[4 * (l + n2)] = color.r;
-                            colors[4 * (l + n2) + 1] = color.g;
-                            colors[4 * (l + n2) + 2] = color.b;
-                            colors[4 * (l + n2) + 3] = 1;
+                            colors[4 * (l + n2)] = 0;
+                            colors[4 * (l + n2) + 1] = 1;
+                            colors[4 * (l + n2) + 2] = 0;
+                            colors[4 * (l + n2) + 3] = alpha;
 
-                            colors[4 * (l + n3)] = color.r;
-                            colors[4 * (l + n3) + 1] = color.g;
-                            colors[4 * (l + n3) + 2] = color.b;
-                            colors[4 * (l + n3) + 3] = 1;
+                            colors[4 * (l + n3)] = 0;
+                            colors[4 * (l + n3) + 1] = 0;
+                            colors[4 * (l + n3) + 2] = 1;
+                            colors[4 * (l + n3) + 3] = alpha;
                         }
     
                         for (let n = 0; n < partVertexData.positions.length / 3; n++) {
@@ -510,7 +518,7 @@ class PlanetChunckMeshBuilder {
             }
         }
 
-        BABYLON.VertexData.ComputeNormals(positions, indices, normals);
+        //BABYLON.VertexData.ComputeNormals(positions, indices, normals);
         vertexData.positions = positions;
         vertexData.indices = indices;
         vertexData.uvs = uvs;
