@@ -150,9 +150,16 @@ class PlanetChunckManager {
         }
 
         // Recalculate chunck meshes.
+        t0 = performance.now();
         while (this._needRedraw.length > 0 && (t - t0) < 1000 / 60) {
             let request = this._needRedraw.pop();
-            request.chunck.initialize();
+            if (request.chunck.lod <= 1) {
+                request.chunck.initialize();
+            }
+            else {
+                request.chunck.disposeMesh();
+            }
+            t = performance.now();
         }
 
         this.chunckSortedRatio = (this.chunckSortedRatio + sortedCount / (sortedCount + unsortedCount))* 0.5;
