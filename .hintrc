@@ -3,6 +3,10 @@
     "development"
   ],
   "hints": {
-    "typescript-config/strict": "off"
+    "typescript-config/strict": "off",
+    "meta-viewport": "off",
+    "axe/language": "off",
+    "axe/text-alternatives": "off",
+    "meta-charset-utf-8": "off"
   }
 }

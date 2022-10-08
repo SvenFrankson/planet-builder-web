@@ -2,6 +2,7 @@
 precision highp float;
  
 uniform vec3 lightInvDirW;
+uniform vec3 colGrass;
 
 in vec3 vPositionW;
 in vec3 vNormalW;
@@ -34,7 +35,7 @@ void main() {
          color = vec3(0., 0., 0.); // none
       }
       else if (d0 < 0.250) {
-         color = vec3(43. / 256., 184. / 256., 39. / 256.); // grass
+         color = colGrass; // grass
       }
       else if (d0 < 0.375) {
          color = vec3(140. / 256., 63. / 256., 0. / 256.); // dirt
@@ -58,7 +59,7 @@ void main() {
          color = vec3(0., 0., 0.); // none
       }
       else if (d1 < 0.250) {
-         color = vec3(43. / 256., 184. / 256., 39. / 256.); // grass
+         color = colGrass; // grass
       }
       else if (d1 < 0.375) {
          color = vec3(140. / 256., 63. / 256., 0. / 256.); // dirt
@@ -82,7 +83,7 @@ void main() {
          color = vec3(0., 0., 0.); // none
       }
       else if (d2 < 0.250) {
-         color = vec3(43. / 256., 184. / 256., 39. / 256.); // grass
+         color = colGrass; // grass
       }
       else if (d2 < 0.375) {
          color = vec3(140. / 256., 63. / 256., 0. / 256.); // dirt
