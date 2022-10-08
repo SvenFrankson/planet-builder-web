@@ -1410,6 +1410,21 @@ class PlanetChunckMeshBuilder {
         vertexData.normals = normals;
         return vertexData;
     }
+    static ManhattanLength(x, y, z) {
+        return x + y + z;
+    }
+    static SquaredLength(x, y, z) {
+        return x * x + y * y + z * z;
+    }
+    static Length(x, y, z) {
+        return Math.sqrt(PlanetChunckMeshBuilder.SquaredLength(x, y, z));
+    }
+    static Distance(x0, y0, z0, x1, y1, z1) {
+        let x = x1 - x0;
+        let y = y1 - y0;
+        let z = z1 - z0;
+        return Math.sqrt(x * x + y * y + z * z);
+    }
     static BuildVertexData(chunck, iPos, jPos, kPos) {
         let size = chunck.size;
         let vertexData = new BABYLON.VertexData();
@@ -1626,67 +1641,77 @@ class PlanetChunckMeshBuilder {
                             let x2 = partVertexData.positions[3 * n3];
                             let y2 = partVertexData.positions[3 * n3 + 1];
                             let z2 = partVertexData.positions[3 * n3 + 2];
+                            let blocks = [];
+                            let ws = [];
                             let xs = [x0, x1, x2];
                             let ys = [y0, y1, y2];
                             let zs = [z0, z1, z2];
                             let ds = [];
                             for (let vIndex = 0; vIndex < 3; vIndex++) {
                                 let d = BlockType.None;
-                                let minManDist = Infinity;
+                                let minDistance = Infinity;
                                 if (d0) {
-                                    let manDistance = xs[vIndex] + ys[vIndex] + zs[vIndex];
-                                    if (manDistance < minManDist) {
+                                    let distance = PlanetChunckMeshBuilder.SquaredLength(xs[vIndex], ys[vIndex], zs[vIndex]);
+                                    if (distance < minDistance) {
                                         d = d0;
-                                        minManDist = manDistance;
+                                        blocks[vIndex] = 0;
+                                        minDistance = distance;
                                     }
                                 }
                                 if (d1) {
-                                    let manDistance = (1 - xs[vIndex]) + ys[vIndex] + zs[vIndex];
-                                    if (manDistance < minManDist) {
+                                    let distance = PlanetChunckMeshBuilder.SquaredLength((1 - xs[vIndex]), ys[vIndex], zs[vIndex]);
+                                    if (distance < minDistance) {
                                         d = d1;
-                                        minManDist = manDistance;
+                                        blocks[vIndex] = 1;
+                                        minDistance = distance;
                                     }
                                 }
                                 if (d2) {
-                                    let manDistance = (1 - xs[vIndex]) + ys[vIndex] + (1 - zs[vIndex]);
-                                    if (manDistance < minManDist) {
+                                    let distance = PlanetChunckMeshBuilder.SquaredLength((1 - xs[vIndex]), ys[vIndex], (1 - zs[vIndex]));
+                                    if (distance < minDistance) {
                                         d = d2;
-                                        minManDist = manDistance;
+                                        blocks[vIndex] = 2;
+                                        minDistance = distance;
                                     }
                                 }
                                 if (d3) {
-                                    let manDistance = xs[vIndex] + ys[vIndex] + (1 - zs[vIndex]);
-                                    if (manDistance < minManDist) {
+                                    let distance = PlanetChunckMeshBuilder.SquaredLength(xs[vIndex], ys[vIndex], (1 - zs[vIndex]));
+                                    if (distance < minDistance) {
                                         d = d3;
-                                        minManDist = manDistance;
+                                        blocks[vIndex] = 3;
+                                        minDistance = distance;
                                     }
                                 }
                                 if (d4) {
-                                    let manDistance = xs[vIndex] + (1 - ys[vIndex]) + zs[vIndex];
-                                    if (manDistance < minManDist) {
+                                    let distance = PlanetChunckMeshBuilder.SquaredLength(xs[vIndex], (1 - ys[vIndex]), zs[vIndex]);
+                                    if (distance < minDistance) {
                                         d = d4;
-                                        minManDist = manDistance;
+                                        blocks[vIndex] = 4;
+                                        minDistance = distance;
                                     }
                                 }
                                 if (d5) {
-                                    let manDistance = (1 - xs[vIndex]) + (1 - ys[vIndex]) + zs[vIndex];
-                                    if (manDistance < minManDist) {
+                                    let distance = PlanetChunckMeshBuilder.SquaredLength((1 - xs[vIndex]), (1 - ys[vIndex]), zs[vIndex]);
+                                    if (distance < minDistance) {
                                         d = d5;
-                                        minManDist = manDistance;
+                                        blocks[vIndex] = 5;
+                                        minDistance = distance;
                                     }
                                 }
                                 if (d6) {
-                                    let manDistance = (1 - xs[vIndex]) + (1 - ys[vIndex]) + (1 - zs[vIndex]);
-                                    if (manDistance < minManDist) {
+                                    let distance = PlanetChunckMeshBuilder.SquaredLength((1 - xs[vIndex]), (1 - ys[vIndex]), (1 - zs[vIndex]));
+                                    if (distance < minDistance) {
                                         d = d6;
-                                        minManDist = manDistance;
+                                        blocks[vIndex] = 6;
+                                        minDistance = distance;
                                     }
                                 }
                                 if (d7) {
-                                    let manDistance = xs[vIndex] + (1 - ys[vIndex]) + (1 - zs[vIndex]);
-                                    if (manDistance < minManDist) {
+                                    let distance = PlanetChunckMeshBuilder.SquaredLength(xs[vIndex], (1 - ys[vIndex]), (1 - zs[vIndex]));
+                                    if (distance < minDistance) {
                                         d = d7;
-                                        minManDist = manDistance;
+                                        blocks[vIndex] = 7;
+                                        minDistance = distance;
                                     }
                                 }
                                 ds[vIndex] = d;
@@ -1694,17 +1719,20 @@ class PlanetChunckMeshBuilder {
                             let alpha = ds[0] / 8;
                             let u = ds[1] / 8;
                             let v = ds[2] / 8;
-                            colors[4 * (l + n1)] = 1;
-                            colors[4 * (l + n1) + 1] = 0;
-                            colors[4 * (l + n1) + 2] = 0;
+                            let corner0 = PlanetChunckMeshBuilder.Corners[blocks[0]];
+                            let corner1 = PlanetChunckMeshBuilder.Corners[blocks[1]];
+                            let corner2 = PlanetChunckMeshBuilder.Corners[blocks[2]];
+                            colors[4 * (l + n1)] = 1 - PlanetChunckMeshBuilder.Distance(x0, y0, z0, corner0.x, corner0.y, corner0.z);
+                            colors[4 * (l + n1) + 1] = 1 - PlanetChunckMeshBuilder.Distance(x0, y0, z0, corner1.x, corner1.y, corner1.z);
+                            colors[4 * (l + n1) + 2] = 1 - PlanetChunckMeshBuilder.Distance(x0, y0, z0, corner2.x, corner2.y, corner2.z);
                             colors[4 * (l + n1) + 3] = alpha;
-                            colors[4 * (l + n2)] = 0;
-                            colors[4 * (l + n2) + 1] = 1;
-                            colors[4 * (l + n2) + 2] = 0;
+                            colors[4 * (l + n2)] = 1 - PlanetChunckMeshBuilder.Distance(x1, y1, z1, corner0.x, corner0.y, corner0.z);
+                            colors[4 * (l + n2) + 1] = 1 - PlanetChunckMeshBuilder.Distance(x1, y1, z1, corner1.x, corner1.y, corner1.z);
+                            colors[4 * (l + n2) + 2] = 1 - PlanetChunckMeshBuilder.Distance(x1, y1, z1, corner2.x, corner2.y, corner2.z);
                             colors[4 * (l + n2) + 3] = alpha;
-                            colors[4 * (l + n3)] = 0;
-                            colors[4 * (l + n3) + 1] = 0;
-                            colors[4 * (l + n3) + 2] = 1;
+                            colors[4 * (l + n3)] = 1 - PlanetChunckMeshBuilder.Distance(x2, y2, z2, corner0.x, corner0.y, corner0.z);
+                            colors[4 * (l + n3) + 1] = 1 - PlanetChunckMeshBuilder.Distance(x2, y2, z2, corner1.x, corner1.y, corner1.z);
+                            colors[4 * (l + n3) + 2] = 1 - PlanetChunckMeshBuilder.Distance(x2, y2, z2, corner2.x, corner2.y, corner2.z);
                             colors[4 * (l + n3) + 3] = alpha;
                             uvs[2 * (l + n1)] = u;
                             uvs[2 * (l + n1) + 1] = v;
@@ -1896,6 +1924,16 @@ class PlanetChunckMeshBuilder {
         return vertexData;
     }
 }
+PlanetChunckMeshBuilder.Corners = [
+    new BABYLON.Vector3(0, 0, 0),
+    new BABYLON.Vector3(1, 0, 0),
+    new BABYLON.Vector3(1, 0, 1),
+    new BABYLON.Vector3(0, 0, 1),
+    new BABYLON.Vector3(0, 1, 0),
+    new BABYLON.Vector3(1, 1, 0),
+    new BABYLON.Vector3(1, 1, 1),
+    new BABYLON.Vector3(0, 1, 1),
+];
 PlanetChunckMeshBuilder._tmpBlockCenter = BABYLON.Vector3.Zero();
 class PlanetChunckVertexData {
     static NameToRef(name) {
@@ -1977,21 +2015,21 @@ class PlanetChunckVertexData {
             /*
             let x = x0 + x1 + x2;
             x = x / 3;
-            x0 = 0.95 * x0 + 0.05 * x;
-            x1 = 0.95 * x1 + 0.05 * x;
-            x2 = 0.95 * x2 + 0.05 * x;
+            x0 = 0.98 * x0 + 0.02 * x;
+            x1 = 0.98 * x1 + 0.02 * x;
+            x2 = 0.98 * x2 + 0.02 * x;
             
             let y = y0 + y1 + y2;
             y = y / 3;
-            y0 = 0.95 * y0 + 0.05 * y;
-            y1 = 0.95 * y1 + 0.05 * y;
-            y2 = 0.95 * y2 + 0.05 * y;
+            y0 = 0.98 * y0 + 0.02 * y;
+            y1 = 0.98 * y1 + 0.02 * y;
+            y2 = 0.98 * y2 + 0.02 * y;
             
             let z = z0 + z1 + z2;
             z = z / 3;
-            z0 = 0.95 * z0 + 0.05 * z;
-            z1 = 0.95 * z1 + 0.05 * z;
-            z2 = 0.95 * z2 + 0.05 * z;
+            z0 = 0.98 * z0 + 0.02 * z;
+            z1 = 0.98 * z1 + 0.02 * z;
+            z2 = 0.98 * z2 + 0.02 * z;
             */
             positions.push(x0, y0, z0);
             positions.push(x1, y1, z1);
