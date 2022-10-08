@@ -2111,7 +2111,7 @@ class PlanetChunckVertexData {
     }
     static async _LoadChunckVertexDatas() {
         return new Promise(resolve => {
-            BABYLON.SceneLoader.ImportMesh("", "./datas/meshes/chunck-parts.babylon", "", Game.Scene, (meshes) => {
+            BABYLON.SceneLoader.ImportMesh("", "./datas/meshes/chunck-parts-lod-1.babylon", "", Game.Scene, (meshes) => {
                 for (let i = 0; i < meshes.length; i++) {
                     let mesh = meshes[i];
                     if (mesh instanceof BABYLON.Mesh && mesh.name != "zero") {

@@ -1,0 +1,389 @@
+Exporter version: 6.4.5, Blender version: 2.90.1
+========= Conversion from Blender to Babylon.js =========
+	Scene settings used :
+		Inline textures     :  false
+		Material Type       :  PBR
+		Positions Precision :  4
+		Normals Precision   :  3
+		UVs Precision       :  3
+		Vert Color Precision:  3
+		Mat Weight Precision:  2
+		Keep Z-up r-handed  :  no
+		Texture directory   :  C:\Users\svent\Documents\Sven Frankson\planet-builder-web\datas\meshes\
+	Python World class constructor completed
+	WARNING: No active camera has been assigned, or is not in a currently selected Blender layer
+	processing begun of mesh:  Cube
+		WARNING: No materials have been assigned: 
+		num positions      :  63
+		num normals        :  63
+		num tangents       :  0
+		num uvs            :  126
+		num uvs2           :  0
+		num colors         :  0
+		num triangles      :  24
+	processing begun of mesh:  10000100
+		processing begun of material:  Green
+		num positions      :  12
+		num normals        :  12
+		num tangents       :  0
+		num uvs            :  24
+		num uvs2           :  0
+		num colors         :  0
+		num triangles      :  6
+	processing begun of mesh:  11110000
+		processing begun of material:  Green
+		registered as also a user of material:  Green
+		num positions      :  4
+		num normals        :  4
+		num tangents       :  0
+		num uvs            :  8
+		num uvs2           :  0
+		num colors         :  0
+		num triangles      :  2
+	processing begun of mesh:  11111000
+		processing begun of material:  Green
+		registered as also a user of material:  Green
+		num positions      :  9
+		num normals        :  9
+		num tangents       :  0
+		num uvs            :  18
+		num uvs2           :  0
+		num colors         :  0
+		num triangles      :  3
+	processing begun of mesh:  10000000
+		processing begun of material:  Green
+		registered as also a user of material:  Green
+		num positions      :  3
+		num normals        :  3
+		num tangents       :  0
+		num uvs            :  6
+		num uvs2           :  0
+		num colors         :  0
+		num triangles      :  1
+	processing begun of mesh:  11111100
+		processing begun of material:  Green
+		registered as also a user of material:  Green
+		num positions      :  4
+		num normals        :  4
+		num tangents       :  0
+		num uvs            :  8
+		num uvs2           :  0
+		num colors         :  0
+		num triangles      :  2
+	processing begun of mesh:  11001100
+		processing begun of material:  Green
+		registered as also a user of material:  Green
+		num positions      :  4
+		num normals        :  4
+		num tangents       :  0
+		num uvs            :  8
+		num uvs2           :  0
+		num colors         :  0
+		num triangles      :  2
+	processing begun of mesh:  10110010
+		processing begun of material:  Green
+		registered as also a user of material:  Green
+		num positions      :  15
+		num normals        :  15
+		num tangents       :  0
+		num uvs            :  30
+		num uvs2           :  0
+		num colors         :  0
+		num triangles      :  6
+	processing begun of mesh:  11100100
+		processing begun of material:  Green
+		registered as also a user of material:  Green
+		num positions      :  7
+		num normals        :  7
+		num tangents       :  0
+		num uvs            :  14
+		num uvs2           :  0
+		num colors         :  0
+		num triangles      :  6
+	processing begun of mesh:  11001000
+		processing begun of material:  Green
+		registered as also a user of material:  Green
+		num positions      :  9
+		num normals        :  9
+		num tangents       :  0
+		num uvs            :  18
+		num uvs2           :  0
+		num colors         :  0
+		num triangles      :  3
+	processing begun of mesh:  10001000
+		processing begun of material:  Green
+		registered as also a user of material:  Green
+		num positions      :  4
+		num normals        :  4
+		num tangents       :  0
+		num uvs            :  8
+		num uvs2           :  0
+		num colors         :  0
+		num triangles      :  2
+	processing begun of mesh:  10101000
+		processing begun of material:  Green
+		registered as also a user of material:  Green
+		num positions      :  15
+		num normals        :  15
+		num tangents       :  0
+		num uvs            :  30
+		num uvs2           :  0
+		num colors         :  0
+		num triangles      :  5
+	processing begun of mesh:  11100001
+		processing begun of material:  Green
+		registered as also a user of material:  Green
+		num positions      :  12
+		num normals        :  12
+		num tangents       :  0
+		num uvs            :  24
+		num uvs2           :  0
+		num colors         :  0
+		num triangles      :  4
+	processing begun of mesh:  10000010
+		processing begun of material:  Red
+		num positions      :  6
+		num normals        :  6
+		num tangents       :  0
+		num uvs            :  12
+		num uvs2           :  0
+		num colors         :  0
+		num triangles      :  2
+	processing begun of mesh:  11001001
+		processing begun of material:  Green
+		registered as also a user of material:  Green
+		num positions      :  15
+		num normals        :  15
+		num tangents       :  0
+		num uvs            :  30
+		num uvs2           :  0
+		num colors         :  0
+		num triangles      :  6
+	processing begun of mesh:  10100000
+		processing begun of material:  Green
+		registered as also a user of material:  Green
+		num positions      :  12
+		num normals        :  12
+		num tangents       :  0
+		num uvs            :  24
+		num uvs2           :  0
+		num colors         :  0
+		num triangles      :  6
+	processing begun of mesh:  10100100
+		processing begun of material:  Green
+		registered as also a user of material:  Green
+		num positions      :  10
+		num normals        :  10
+		num tangents       :  0
+		num uvs            :  20
+		num uvs2           :  0
+		num colors         :  0
+		num triangles      :  7
+	processing begun of mesh:  10000110
+		processing begun of material:  Green
+		registered as also a user of material:  Green
+		num positions      :  19
+		num normals        :  19
+		num tangents       :  0
+		num uvs            :  38
+		num uvs2           :  0
+		num colors         :  0
+		num triangles      :  7
+	processing begun of mesh:  zero
+		processing begun of material:  Green
+		registered as also a user of material:  Green
+		num positions      :  113
+		num normals        :  113
+		num tangents       :  0
+		num uvs            :  226
+		num uvs2           :  0
+		num colors         :  0
+		num triangles      :  108
+	processing begun of mesh:  01010110
+		processing begun of material:  Green
+		registered as also a user of material:  Green
+		num positions      :  12
+		num normals        :  12
+		num tangents       :  0
+		num uvs            :  24
+		num uvs2           :  0
+		num colors         :  0
+		num triangles      :  4
+	processing begun of mesh:  11110101
+		processing begun of material:  Green
+		registered as also a user of material:  Green
+		num positions      :  6
+		num normals        :  6
+		num tangents       :  0
+		num uvs            :  12
+		num uvs2           :  0
+		num colors         :  0
+		num triangles      :  2
+	processing begun of mesh:  11000011
+		processing begun of material:  Green
+		registered as also a user of material:  Green
+		num positions      :  8
+		num normals        :  8
+		num tangents       :  0
+		num uvs            :  16
+		num uvs2           :  0
+		num colors         :  0
+		num triangles      :  4
+	processing begun of mesh:  10101010
+		processing begun of material:  Green
+		registered as also a user of material:  Green
+		num positions      :  8
+		num normals        :  8
+		num tangents       :  0
+		num uvs            :  16
+		num uvs2           :  0
+		num colors         :  0
+		num triangles      :  4
+	processing begun of mesh:  01111111
+		processing begun of material:  Green
+		registered as also a user of material:  Green
+		num positions      :  3
+		num normals        :  3
+		num tangents       :  0
+		num uvs            :  6
+		num uvs2           :  0
+		num colors         :  0
+		num triangles      :  1
+	processing begun of mesh:  11000000
+		processing begun of material:  Green
+		registered as also a user of material:  Green
+		num positions      :  4
+		num normals        :  4
+		num tangents       :  0
+		num uvs            :  8
+		num uvs2           :  0
+		num colors         :  0
+		num triangles      :  2
+	processing begun of mesh:  10110000
+		processing begun of material:  Green
+		registered as also a user of material:  Green
+		num positions      :  9
+		num normals        :  9
+		num tangents       :  0
+		num uvs            :  18
+		num uvs2           :  0
+		num colors         :  0
+		num triangles      :  3
+	processing begun of mesh:  10110011
+		processing begun of material:  Green
+		registered as also a user of material:  Green
+		num positions      :  9
+		num normals        :  9
+		num tangents       :  0
+		num uvs            :  18
+		num uvs2           :  0
+		num colors         :  0
+		num triangles      :  3
+	processing begun of mesh:  01110111
+		processing begun of material:  Green
+		registered as also a user of material:  Green
+		num positions      :  4
+		num normals        :  4
+		num tangents       :  0
+		num uvs            :  8
+		num uvs2           :  0
+		num colors         :  0
+		num triangles      :  2
+	processing begun of mesh:  01111110
+		processing begun of material:  Green
+		registered as also a user of material:  Green
+		num positions      :  6
+		num normals        :  6
+		num tangents       :  0
+		num uvs            :  12
+		num uvs2           :  0
+		num colors         :  0
+		num triangles      :  2
+	processing begun of mesh:  11100101
+		processing begun of material:  Green
+		registered as also a user of material:  Green
+		num positions      :  9
+		num normals        :  9
+		num tangents       :  0
+		num uvs            :  18
+		num uvs2           :  0
+		num colors         :  0
+		num triangles      :  3
+	processing begun of mesh:  01110101
+		processing begun of material:  Green
+		registered as also a user of material:  Green
+		num positions      :  7
+		num normals        :  7
+		num tangents       :  0
+		num uvs            :  14
+		num uvs2           :  0
+		num colors         :  0
+		num triangles      :  3
+	processing begun of mesh:  01111101
+		processing begun of material:  Green
+		registered as also a user of material:  Green
+		num positions      :  6
+		num normals        :  6
+		num tangents       :  0
+		num uvs            :  12
+		num uvs2           :  0
+		num colors         :  0
+		num triangles      :  2
+	processing begun of mesh:  01011010
+		processing begun of material:  Green
+		registered as also a user of material:  Green
+		num positions      :  12
+		num normals        :  12
+		num tangents       :  0
+		num uvs            :  24
+		num uvs2           :  0
+		num colors         :  0
+		num triangles      :  4
+	processing begun of mesh:  01111001
+		processing begun of material:  Green
+		registered as also a user of material:  Green
+		num positions      :  7
+		num normals        :  7
+		num tangents       :  0
+		num uvs            :  14
+		num uvs2           :  0
+		num colors         :  0
+		num triangles      :  3
+========= Writing of JSON file started =========
+	writing mesh:  Cube
+	writing mesh:  10000100
+	writing mesh:  11110000
+	writing mesh:  11111000
+	writing mesh:  10000000
+	writing mesh:  11111100
+	writing mesh:  11001100
+	writing mesh:  10110010
+	writing mesh:  11100100
+	writing mesh:  11001000
+	writing mesh:  10001000
+	writing mesh:  10101000
+	writing mesh:  11100001
+	writing mesh:  10000010
+	writing mesh:  11001001
+	writing mesh:  10100000
+	writing mesh:  10100100
+	writing mesh:  10000110
+	writing mesh:  zero
+	writing mesh:  01010110
+	writing mesh:  11110101
+	writing mesh:  11000011
+	writing mesh:  10101010
+	writing mesh:  01111111
+	writing mesh:  11000000
+	writing mesh:  10110000
+	writing mesh:  10110011
+	writing mesh:  01110111
+	writing mesh:  01111110
+	writing mesh:  11100101
+	writing mesh:  01110101
+	writing mesh:  01111101
+	writing mesh:  01011010
+	writing mesh:  01111001
+========= Writing of JSON file completed =========
+========= end of processing =========
+elapsed time:  0 min, 0.0582 secs

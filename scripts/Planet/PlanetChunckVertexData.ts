@@ -224,7 +224,7 @@ class PlanetChunckVertexData {
             resolve => {
                 BABYLON.SceneLoader.ImportMesh(
                     "",
-                    "./datas/meshes/chunck-parts.babylon",
+                    "./datas/meshes/chunck-parts-lod-1.babylon",
                     "",
                     Game.Scene,
                     (meshes) => {
