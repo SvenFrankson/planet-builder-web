@@ -1430,13 +1430,14 @@ class PlanetChunckMeshBuilder {
         let vertexData = new BABYLON.VertexData();
         if (!PlanetChunckMeshBuilder.tmpVertices || PlanetChunckMeshBuilder.tmpVertices.length < 15) {
             PlanetChunckMeshBuilder.tmpVertices = [];
-            for (let i = 0; i < 15; i++) {
+            for (let i = 0; i < 30; i++) {
                 PlanetChunckMeshBuilder.tmpVertices[i] = BABYLON.Vector3.Zero();
             }
         }
-        else {
-            for (let i = 0; i < 15; i++) {
-                PlanetChunckMeshBuilder.tmpVertices[i].copyFromFloats(0, 0, 0);
+        if (!PlanetChunckMeshBuilder.tmpQuaternions || PlanetChunckMeshBuilder.tmpQuaternions.length < 1) {
+            PlanetChunckMeshBuilder.tmpQuaternions = [];
+            for (let i = 0; i < 30; i++) {
+                PlanetChunckMeshBuilder.tmpQuaternions[i] = BABYLON.Quaternion.Identity();
             }
         }
         let positions = [];
@@ -1444,16 +1445,6 @@ class PlanetChunckMeshBuilder {
         let uvs = [];
         let normals = [];
         let colors = [];
-        /*
-        let colors3 = [
-            new BABYLON.Color3(1, 0.5, 0.5),
-            new BABYLON.Color3(0.5, 1, 0.5),
-            new BABYLON.Color3(0.5, 0.5, 1),
-            new BABYLON.Color3(1, 1, 0.5),
-            new BABYLON.Color3(0.5, 1, 1),
-            new BABYLON.Color3(1, 0.5, 1)
-        ];
-        */
         let v0 = PlanetChunckMeshBuilder.tmpVertices[0];
         let v1 = PlanetChunckMeshBuilder.tmpVertices[1];
         let v2 = PlanetChunckMeshBuilder.tmpVertices[2];
@@ -1469,6 +1460,10 @@ class PlanetChunckMeshBuilder {
         let v0132 = PlanetChunckMeshBuilder.tmpVertices[12];
         let v4576 = PlanetChunckMeshBuilder.tmpVertices[13];
         let v = PlanetChunckMeshBuilder.tmpVertices[14];
+        let norm = PlanetChunckMeshBuilder.tmpVertices[15];
+        let blockCenter = PlanetChunckMeshBuilder.tmpVertices[16];
+        let blockAxis = PlanetChunckMeshBuilder.tmpVertices[17];
+        let blockQuaternion = PlanetChunckMeshBuilder.tmpQuaternions[0];
         let chunckCornerCase = false;
         let firstI = 0;
         let firstJ = 0;
@@ -1616,6 +1611,10 @@ class PlanetChunckMeshBuilder {
                         PlanetChunckMeshBuilder.GetVertexToRef(2 * size, 2 * (iGlobal + 1) + 1, 2 * (jGlobal) + 1, PlanetChunckMeshBuilder.tmpVertices[1]);
                         PlanetChunckMeshBuilder.GetVertexToRef(2 * size, 2 * (iGlobal + 1) + 1, 2 * (jGlobal + 1) + 1, PlanetChunckMeshBuilder.tmpVertices[2]);
                         PlanetChunckMeshBuilder.GetVertexToRef(2 * size, 2 * (iGlobal) + 1, 2 * (jGlobal + 1) + 1, PlanetChunckMeshBuilder.tmpVertices[3]);
+                        blockCenter.copyFrom(PlanetChunckMeshBuilder.tmpVertices[0]).addInPlace(PlanetChunckMeshBuilder.tmpVertices[2]).scaleInPlace(0.5);
+                        let angle = VMath.Angle(BABYLON.Axis.Y, blockCenter);
+                        BABYLON.Vector3.CrossToRef(BABYLON.Axis.Y, blockCenter, blockAxis);
+                        BABYLON.Quaternion.RotationAxisToRef(blockAxis, angle, blockQuaternion);
                         let hGlobal = (k + kPos * PlanetTools.CHUNCKSIZE + 1);
                         let hLow = PlanetTools.KGlobalToAltitude(hGlobal) * 0.5 + PlanetTools.KGlobalToAltitude(hGlobal + 1) * 0.5;
                         let hHigh = PlanetTools.KGlobalToAltitude(hGlobal + 1) * 0.5 + PlanetTools.KGlobalToAltitude(hGlobal + 2) * 0.5;
@@ -1642,7 +1641,6 @@ class PlanetChunckMeshBuilder {
                             let y2 = partVertexData.positions[3 * n3 + 1];
                             let z2 = partVertexData.positions[3 * n3 + 2];
                             let blocks = [];
-                            let ws = [];
                             let xs = [x0, x1, x2];
                             let ys = [y0, y1, y2];
                             let zs = [z0, z1, z2];
@@ -1755,8 +1753,14 @@ class PlanetChunckMeshBuilder {
                             positions.push(v.x);
                             positions.push(v.y);
                             positions.push(v.z);
+                            norm.x = partVertexData.normals[3 * n];
+                            norm.y = partVertexData.normals[3 * n + 1];
+                            norm.z = partVertexData.normals[3 * n + 2];
+                            norm.rotateByQuaternionToRef(blockQuaternion, norm);
+                            normals.push(norm.x);
+                            normals.push(norm.y);
+                            normals.push(norm.z);
                         }
-                        normals.push(...partVertexData.normals);
                         for (let n = 0; n < partVertexData.indices.length; n++) {
                             indices.push(partVertexData.indices[n] + l);
                         }
