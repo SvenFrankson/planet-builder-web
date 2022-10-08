@@ -1183,21 +1183,26 @@ class PlanetChunckManager {
             let duration = 0.5 + 150 * (1 - this.chunckSortedRatio);
             duration = Math.min(duration, 1000 / 24);
             while ((t - t0) < duration) {
-                for (let i = 0; i < this._lodLayersCount; i++) {
-                    let cursor = this._lodLayersCursors[i];
-                    let chunck = this._lodLayers[i][cursor];
+                for (let prevLayerIndex = 0; prevLayerIndex < this._lodLayersCount; prevLayerIndex++) {
+                    let cursor = this._lodLayersCursors[prevLayerIndex];
+                    let chunck = this._lodLayers[prevLayerIndex][cursor];
                     if (chunck) {
                         chunck.sqrDistanceToViewpoint = BABYLON.Vector3.DistanceSquared(this._viewpoint, chunck.GetBaryCenter());
                         let newLayerIndex = this._getLayerIndex(chunck.sqrDistanceToViewpoint);
-                        if (newLayerIndex != i) {
+                        if (newLayerIndex != prevLayerIndex) {
                             let adequateLayerCursor = this._lodLayersCursors[newLayerIndex];
-                            this._lodLayers[i].splice(cursor, 1);
+                            this._lodLayers[prevLayerIndex].splice(cursor, 1);
                             this._lodLayers[newLayerIndex].splice(adequateLayerCursor, 0, chunck);
                             chunck.lod = newLayerIndex;
-                            if (newLayerIndex <= 1) {
+                            if (newLayerIndex === 0) {
                                 this.requestDraw(chunck);
                             }
-                            else if (i > 1) {
+                            else if (newLayerIndex === 1) {
+                                if (prevLayerIndex != 0) {
+                                    this.requestDraw(chunck);
+                                }
+                            }
+                            else if (newLayerIndex > 1) {
                                 chunck.disposeMesh();
                             }
                             this._lodLayersCursors[newLayerIndex]++;
@@ -1207,9 +1212,9 @@ class PlanetChunckManager {
                             unsortedCount++;
                         }
                         else {
-                            this._lodLayersCursors[i]++;
-                            if (this._lodLayersCursors[i] >= this._lodLayers[i].length) {
-                                this._lodLayersCursors[i] = 0;
+                            this._lodLayersCursors[prevLayerIndex]++;
+                            if (this._lodLayersCursors[prevLayerIndex] >= this._lodLayers[prevLayerIndex].length) {
+                                this._lodLayersCursors[prevLayerIndex] = 0;
                             }
                             sortedCount++;
                         }
