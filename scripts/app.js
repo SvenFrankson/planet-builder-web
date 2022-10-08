@@ -135,7 +135,7 @@ window.addEventListener("DOMContentLoaded", () => {
     let game = new Game("renderCanvas");
     game.createScene();
     game.chunckManager = new PlanetChunckManager(Game.Scene);
-    let degree = 10;
+    let degree = 20;
     let planetTest = new Planet("Paulita", degree, game.chunckManager);
     planetTest.generator = new PlanetGeneratorEarth(planetTest, 0.60, 0.1);
     //planetTest.generator = new PlanetGeneratorDebug4(planetTest);
@@ -881,6 +881,7 @@ class PlanetChunck {
         this._chunckCount = 0;
         this._size = 0;
         this._dataInitialized = false;
+        this.lod = 2;
         this._isEmpty = true;
         this._isFull = false;
         this.planetSide = planetSide;
@@ -1192,10 +1193,11 @@ class PlanetChunckManager {
                             let adequateLayerCursor = this._lodLayersCursors[newLayerIndex];
                             this._lodLayers[i].splice(cursor, 1);
                             this._lodLayers[newLayerIndex].splice(adequateLayerCursor, 0, chunck);
-                            if (newLayerIndex === 0) {
+                            chunck.lod = newLayerIndex;
+                            if (newLayerIndex <= 1) {
                                 this.requestDraw(chunck);
                             }
-                            else if (i === 0) {
+                            else if (i > 1) {
                                 chunck.disposeMesh();
                             }
                             this._lodLayersCursors[newLayerIndex]++;
@@ -1244,7 +1246,7 @@ class PlanetChunckManager {
         this._lodLayersCursors = [];
         this._lodLayersSqrDistances = [];
         for (let i = 0; i < this._lodLayersCount - 1; i++) {
-            let d = (i + 1) * 80;
+            let d = (i + 1) * 60;
             this._lodLayers[i] = [];
             this._lodLayersCursors[i] = 0;
             this._lodLayersSqrDistances[i] = d * d;
@@ -1263,7 +1265,8 @@ class PlanetChunckManager {
             let layerIndex = this._getLayerIndex(chunck.sqrDistanceToViewpoint);
             if (this._lodLayers[layerIndex].indexOf(chunck) === -1) {
                 this._lodLayers[layerIndex].push(chunck);
-                if (layerIndex === 0) {
+                chunck.lod = layerIndex;
+                if (layerIndex <= 1) {
                     this.requestDraw(chunck);
                 }
             }
@@ -1426,6 +1429,7 @@ class PlanetChunckMeshBuilder {
         return Math.sqrt(x * x + y * y + z * z);
     }
     static BuildVertexData(chunck, iPos, jPos, kPos) {
+        let lod = chunck.lod;
         let size = chunck.size;
         let vertexData = new BABYLON.VertexData();
         if (!PlanetChunckMeshBuilder.tmpVertices || PlanetChunckMeshBuilder.tmpVertices.length < 15) {
@@ -1604,7 +1608,7 @@ class PlanetChunckMeshBuilder {
                         if (ref === 0b0 || ref === 0b11111111) {
                             continue;
                         }
-                        let partVertexData = PlanetChunckVertexData.Get(ref);
+                        let partVertexData = PlanetChunckVertexData.Get(lod, ref);
                         let iGlobal = i + iPos * PlanetTools.CHUNCKSIZE;
                         let jGlobal = j + jPos * PlanetTools.CHUNCKSIZE;
                         PlanetChunckMeshBuilder.GetVertexToRef(2 * size, 2 * (iGlobal) + 1, 2 * (jGlobal) + 1, PlanetChunckMeshBuilder.tmpVertices[0]);
@@ -1964,31 +1968,31 @@ class PlanetChunckVertexData {
     static MirrorZChunckPartRef(ref) {
         return PlanetChunckVertexData.ReOrder(ref, 3, 2, 1, 0, 7, 6, 5, 4);
     }
-    static _TryAddMirrorXChunckPart(ref, data) {
+    static _TryAddMirrorXChunckPart(lod, ref, data) {
         let mirrorXRef = PlanetChunckVertexData.MirrorXChunckPartRef(ref);
-        if (!PlanetChunckVertexData._VertexDatas.has(mirrorXRef)) {
+        if (!PlanetChunckVertexData._VertexDatas[lod].has(mirrorXRef)) {
             let mirrorXData = PlanetChunckVertexData.MirrorX(data);
-            PlanetChunckVertexData._VertexDatas.set(mirrorXRef, mirrorXData);
-            PlanetChunckVertexData._TryAddMirrorZChunckPart(mirrorXRef, mirrorXData);
+            PlanetChunckVertexData._VertexDatas[lod].set(mirrorXRef, mirrorXData);
+            PlanetChunckVertexData._TryAddMirrorZChunckPart(lod, mirrorXRef, mirrorXData);
             return true;
         }
         return false;
     }
-    static _TryAddMirrorYChunckPart(ref, data) {
+    static _TryAddMirrorYChunckPart(lod, ref, data) {
         let mirrorYRef = PlanetChunckVertexData.MirrorYChunckPartRef(ref);
-        if (!PlanetChunckVertexData._VertexDatas.has(mirrorYRef)) {
+        if (!PlanetChunckVertexData._VertexDatas[lod].has(mirrorYRef)) {
             let mirrorYData = PlanetChunckVertexData.MirrorY(data);
-            PlanetChunckVertexData._VertexDatas.set(mirrorYRef, mirrorYData);
-            PlanetChunckVertexData._TryAddMirrorZChunckPart(mirrorYRef, mirrorYData);
+            PlanetChunckVertexData._VertexDatas[lod].set(mirrorYRef, mirrorYData);
+            PlanetChunckVertexData._TryAddMirrorZChunckPart(lod, mirrorYRef, mirrorYData);
             return true;
         }
         return false;
     }
-    static _TryAddMirrorZChunckPart(ref, data) {
+    static _TryAddMirrorZChunckPart(lod, ref, data) {
         let mirrorZRef = PlanetChunckVertexData.MirrorZChunckPartRef(ref);
-        if (!PlanetChunckVertexData._VertexDatas.has(mirrorZRef)) {
+        if (!PlanetChunckVertexData._VertexDatas[lod].has(mirrorZRef)) {
             let mirrorZData = PlanetChunckVertexData.MirrorZ(data);
-            PlanetChunckVertexData._VertexDatas.set(mirrorZRef, mirrorZData);
+            PlanetChunckVertexData._VertexDatas[lod].set(mirrorZRef, mirrorZData);
             return true;
         }
         return false;
@@ -2109,9 +2113,9 @@ class PlanetChunckVertexData {
         }
         return splitData;
     }
-    static async _LoadChunckVertexDatas() {
+    static async _LoadChunckVertexDatas(lod) {
         return new Promise(resolve => {
-            BABYLON.SceneLoader.ImportMesh("", "./datas/meshes/chunck-parts-lod-1.babylon", "", Game.Scene, (meshes) => {
+            BABYLON.SceneLoader.ImportMesh("", "./datas/meshes/chunck-parts-lod-" + lod.toFixed(0) + ".babylon", "", Game.Scene, (meshes) => {
                 for (let i = 0; i < meshes.length; i++) {
                     let mesh = meshes[i];
                     if (mesh instanceof BABYLON.Mesh && mesh.name != "zero") {
@@ -2129,24 +2133,24 @@ class PlanetChunckVertexData {
                             data.colors = colors;
                         }
                         mesh.dispose();
-                        if (!PlanetChunckVertexData._VertexDatas.has(ref)) {
-                            PlanetChunckVertexData._VertexDatas.set(ref, data);
+                        if (!PlanetChunckVertexData._VertexDatas[lod].has(ref)) {
+                            PlanetChunckVertexData._VertexDatas[lod].set(ref, data);
                             useful = true;
                         }
-                        useful = PlanetChunckVertexData._TryAddMirrorXChunckPart(ref, data) || useful;
-                        useful = PlanetChunckVertexData._TryAddMirrorYChunckPart(ref, data) || useful;
-                        useful = PlanetChunckVertexData._TryAddMirrorZChunckPart(ref, data) || useful;
+                        useful = PlanetChunckVertexData._TryAddMirrorXChunckPart(lod, ref, data) || useful;
+                        useful = PlanetChunckVertexData._TryAddMirrorYChunckPart(lod, ref, data) || useful;
+                        useful = PlanetChunckVertexData._TryAddMirrorZChunckPart(lod, ref, data) || useful;
                         let rotatedRef = ref;
                         for (let j = 0; j < 3; j++) {
                             rotatedRef = PlanetChunckVertexData.RotateYChunckPartRef(rotatedRef);
                             data = PlanetChunckVertexData.RotateY(data, -Math.PI / 2);
-                            if (!PlanetChunckVertexData._VertexDatas.has(rotatedRef)) {
-                                PlanetChunckVertexData._VertexDatas.set(rotatedRef, data);
+                            if (!PlanetChunckVertexData._VertexDatas[lod].has(rotatedRef)) {
+                                PlanetChunckVertexData._VertexDatas[lod].set(rotatedRef, data);
                                 useful = true;
                             }
-                            useful = PlanetChunckVertexData._TryAddMirrorXChunckPart(rotatedRef, data) || useful;
-                            useful = PlanetChunckVertexData._TryAddMirrorYChunckPart(rotatedRef, data) || useful;
-                            useful = PlanetChunckVertexData._TryAddMirrorZChunckPart(rotatedRef, data) || useful;
+                            useful = PlanetChunckVertexData._TryAddMirrorXChunckPart(lod, rotatedRef, data) || useful;
+                            useful = PlanetChunckVertexData._TryAddMirrorYChunckPart(lod, rotatedRef, data) || useful;
+                            useful = PlanetChunckVertexData._TryAddMirrorZChunckPart(lod, rotatedRef, data) || useful;
                         }
                         if (!useful) {
                             console.warn("Chunck-Part " + name + " is redundant.");
@@ -2158,7 +2162,8 @@ class PlanetChunckVertexData {
         });
     }
     static async InitializeData() {
-        await PlanetChunckVertexData._LoadChunckVertexDatas();
+        await PlanetChunckVertexData._LoadChunckVertexDatas(0);
+        await PlanetChunckVertexData._LoadChunckVertexDatas(1);
         return true;
     }
     static Clone(data) {
@@ -2174,8 +2179,8 @@ class PlanetChunckVertexData {
         }
         return clonedData;
     }
-    static Get(ref) {
-        return PlanetChunckVertexData._VertexDatas.get(ref);
+    static Get(lod, ref) {
+        return PlanetChunckVertexData._VertexDatas[lod].get(ref);
     }
     static RotateY(baseData, angle) {
         let data = new BABYLON.VertexData();
@@ -2301,7 +2306,10 @@ class PlanetChunckVertexData {
         return data;
     }
 }
-PlanetChunckVertexData._VertexDatas = new Map();
+PlanetChunckVertexData._VertexDatas = [
+    new Map(),
+    new Map()
+];
 PlanetChunckVertexData.ReOrder = (ref, ...order) => {
     let v = [];
     for (let i = 0; i < order.length; i++) {

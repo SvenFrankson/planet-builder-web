@@ -192,6 +192,7 @@ class PlanetChunckMeshBuilder {
         jPos: number,
         kPos: number
     ): BABYLON.VertexData {
+        let lod = chunck.lod;
         let size = chunck.size;
         let vertexData: BABYLON.VertexData = new BABYLON.VertexData();
 
@@ -385,7 +386,7 @@ class PlanetChunckMeshBuilder {
                             continue;
                         }
                         
-                        let partVertexData = PlanetChunckVertexData.Get(ref);
+                        let partVertexData = PlanetChunckVertexData.Get(lod, ref);
     
                         let iGlobal: number = i + iPos * PlanetTools.CHUNCKSIZE;
                         let jGlobal: number = j + jPos * PlanetTools.CHUNCKSIZE;

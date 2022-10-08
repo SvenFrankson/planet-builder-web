@@ -123,6 +123,7 @@ class PlanetChunck {
         return this.normal;
     }
     public sqrDistanceToViewpoint: number;
+    public lod: number = 2;
 
     private _isEmpty: boolean = true;
     public get isEmpty(): boolean {

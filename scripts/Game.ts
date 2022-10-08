@@ -127,7 +127,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
 	game.chunckManager = new PlanetChunckManager(Game.Scene);
 
-	let degree = 10;
+	let degree = 20;
 	let planetTest: Planet = new Planet("Paulita", degree, game.chunckManager);
 
 	planetTest.generator = new PlanetGeneratorEarth(planetTest, 0.60, 0.1);

@@ -38,7 +38,7 @@ class PlanetChunckManager {
         this._lodLayersCursors = [];
         this._lodLayersSqrDistances = [];
         for (let i = 0; i < this._lodLayersCount - 1; i++) {
-            let d = (i + 1) * 80;
+            let d = (i + 1) * 60;
             this._lodLayers[i] = [];
             this._lodLayersCursors[i] = 0;
             this._lodLayersSqrDistances[i] = d * d;
@@ -60,7 +60,8 @@ class PlanetChunckManager {
             let layerIndex = this._getLayerIndex(chunck.sqrDistanceToViewpoint);
             if (this._lodLayers[layerIndex].indexOf(chunck) === -1) {
                 this._lodLayers[layerIndex].push(chunck);
-                if (layerIndex === 0) {
+                chunck.lod = layerIndex;
+                if (layerIndex <= 1) {
                     this.requestDraw(chunck);
                 }
             }
@@ -106,11 +107,12 @@ class PlanetChunckManager {
                         let adequateLayerCursor = this._lodLayersCursors[newLayerIndex];
                         this._lodLayers[i].splice(cursor, 1);
                         this._lodLayers[newLayerIndex].splice(adequateLayerCursor, 0, chunck);
+                        chunck.lod = newLayerIndex;
                         
-                        if (newLayerIndex === 0) {
+                        if (newLayerIndex <= 1) {
                             this.requestDraw(chunck);
                         }
-                        else if (i === 0) {
+                        else if (i > 1) {
                             chunck.disposeMesh();
                         }
 
