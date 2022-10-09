@@ -9,11 +9,11 @@ class Game {
 	public static Engine: BABYLON.Engine;
 	public static Scene: BABYLON.Scene;
 	public static Light: BABYLON.HemisphericLight;
-	public static Sky: BABYLON.Mesh;
 	public static PlanetEditor: PlanetEditor;
 	public static CameraManager: CameraManager;
 	public static Player: Player;
 	public chunckManager: PlanetChunckManager;
+	public planetSky: PlanetSky;
 
 	public static LockedMouse: boolean = false;
 	public static ClientXOnLock: number = -1;
@@ -154,14 +154,17 @@ window.addEventListener("DOMContentLoaded", () => {
 
 	//planetTest.AsyncInitialize();
 
-	let sky = new PlanetSky();
-	sky.setInvertLightDir((new BABYLON.Vector3(0.5, 2.5, 1.5)).normalize());
-	sky.initialize(Game.Scene);
+	game.planetSky = new PlanetSky();
+	game.planetSky.setInvertLightDir((new BABYLON.Vector3(0.5, 2.5, 1.5)).normalize());
+	game.planetSky.initialize(Game.Scene);
 
 	PlanetChunckVertexData.InitializeData().then(
 		() => {
 			game.chunckManager.initialize();
 			planetTest.register();
+
+			let debugPlanetSkyColor = new DebugPlanetSkyColor(game);
+			debugPlanetSkyColor.show();
 
 			let debugTerrainColor = new DebugTerrainColor();
 			debugTerrainColor.show();

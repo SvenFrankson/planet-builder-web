@@ -16,7 +16,7 @@ void main() {
    float flatness = dot(vNormalW, localUp);
 
    float cosAlphaZenith = dot(localUp, lightInvDirW);
-   float sunLightFactor = max(0.1, 0.1 + 0.9 * cosAlphaZenith);
+   float sunLightFactor = max(0.2, 0.2 + 0.8 * cosAlphaZenith);
 
    float surfaceLightFactor = dot(vNormalW, lightInvDirW);
    surfaceLightFactor = (surfaceLightFactor * 0.5 + 0.5);

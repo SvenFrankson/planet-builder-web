@@ -11,7 +11,7 @@ class CameraManager {
         this.freeCamera = new BABYLON.FreeCamera("Camera", BABYLON.Vector3.Zero(), Game.Scene);
         this.freeCamera.rotationQuaternion = BABYLON.Quaternion.Identity();
         this.freeCamera.minZ = 0.1;
-        //OutlinePostProcess.AddOutlinePostProcess(this.freeCamera);
+        OutlinePostProcess.AddOutlinePostProcess(this.freeCamera);
     }
     get absolutePosition() {
         if (this.cameraMode === CameraMode.Sky) {
@@ -155,12 +155,14 @@ window.addEventListener("DOMContentLoaded", () => {
     Game.CameraManager.player = Game.Player;
     Game.CameraManager.setMode(CameraMode.Player);
     //planetTest.AsyncInitialize();
-    let sky = new PlanetSky();
-    sky.setInvertLightDir((new BABYLON.Vector3(0.5, 2.5, 1.5)).normalize());
-    sky.initialize(Game.Scene);
+    game.planetSky = new PlanetSky();
+    game.planetSky.setInvertLightDir((new BABYLON.Vector3(0.5, 2.5, 1.5)).normalize());
+    game.planetSky.initialize(Game.Scene);
     PlanetChunckVertexData.InitializeData().then(() => {
         game.chunckManager.initialize();
         planetTest.register();
+        let debugPlanetSkyColor = new DebugPlanetSkyColor(game);
+        debugPlanetSkyColor.show();
         let debugTerrainColor = new DebugTerrainColor();
         debugTerrainColor.show();
     });
@@ -900,6 +902,44 @@ class DebugDisplayFrameValue extends HTMLElement {
     }
 }
 customElements.define("debug-display-frame-value", DebugDisplayFrameValue);
+class DebugPlanetSkyColor {
+    constructor(game) {
+        this.game = game;
+        this._initialized = false;
+    }
+    get initialized() {
+        return this._initialized;
+    }
+    initialize() {
+        this.container = document.querySelector("#debug-planet-sky-color");
+        let planetSky = this.game.planetSky;
+        let inputDawnColor = document.querySelector("#planet-sky-dawn-color");
+        inputDawnColor.setColor(planetSky.dawnColor);
+        inputDawnColor.onInput = (color) => {
+            planetSky.dawnColor.copyFrom(color);
+        };
+        let inputZenithColor = document.querySelector("#planet-sky-zenith-color");
+        inputZenithColor.setColor(planetSky.zenithColor);
+        inputZenithColor.onInput = (color) => {
+            planetSky.zenithColor.copyFrom(color);
+        };
+        let inputNightColor = document.querySelector("#planet-sky-night-color");
+        inputNightColor.setColor(planetSky.nightColor);
+        inputNightColor.onInput = (color) => {
+            planetSky.nightColor.copyFrom(color);
+        };
+        this._initialized = true;
+    }
+    show() {
+        if (!this.initialized) {
+            this.initialize();
+        }
+        this.container.classList.remove("hidden");
+    }
+    hide() {
+        this.container.classList.add("hidden");
+    }
+}
 class DebugTerrainColor {
     constructor() {
         this._initialized = false;
@@ -3221,9 +3261,9 @@ class PlanetSky {
     constructor() {
         this.invertLightDir = BABYLON.Vector3.Up();
         this._localUp = BABYLON.Vector3.Up();
-        this.zenithColor = BABYLON.Color3.FromHexString("#00c3ff");
-        this.dawnColor = BABYLON.Color3.FromHexString("#ff6f00");
-        this.nightColor = BABYLON.Color3.FromHexString("#000230");
+        this.zenithColor = new BABYLON.Color3(0.478, 0.776, 1.000);
+        this.dawnColor = new BABYLON.Color3(0.702, 0.373, 0.000);
+        this.nightColor = new BABYLON.Color3(0.000, 0.008, 0.188);
         this._skyColor = BABYLON.Color3.Black();
         this._initialized = false;
         this._update = () => {

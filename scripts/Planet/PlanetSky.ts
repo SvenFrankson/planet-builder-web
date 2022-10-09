@@ -4,9 +4,9 @@ class PlanetSky {
 
     public invertLightDir: BABYLON.Vector3 = BABYLON.Vector3.Up();
     private _localUp: BABYLON.Vector3 = BABYLON.Vector3.Up();
-    public zenithColor: BABYLON.Color3 = BABYLON.Color3.FromHexString("#00c3ff");
-    public dawnColor: BABYLON.Color3 = BABYLON.Color3.FromHexString("#ff6f00");
-    public nightColor: BABYLON.Color3 = BABYLON.Color3.FromHexString("#000230");
+    public zenithColor: BABYLON.Color3 = new BABYLON.Color3(0.478, 0.776, 1.000);
+    public dawnColor: BABYLON.Color3 = new BABYLON.Color3(0.702, 0.373, 0.000);
+    public nightColor: BABYLON.Color3 = new BABYLON.Color3(0.000, 0.008, 0.188);
     private _skyColor: BABYLON.Color3 = BABYLON.Color3.Black();
 
     private _initialized: boolean = false;
