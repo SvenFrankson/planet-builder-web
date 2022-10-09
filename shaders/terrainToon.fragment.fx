@@ -15,8 +15,14 @@ void main() {
    vec3 localUp = normalize(vPositionW);
    float flatness = dot(vNormalW, localUp);
 
-   float ndl = dot(vNormalW, lightInvDirW);
-   ndl = round(ndl * 5.) / 5.;
+   float cosAlphaZenith = dot(localUp, lightInvDirW);
+   float sunLightFactor = max(0.1, 0.1 + 0.9 * cosAlphaZenith);
+
+   float surfaceLightFactor = dot(vNormalW, lightInvDirW);
+   surfaceLightFactor = (surfaceLightFactor * 0.5 + 0.5);
+
+   float lightFactor = sunLightFactor * surfaceLightFactor;
+   lightFactor = round(lightFactor * 5.) / 5.;
 
    int d0 = int(vColor.a * 256. + 0.001953125);
    int d1 = int(vUv.x * 256. + 0.001953125);
@@ -42,5 +48,5 @@ void main() {
       color = terrainColors[d2];
    }
 
-   outColor = vec4(color * (ndl * 0.5 + 0.5), 1.);
+   outColor = vec4(color * lightFactor, 1.);
 }
