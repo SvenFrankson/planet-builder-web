@@ -1,6 +1,6 @@
 class TerrainToonMaterial extends BABYLON.ShaderMaterial {
 
-    private _grassColor: BABYLON.Color3 = new BABYLON.Color3(0.384, 0.651, 0.349);
+    private _terrainColors: BABYLON.Color3[];
 
     constructor(name: string, scene: BABYLON.Scene) {
         super(
@@ -16,21 +16,25 @@ class TerrainToonMaterial extends BABYLON.ShaderMaterial {
             }
         );
         this.setVector3("lightInvDirW", (new BABYLON.Vector3(0.5 + Math.random(), 2.5 + Math.random(), 1.5 + Math.random())).normalize());
-        this.setColor3("colGrass", this._grassColor);
-        this.setColor3("colDirt", BABYLON.Color3.FromHexString("#a86f32"));
-        this.setColor3("colRock", BABYLON.Color3.FromHexString("#8c8c89"));
-        this.setColor3("colSand", BABYLON.Color3.FromHexString("#dbc67b"));
+
+        this._terrainColors = [];
+        this._terrainColors[BlockType.None] = new BABYLON.Color3(0, 0, 0);
+        this._terrainColors[BlockType.Grass] = new BABYLON.Color3(0.384, 0.651, 0.349);
+        this._terrainColors[BlockType.Dirt] = new BABYLON.Color3(0, 0, 0);
+        this._terrainColors[BlockType.Sand] = new BABYLON.Color3(0.761, 0.627, 0.141);
+        this._terrainColors[BlockType.Rock] = new BABYLON.Color3(0, 0, 0);
+        this._terrainColors[BlockType.Wood] = new BABYLON.Color3(0.600, 0.302, 0.020);
+        this._terrainColors[BlockType.Leaf] = new BABYLON.Color3(0.431, 0.839, 0.020);
+
+        this.setColor3Array("terrainColors", this._terrainColors);
     }
 
     public getColor(blockType: BlockType): BABYLON.Color3 {
-        if (blockType === BlockType.Grass) {
-            return this._grassColor;
-        }
+        return this._terrainColors[blockType];
     }
 
     public setColor(blockType: BlockType, color: BABYLON.Color3): void {
-        if (blockType === BlockType.Grass) {
-            this.setColor3("colGrass", color);
-        }
+        this._terrainColors[blockType].copyFrom(color);
+        this.setColor3Array("terrainColors", this._terrainColors);
     }
 }

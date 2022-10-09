@@ -135,7 +135,7 @@ window.addEventListener("DOMContentLoaded", () => {
     let game = new Game("renderCanvas");
     game.createScene();
     game.chunckManager = new PlanetChunckManager(Game.Scene);
-    let degree = 20;
+    let degree = 10;
     let planetTest = new Planet("Paulita", degree, game.chunckManager);
     planetTest.generator = new PlanetGeneratorEarth(planetTest, 0.60, 0.1);
     //planetTest.generator = new PlanetGeneratorDebug4(planetTest);
@@ -158,6 +158,8 @@ window.addEventListener("DOMContentLoaded", () => {
     PlanetChunckVertexData.InitializeData().then(() => {
         game.chunckManager.initialize();
         planetTest.register();
+        let debugTerrainColor = new DebugTerrainColor();
+        debugTerrainColor.show();
     });
     game.animate();
     Game.Canvas.addEventListener("pointerup", (event) => {
@@ -726,14 +728,16 @@ class VMath {
         return angle;
     }
 }
-class DebugDisplayColor extends HTMLElement {
+class DebugDisplayColorInput extends HTMLElement {
     constructor() {
         super(...arguments);
         this._initialized = false;
         this._onInput = () => {
             let color = BABYLON.Color3.FromHexString(this._colorInput.value);
             this._colorFloat.innerText = color.r.toFixed(3) + ", " + color.g.toFixed(3) + ", " + color.b.toFixed(3);
-            SharedMaterials.MainMaterial().setColor(BlockType.Grass, color);
+            if (this.onInput) {
+                this.onInput(color);
+            }
         };
     }
     static get observedAttributes() {
@@ -765,7 +769,6 @@ class DebugDisplayColor extends HTMLElement {
             this._colorInput.style.display = "inline-block";
             this._colorInput.style.verticalAlign = "middle";
             this._colorInput.style.width = "65%";
-            this._colorInput.value = SharedMaterials.MainMaterial().getColor(BlockType.Grass).toHexString();
             this.appendChild(this._colorInput);
             this._colorInput.oninput = this._onInput;
             this._colorFloat = document.createElement("span");
@@ -788,8 +791,12 @@ class DebugDisplayColor extends HTMLElement {
             }
         }
     }
+    setColor(color) {
+        this._colorInput.value = color.toHexString();
+        this._colorFloat.innerText = color.r.toFixed(3) + ", " + color.g.toFixed(3) + ", " + color.b.toFixed(3);
+    }
 }
-customElements.define("debug-display-color", DebugDisplayColor);
+customElements.define("debug-display-color-input", DebugDisplayColorInput);
 class DebugDisplayFrameValue extends HTMLElement {
     constructor() {
         super(...arguments);
@@ -890,6 +897,45 @@ class DebugDisplayFrameValue extends HTMLElement {
     }
 }
 customElements.define("debug-display-frame-value", DebugDisplayFrameValue);
+class DebugTerrainColor {
+    constructor() {
+        this._initialized = false;
+    }
+    get initialized() {
+        return this._initialized;
+    }
+    initialize() {
+        this.container = document.querySelector("#debug-terrain-color");
+        for (let i = 1; i < BlockTypeCount; i++) {
+            let blockType = i;
+            let input = document.querySelector("#terrain-" + BlockTypeNames[blockType].toLowerCase() + "-color");
+            input.setColor(SharedMaterials.MainMaterial().getColor(blockType));
+            input.onInput = (color) => {
+                SharedMaterials.MainMaterial().setColor(blockType, color);
+            };
+        }
+        this._initialized = true;
+    }
+    show() {
+        if (!this.initialized) {
+            this.initialize();
+        }
+        this.container.classList.remove("hidden");
+    }
+    hide() {
+        this.container.classList.add("hidden");
+    }
+}
+var BlockTypeNames = [
+    "None",
+    "Grass",
+    "Dirt",
+    "Sand",
+    "Rock",
+    "Wood",
+    "Leaf"
+];
+var BlockTypeCount = 7;
 var BlockType;
 (function (BlockType) {
     BlockType[BlockType["None"] = 0] = "None";
@@ -2875,22 +2921,23 @@ class TerrainToonMaterial extends BABYLON.ShaderMaterial {
             attributes: ["position", "normal", "uv", "color"],
             uniforms: ["world", "worldView", "worldViewProjection", "view", "projection"]
         });
-        this._grassColor = new BABYLON.Color3(0.384, 0.651, 0.349);
         this.setVector3("lightInvDirW", (new BABYLON.Vector3(0.5 + Math.random(), 2.5 + Math.random(), 1.5 + Math.random())).normalize());
-        this.setColor3("colGrass", this._grassColor);
-        this.setColor3("colDirt", BABYLON.Color3.FromHexString("#a86f32"));
-        this.setColor3("colRock", BABYLON.Color3.FromHexString("#8c8c89"));
-        this.setColor3("colSand", BABYLON.Color3.FromHexString("#dbc67b"));
+        this._terrainColors = [];
+        this._terrainColors[BlockType.None] = new BABYLON.Color3(0, 0, 0);
+        this._terrainColors[BlockType.Grass] = new BABYLON.Color3(0.384, 0.651, 0.349);
+        this._terrainColors[BlockType.Dirt] = new BABYLON.Color3(0, 0, 0);
+        this._terrainColors[BlockType.Sand] = new BABYLON.Color3(0.761, 0.627, 0.141);
+        this._terrainColors[BlockType.Rock] = new BABYLON.Color3(0, 0, 0);
+        this._terrainColors[BlockType.Wood] = new BABYLON.Color3(0.600, 0.302, 0.020);
+        this._terrainColors[BlockType.Leaf] = new BABYLON.Color3(0.431, 0.839, 0.020);
+        this.setColor3Array("terrainColors", this._terrainColors);
     }
     getColor(blockType) {
-        if (blockType === BlockType.Grass) {
-            return this._grassColor;
-        }
+        return this._terrainColors[blockType];
     }
     setColor(blockType, color) {
-        if (blockType === BlockType.Grass) {
-            this.setColor3("colGrass", color);
-        }
+        this._terrainColors[blockType].copyFrom(color);
+        this.setColor3Array("terrainColors", this._terrainColors);
     }
 }
 var Side;

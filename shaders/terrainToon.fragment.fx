@@ -2,7 +2,7 @@
 precision highp float;
  
 uniform vec3 lightInvDirW;
-uniform vec3 colGrass;
+uniform vec3 terrainColors[7];
 
 in vec3 vPositionW;
 in vec3 vNormalW;
@@ -12,12 +12,12 @@ in vec4 vColor;
 out vec4 outColor;
 /*
    None = 0,
-    Grass,
-    Dirt,
-    Sand,
-    Rock,
-    Wood,
-    Leaf
+   Grass,
+   Dirt,
+   Sand,
+   Rock,
+   Wood,
+   Leaf
 */
  
 void main() {
@@ -32,75 +32,72 @@ void main() {
    vec3 color = vec3(0., 0., 0.);
    if (vColor.r >= vColor.g && vColor.r >= vColor.b) {
       if (d0 < 0.125) {
-         color = vec3(0., 0., 0.); // none
+         color = terrainColors[0]; // none
       }
       else if (d0 < 0.250) {
-         color = colGrass; // grass
+         color = terrainColors[1];
       }
       else if (d0 < 0.375) {
-         color = vec3(140. / 256., 63. / 256., 0. / 256.); // dirt
+         color = terrainColors[2];
       }
       else if (d0 < 0.5) {
-         color = vec3(222. / 256., 193. / 256., 4. / 256.); // sand
+         color = terrainColors[3];
       }
       else if (d0 < 0.625) {
-         color = vec3(156. / 256., 156. / 256., 156. / 256.); // rock
+         color = terrainColors[4];
       }
       else if (d0 < 0.750) {
-         color = vec3(107. / 256., 57. / 256., 0. / 256.); // wood
+         color = terrainColors[5];
       }
       else if (d0 < 0.875) {
-         color = vec3(117. / 256., 171. / 256., 2. / 256.); // leaf
+         color = terrainColors[6];
       }
-      //color = vec3(d0, d0, d0);
    }
    else if (vColor.g >= vColor.r && vColor.g >= vColor.b) {
       if (d1 < 0.125) {
-         color = vec3(0., 0., 0.); // none
+         color = terrainColors[0]; // none
       }
       else if (d1 < 0.250) {
-         color = colGrass; // grass
+         color = terrainColors[1];
       }
       else if (d1 < 0.375) {
-         color = vec3(140. / 256., 63. / 256., 0. / 256.); // dirt
+         color = terrainColors[2];
       }
       else if (d1 < 0.5) {
-         color = vec3(222. / 256., 193. / 256., 4. / 256.); // sand
+         color = terrainColors[3];
       }
       else if (d1 < 0.625) {
-         color = vec3(156. / 256., 156. / 256., 156. / 256.); // rock
+         color = terrainColors[4];
       }
       else if (d1 < 0.750) {
-         color = vec3(107. / 256., 57. / 256., 0. / 256.); // wood
+         color = terrainColors[5];
       }
       else if (d1 < 0.875) {
-         color = vec3(117. / 256., 171. / 256., 2. / 256.); // leaf
+         color = terrainColors[6];
       }
-      //color = vec3(d1, d1, d1);
    }
    else if (vColor.b >= vColor.r && vColor.b >= vColor.g) {
       if (d2 < 0.125) {
-         color = vec3(0., 0., 0.); // none
+         color = terrainColors[0]; // none
       }
       else if (d2 < 0.250) {
-         color = colGrass; // grass
+         color = terrainColors[1];
       }
       else if (d2 < 0.375) {
-         color = vec3(140. / 256., 63. / 256., 0. / 256.); // dirt
+         color = terrainColors[2];
       }
       else if (d2 < 0.5) {
-         color = vec3(222. / 256., 193. / 256., 4. / 256.); // sand
+         color = terrainColors[3];
       }
       else if (d2 < 0.625) {
-         color = vec3(156. / 256., 156. / 256., 156. / 256.); // rock
+         color = terrainColors[4];
       }
       else if (d2 < 0.750) {
-         color = vec3(107. / 256., 57. / 256., 0. / 256.); // wood
+         color = terrainColors[5];
       }
       else if (d2 < 0.875) {
-         color = vec3(117. / 256., 171. / 256., 2. / 256.); // leaf
+         color = terrainColors[6];
       }
-      //color = vec3(d2, d2, d2);
    }
 
    outColor = vec4(color * ndl, 1.);

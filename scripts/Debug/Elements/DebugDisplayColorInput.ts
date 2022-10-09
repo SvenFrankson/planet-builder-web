@@ -1,4 +1,4 @@
-class DebugDisplayColor extends HTMLElement {
+class DebugDisplayColorInput extends HTMLElement {
     
     public static get observedAttributes() {
         return [
@@ -41,7 +41,6 @@ class DebugDisplayColor extends HTMLElement {
             this._colorInput.style.display = "inline-block";
             this._colorInput.style.verticalAlign = "middle";
             this._colorInput.style.width = "65%";
-            this._colorInput.value = SharedMaterials.MainMaterial().getColor(BlockType.Grass).toHexString();
             this.appendChild(this._colorInput);
 
             this._colorInput.oninput = this._onInput;
@@ -72,8 +71,17 @@ class DebugDisplayColor extends HTMLElement {
     private _onInput = () => {
         let color = BABYLON.Color3.FromHexString(this._colorInput.value);
         this._colorFloat.innerText = color.r.toFixed(3) + ", " + color.g.toFixed(3) + ", " + color.b.toFixed(3);
-        SharedMaterials.MainMaterial().setColor(BlockType.Grass, color);
+        if (this.onInput) {
+            this.onInput(color);
+        }
+    }
+
+    public onInput: (color: BABYLON.Color3) => void;
+
+    public setColor(color: BABYLON.Color3): void {
+        this._colorInput.value = color.toHexString();
+        this._colorFloat.innerText = color.r.toFixed(3) + ", " + color.g.toFixed(3) + ", " + color.b.toFixed(3);
     }
 }
 
-customElements.define("debug-display-color", DebugDisplayColor);
+customElements.define("debug-display-color-input", DebugDisplayColorInput);
