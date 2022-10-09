@@ -355,13 +355,16 @@ class PlanetChunckMeshBuilder {
                                 }
             
                                 let l = positions.length / 3;
-                                positions.push(v0.x, v0.y, v0.z, v1.x, v1.y, v1.z, v2.x, v2.y, v2.z)
-                                let color = PCMB.BlockColor.get(d);
-                                for (let n = 0; n < 3; n++) {
-                                    colors.push(...color.asArray(), 1);
-                                }
+                                positions.push(v0.x, v0.y, v0.z, v1.x, v1.y, v1.z, v2.x, v2.y, v2.z);
+
                                 normals.push(0, 1, 0, 0, 1, 0, 0, 1, 0);
                                 indices.push(l, l + 2, l + 1);
+                                
+                                let alpha = d / 256;
+                                colors.push(1, 0, 0, alpha, 0, 1, 0, alpha, 0, 0, 1, alpha);
+                                let u = d / 256;
+                                let v = d / 256;
+                                uvs.push(u, v, u, v, u, v);
                             }
                         }
                     }
@@ -526,9 +529,9 @@ class PlanetChunckMeshBuilder {
                                 ds[vIndex] = d;
                             }
                             
-                            let alpha = ds[0] / 32;
-                            let u = ds[1] / 32;
-                            let v = ds[2] / 32;
+                            let alpha = ds[0] / 256;
+                            let u = ds[1] / 256;
+                            let v = ds[2] / 256;
 
                             if (lod === 0) {
                                 let corner0 = PCMB.Corners[blocks[0]];

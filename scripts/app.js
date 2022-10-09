@@ -1697,12 +1697,13 @@ class PlanetChunckMeshBuilder {
                                 }
                                 let l = positions.length / 3;
                                 positions.push(v0.x, v0.y, v0.z, v1.x, v1.y, v1.z, v2.x, v2.y, v2.z);
-                                let color = PCMB.BlockColor.get(d);
-                                for (let n = 0; n < 3; n++) {
-                                    colors.push(...color.asArray(), 1);
-                                }
                                 normals.push(0, 1, 0, 0, 1, 0, 0, 1, 0);
                                 indices.push(l, l + 2, l + 1);
+                                let alpha = d / 256;
+                                colors.push(1, 0, 0, alpha, 0, 1, 0, alpha, 0, 0, 1, alpha);
+                                let u = d / 256;
+                                let v = d / 256;
+                                uvs.push(u, v, u, v, u, v);
                             }
                         }
                     }
@@ -1853,9 +1854,9 @@ class PlanetChunckMeshBuilder {
                                 }
                                 ds[vIndex] = d;
                             }
-                            let alpha = ds[0] / 32;
-                            let u = ds[1] / 32;
-                            let v = ds[2] / 32;
+                            let alpha = ds[0] / 256;
+                            let u = ds[1] / 256;
+                            let v = ds[2] / 256;
                             if (lod === 0) {
                                 let corner0 = PCMB.Corners[blocks[0]];
                                 let corner1 = PCMB.Corners[blocks[1]];
@@ -2499,6 +2500,7 @@ class PlanetGeneratorEarth extends PlanetGenerator {
         this._mountainHeight = _mountainHeight;
         this._mainHeightMap = PlanetHeightMap.CreateMap(PlanetTools.KPosToDegree(planet.kPosMax));
         this._treeMap = PlanetHeightMap.CreateMap(PlanetTools.KPosToDegree(planet.kPosMax), { firstNoiseDegree: PlanetTools.KPosToDegree(planet.kPosMax) - 2 });
+        this._rockMap = PlanetHeightMap.CreateMap(PlanetTools.KPosToDegree(planet.kPosMax), { firstNoiseDegree: PlanetTools.KPosToDegree(planet.kPosMax) - 3 });
         this.heightMaps = [this._mainHeightMap];
     }
     makeData(chunck) {
@@ -2506,7 +2508,9 @@ class PlanetGeneratorEarth extends PlanetGenerator {
         return PlanetTools.Data((i, j, k) => {
             let v = this._mainHeightMap.getForSide(chunck.side, (chunck.iPos * PlanetTools.CHUNCKSIZE + i) * f, (chunck.jPos * PlanetTools.CHUNCKSIZE + j) * f);
             let tree = this._treeMap.getForSide(chunck.side, (chunck.iPos * PlanetTools.CHUNCKSIZE + i) * f, (chunck.jPos * PlanetTools.CHUNCKSIZE + j) * f);
+            let rock = this._rockMap.getForSide(chunck.side, (chunck.iPos * PlanetTools.CHUNCKSIZE + i) * f, (chunck.jPos * PlanetTools.CHUNCKSIZE + j) * f);
             let altitude = Math.floor((this._seaLevel + v * this._mountainHeight) * this.planet.kPosMax * PlanetTools.CHUNCKSIZE);
+            let rockAltitude = altitude + Math.round((rock - 0.4) * this._mountainHeight * this.planet.kPosMax * PlanetTools.CHUNCKSIZE);
             let globalK = k + chunck.kPos * PlanetTools.CHUNCKSIZE;
             if (globalK <= altitude) {
                 if (globalK > altitude - 2) {
@@ -2517,6 +2521,9 @@ class PlanetGeneratorEarth extends PlanetGenerator {
                     return BlockType.Grass;
                 }
                 //return BlockType.Grass;
+                return BlockType.Rock;
+            }
+            if (globalK <= rockAltitude) {
                 return BlockType.Rock;
             }
             if (altitude >= this._seaLevel * this.planet.kPosMax * PlanetTools.CHUNCKSIZE) {
@@ -2924,10 +2931,10 @@ class TerrainToonMaterial extends BABYLON.ShaderMaterial {
         this.setVector3("lightInvDirW", (new BABYLON.Vector3(0.5 + Math.random(), 2.5 + Math.random(), 1.5 + Math.random())).normalize());
         this._terrainColors = [];
         this._terrainColors[BlockType.None] = new BABYLON.Color3(0, 0, 0);
-        this._terrainColors[BlockType.Grass] = new BABYLON.Color3(0.384, 0.651, 0.349);
-        this._terrainColors[BlockType.Dirt] = new BABYLON.Color3(0, 0, 0);
+        this._terrainColors[BlockType.Grass] = new BABYLON.Color3(0.216, 0.616, 0.165);
+        this._terrainColors[BlockType.Dirt] = new BABYLON.Color3(0.451, 0.263, 0.047);
         this._terrainColors[BlockType.Sand] = new BABYLON.Color3(0.761, 0.627, 0.141);
-        this._terrainColors[BlockType.Rock] = new BABYLON.Color3(0, 0, 0);
+        this._terrainColors[BlockType.Rock] = new BABYLON.Color3(0.522, 0.522, 0.522);
         this._terrainColors[BlockType.Wood] = new BABYLON.Color3(0.600, 0.302, 0.020);
         this._terrainColors[BlockType.Leaf] = new BABYLON.Color3(0.431, 0.839, 0.020);
         this.setColor3Array("terrainColors", this._terrainColors);
