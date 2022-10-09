@@ -15,7 +15,7 @@ class TerrainToonMaterial extends BABYLON.ShaderMaterial {
                 uniforms: ["world", "worldView", "worldViewProjection", "view", "projection"]
             }
         );
-        this.setVector3("lightInvDirW", (new BABYLON.Vector3(0.5 + Math.random(), 2.5 + Math.random(), 1.5 + Math.random())).normalize());
+        this.setVector3("lightInvDirW", (new BABYLON.Vector3(0.5, 2.5, 1.5)).normalize());
 
         this._terrainColors = [];
         this._terrainColors[BlockType.None] = new BABYLON.Color3(0, 0, 0);

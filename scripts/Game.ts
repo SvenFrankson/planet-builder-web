@@ -154,6 +154,10 @@ window.addEventListener("DOMContentLoaded", () => {
 
 	//planetTest.AsyncInitialize();
 
+	let sky = new PlanetSky();
+	sky.setInvertLightDir((new BABYLON.Vector3(0.5, 2.5, 1.5)).normalize());
+	sky.initialize(Game.Scene);
+
 	PlanetChunckVertexData.InitializeData().then(
 		() => {
 			game.chunckManager.initialize();

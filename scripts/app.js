@@ -155,6 +155,9 @@ window.addEventListener("DOMContentLoaded", () => {
     Game.CameraManager.player = Game.Player;
     Game.CameraManager.setMode(CameraMode.Player);
     //planetTest.AsyncInitialize();
+    let sky = new PlanetSky();
+    sky.setInvertLightDir((new BABYLON.Vector3(0.5, 2.5, 1.5)).normalize());
+    sky.initialize(Game.Scene);
     PlanetChunckVertexData.InitializeData().then(() => {
         game.chunckManager.initialize();
         planetTest.register();
@@ -2928,7 +2931,7 @@ class TerrainToonMaterial extends BABYLON.ShaderMaterial {
             attributes: ["position", "normal", "uv", "color"],
             uniforms: ["world", "worldView", "worldViewProjection", "view", "projection"]
         });
-        this.setVector3("lightInvDirW", (new BABYLON.Vector3(0.5 + Math.random(), 2.5 + Math.random(), 1.5 + Math.random())).normalize());
+        this.setVector3("lightInvDirW", (new BABYLON.Vector3(0.5, 2.5, 1.5)).normalize());
         this._terrainColors = [];
         this._terrainColors[BlockType.None] = new BABYLON.Color3(0, 0, 0);
         this._terrainColors[BlockType.Grass] = new BABYLON.Color3(0.216, 0.616, 0.165);
@@ -3212,6 +3215,47 @@ class PlanetSide extends BABYLON.Mesh {
             }
         }
         return chunckCount;
+    }
+}
+class PlanetSky {
+    constructor() {
+        this.invertLightDir = BABYLON.Vector3.Up();
+        this._localUp = BABYLON.Vector3.Up();
+        this.zenithColor = BABYLON.Color3.FromHexString("#00c3ff");
+        this.dawnColor = BABYLON.Color3.FromHexString("#ff6f00");
+        this.nightColor = BABYLON.Color3.FromHexString("#000230");
+        this._skyColor = BABYLON.Color3.Black();
+        this._initialized = false;
+        this._update = () => {
+            if (this.scene.activeCamera) {
+                this.scene.activeCamera.globalPosition.normalizeToRef(this._localUp);
+                let factor = BABYLON.Vector3.Dot(this._localUp, this.invertLightDir);
+                let sign = 0;
+                if (factor != 0) {
+                    sign = factor / Math.abs(factor);
+                    factor = sign * Math.sqrt(Math.abs(factor));
+                }
+                if (sign >= 0) {
+                    BABYLON.Color3.LerpToRef(this.dawnColor, this.zenithColor, factor, this._skyColor);
+                    this.scene.clearColor.copyFromFloats(this._skyColor.r, this._skyColor.g, this._skyColor.b, 1);
+                }
+                else {
+                    BABYLON.Color3.LerpToRef(this.dawnColor, this.nightColor, Math.abs(factor), this._skyColor);
+                    this.scene.clearColor.copyFromFloats(this._skyColor.r, this._skyColor.g, this._skyColor.b, 1);
+                }
+            }
+        };
+    }
+    get initialized() {
+        return this._initialized;
+    }
+    initialize(scene) {
+        this.scene = scene;
+        scene.onBeforeRenderObservable.add(this._update);
+        this._initialized = true;
+    }
+    setInvertLightDir(invertLightDir) {
+        this.invertLightDir = invertLightDir;
     }
 }
 var PI4 = Math.PI / 4;
