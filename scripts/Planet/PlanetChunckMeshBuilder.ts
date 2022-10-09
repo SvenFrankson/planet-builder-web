@@ -526,9 +526,9 @@ class PlanetChunckMeshBuilder {
                                 ds[vIndex] = d;
                             }
                             
-                            let alpha = ds[0] / 8;
-                            let u = ds[1] / 8;
-                            let v = ds[2] / 8;
+                            let alpha = ds[0] / 32;
+                            let u = ds[1] / 32;
+                            let v = ds[2] / 32;
 
                             if (lod === 0) {
                                 let corner0 = PCMB.Corners[blocks[0]];
