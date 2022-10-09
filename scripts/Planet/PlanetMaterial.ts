@@ -19,10 +19,10 @@ class TerrainToonMaterial extends BABYLON.ShaderMaterial {
 
         this._terrainColors = [];
         this._terrainColors[BlockType.None] = new BABYLON.Color3(0, 0, 0);
-        this._terrainColors[BlockType.Grass] = new BABYLON.Color3(0.384, 0.651, 0.349);
-        this._terrainColors[BlockType.Dirt] = new BABYLON.Color3(0, 0, 0);
+        this._terrainColors[BlockType.Grass] = new BABYLON.Color3(0.216, 0.616, 0.165);
+        this._terrainColors[BlockType.Dirt] = new BABYLON.Color3(0.451, 0.263, 0.047);
         this._terrainColors[BlockType.Sand] = new BABYLON.Color3(0.761, 0.627, 0.141);
-        this._terrainColors[BlockType.Rock] = new BABYLON.Color3(0, 0, 0);
+        this._terrainColors[BlockType.Rock] = new BABYLON.Color3(0.522, 0.522, 0.522);
         this._terrainColors[BlockType.Wood] = new BABYLON.Color3(0.600, 0.302, 0.020);
         this._terrainColors[BlockType.Leaf] = new BABYLON.Color3(0.431, 0.839, 0.020);
 
