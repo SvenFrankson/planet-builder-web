@@ -28,11 +28,13 @@ class PlanetGeneratorEarth extends PlanetGenerator {
 
     private _mainHeightMap: PlanetHeightMap;
     private _treeMap: PlanetHeightMap;
+    private _rockMap: PlanetHeightMap;
 
     constructor(planet: Planet, private _seaLevel: number, private _mountainHeight: number) {
         super(planet);
         this._mainHeightMap = PlanetHeightMap.CreateMap(PlanetTools.KPosToDegree(planet.kPosMax));
         this._treeMap = PlanetHeightMap.CreateMap(PlanetTools.KPosToDegree(planet.kPosMax), { firstNoiseDegree : PlanetTools.KPosToDegree(planet.kPosMax) - 2 });
+        this._rockMap = PlanetHeightMap.CreateMap(PlanetTools.KPosToDegree(planet.kPosMax), { firstNoiseDegree : PlanetTools.KPosToDegree(planet.kPosMax) - 3});
         this.heightMaps = [this._mainHeightMap];
     }
 
@@ -44,7 +46,9 @@ class PlanetGeneratorEarth extends PlanetGenerator {
                 
                 let v = this._mainHeightMap.getForSide(chunck.side, (chunck.iPos * PlanetTools.CHUNCKSIZE + i) * f, (chunck.jPos * PlanetTools.CHUNCKSIZE + j) * f);
                 let tree = this._treeMap.getForSide(chunck.side, (chunck.iPos * PlanetTools.CHUNCKSIZE + i) * f, (chunck.jPos * PlanetTools.CHUNCKSIZE + j) * f);
+                let rock = this._rockMap.getForSide(chunck.side, (chunck.iPos * PlanetTools.CHUNCKSIZE + i) * f, (chunck.jPos * PlanetTools.CHUNCKSIZE + j) * f);
                 let altitude = Math.floor((this._seaLevel + v * this._mountainHeight) * this.planet.kPosMax * PlanetTools.CHUNCKSIZE);
+                let rockAltitude = altitude + Math.round((rock - 0.4) * this._mountainHeight * this.planet.kPosMax * PlanetTools.CHUNCKSIZE);
                 let globalK = k + chunck.kPos * PlanetTools.CHUNCKSIZE;
 
                 if (globalK <= altitude) {
@@ -56,6 +60,9 @@ class PlanetGeneratorEarth extends PlanetGenerator {
                         return BlockType.Grass;
                     }
                     //return BlockType.Grass;
+                    return BlockType.Rock;
+                }
+                if (globalK <= rockAltitude) {
                     return BlockType.Rock;
                 }
                 if (altitude >= this._seaLevel  * this.planet.kPosMax * PlanetTools.CHUNCKSIZE) {
