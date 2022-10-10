@@ -197,12 +197,12 @@ class PlanetTools {
             localPos = localPos.scale(1 / localPos.z);
         }
 
-        let yDeg: number = (Math.atan(localPos.y) / Math.PI) * 180;
+        let xDeg: number = (Math.atan(localPos.x) / Math.PI) * 180;
         let zDeg: number = (Math.atan(localPos.z) / Math.PI) * 180;
 
         let k: number = PlanetTools.AltitudeToKGlobal(r);
-        let i: number = Math.floor(((zDeg + 45) / 90) * PlanetTools.DegreeToSize(PlanetTools.KGlobalToDegree(k)));
-        let j: number = Math.floor(((yDeg + 45) / 90) * PlanetTools.DegreeToSize(PlanetTools.KGlobalToDegree(k)));
+        let i: number = Math.floor(((xDeg + 45) / 90) * PlanetTools.DegreeToSize(PlanetTools.KGlobalToDegree(k)));
+        let j: number = Math.floor(((zDeg + 45) / 90) * PlanetTools.DegreeToSize(PlanetTools.KGlobalToDegree(k)));
 
         return { i: i, j: j, k: k };
     }
