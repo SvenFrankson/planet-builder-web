@@ -13,7 +13,6 @@ class PlanetBlockMaker {
                         let localIJK = PlanetTools.GlobalIJKToLocalIJK(planetSide, globalIJK);
                         let chunck = localIJK.planetChunck;
                         if (chunck) {
-                            console.log(localIJK);
                             chunck.SetData(localIJK.i, localIJK.j, localIJK.k, block);
                             if (impactedChunck.indexOf(chunck) === - 1) {
                                 impactedChunck.push(chunck);

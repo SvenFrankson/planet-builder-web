@@ -136,7 +136,8 @@ window.addEventListener("DOMContentLoaded", () => {
 	document.querySelector("#planet-surface").textContent = (4 * Math.PI * r * r / 1000 / 1000).toFixed(2) + " km²"
 	//planetTest.generator.showDebug();
 
-	Game.Player = new Player(new BABYLON.Vector3(0, kPosMax * PlanetTools.CHUNCKSIZE, 0), planetTest);
+	Game.Player = new Player(new BABYLON.Vector3(0, (kPosMax + 1) * PlanetTools.CHUNCKSIZE * 0.8, 0), planetTest);
+	
 	Game.Player.registerControl();
 	game.chunckManager.onNextInactive(() => {
 		Game.Player.initialize();
@@ -169,12 +170,10 @@ window.addEventListener("DOMContentLoaded", () => {
 			let debugTerrainColor = new DebugTerrainColor();
 			debugTerrainColor.show();
 
-			setTimeout(() => {
-				let chuncks = PlanetBlockMaker.AddSphere(planetTest, new BABYLON.Vector3(0, r * 1.1, 0), 4, BlockType.Rock);
-				for (let i = 0; i < chuncks.length; i++) {
-					chuncks[i].SetMesh();
-				}
-			}, 5000);
+			let chuncks = PlanetBlockMaker.AddSphere(planetTest, new BABYLON.Vector3(0, r * 1.2, 0), 4, BlockType.Rock);
+			for (let i = 0; i < chuncks.length; i++) {
+				game.chunckManager.requestDraw(chuncks[i]);
+			}
 		}
 	)
 	

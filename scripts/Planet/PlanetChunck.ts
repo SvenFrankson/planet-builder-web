@@ -116,6 +116,7 @@ class PlanetChunck {
             this.initializeData();
         }
         this.data[i][j][k] = value;
+        this.updateIsEmptyIsFull();
     }
     private barycenter: BABYLON.Vector3;
     public GetBaryCenter(): BABYLON.Vector3 {
