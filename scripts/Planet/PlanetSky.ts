@@ -35,7 +35,7 @@ class PlanetSky {
             let sign = 0;
             if (factor != 0) {
                 sign = factor / Math.abs(factor);
-                factor = sign * Math.sqrt(Math.abs(factor));
+                factor = sign * Math.sqrt(Math.sqrt(Math.abs(factor)));
             }
             if (sign >= 0) {
                 BABYLON.Color3.LerpToRef(this.dawnColor, this.zenithColor, factor, this._skyColor);

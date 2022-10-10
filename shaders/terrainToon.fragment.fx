@@ -16,17 +16,23 @@ void main() {
    float flatness = dot(vNormalW, localUp);
 
    float cosAlphaZenith = dot(localUp, lightInvDirW);
-   float sunLightFactor = max(0.2, 0.2 + 0.8 * cosAlphaZenith);
+   
+   float sunFactor = max(cosAlphaZenith, 0.0);
+   sunFactor = round(sunFactor * 10.) / 10.;
 
-   float surfaceLightFactor = dot(vNormalW, lightInvDirW);
-   surfaceLightFactor = (surfaceLightFactor * 0.5 + 0.5);
+   float sunLightFactor = max(dot(vNormalW, lightInvDirW), 0.0);
+   sunLightFactor = round(sunLightFactor * 4.) / 4.;
 
-   float lightFactor = sunLightFactor * surfaceLightFactor;
-   lightFactor = round(lightFactor * 5.) / 5.;
+   float ambiantLightFactor = ((flatness + 1.) * 0.5);
+   ambiantLightFactor = round(ambiantLightFactor * 4.) / 4. * 0.3;
 
-   int d0 = int(vColor.a * 256. + 0.001953125);
-   int d1 = int(vUv.x * 256. + 0.001953125);
-   int d2 = int(vUv.y * 256. + 0.001953125);
+   float lightFactor = sunFactor * sunLightFactor + ambiantLightFactor;
+
+   lightFactor = lightFactor * 0.9 + 0.1;
+
+   int d0 = int(vColor.a * 128. + 0.002);
+   int d1 = int(vUv.x * 128. + 0.002);
+   int d2 = int(vUv.y * 128. + 0.002);
 
    vec3 color = vec3(0., 0., 0.);
    if (vColor.r >= vColor.g && vColor.r >= vColor.b) {
