@@ -335,7 +335,6 @@ class PlanetTools {
                 break;
             }
             else {
-                altitude -= highest;
                 degree++;
             }
         }
