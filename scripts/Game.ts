@@ -127,7 +127,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
 	game.chunckManager = new PlanetChunckManager(Game.Scene);
 
-	let kPosMax = 8;
+	let kPosMax = 10;
 	let planetTest: Planet = new Planet("Paulita", kPosMax, game.chunckManager);
 
 	planetTest.generator = new PlanetGeneratorEarth(planetTest, 0.60, 0.1);
@@ -170,7 +170,12 @@ window.addEventListener("DOMContentLoaded", () => {
 			let debugTerrainColor = new DebugTerrainColor();
 			debugTerrainColor.show();
 
-			let chuncks = PlanetBlockMaker.AddSphere(planetTest, new BABYLON.Vector3(0, r * 1.2, 0), 4, BlockType.Rock);
+			let chuncks = PlanetBlockMaker.AddSphere(planetTest, new BABYLON.Vector3(Math.random(), r * 1.3, Math.random()), 3, BlockType.Leaf);
+			for (let i = 0; i < chuncks.length; i++) {
+				game.chunckManager.requestDraw(chuncks[i]);
+			}
+
+			chuncks = PlanetBlockMaker.AddLine(planetTest, new BABYLON.Vector3(Math.random(), r * 1, Math.random()), new BABYLON.Vector3(Math.random(), r * 1.3, Math.random()), BlockType.Wood);
 			for (let i = 0; i < chuncks.length; i++) {
 				game.chunckManager.requestDraw(chuncks[i]);
 			}
