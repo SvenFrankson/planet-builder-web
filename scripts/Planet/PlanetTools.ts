@@ -207,6 +207,14 @@ class PlanetTools {
         return { i: i, j: j, k: k };
     }
 
+    public static GlobalIJKToWorldPosition(planetSide: PlanetSide, globalIJK: { i: number; j: number; k: number }): BABYLON.Vector3 {
+        let size = PlanetTools.DegreeToSize(PlanetTools.KGlobalToDegree(globalIJK.k));
+        let p = PlanetTools.EvaluateVertex(size, globalIJK.i + 0.5, globalIJK.j + 0.5);
+        p.scaleInPlace(PlanetTools.KGlobalToAltitude(globalIJK.k));
+        p = BABYLON.Vector3.TransformCoordinates(p, planetSide.getWorldMatrix());
+        return p;
+    }
+
     public static GlobalIJKToLocalIJK(
         planetSide: PlanetSide,
         global: { i: number; j: number; k: number }
@@ -219,6 +227,19 @@ class PlanetTools {
             j: global.j % PlanetTools.CHUNCKSIZE,
             k: global.k % PlanetTools.CHUNCKSIZE,
         };
+    }
+
+    public static LocalIJKToGlobalIJK(planetChunck: PlanetChunck, localI: number, localJ: number, localK: number): { i: number; j: number; k: number } {
+        return {
+            i: planetChunck.iPos * PlanetTools.CHUNCKSIZE + localI,
+            j: planetChunck.jPos * PlanetTools.CHUNCKSIZE + localJ,
+            k: planetChunck.kPos * PlanetTools.CHUNCKSIZE + localK
+        }
+    }
+
+    public static LocalIJKToWorldPosition(planetChunck: PlanetChunck, localI: number, localJ: number, localK: number): BABYLON.Vector3 {
+        let globalIJK = PlanetTools.LocalIJKToGlobalIJK(planetChunck, localI, localJ, localK);
+        return PlanetTools.GlobalIJKToWorldPosition(planetChunck.planetSide, globalIJK);
     }
 
     public static KGlobalToDegree(k: number): number {

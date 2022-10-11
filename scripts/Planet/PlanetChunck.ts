@@ -219,8 +219,16 @@ class PlanetChunck {
         if (!this.dataInitialized) {
             this.data = this.planetSide.planet.generator.makeData(this);
             this.updateIsEmptyIsFull();
-            //this.saveToLocalStorage();
             this._dataInitialized = true;
+            if (!this.isEmpty && ! this.isFull) {
+                let tree = new ProceduralTree();
+                tree.chunck = this;
+                tree.i = Math.floor(8 * Math.random());
+                tree.j = Math.floor(8 * Math.random());
+                tree.k = Math.floor(8 * Math.random());
+                tree.generateData();
+            }
+            //this.saveToLocalStorage();
         }
     }
 

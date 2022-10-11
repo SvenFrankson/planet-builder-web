@@ -1294,8 +1294,16 @@ class PlanetChunck {
         if (!this.dataInitialized) {
             this.data = this.planetSide.planet.generator.makeData(this);
             this.updateIsEmptyIsFull();
-            //this.saveToLocalStorage();
             this._dataInitialized = true;
+            if (!this.isEmpty && !this.isFull) {
+                let tree = new ProceduralTree();
+                tree.chunck = this;
+                tree.i = Math.floor(8 * Math.random());
+                tree.j = Math.floor(8 * Math.random());
+                tree.k = Math.floor(8 * Math.random());
+                tree.generateData();
+            }
+            //this.saveToLocalStorage();
         }
     }
     initializeMesh() {
@@ -3631,6 +3639,13 @@ class PlanetTools {
         let j = Math.floor(((zDeg + 45) / 90) * PlanetTools.DegreeToSize(PlanetTools.KGlobalToDegree(k)));
         return { i: i, j: j, k: k };
     }
+    static GlobalIJKToWorldPosition(planetSide, globalIJK) {
+        let size = PlanetTools.DegreeToSize(PlanetTools.KGlobalToDegree(globalIJK.k));
+        let p = PlanetTools.EvaluateVertex(size, globalIJK.i + 0.5, globalIJK.j + 0.5);
+        p.scaleInPlace(PlanetTools.KGlobalToAltitude(globalIJK.k));
+        p = BABYLON.Vector3.TransformCoordinates(p, planetSide.getWorldMatrix());
+        return p;
+    }
     static GlobalIJKToLocalIJK(planetSide, global) {
         let kPos = Math.floor(global.k / PlanetTools.CHUNCKSIZE);
         let degree = PlanetTools.KPosToDegree(kPos);
@@ -3640,6 +3655,17 @@ class PlanetTools {
             j: global.j % PlanetTools.CHUNCKSIZE,
             k: global.k % PlanetTools.CHUNCKSIZE,
         };
+    }
+    static LocalIJKToGlobalIJK(planetChunck, localI, localJ, localK) {
+        return {
+            i: planetChunck.iPos * PlanetTools.CHUNCKSIZE + localI,
+            j: planetChunck.jPos * PlanetTools.CHUNCKSIZE + localJ,
+            k: planetChunck.kPos * PlanetTools.CHUNCKSIZE + localK
+        };
+    }
+    static LocalIJKToWorldPosition(planetChunck, localI, localJ, localK) {
+        let globalIJK = PlanetTools.LocalIJKToGlobalIJK(planetChunck, localI, localJ, localK);
+        return PlanetTools.GlobalIJKToWorldPosition(planetChunck.planetSide, globalIJK);
     }
     static KGlobalToDegree(k) {
         return PlanetTools.KPosToDegree(Math.floor(k / PlanetTools.CHUNCKSIZE));
@@ -3803,6 +3829,24 @@ class PlanetTools {
     }
     static DegreeToChuncksCount(degree) {
         return PlanetTools.DegreeToSize(degree) / PlanetTools.CHUNCKSIZE;
+    }
+}
+class ProceduralTree {
+    chunck;
+    i;
+    j;
+    k;
+    generateData() {
+        let w = PlanetTools.LocalIJKToWorldPosition(this.chunck, this.i, this.j, this.k);
+        let n = this.chunck.GetBaryCenter().normalize();
+        let chuncks = PlanetBlockMaker.AddLine(this.chunck.planetSide.planet, w, w.add(n.scale(5)), BlockType.Wood);
+        for (let i = 0; i < chuncks.length; i++) {
+            Game.Instance.chunckManager.requestDraw(chuncks[i]);
+        }
+        chuncks = PlanetBlockMaker.AddSphere(this.chunck.planetSide.planet, w.add(n.scale(5)), 3, BlockType.Leaf);
+        for (let i = 0; i < chuncks.length; i++) {
+            Game.Instance.chunckManager.requestDraw(chuncks[i]);
+        }
     }
 }
 class Player extends BABYLON.Mesh {
