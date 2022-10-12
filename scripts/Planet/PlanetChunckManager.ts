@@ -54,16 +54,20 @@ class PlanetChunckManager {
         this.scene.onBeforeRenderObservable.removeCallback(this._update);
     }
 
-    public registerChunck(chunck: PlanetChunck): void {
-        chunck.sqrDistanceToViewpoint = BABYLON.Vector3.DistanceSquared(this._viewpoint, chunck.GetBaryCenter());
-        let layerIndex = this._getLayerIndex(chunck.sqrDistanceToViewpoint);
-        if (this._lodLayers[layerIndex].indexOf(chunck) === -1) {
-            this._lodLayers[layerIndex].push(chunck);
-            chunck.lod = layerIndex;
-            if (layerIndex <= 1) {
-                this.requestDraw(chunck);
+    public registerChunck(chunck: PlanetChunck): boolean {
+        if (!chunck.isEmptyOrHidden()) {
+            chunck.sqrDistanceToViewpoint = BABYLON.Vector3.DistanceSquared(this._viewpoint, chunck.GetBaryCenter());
+            let layerIndex = this._getLayerIndex(chunck.sqrDistanceToViewpoint);
+            if (this._lodLayers[layerIndex].indexOf(chunck) === -1) {
+                this._lodLayers[layerIndex].push(chunck);
+                chunck.lod = layerIndex;
+                if (layerIndex <= 1) {
+                    this.requestDraw(chunck);
+                }
+                return true;
             }
         }
+        return false;
     }
 
     public async requestDraw(chunck: PlanetChunck): Promise<void> {

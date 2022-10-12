@@ -117,7 +117,9 @@ class PlanetChunck {
         }
         this.data[i][j][k] = value;
         this.updateIsEmptyIsFull();
+        this.register();
     }
+
     private barycenter: BABYLON.Vector3;
     public GetBaryCenter(): BABYLON.Vector3 {
         return this.barycenter;
@@ -125,6 +127,11 @@ class PlanetChunck {
     private normal: BABYLON.Vector3;
     public GetNormal(): BABYLON.Vector3 {
         return this.normal;
+    }
+
+    private _registered: boolean = false;
+    public get registered(): boolean {
+        return this._registered;
     }
     public sqrDistanceToViewpoint: number;
     public lod: number = 2;
@@ -207,7 +214,9 @@ class PlanetChunck {
     }
 
     public register(): void {
-        this.chunckManager.registerChunck(this);
+        if (!this.registered) {
+            this._registered = this.chunckManager.registerChunck(this);
+        }        
     }
     
     public initialize(): void {
