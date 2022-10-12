@@ -178,14 +178,6 @@ window.addEventListener("DOMContentLoaded", () => {
         debugPlanetSkyColor.show();
         let debugTerrainColor = new DebugTerrainColor();
         debugTerrainColor.show();
-        let chuncks = PlanetBlockMaker.AddSphere(planetTest, new BABYLON.Vector3(Math.random(), r * 1.3, Math.random()), 3, BlockType.Leaf);
-        for (let i = 0; i < chuncks.length; i++) {
-            game.chunckManager.requestDraw(chuncks[i]);
-        }
-        chuncks = PlanetBlockMaker.AddLine(planetTest, new BABYLON.Vector3(Math.random(), r * 1, Math.random()), new BABYLON.Vector3(Math.random(), r * 1.3, Math.random()), BlockType.Wood);
-        for (let i = 0; i < chuncks.length; i++) {
-            game.chunckManager.requestDraw(chuncks[i]);
-        }
     });
     game.animate();
     Game.Canvas.addEventListener("pointerup", (event) => {
@@ -1251,7 +1243,7 @@ class PlanetChunck {
         this._size = PlanetTools.DegreeToSize(this.degree);
         this._chunckCount = PlanetTools.DegreeToChuncksCount(this.degree);
         this.name = "chunck:" + this.side + ":" + this.iPos + "-" + this.jPos + "-" + this.kPos;
-        this.barycenter = PlanetTools.EvaluateVertex(this.size, PlanetTools.CHUNCKSIZE * this.iPos + PlanetTools.CHUNCKSIZE / 2, PlanetTools.CHUNCKSIZE * this.jPos + PlanetTools.CHUNCKSIZE / 2).scale(PlanetTools.KGlobalToAltitude((this.kPos + 0.5) * PlanetTools.CHUNCKSIZE));
+        this.barycenter = PlanetTools.EvaluateVertex(this.size, PlanetTools.CHUNCKSIZE * (this.iPos + 0.5), PlanetTools.CHUNCKSIZE * (this.jPos + 0.5)).scale(PlanetTools.KGlobalToAltitude((this.kPos + 0.5) * PlanetTools.CHUNCKSIZE));
         this.barycenter = BABYLON.Vector3.TransformCoordinates(this.barycenter, planetSide.computeWorldMatrix(true));
         this.normal = BABYLON.Vector3.Normalize(this.barycenter);
         if (this.kPos === 0) {
@@ -1296,12 +1288,14 @@ class PlanetChunck {
             this.updateIsEmptyIsFull();
             this._dataInitialized = true;
             if (!this.isEmpty && !this.isFull) {
-                let tree = new ProceduralTree();
-                tree.chunck = this;
-                tree.i = Math.floor(8 * Math.random());
-                tree.j = Math.floor(8 * Math.random());
-                tree.k = Math.floor(8 * Math.random());
-                tree.generateData();
+                setTimeout(() => {
+                    let tree = new ProceduralTree();
+                    tree.chunck = this;
+                    tree.i = Math.floor(8 * Math.random());
+                    tree.j = Math.floor(8 * Math.random());
+                    tree.k = Math.floor(8 * Math.random());
+                    tree.generateData();
+                }, 2000);
             }
             //this.saveToLocalStorage();
         }
@@ -1467,15 +1461,13 @@ class PlanetChunckManager {
         this.scene.onBeforeRenderObservable.removeCallback(this._update);
     }
     registerChunck(chunck) {
-        if (!chunck.isEmptyOrHidden()) {
-            chunck.sqrDistanceToViewpoint = BABYLON.Vector3.DistanceSquared(this._viewpoint, chunck.GetBaryCenter());
-            let layerIndex = this._getLayerIndex(chunck.sqrDistanceToViewpoint);
-            if (this._lodLayers[layerIndex].indexOf(chunck) === -1) {
-                this._lodLayers[layerIndex].push(chunck);
-                chunck.lod = layerIndex;
-                if (layerIndex <= 1) {
-                    this.requestDraw(chunck);
-                }
+        chunck.sqrDistanceToViewpoint = BABYLON.Vector3.DistanceSquared(this._viewpoint, chunck.GetBaryCenter());
+        let layerIndex = this._getLayerIndex(chunck.sqrDistanceToViewpoint);
+        if (this._lodLayers[layerIndex].indexOf(chunck) === -1) {
+            this._lodLayers[layerIndex].push(chunck);
+            chunck.lod = layerIndex;
+            if (layerIndex <= 1) {
+                this.requestDraw(chunck);
             }
         }
     }
@@ -1514,13 +1506,8 @@ class PlanetChunckManager {
                         this._lodLayers[prevLayerIndex].splice(cursor, 1);
                         this._lodLayers[newLayerIndex].splice(adequateLayerCursor, 0, chunck);
                         chunck.lod = newLayerIndex;
-                        if (newLayerIndex === 0) {
+                        if (newLayerIndex <= 1) {
                             this.requestDraw(chunck);
-                        }
-                        else if (newLayerIndex === 1) {
-                            if (prevLayerIndex != 0) {
-                                this.requestDraw(chunck);
-                            }
                         }
                         else if (newLayerIndex > 1) {
                             chunck.disposeMesh();
@@ -3607,30 +3594,41 @@ class PlanetTools {
         return hexString;
     }
     static WorldPositionToPlanetSide(planet, worldPos) {
-        let angles = [];
-        angles[Side.Back] = MeshTools.Angle(BABYLON.Axis.Z.scale(-1), worldPos);
-        angles[Side.Right] = MeshTools.Angle(BABYLON.Axis.X, worldPos);
-        angles[Side.Left] = MeshTools.Angle(BABYLON.Axis.X.scale(-1), worldPos);
-        angles[Side.Top] = MeshTools.Angle(BABYLON.Axis.Y, worldPos);
-        angles[Side.Bottom] = MeshTools.Angle(BABYLON.Axis.Y.scale(-1), worldPos);
-        angles[Side.Front] = MeshTools.Angle(BABYLON.Axis.Z, worldPos);
-        let min = Math.min(...angles);
-        let sideIndex = angles.indexOf(min);
-        return planet.GetSide(sideIndex);
+        let ax = Math.abs(worldPos.x);
+        let ay = Math.abs(worldPos.y);
+        let az = Math.abs(worldPos.z);
+        if (ax >= ay && ax >= az) {
+            if (worldPos.x >= 0) {
+                return planet.GetSide(Side.Right);
+            }
+            return planet.GetSide(Side.Left);
+        }
+        if (ay >= ax && ay >= az) {
+            if (worldPos.y >= 0) {
+                return planet.GetSide(Side.Top);
+            }
+            return planet.GetSide(Side.Bottom);
+        }
+        if (az >= ax && az >= ay) {
+            if (worldPos.z >= 0) {
+                return planet.GetSide(Side.Front);
+            }
+            return planet.GetSide(Side.Back);
+        }
     }
     static WorldPositionToGlobalIJK(planetSide, worldPos) {
         let invert = new BABYLON.Matrix();
-        planetSide.getWorldMatrix().invertToRef(invert);
+        planetSide.computeWorldMatrix(true).invertToRef(invert);
         let localPos = BABYLON.Vector3.TransformCoordinates(worldPos, invert);
         let r = localPos.length();
         if (Math.abs(localPos.x) > 1) {
-            localPos = localPos.scale(1 / localPos.x);
+            localPos.scaleInPlace(Math.abs(1 / localPos.x));
         }
         if (Math.abs(localPos.y) > 1) {
-            localPos = localPos.scale(1 / localPos.y);
+            localPos.scaleInPlace(Math.abs(1 / localPos.y));
         }
         if (Math.abs(localPos.z) > 1) {
-            localPos = localPos.scale(1 / localPos.z);
+            localPos.scaleInPlace(Math.abs(1 / localPos.z));
         }
         let xDeg = (Math.atan(localPos.x) / Math.PI) * 180;
         let zDeg = (Math.atan(localPos.z) / Math.PI) * 180;
@@ -3643,7 +3641,7 @@ class PlanetTools {
         let size = PlanetTools.DegreeToSize(PlanetTools.KGlobalToDegree(globalIJK.k));
         let p = PlanetTools.EvaluateVertex(size, globalIJK.i + 0.5, globalIJK.j + 0.5);
         p.scaleInPlace(PlanetTools.KGlobalToAltitude(globalIJK.k));
-        p = BABYLON.Vector3.TransformCoordinates(p, planetSide.getWorldMatrix());
+        p = BABYLON.Vector3.TransformCoordinates(p, planetSide.computeWorldMatrix(true));
         return p;
     }
     static GlobalIJKToLocalIJK(planetSide, global) {
@@ -3838,14 +3836,18 @@ class ProceduralTree {
     k;
     generateData() {
         let w = PlanetTools.LocalIJKToWorldPosition(this.chunck, this.i, this.j, this.k);
-        let n = this.chunck.GetBaryCenter().normalize();
+        let n = this.chunck.GetBaryCenter().clone().normalize();
         let chuncks = PlanetBlockMaker.AddLine(this.chunck.planetSide.planet, w, w.add(n.scale(5)), BlockType.Wood);
         for (let i = 0; i < chuncks.length; i++) {
-            Game.Instance.chunckManager.requestDraw(chuncks[i]);
+            if (chuncks[i].lod <= 1) {
+                Game.Instance.chunckManager.requestDraw(chuncks[i]);
+            }
         }
         chuncks = PlanetBlockMaker.AddSphere(this.chunck.planetSide.planet, w.add(n.scale(5)), 3, BlockType.Leaf);
         for (let i = 0; i < chuncks.length; i++) {
-            Game.Instance.chunckManager.requestDraw(chuncks[i]);
+            if (chuncks[i].lod <= 1) {
+                Game.Instance.chunckManager.requestDraw(chuncks[i]);
+            }
         }
     }
 }

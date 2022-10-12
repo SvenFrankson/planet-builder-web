@@ -165,17 +165,27 @@ class PlanetTools {
         planet: Planet,
         worldPos: BABYLON.Vector3
     ): PlanetSide {
-        let angles: number[] = [];
-        angles[Side.Back] = MeshTools.Angle(BABYLON.Axis.Z.scale(-1), worldPos);
-        angles[Side.Right] = MeshTools.Angle(BABYLON.Axis.X, worldPos);
-        angles[Side.Left] = MeshTools.Angle( BABYLON.Axis.X.scale(-1), worldPos);
-        angles[Side.Top] = MeshTools.Angle(BABYLON.Axis.Y, worldPos);
-        angles[Side.Bottom] = MeshTools.Angle( BABYLON.Axis.Y.scale(-1), worldPos);
-        angles[Side.Front] = MeshTools.Angle(BABYLON.Axis.Z, worldPos);
-
-        let min: number = Math.min(...angles);
-        let sideIndex: Side = angles.indexOf(min);
-        return planet.GetSide(sideIndex);
+        let ax = Math.abs(worldPos.x);
+        let ay = Math.abs(worldPos.y);
+        let az = Math.abs(worldPos.z);
+        if (ax >= ay && ax >= az) {
+            if (worldPos.x >= 0) {
+                return planet.GetSide(Side.Right);
+            }
+            return planet.GetSide(Side.Left);
+        }
+        if (ay >= ax && ay >= az) {
+            if (worldPos.y >= 0) {
+                return planet.GetSide(Side.Top);
+            }
+            return planet.GetSide(Side.Bottom);
+        }
+        if (az >= ax && az >= ay) {
+            if (worldPos.z >= 0) {
+                return planet.GetSide(Side.Front);
+            }
+            return planet.GetSide(Side.Back);
+        }
     }
 
     public static WorldPositionToGlobalIJK(
@@ -183,18 +193,18 @@ class PlanetTools {
         worldPos: BABYLON.Vector3
     ): { i: number; j: number; k: number } {
         let invert: BABYLON.Matrix = new BABYLON.Matrix();
-        planetSide.getWorldMatrix().invertToRef(invert);
+        planetSide.computeWorldMatrix(true).invertToRef(invert);
         let localPos: BABYLON.Vector3 = BABYLON.Vector3.TransformCoordinates(worldPos, invert);
         let r: number = localPos.length();
 
         if (Math.abs(localPos.x) > 1) {
-            localPos = localPos.scale(1 / localPos.x);
+            localPos.scaleInPlace(Math.abs(1 / localPos.x));
         }
         if (Math.abs(localPos.y) > 1) {
-            localPos = localPos.scale(1 / localPos.y);
+            localPos.scaleInPlace(Math.abs(1 / localPos.y));
         }
         if (Math.abs(localPos.z) > 1) {
-            localPos = localPos.scale(1 / localPos.z);
+            localPos.scaleInPlace(Math.abs(1 / localPos.z));
         }
 
         let xDeg: number = (Math.atan(localPos.x) / Math.PI) * 180;
@@ -211,7 +221,7 @@ class PlanetTools {
         let size = PlanetTools.DegreeToSize(PlanetTools.KGlobalToDegree(globalIJK.k));
         let p = PlanetTools.EvaluateVertex(size, globalIJK.i + 0.5, globalIJK.j + 0.5);
         p.scaleInPlace(PlanetTools.KGlobalToAltitude(globalIJK.k));
-        p = BABYLON.Vector3.TransformCoordinates(p, planetSide.getWorldMatrix());
+        p = BABYLON.Vector3.TransformCoordinates(p, planetSide.computeWorldMatrix(true));
         return p;
     }
 

@@ -164,8 +164,8 @@ class PlanetChunck {
         this.name = "chunck:" + this.side + ":" + this.iPos + "-" + this.jPos	+ "-" + this.kPos;
         this.barycenter = PlanetTools.EvaluateVertex(
             this.size,
-            PlanetTools.CHUNCKSIZE * this.iPos + PlanetTools.CHUNCKSIZE / 2,
-            PlanetTools.CHUNCKSIZE * this.jPos + PlanetTools.CHUNCKSIZE / 2
+            PlanetTools.CHUNCKSIZE * (this.iPos + 0.5),
+            PlanetTools.CHUNCKSIZE * (this.jPos + 0.5)
         ).scale(
             PlanetTools.KGlobalToAltitude((this.kPos + 0.5) * PlanetTools.CHUNCKSIZE)
         );
@@ -221,12 +221,14 @@ class PlanetChunck {
             this.updateIsEmptyIsFull();
             this._dataInitialized = true;
             if (!this.isEmpty && ! this.isFull) {
-                let tree = new ProceduralTree();
-                tree.chunck = this;
-                tree.i = Math.floor(8 * Math.random());
-                tree.j = Math.floor(8 * Math.random());
-                tree.k = Math.floor(8 * Math.random());
-                tree.generateData();
+                setTimeout(() => {
+                    let tree = new ProceduralTree();
+                    tree.chunck = this;
+                    tree.i = Math.floor(8 * Math.random());
+                    tree.j = Math.floor(8 * Math.random());
+                    tree.k = Math.floor(8 * Math.random());
+                    tree.generateData();
+                }, 2000);
             }
             //this.saveToLocalStorage();
         }

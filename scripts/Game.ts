@@ -169,16 +169,6 @@ window.addEventListener("DOMContentLoaded", () => {
 
 			let debugTerrainColor = new DebugTerrainColor();
 			debugTerrainColor.show();
-
-			let chuncks = PlanetBlockMaker.AddSphere(planetTest, new BABYLON.Vector3(Math.random(), r * 1.3, Math.random()), 3, BlockType.Leaf);
-			for (let i = 0; i < chuncks.length; i++) {
-				game.chunckManager.requestDraw(chuncks[i]);
-			}
-
-			chuncks = PlanetBlockMaker.AddLine(planetTest, new BABYLON.Vector3(Math.random(), r * 1, Math.random()), new BABYLON.Vector3(Math.random(), r * 1.3, Math.random()), BlockType.Wood);
-			for (let i = 0; i < chuncks.length; i++) {
-				game.chunckManager.requestDraw(chuncks[i]);
-			}
 		}
 	)
 	

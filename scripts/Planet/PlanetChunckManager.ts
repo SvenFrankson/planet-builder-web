@@ -55,15 +55,13 @@ class PlanetChunckManager {
     }
 
     public registerChunck(chunck: PlanetChunck): void {
-        if (!chunck.isEmptyOrHidden()) {
-            chunck.sqrDistanceToViewpoint = BABYLON.Vector3.DistanceSquared(this._viewpoint, chunck.GetBaryCenter());
-            let layerIndex = this._getLayerIndex(chunck.sqrDistanceToViewpoint);
-            if (this._lodLayers[layerIndex].indexOf(chunck) === -1) {
-                this._lodLayers[layerIndex].push(chunck);
-                chunck.lod = layerIndex;
-                if (layerIndex <= 1) {
-                    this.requestDraw(chunck);
-                }
+        chunck.sqrDistanceToViewpoint = BABYLON.Vector3.DistanceSquared(this._viewpoint, chunck.GetBaryCenter());
+        let layerIndex = this._getLayerIndex(chunck.sqrDistanceToViewpoint);
+        if (this._lodLayers[layerIndex].indexOf(chunck) === -1) {
+            this._lodLayers[layerIndex].push(chunck);
+            chunck.lod = layerIndex;
+            if (layerIndex <= 1) {
+                this.requestDraw(chunck);
             }
         }
     }
@@ -109,13 +107,8 @@ class PlanetChunckManager {
                         this._lodLayers[newLayerIndex].splice(adequateLayerCursor, 0, chunck);
                         chunck.lod = newLayerIndex;
                         
-                        if (newLayerIndex === 0) {
+                        if (newLayerIndex <= 1) {
                             this.requestDraw(chunck);
-                        }
-                        else if (newLayerIndex === 1) {
-                            if (prevLayerIndex != 0) {
-                                this.requestDraw(chunck);
-                            }
                         }
                         else if (newLayerIndex > 1) {
                             chunck.disposeMesh();
