@@ -55,13 +55,25 @@ html, body {
 }
 
 debug-display-frame-value {
-	display: inline-block;
+	display: block;
 	width: 400px;
 	margin-bottom: 5px;
 }
 
 debug-display-color-input {
-	display: inline-block;
+	display: block;
+	width: 400px;
+	margin-bottom: 5px;
+}
+
+debug-display-vector3-value {
+	display: block;
+	width: 400px;
+	margin-bottom: 5px;
+}
+
+debug-display-text-value {
+	display: block;
 	width: 400px;
 	margin-bottom: 5px;
 }

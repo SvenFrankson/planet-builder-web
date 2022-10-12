@@ -10,6 +10,9 @@ enum Neighbour {
 class PlanetChunck {
     
     public planetSide: PlanetSide;
+    public get scene(): BABYLON.Scene {
+        return this.planetSide.getScene();
+    }
 
     public name: string;
 
@@ -183,7 +186,7 @@ class PlanetChunck {
         this.normal = BABYLON.Vector3.Normalize(this.barycenter);
         
         if (this.kPos === 0) {
-            this.bedrock = new BABYLON.Mesh(this.name + "-bedrock", Game.Scene);
+            this.bedrock = new BABYLON.Mesh(this.name + "-bedrock", this.scene);
             this.bedrock.parent = this.planetSide;
             this.isDegreeLayerBottom = true;
         }
@@ -237,7 +240,7 @@ class PlanetChunck {
                     tree.j = Math.floor(8 * Math.random());
                     tree.k = Math.floor(8 * Math.random());
                     tree.generateData();
-                }, 2000);
+                }, 5000);
             }
             //this.saveToLocalStorage();
         }
@@ -310,7 +313,7 @@ class PlanetChunck {
             return;
         }
         if (this.isMeshDisposed()) {
-            this.mesh = new BABYLON.Mesh("chunck-" + this.iPos + "-" + this.jPos + "-" + this.kPos, Game.Scene);
+            this.mesh = new BABYLON.Mesh("chunck-" + this.iPos + "-" + this.jPos + "-" + this.kPos, this.scene);
         }
         let vertexData: BABYLON.VertexData;
         vertexData = PlanetChunckMeshBuilder.BuildVertexData(this, this.iPos, this.jPos, this.kPos);

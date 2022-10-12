@@ -1,3 +1,12 @@
+var SideNames: string[] = [
+    "Front",
+    "Right",
+    "Back",
+    "Left",
+    "Top",
+    "Bottom"
+];
+
 enum Side {
     Front,
     Right,

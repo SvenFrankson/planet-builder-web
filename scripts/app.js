@@ -52,6 +52,7 @@ class Game {
     }
     createScene() {
         Game.Scene = new BABYLON.Scene(Game.Engine);
+        this.scene = Game.Scene;
         Game.Scene.actionManager = new BABYLON.ActionManager(Game.Scene);
         Game.Scene.clearColor.copyFromFloats(166 / 255, 231 / 255, 255 / 255, 1);
         Game.Light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0.6, 1, 0.3), Game.Scene);
@@ -143,6 +144,7 @@ window.addEventListener("DOMContentLoaded", () => {
     document.querySelector("#planet-surface").textContent = (4 * Math.PI * r * r / 1000 / 1000).toFixed(2) + " km²";
     //planetTest.generator.showDebug();
     Game.Player = new Player(new BABYLON.Vector3(0, (kPosMax + 1) * PlanetTools.CHUNCKSIZE * 0.8, 0), planetTest);
+    game.player = Game.Player;
     Game.Player.registerControl();
     game.chunckManager.onNextInactive(() => {
         Game.Player.initialize();
@@ -161,10 +163,12 @@ window.addEventListener("DOMContentLoaded", () => {
     PlanetChunckVertexData.InitializeData().then(() => {
         game.chunckManager.initialize();
         planetTest.register();
-        let debugPlanetSkyColor = new DebugPlanetSkyColor(game);
-        debugPlanetSkyColor.show();
-        let debugTerrainColor = new DebugTerrainColor();
-        debugTerrainColor.show();
+        //let debugPlanetSkyColor = new DebugPlanetSkyColor(game);
+        //debugPlanetSkyColor.show();
+        //let debugTerrainColor = new DebugTerrainColor();
+        //debugTerrainColor.show();
+        let debugPlayerPosition = new DebugPlayerPosition(game);
+        debugPlayerPosition.show();
     });
     game.animate();
     Game.Canvas.addEventListener("pointerup", (event) => {
@@ -902,6 +906,177 @@ class DebugDisplayFrameValue extends HTMLElement {
     }
 }
 customElements.define("debug-display-frame-value", DebugDisplayFrameValue);
+class DebugDisplayTextValue extends HTMLElement {
+    constructor() {
+        super(...arguments);
+        this._label = "";
+        this._initialized = false;
+    }
+    static get observedAttributes() {
+        return [
+            "label"
+        ];
+    }
+    connectedCallback() {
+        this.initialize();
+    }
+    attributeChangedCallback(name, oldValue, newValue) {
+        if (this._initialized) {
+            if (name === "label") {
+                this._label = newValue;
+                this._labelElement.textContent = this._label;
+            }
+        }
+    }
+    initialize() {
+        if (!this._initialized) {
+            this.style.position = "relative";
+            this._labelElement = document.createElement("div");
+            this._labelElement.style.display = "inline-block";
+            this._labelElement.style.width = "33%";
+            this._labelElement.style.marginRight = "2%";
+            this.appendChild(this._labelElement);
+            this._textElement = document.createElement("div");
+            this._textElement.style.display = "inline-block";
+            this._textElement.style.marginLeft = "5%";
+            this._textElement.style.width = "60%";
+            this._textElement.style.textAlign = "left";
+            this.appendChild(this._textElement);
+            this._initialized = true;
+            for (let i = 0; i < DebugDisplayTextValue.observedAttributes.length; i++) {
+                let name = DebugDisplayTextValue.observedAttributes[i];
+                let value = this.getAttribute(name);
+                this.attributeChangedCallback(name, value + "_forceupdate", value);
+            }
+        }
+    }
+    setText(text) {
+        this._textElement.textContent = text;
+    }
+}
+customElements.define("debug-display-text-value", DebugDisplayTextValue);
+class DebugDisplayVector3Value extends HTMLElement {
+    constructor() {
+        super(...arguments);
+        this._label = "";
+        this._useIJK = false;
+        this._decimals = 3;
+        this._x = 0;
+        this._y = 0;
+        this._z = 0;
+        this._initialized = false;
+    }
+    static get observedAttributes() {
+        return [
+            "label",
+            "useIJK",
+            "decimals"
+        ];
+    }
+    connectedCallback() {
+        this.initialize();
+    }
+    attributeChangedCallback(name, oldValue, newValue) {
+        if (this._initialized) {
+            if (name === "label") {
+                this._label = newValue;
+                this._labelElement.textContent = this._label;
+            }
+            if (name === "useIJK") {
+                this._useIJK = newValue === "true" ? true : false;
+                if (this._useIJK) {
+                    this._xLabelElement.textContent = "i";
+                    this._yLabelElement.textContent = "j";
+                    this._zLabelElement.textContent = "k";
+                }
+                else {
+                    this._xLabelElement.textContent = "x";
+                    this._yLabelElement.textContent = "y";
+                    this._zLabelElement.textContent = "z";
+                }
+            }
+            if (name === "decimals") {
+                let value = parseInt(newValue);
+                if (isFinite(value)) {
+                    this._decimals = value;
+                }
+                this.setValue({
+                    x: this._x,
+                    y: this._y,
+                    z: this._z
+                });
+            }
+        }
+    }
+    initialize() {
+        if (!this._initialized) {
+            this.style.position = "relative";
+            this._labelElement = document.createElement("div");
+            this._labelElement.style.display = "inline-block";
+            this._labelElement.style.width = "33%";
+            this._labelElement.style.marginRight = "2%";
+            this.appendChild(this._labelElement);
+            this._xLabelElement = document.createElement("div");
+            this._xLabelElement.style.display = "inline-block";
+            this._xLabelElement.style.width = "6%";
+            this._xLabelElement.style.marginRight = "2%";
+            this._xLabelElement.style.fontSize = "80%";
+            this.appendChild(this._xLabelElement);
+            this._xElement = document.createElement("div");
+            this._xElement.style.display = "inline-block";
+            this._xElement.style.textAlign = "left";
+            this._xElement.style.width = "13.66%";
+            this._xElement.textContent = "10";
+            this.appendChild(this._xElement);
+            this._yLabelElement = document.createElement("div");
+            this._yLabelElement.style.display = "inline-block";
+            this._yLabelElement.style.width = "6%";
+            this._yLabelElement.style.marginRight = "2%";
+            this._yLabelElement.style.fontSize = "80%";
+            this.appendChild(this._yLabelElement);
+            this._yElement = document.createElement("div");
+            this._yElement.style.display = "inline-block";
+            this._yElement.style.textAlign = "left";
+            this._yElement.style.width = "13.66%";
+            this._yElement.textContent = "10";
+            this.appendChild(this._yElement);
+            this._zLabelElement = document.createElement("div");
+            this._zLabelElement.style.display = "inline-block";
+            this._zLabelElement.style.width = "6%";
+            this._zLabelElement.style.marginRight = "2%";
+            this._zLabelElement.style.fontSize = "80%";
+            this.appendChild(this._zLabelElement);
+            this._zElement = document.createElement("div");
+            this._zElement.style.display = "inline-block";
+            this._zElement.style.textAlign = "left";
+            this._zElement.style.width = "13.66%";
+            this._zElement.textContent = "10";
+            this.appendChild(this._zElement);
+            this._initialized = true;
+            for (let i = 0; i < DebugDisplayVector3Value.observedAttributes.length; i++) {
+                let name = DebugDisplayVector3Value.observedAttributes[i];
+                let value = this.getAttribute(name);
+                this.attributeChangedCallback(name, value + "_forceupdate", value);
+            }
+        }
+    }
+    setValue(vec3, j, k) {
+        if (isFinite(j) && isFinite(k)) {
+            this._x = vec3;
+            this._y = j;
+            this._z = k;
+        }
+        else {
+            this._x = isFinite(vec3.x) ? vec3.x : vec3.i;
+            this._y = isFinite(vec3.y) ? vec3.y : vec3.j;
+            this._z = isFinite(vec3.z) ? vec3.z : vec3.k;
+        }
+        this._xElement.innerText = this._x.toFixed(this._decimals);
+        this._yElement.innerText = this._y.toFixed(this._decimals);
+        this._zElement.innerText = this._z.toFixed(this._decimals);
+    }
+}
+customElements.define("debug-display-vector3-value", DebugDisplayVector3Value);
 class DebugPlanetSkyColor {
     constructor(game) {
         this.game = game;
@@ -938,6 +1113,50 @@ class DebugPlanetSkyColor {
     }
     hide() {
         this.container.classList.add("hidden");
+    }
+}
+class DebugPlayerPosition {
+    constructor(game) {
+        this.game = game;
+        this._initialized = false;
+        this._update = () => {
+            let position = this.game.player.position;
+            this._playerPosition.setValue(position);
+            let planetSide = PlanetTools.WorldPositionToPlanetSide(this.game.player.planet, position);
+            this._playerSide.setText(SideNames[planetSide.side]);
+            let globalIJK = PlanetTools.WorldPositionToGlobalIJK(planetSide, position);
+            this._playerGlobalIJK.setValue(globalIJK);
+            let localIJK = PlanetTools.GlobalIJKToLocalIJK(planetSide, globalIJK);
+            let chunck = localIJK.planetChunck;
+            this._playerChunck.setValue(chunck.iPos, chunck.jPos, chunck.kPos);
+            this._playerLocalIJK.setValue(localIJK);
+        };
+    }
+    get initialized() {
+        return this._initialized;
+    }
+    get scene() {
+        return this.game.scene;
+    }
+    initialize() {
+        this.container = document.querySelector("#debug-player-position");
+        this._playerPosition = document.querySelector("#player-position");
+        this._playerSide = document.querySelector("#player-planet-side");
+        this._playerGlobalIJK = document.querySelector("#player-global-ijk");
+        this._playerChunck = document.querySelector("#player-chunck");
+        this._playerLocalIJK = document.querySelector("#player-local-ijk");
+        this._initialized = true;
+    }
+    show() {
+        if (!this.initialized) {
+            this.initialize();
+        }
+        this.container.classList.remove("hidden");
+        this.scene.onBeforeRenderObservable.add(this._update);
+    }
+    hide() {
+        this.container.classList.add("hidden");
+        this.scene.onBeforeRenderObservable.removeCallback(this._update);
     }
 }
 class DebugTerrainColor {
@@ -1101,7 +1320,7 @@ class PlanetChunck {
         this.barycenter = BABYLON.Vector3.TransformCoordinates(this.barycenter, planetSide.computeWorldMatrix(true));
         this.normal = BABYLON.Vector3.Normalize(this.barycenter);
         if (this.kPos === 0) {
-            this.bedrock = new BABYLON.Mesh(this.name + "-bedrock", Game.Scene);
+            this.bedrock = new BABYLON.Mesh(this.name + "-bedrock", this.scene);
             this.bedrock.parent = this.planetSide;
             this.isDegreeLayerBottom = true;
         }
@@ -1128,6 +1347,9 @@ class PlanetChunck {
                 this.isCorner = true;
             }
         }
+    }
+    get scene() {
+        return this.planetSide.getScene();
     }
     get side() {
         return this.planetSide.side;
@@ -1261,7 +1483,7 @@ class PlanetChunck {
                     tree.j = Math.floor(8 * Math.random());
                     tree.k = Math.floor(8 * Math.random());
                     tree.generateData();
-                }, 2000);
+                }, 5000);
             }
             //this.saveToLocalStorage();
         }
@@ -1330,7 +1552,7 @@ class PlanetChunck {
             return;
         }
         if (this.isMeshDisposed()) {
-            this.mesh = new BABYLON.Mesh("chunck-" + this.iPos + "-" + this.jPos + "-" + this.kPos, Game.Scene);
+            this.mesh = new BABYLON.Mesh("chunck-" + this.iPos + "-" + this.jPos + "-" + this.kPos, this.scene);
         }
         let vertexData;
         vertexData = PlanetChunckMeshBuilder.BuildVertexData(this, this.iPos, this.jPos, this.kPos);
@@ -3087,6 +3309,14 @@ class TerrainToonMaterial extends BABYLON.ShaderMaterial {
         this.setColor3Array("terrainColors", this._terrainColors);
     }
 }
+var SideNames = [
+    "Front",
+    "Right",
+    "Back",
+    "Left",
+    "Top",
+    "Bottom"
+];
 var Side;
 (function (Side) {
     Side[Side["Front"] = 0] = "Front";
@@ -3786,6 +4016,7 @@ class ProceduralTree {
 class Player extends BABYLON.Mesh {
     constructor(position, planet) {
         super("Player", Game.Scene);
+        this.planet = planet;
         this.mass = 1;
         this.speed = 5;
         this.velocity = BABYLON.Vector3.Zero();

@@ -4,7 +4,6 @@ class Player extends BABYLON.Mesh {
     private speed: number = 5;
     public velocity: BABYLON.Vector3 = BABYLON.Vector3.Zero();
 
-    private planet: Planet;
     private underWater: boolean = false;
     public camPos: BABYLON.AbstractMesh;
     public pForward: boolean;
@@ -26,7 +25,7 @@ class Player extends BABYLON.Mesh {
         return this.position;
     }
 
-    constructor(position: BABYLON.Vector3, planet: Planet) {
+    constructor(position: BABYLON.Vector3, public planet: Planet) {
         super("Player", Game.Scene);
         console.log("Create Player");
         this.planet = planet;

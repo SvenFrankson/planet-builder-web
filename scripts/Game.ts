@@ -8,10 +8,12 @@ class Game {
 	public static Canvas: HTMLCanvasElement;
 	public static Engine: BABYLON.Engine;
 	public static Scene: BABYLON.Scene;
+	public scene: BABYLON.Scene;
 	public static Light: BABYLON.HemisphericLight;
 	public static PlanetEditor: PlanetEditor;
 	public static CameraManager: CameraManager;
 	public static Player: Player;
+	public player: Player;
 	public chunckManager: PlanetChunckManager;
 	public planetSky: PlanetSky;
 
@@ -29,6 +31,7 @@ class Game {
 
 	public createScene(): void {
 		Game.Scene = new BABYLON.Scene(Game.Engine);
+		this.scene = Game.Scene;
 		Game.Scene.actionManager = new BABYLON.ActionManager(Game.Scene);
 		Game.Scene.clearColor.copyFromFloats(166 / 255, 231 / 255, 255 / 255, 1);
 
@@ -137,6 +140,7 @@ window.addEventListener("DOMContentLoaded", () => {
 	//planetTest.generator.showDebug();
 
 	Game.Player = new Player(new BABYLON.Vector3(0, (kPosMax + 1) * PlanetTools.CHUNCKSIZE * 0.8, 0), planetTest);
+	game.player = Game.Player;
 	
 	Game.Player.registerControl();
 	game.chunckManager.onNextInactive(() => {
@@ -164,11 +168,14 @@ window.addEventListener("DOMContentLoaded", () => {
 			game.chunckManager.initialize();
 			planetTest.register();
 
-			let debugPlanetSkyColor = new DebugPlanetSkyColor(game);
-			debugPlanetSkyColor.show();
+			//let debugPlanetSkyColor = new DebugPlanetSkyColor(game);
+			//debugPlanetSkyColor.show();
 
-			let debugTerrainColor = new DebugTerrainColor();
-			debugTerrainColor.show();
+			//let debugTerrainColor = new DebugTerrainColor();
+			//debugTerrainColor.show();
+
+			let debugPlayerPosition = new DebugPlayerPosition(game);
+			debugPlayerPosition.show();
 		}
 	)
 	
