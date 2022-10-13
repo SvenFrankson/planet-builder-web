@@ -21,7 +21,7 @@ class CameraManager {
         }
     }
 
-    constructor() {
+    constructor(public game: Game) {
         this.arcRotateCamera = new BABYLON.ArcRotateCamera(
             "Camera",
             0,
@@ -30,7 +30,7 @@ class CameraManager {
             BABYLON.Vector3.Zero(),
             Game.Scene
         );
-        this.arcRotateCamera.attachControl(Game.Canvas);
+        this.arcRotateCamera.attachControl(this.game.canvas);
         
         this.freeCamera = new BABYLON.FreeCamera(
             "Camera",
@@ -46,7 +46,7 @@ class CameraManager {
     public setMode(newCameraMode: CameraMode): void {
         if (newCameraMode != this.cameraMode) {
             if (this.cameraMode === CameraMode.Sky) {
-                this.arcRotateCamera.detachControl(Game.Canvas);
+                this.arcRotateCamera.detachControl(this.game.canvas);
             }
 
             this.cameraMode = newCameraMode;
@@ -60,7 +60,7 @@ class CameraManager {
             }
             if (this.cameraMode === CameraMode.Sky) {
                 Game.Scene.activeCamera = this.arcRotateCamera;
-                this.arcRotateCamera.attachControl(Game.Canvas);
+                this.arcRotateCamera.attachControl(this.game.canvas);
             }
         }
     }

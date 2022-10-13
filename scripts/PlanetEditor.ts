@@ -5,8 +5,8 @@ class PlanetEditor {
 
     public static GetHitWorldPos(remove: boolean = false): BABYLON.Vector3 {
         let pickInfo: BABYLON.PickingInfo = Game.Scene.pick(
-            Game.Canvas.width / 2,
-            Game.Canvas.height / 2,
+            Game.Instance.canvas.width / 2,
+            Game.Instance.canvas.height / 2,
             (mesh: BABYLON.Mesh) => {
                 return !(mesh.name === "preview-mesh");
             }
@@ -33,7 +33,7 @@ class PlanetEditor {
 
     public initialize(): void {
         Game.Scene.onBeforeRenderObservable.add(this._update);
-        Game.Canvas.addEventListener("pointerup", (event: MouseEvent) => {
+        Game.Instance.canvas.addEventListener("pointerup", (event: MouseEvent) => {
             if (Game.LockedMouse) {
                 this._pointerUp();
             }
@@ -52,7 +52,7 @@ class PlanetEditor {
         keyDataMap.set("Digit0", 0);
         keyDataMap.set("KeyX", 0);
 
-        Game.Canvas.addEventListener("keyup", (event: KeyboardEvent) => {
+        Game.Instance.canvas.addEventListener("keyup", (event: KeyboardEvent) => {
             if (keyDataMap.has(event.code)) {
                 this.data = keyDataMap.get(event.code);
             }

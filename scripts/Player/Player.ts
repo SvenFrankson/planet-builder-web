@@ -25,7 +25,7 @@ class Player extends BABYLON.Mesh {
         return this.position;
     }
 
-    constructor(position: BABYLON.Vector3, public planet: Planet) {
+    constructor(position: BABYLON.Vector3, public planet: Planet, public game: Game) {
         super("Player", Game.Scene);
         console.log("Create Player");
         this.planet = planet;
@@ -45,9 +45,9 @@ class Player extends BABYLON.Mesh {
     }
 
     public registerControl(): void {
-        Game.Canvas.addEventListener("keydown", this._keyDown);
-        Game.Canvas.addEventListener("keyup", this._keyUp);
-        Game.Canvas.addEventListener("mousemove", this._mouseMove);
+        this.game.canvas.addEventListener("keydown", this._keyDown);
+        this.game.canvas.addEventListener("keyup", this._keyUp);
+        this.game.canvas.addEventListener("mousemove", this._mouseMove);
     }
 
     private _keyDown = (e: KeyboardEvent) => {
@@ -128,9 +128,9 @@ class Player extends BABYLON.Mesh {
     };
 
     public unregisterControl(): void {
-        Game.Canvas.removeEventListener("keydown", this._keyDown);
-        Game.Canvas.removeEventListener("keyup", this._keyUp);
-        Game.Canvas.removeEventListener("mousemove", this._mouseMove);
+        this.game.canvas.removeEventListener("keydown", this._keyDown);
+        this.game.canvas.removeEventListener("keyup", this._keyUp);
+        this.game.canvas.removeEventListener("mousemove", this._mouseMove);
     }
 
     private _gravityFactor: BABYLON.Vector3 = BABYLON.Vector3.Zero();

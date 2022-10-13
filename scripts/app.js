@@ -4,10 +4,11 @@ var CameraMode;
     CameraMode[CameraMode["Player"] = 1] = "Player";
 })(CameraMode || (CameraMode = {}));
 class CameraManager {
-    constructor() {
+    constructor(game) {
+        this.game = game;
         this.cameraMode = CameraMode.Sky;
         this.arcRotateCamera = new BABYLON.ArcRotateCamera("Camera", 0, Math.PI / 2, 100, BABYLON.Vector3.Zero(), Game.Scene);
-        this.arcRotateCamera.attachControl(Game.Canvas);
+        this.arcRotateCamera.attachControl(this.game.canvas);
         this.freeCamera = new BABYLON.FreeCamera("Camera", BABYLON.Vector3.Zero(), Game.Scene);
         this.freeCamera.rotationQuaternion = BABYLON.Quaternion.Identity();
         this.freeCamera.minZ = 0.1;
@@ -24,7 +25,7 @@ class CameraManager {
     setMode(newCameraMode) {
         if (newCameraMode != this.cameraMode) {
             if (this.cameraMode === CameraMode.Sky) {
-                this.arcRotateCamera.detachControl(Game.Canvas);
+                this.arcRotateCamera.detachControl(this.game.canvas);
             }
             this.cameraMode = newCameraMode;
             if (this.cameraMode === CameraMode.Player) {
@@ -36,7 +37,7 @@ class CameraManager {
             }
             if (this.cameraMode === CameraMode.Sky) {
                 Game.Scene.activeCamera = this.arcRotateCamera;
-                this.arcRotateCamera.attachControl(Game.Canvas);
+                this.arcRotateCamera.attachControl(this.game.canvas);
             }
         }
     }
@@ -258,7 +259,7 @@ class PlanetEditor {
         };
     }
     static GetHitWorldPos(remove = false) {
-        let pickInfo = Game.Scene.pick(Game.Canvas.width / 2, Game.Canvas.height / 2, (mesh) => {
+        let pickInfo = Game.Scene.pick(Game.Instance.canvas.width / 2, Game.Instance.canvas.height / 2, (mesh) => {
             return !(mesh.name === "preview-mesh");
         });
         if (pickInfo.hit) {
@@ -274,7 +275,7 @@ class PlanetEditor {
     }
     initialize() {
         Game.Scene.onBeforeRenderObservable.add(this._update);
-        Game.Canvas.addEventListener("pointerup", (event) => {
+        Game.Instance.canvas.addEventListener("pointerup", (event) => {
             if (Game.LockedMouse) {
                 this._pointerUp();
             }
@@ -291,7 +292,7 @@ class PlanetEditor {
         keyDataMap.set("Digit9", 137);
         keyDataMap.set("Digit0", 0);
         keyDataMap.set("KeyX", 0);
-        Game.Canvas.addEventListener("keyup", (event) => {
+        Game.Instance.canvas.addEventListener("keyup", (event) => {
             if (keyDataMap.has(event.code)) {
                 this.data = keyDataMap.get(event.code);
             }
@@ -1044,33 +1045,46 @@ class DebugTerrainColor {
 }
 class Main {
     constructor(canvasElement) {
-        Main.Canvas = document.getElementById(canvasElement);
-        Main.Engine = new BABYLON.Engine(Main.Canvas, true);
+        this.canvas = document.getElementById(canvasElement);
+        Main.Engine = new BABYLON.Engine(this.canvas, true);
         BABYLON.Engine.ShadersRepository = "./shaders/";
         console.log(Main.Engine.webGLVersion);
     }
     createScene() {
         Main.Scene = new BABYLON.Scene(Main.Engine);
         this.scene = Main.Scene;
-        Main.Scene.actionManager = new BABYLON.ActionManager(Main.Scene);
-        Main.Scene.clearColor.copyFromFloats(166 / 255, 231 / 255, 255 / 255, 1);
+        this.scene.clearColor.copyFromFloats(166 / 255, 231 / 255, 255 / 255, 1);
     }
     animate() {
-        Game.Engine.runRenderLoop(() => {
-            Game.Scene.render();
+        Main.Engine.runRenderLoop(() => {
+            this.scene.render();
             this.update();
         });
         window.addEventListener("resize", () => {
-            Game.Engine.resize();
+            Main.Engine.resize();
         });
+    }
+    async initialize() {
     }
     update() {
     }
 }
 window.addEventListener("DOMContentLoaded", () => {
-    let game = new Game("renderCanvas");
-    game.createScene();
-    game.initialize();
+    console.log("DOMContentLoaded " + window.location.href);
+    if (window.location.href.indexOf("planet-toy.html") != -1) {
+        let planetToy = new PlanetToy("renderCanvas");
+        planetToy.createScene();
+        planetToy.initialize().then(() => {
+            planetToy.animate();
+        });
+    }
+    else {
+        let game = new Game("renderCanvas");
+        game.createScene();
+        game.initialize().then(() => {
+            game.animate();
+        });
+    }
 });
 /// <reference path="../../lib/babylon.d.ts"/>
 /// <reference path="Main.ts"/>
@@ -1081,10 +1095,10 @@ class Game extends Main {
     }
     createScene() {
         super.createScene();
-        Game.Light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0.6, 1, 0.3), Game.Scene);
+        Game.Light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0.6, 1, 0.3), this.scene);
         Game.Light.diffuse = new BABYLON.Color3(1, 1, 1);
         Game.Light.groundColor = new BABYLON.Color3(0.5, 0.5, 0.5);
-        Game.CameraManager = new CameraManager();
+        Game.CameraManager = new CameraManager(this);
         this.fpsGraphElement = document.getElementById("frame-rate");
         this.meshesInfoTotalElement = document.getElementById("meshes-info-total");
         this.meshesInfoNonStaticUniqueElement = document.getElementById("meshes-info-nonstatic-unique");
@@ -1092,74 +1106,76 @@ class Game extends Main {
         this.meshesInfoNonStaticInstanceElement = document.getElementById("meshes-info-nonstatic-instance");
         this.meshesInfoStaticInstanceElement = document.getElementById("meshes-info-static-instance");
     }
-    initialize() {
-        this.chunckManager = new PlanetChunckManager(Game.Scene);
-        let kPosMax = 10;
-        let planetTest = new Planet("Paulita", kPosMax, this.chunckManager);
-        planetTest.generator = new PlanetGeneratorEarth(planetTest, 0.60, 0.1);
-        //planetTest.generator = new PlanetGeneratorDebug4(planetTest);
-        let r = kPosMax * PlanetTools.CHUNCKSIZE * 0.7;
-        document.querySelector("#planet-surface").textContent = (4 * Math.PI * r * r / 1000 / 1000).toFixed(2) + " km²";
-        //planetTest.generator.showDebug();
-        Game.Player = new Player(new BABYLON.Vector3(0, (kPosMax + 1) * PlanetTools.CHUNCKSIZE * 0.8, 0), planetTest);
-        this.player = Game.Player;
-        Game.Player.registerControl();
-        this.chunckManager.onNextInactive(() => {
-            Game.Player.initialize();
-        });
-        Game.PlanetEditor = new PlanetEditor(planetTest);
-        //Game.PlanetEditor.initialize();
-        //Game.Plane = new Plane(new BABYLON.Vector3(0, 80, 0), planetTest);
-        //Game.Plane.instantiate();
-        //Game.CameraManager.plane = Game.Plane;
-        Game.CameraManager.player = Game.Player;
-        Game.CameraManager.setMode(CameraMode.Player);
-        //planetTest.AsyncInitialize();
-        this.planetSky = new PlanetSky();
-        this.planetSky.setInvertLightDir((new BABYLON.Vector3(0.5, 2.5, 1.5)).normalize());
-        this.planetSky.initialize(Game.Scene);
-        PlanetChunckVertexData.InitializeData().then(() => {
-            this.chunckManager.initialize();
-            planetTest.register();
-            //let debugPlanetSkyColor = new DebugPlanetSkyColor(this);
-            //debugPlanetSkyColor.show();
-            //let debugTerrainColor = new DebugTerrainColor();
-            //debugTerrainColor.show();
-            let debugPlayerPosition = new DebugPlayerPosition(this);
-            debugPlayerPosition.show();
-        });
-        this.animate();
-        Game.Canvas.addEventListener("pointerup", (event) => {
-            if (Game.CameraManager.cameraMode === CameraMode.Sky) {
-                return;
-            }
-            if (!Game.LockedMouse) {
-                Game.LockMouse(event);
-            }
-        });
-        document.addEventListener("pointermove", (event) => {
-            if (Game.CameraManager.cameraMode === CameraMode.Sky) {
-                return;
-            }
-            if (Game.LockedMouse) {
-                if (event.clientX !== Game.ClientXOnLock) {
-                    Game.UnlockMouse();
+    async initialize() {
+        return new Promise(resolve => {
+            this.chunckManager = new PlanetChunckManager(this.scene);
+            let kPosMax = 10;
+            let planetTest = new Planet("Paulita", kPosMax, this.chunckManager);
+            planetTest.generator = new PlanetGeneratorEarth(planetTest, 0.60, 0.1);
+            //planetTest.generator = new PlanetGeneratorDebug4(planetTest);
+            let r = kPosMax * PlanetTools.CHUNCKSIZE * 0.7;
+            document.querySelector("#planet-surface").textContent = (4 * Math.PI * r * r / 1000 / 1000).toFixed(2) + " km²";
+            //planetTest.generator.showDebug();
+            Game.Player = new Player(new BABYLON.Vector3(0, (kPosMax + 1) * PlanetTools.CHUNCKSIZE * 0.8, 0), planetTest, this);
+            this.player = Game.Player;
+            this.player.registerControl();
+            this.chunckManager.onNextInactive(() => {
+                this.player.initialize();
+            });
+            Game.PlanetEditor = new PlanetEditor(planetTest);
+            //Game.PlanetEditor.initialize();
+            //Game.Plane = new Plane(new BABYLON.Vector3(0, 80, 0), planetTest);
+            //Game.Plane.instantiate();
+            //Game.CameraManager.plane = Game.Plane;
+            Game.CameraManager.player = this.player;
+            Game.CameraManager.setMode(CameraMode.Player);
+            //planetTest.AsyncInitialize();
+            this.planetSky = new PlanetSky();
+            this.planetSky.setInvertLightDir((new BABYLON.Vector3(0.5, 2.5, 1.5)).normalize());
+            this.planetSky.initialize(this.scene);
+            PlanetChunckVertexData.InitializeData().then(() => {
+                this.chunckManager.initialize();
+                planetTest.register();
+                //let debugPlanetSkyColor = new DebugPlanetSkyColor(this);
+                //debugPlanetSkyColor.show();
+                //let debugTerrainColor = new DebugTerrainColor();
+                //debugTerrainColor.show();
+                let debugPlayerPosition = new DebugPlayerPosition(this);
+                debugPlayerPosition.show();
+                resolve();
+            });
+            this.canvas.addEventListener("pointerup", (event) => {
+                if (Game.CameraManager.cameraMode === CameraMode.Sky) {
+                    return;
                 }
-                else if (event.clientY !== Game.ClientYOnLock) {
-                    Game.UnlockMouse();
+                if (!Game.LockedMouse) {
+                    Game.LockMouse(event);
                 }
-            }
+            });
+            document.addEventListener("pointermove", (event) => {
+                if (Game.CameraManager.cameraMode === CameraMode.Sky) {
+                    return;
+                }
+                if (Game.LockedMouse) {
+                    if (event.clientX !== Game.ClientXOnLock) {
+                        Game.UnlockMouse();
+                    }
+                    else if (event.clientY !== Game.ClientYOnLock) {
+                        Game.UnlockMouse();
+                    }
+                }
+            });
         });
     }
     update() {
         this.fpsGraphElement.addValue(Game.Engine.getFps());
-        let uniques = Game.Scene.meshes.filter(m => { return !(m instanceof BABYLON.InstancedMesh); });
+        let uniques = this.scene.meshes.filter(m => { return !(m instanceof BABYLON.InstancedMesh); });
         let uniquesNonStatic = uniques.filter(m => { return !m.isWorldMatrixFrozen; });
         let uniquesStatic = uniques.filter(m => { return m.isWorldMatrixFrozen; });
-        let instances = Game.Scene.meshes.filter(m => { return m instanceof BABYLON.InstancedMesh; });
+        let instances = this.scene.meshes.filter(m => { return m instanceof BABYLON.InstancedMesh; });
         let instancesNonStatic = instances.filter(m => { return !m.isWorldMatrixFrozen; });
         let instancesStatic = instances.filter(m => { return m.isWorldMatrixFrozen; });
-        this.meshesInfoTotalElement.innerText = Game.Scene.meshes.length.toFixed(0).padStart(4, "0");
+        this.meshesInfoTotalElement.innerText = this.scene.meshes.length.toFixed(0).padStart(4, "0");
         this.meshesInfoNonStaticUniqueElement.innerText = uniquesNonStatic.length.toFixed(0).padStart(4, "0");
         this.meshesInfoStaticUniqueElement.innerText = uniquesStatic.length.toFixed(0).padStart(4, "0");
         this.meshesInfoNonStaticInstanceElement.innerText = instancesNonStatic.length.toFixed(0).padStart(4, "0");
@@ -1170,13 +1186,13 @@ class Game extends Main {
             console.log("No need to lock.");
             return;
         }
-        Game.Canvas.requestPointerLock =
-            Game.Canvas.requestPointerLock ||
-                Game.Canvas.msRequestPointerLock ||
-                Game.Canvas.mozRequestPointerLock ||
-                Game.Canvas.webkitRequestPointerLock;
-        if (Game.Canvas.requestPointerLock) {
-            Game.Canvas.requestPointerLock();
+        Game.Instance.canvas.requestPointerLock =
+            Game.Instance.canvas.requestPointerLock ||
+                Game.Instance.canvas.msRequestPointerLock ||
+                Game.Instance.canvas.mozRequestPointerLock ||
+                Game.Instance.canvas.webkitRequestPointerLock;
+        if (Game.Instance.canvas.requestPointerLock) {
+            Game.Instance.canvas.requestPointerLock();
             Game.LockedMouse = true;
             Game.ClientXOnLock = event.clientX;
             Game.ClientYOnLock = event.clientY;
@@ -1197,6 +1213,101 @@ Game.DebugLodDistanceFactor = 100;
 Game.LockedMouse = false;
 Game.ClientXOnLock = -1;
 Game.ClientYOnLock = -1;
+/// <reference path="../../lib/babylon.d.ts"/>
+/// <reference path="Main.ts"/>
+class PlanetToy extends Main {
+    createScene() {
+        super.createScene();
+        let light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0.6, 1, 0.3), this.scene);
+        light.diffuse = new BABYLON.Color3(1, 1, 1);
+        light.groundColor = new BABYLON.Color3(0.5, 0.5, 0.5);
+        let camera = new BABYLON.ArcRotateCamera("camera", 0, 0, 10, BABYLON.Vector3.Zero(), this.scene);
+        camera.setPosition(new BABYLON.Vector3(5, 10, -15));
+        camera.attachControl(this.canvas);
+        this.scene.clearColor.copyFromFloats(0, 0, 0, 1);
+    }
+    async initialize() {
+        return new Promise(resolve => {
+            let core = BABYLON.MeshBuilder.CreateSphere("core", { diameter: 20 }, this.scene);
+            let blackMat = new BABYLON.StandardMaterial("black", this.scene);
+            blackMat.diffuseColor = BABYLON.Color3.Black();
+            blackMat.specularColor = BABYLON.Color3.Black();
+            core.material = blackMat;
+            let XMesh = BABYLON.MeshBuilder.CreateLines("XAxis", {
+                points: [new BABYLON.Vector3(1, 0, 0), new BABYLON.Vector3(14, 0, 0), new BABYLON.Vector3(14, 0, 1), new BABYLON.Vector3(15, 0, 0), new BABYLON.Vector3(14, 0, -1)]
+            });
+            let YMesh = BABYLON.MeshBuilder.CreateLines("YAxis", {
+                points: [new BABYLON.Vector3(0, 1, 0), new BABYLON.Vector3(0, 14, 0), new BABYLON.Vector3(1, 14, 0), new BABYLON.Vector3(0, 15, 0), new BABYLON.Vector3(-1, 14, 0)]
+            });
+            let ZMesh = BABYLON.MeshBuilder.CreateLines("ZAxis", {
+                points: [new BABYLON.Vector3(0, 0, 1), new BABYLON.Vector3(0, 0, 14), new BABYLON.Vector3(1, 0, 14), new BABYLON.Vector3(0, 0, 15), new BABYLON.Vector3(-1, 0, 14)]
+            });
+            let vertices = [];
+            for (let i = 0; i <= 16; i++) {
+                vertices[i] = [];
+                for (let j = 0; j <= 16; j++) {
+                    vertices[i][j] = PlanetTools.EvaluateVertex(16, i, j);
+                }
+            }
+            let lines = [];
+            let colors = [];
+            let n = 16;
+            for (let i = 0; i < n; i++) {
+                for (let j = 0; j < n; j++) {
+                    let v0 = vertices[i][j].clone();
+                    let v1 = vertices[i + 1][j].clone();
+                    let v2 = vertices[i + 1][j + 1].clone();
+                    let v3 = vertices[i][j + 1].clone();
+                    let center = v0.add(v1).add(v2).add(v3).scale(0.25).scale(0.1);
+                    v0.scaleInPlace(0.9).addInPlace(center).scaleInPlace(10);
+                    v1.scaleInPlace(0.9).addInPlace(center).scaleInPlace(10);
+                    v2.scaleInPlace(0.9).addInPlace(center).scaleInPlace(10);
+                    v3.scaleInPlace(0.9).addInPlace(center).scaleInPlace(10);
+                    lines.push([v0, v1, v2, v3, v0]);
+                    if (j === 0) {
+                        v0 = vertices[i][j].clone();
+                        v1 = vertices[i + 1][j].clone();
+                        v2 = vertices[i + 1][j + 1].clone();
+                        v3 = vertices[i][j + 1].clone();
+                        center = v0.add(v1).add(v2).add(v3).scale(0.25).scale(0.5);
+                        v0.scaleInPlace(0.5).addInPlace(center).scaleInPlace(10);
+                        v1.scaleInPlace(0.5).addInPlace(center).scaleInPlace(10);
+                        v2.scaleInPlace(0.5).addInPlace(center).scaleInPlace(10);
+                        v3.scaleInPlace(0.5).addInPlace(center).scaleInPlace(10);
+                        lines.push([v0, v1, v2, v3, v0]);
+                    }
+                    let d = i + j;
+                    let r = 1;
+                    let g = 1;
+                    let b = 1;
+                    if (d <= n - 1) {
+                        g = d / n;
+                    }
+                    else if (d > n - 1) {
+                        r = 1 - (d - n) / n;
+                    }
+                    let c = new BABYLON.Color4(r, g, b, 1);
+                    colors.push([c, c, c, c, c]);
+                    if (j === 0) {
+                        colors.push([c, c, c, c, c]);
+                    }
+                }
+            }
+            for (let i = 0; i < 6; i++) {
+                let face = BABYLON.MeshBuilder.CreateLineSystem("Top", {
+                    lines: lines,
+                    colors: colors
+                }, this.scene);
+                face.rotationQuaternion = PlanetTools.QuaternionForSide(i);
+                face.computeWorldMatrix(true);
+                face.position.addInPlace(face.up);
+            }
+            resolve();
+        });
+    }
+    update() {
+    }
+}
 var BlockTypeNames = [
     "None",
     "Grass",
@@ -4026,9 +4137,10 @@ class ProceduralTree {
     }
 }
 class Player extends BABYLON.Mesh {
-    constructor(position, planet) {
+    constructor(position, planet, game) {
         super("Player", Game.Scene);
         this.planet = planet;
+        this.game = game;
         this.mass = 1;
         this.speed = 5;
         this.velocity = BABYLON.Vector3.Zero();
@@ -4256,14 +4368,14 @@ class Player extends BABYLON.Mesh {
         }
     }
     registerControl() {
-        Game.Canvas.addEventListener("keydown", this._keyDown);
-        Game.Canvas.addEventListener("keyup", this._keyUp);
-        Game.Canvas.addEventListener("mousemove", this._mouseMove);
+        this.game.canvas.addEventListener("keydown", this._keyDown);
+        this.game.canvas.addEventListener("keyup", this._keyUp);
+        this.game.canvas.addEventListener("mousemove", this._mouseMove);
     }
     unregisterControl() {
-        Game.Canvas.removeEventListener("keydown", this._keyDown);
-        Game.Canvas.removeEventListener("keyup", this._keyUp);
-        Game.Canvas.removeEventListener("mousemove", this._mouseMove);
+        this.game.canvas.removeEventListener("keydown", this._keyDown);
+        this.game.canvas.removeEventListener("keyup", this._keyUp);
+        this.game.canvas.removeEventListener("mousemove", this._mouseMove);
     }
     _keepUp() {
         if (!this) {
