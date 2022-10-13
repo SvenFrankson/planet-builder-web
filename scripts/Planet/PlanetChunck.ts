@@ -233,6 +233,7 @@ class PlanetChunck {
             this.updateIsEmptyIsFull();
             this._dataInitialized = true;
             if (!this.isEmpty && ! this.isFull) {
+                /*
                 setTimeout(() => {
                     let tree = new ProceduralTree();
                     tree.chunck = this;
@@ -241,6 +242,7 @@ class PlanetChunck {
                     tree.k = Math.floor(8 * Math.random());
                     tree.generateData();
                 }, 5000);
+                */ 
             }
             //this.saveToLocalStorage();
         }

@@ -23,16 +23,16 @@ class PlanetTools {
             return BABYLON.Quaternion.Identity();
         }
         else if (side === Side.Left) {
-            return BABYLON.Quaternion.RotationQuaternionFromAxis(BABYLON.Axis.X.scale(-1), BABYLON.Axis.Z, BABYLON.Axis.Y);
-        }
-        else if (side === Side.Front) {
             return BABYLON.Quaternion.RotationQuaternionFromAxis(BABYLON.Axis.Z, BABYLON.Axis.X, BABYLON.Axis.Y);
         }
+        else if (side === Side.Front) {
+            return BABYLON.Quaternion.RotationQuaternionFromAxis(BABYLON.Axis.X.scale(-1), BABYLON.Axis.Z, BABYLON.Axis.Y);
+        }
         else if (side === Side.Back) {
-            return BABYLON.Quaternion.RotationQuaternionFromAxis(BABYLON.Axis.Z.scale(-1), BABYLON.Axis.X.scale(-1), BABYLON.Axis.Y);
+            return BABYLON.Quaternion.RotationQuaternionFromAxis(BABYLON.Axis.X, BABYLON.Axis.Z.scale(-1), BABYLON.Axis.Y);
         }
         else if (side === Side.Right) {
-            return BABYLON.Quaternion.RotationQuaternionFromAxis(BABYLON.Axis.X, BABYLON.Axis.Z.scale(-1), BABYLON.Axis.Y);
+            return BABYLON.Quaternion.RotationQuaternionFromAxis(BABYLON.Axis.Z.scale(-1), BABYLON.Axis.X.scale(-1), BABYLON.Axis.Y);
         }
         else if (side === Side.Bottom) {
             return BABYLON.Quaternion.RotationQuaternionFromAxis(BABYLON.Axis.X, BABYLON.Axis.Y.scale(-1), BABYLON.Axis.Z.scale(-1));
@@ -211,6 +211,7 @@ class PlanetTools {
         let zDeg: number = (Math.atan(localPos.z) / Math.PI) * 180;
 
         let k: number = PlanetTools.AltitudeToKGlobal(r);
+        console.log(xDeg.toFixed(1) + " " + zDeg.toFixed(1));
         let i: number = Math.floor(((xDeg + 45) / 90) * PlanetTools.DegreeToSize(PlanetTools.KGlobalToDegree(k)));
         let j: number = Math.floor(((zDeg + 45) / 90) * PlanetTools.DegreeToSize(PlanetTools.KGlobalToDegree(k)));
 

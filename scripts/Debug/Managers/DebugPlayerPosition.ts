@@ -8,6 +8,7 @@ class DebugPlayerPosition {
     public container: HTMLDivElement;
 
     private _playerPosition: DebugDisplayVector3Value;
+    private _playerLocalPosition: DebugDisplayVector3Value;
     private _playerSide: DebugDisplayTextValue;
     private _playerGlobalIJK: DebugDisplayVector3Value;
     private _playerChunck: DebugDisplayVector3Value;
@@ -25,6 +26,7 @@ class DebugPlayerPosition {
         this.container = document.querySelector("#debug-player-position");
         
         this._playerPosition = document.querySelector("#player-position") as DebugDisplayVector3Value;
+        this._playerLocalPosition = document.querySelector("#player-local-position") as DebugDisplayVector3Value;
         this._playerSide = document.querySelector("#player-planet-side") as DebugDisplayTextValue;
         this._playerGlobalIJK = document.querySelector("#player-global-ijk") as DebugDisplayVector3Value;
         this._playerChunck = document.querySelector("#player-chunck") as DebugDisplayVector3Value;
@@ -34,10 +36,17 @@ class DebugPlayerPosition {
     }
 
     private _update = () => {
-        let position = this.game.player.position;
+        let position = this.game.player.position.clone();
         this._playerPosition.setValue(position);
 
         let planetSide = PlanetTools.WorldPositionToPlanetSide(this.game.player.planet, position);
+
+        let invert: BABYLON.Matrix = planetSide.computeWorldMatrix(true).clone().invert();
+        let quat = planetSide.rotationQuaternion.clone();
+        let localPos: BABYLON.Vector3 = position.clone()
+        position.rotateByQuaternionToRef(quat, localPos);
+        this._playerLocalPosition.setValue(localPos);
+        
         this._playerSide.setText(SideNames[planetSide.side]);
         let globalIJK = PlanetTools.WorldPositionToGlobalIJK(planetSide, position);
         this._playerGlobalIJK.setValue(globalIJK);
