@@ -62,7 +62,7 @@ class PlanetChunckManager {
                 this._lodLayers[layerIndex].push(chunck);
                 chunck.lod = layerIndex;
                 if (layerIndex <= 1) {
-                    this.requestDraw(chunck);
+                    this.requestDraw(chunck, layerIndex);
                 }
                 return true;
             }
@@ -70,12 +70,24 @@ class PlanetChunckManager {
         return false;
     }
 
-    public async requestDraw(chunck: PlanetChunck): Promise<void> {
+    public async requestDraw(chunck: PlanetChunck, prio: number): Promise<void> {
         return new Promise<void>(resolve => {
             if (!this._needRedraw.find(request => { return request.chunck === chunck; })) {
-                this._needRedraw.push(new PlanetChunckRedrawRequest(chunck, resolve));
+                if (prio === 0) {
+                    this._needRedraw.push(new PlanetChunckRedrawRequest(chunck, resolve));
+                }
+                else {
+                    this._needRedraw.splice(0, 0, new PlanetChunckRedrawRequest(chunck, resolve));
+                }
             }
         });
+    }
+
+    public cancelDraw(chunck: PlanetChunck): void {
+        let index = this._needRedraw.findIndex(request => { return request.chunck === chunck; });
+        if (index != - 1) {
+            this._needRedraw.splice(index, 1);
+        }
     }
 
     private _getLayerIndex(sqrDistance: number): number {
@@ -112,10 +124,11 @@ class PlanetChunckManager {
                         chunck.lod = newLayerIndex;
                         
                         if (newLayerIndex <= 1) {
-                            this.requestDraw(chunck);
+                            this.requestDraw(chunck, newLayerIndex);
                         }
                         else if (newLayerIndex > 1) {
                             chunck.disposeMesh();
+                            this.cancelDraw(chunck);
                         }
 
                         this._lodLayersCursors[newLayerIndex]++;

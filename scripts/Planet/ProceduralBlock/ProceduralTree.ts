@@ -11,13 +11,13 @@ class ProceduralTree {
         let chuncks = PlanetBlockMaker.AddLine(this.chunck.planetSide.planet, w, w.add(n.scale(5)), BlockType.Wood);
         for (let i = 0; i < chuncks.length; i++) {
             if (chuncks[i].lod <= 1) {
-                Game.Instance.chunckManager.requestDraw(chuncks[i]);
+                Game.Instance.chunckManager.requestDraw(chuncks[i], chuncks[i].lod);
             }
         }
         chuncks = PlanetBlockMaker.AddSphere(this.chunck.planetSide.planet, w.add(n.scale(5)), 3, BlockType.Leaf);
         for (let i = 0; i < chuncks.length; i++) {
             if (chuncks[i].lod <= 1) {
-                Game.Instance.chunckManager.requestDraw(chuncks[i]);
+                Game.Instance.chunckManager.requestDraw(chuncks[i], chuncks[i].lod);
             }
         }
     }

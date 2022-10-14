@@ -1852,19 +1852,30 @@ class PlanetChunckManager {
                 this._lodLayers[layerIndex].push(chunck);
                 chunck.lod = layerIndex;
                 if (layerIndex <= 1) {
-                    this.requestDraw(chunck);
+                    this.requestDraw(chunck, layerIndex);
                 }
                 return true;
             }
         }
         return false;
     }
-    async requestDraw(chunck) {
+    async requestDraw(chunck, prio) {
         return new Promise(resolve => {
             if (!this._needRedraw.find(request => { return request.chunck === chunck; })) {
-                this._needRedraw.push(new PlanetChunckRedrawRequest(chunck, resolve));
+                if (prio === 0) {
+                    this._needRedraw.push(new PlanetChunckRedrawRequest(chunck, resolve));
+                }
+                else {
+                    this._needRedraw.splice(0, 0, new PlanetChunckRedrawRequest(chunck, resolve));
+                }
             }
         });
+    }
+    cancelDraw(chunck) {
+        let index = this._needRedraw.findIndex(request => { return request.chunck === chunck; });
+        if (index != -1) {
+            this._needRedraw.splice(index, 1);
+        }
     }
     _getLayerIndex(sqrDistance) {
         for (let i = 0; i < this._lodLayersCount - 1; i++) {
@@ -1895,10 +1906,11 @@ class PlanetChunckManager {
                         this._lodLayers[newLayerIndex].splice(adequateLayerCursor, 0, chunck);
                         chunck.lod = newLayerIndex;
                         if (newLayerIndex <= 1) {
-                            this.requestDraw(chunck);
+                            this.requestDraw(chunck, newLayerIndex);
                         }
                         else if (newLayerIndex > 1) {
                             chunck.disposeMesh();
+                            this.cancelDraw(chunck);
                         }
                         this._lodLayersCursors[newLayerIndex]++;
                         if (this._lodLayersCursors[newLayerIndex] >= this._lodLayers[newLayerIndex].length) {
@@ -4027,7 +4039,6 @@ class PlanetTools {
         let xDeg = (Math.atan(localPos.x) / Math.PI) * 180;
         let zDeg = (Math.atan(localPos.z) / Math.PI) * 180;
         let k = PlanetTools.AltitudeToKGlobal(r);
-        console.log(xDeg.toFixed(1) + " " + zDeg.toFixed(1));
         let i = Math.floor(((xDeg + 45) / 90) * PlanetTools.DegreeToSize(PlanetTools.KGlobalToDegree(k)));
         let j = Math.floor(((zDeg + 45) / 90) * PlanetTools.DegreeToSize(PlanetTools.KGlobalToDegree(k)));
         return { i: i, j: j, k: k };
@@ -4235,13 +4246,13 @@ class ProceduralTree {
         let chuncks = PlanetBlockMaker.AddLine(this.chunck.planetSide.planet, w, w.add(n.scale(5)), BlockType.Wood);
         for (let i = 0; i < chuncks.length; i++) {
             if (chuncks[i].lod <= 1) {
-                Game.Instance.chunckManager.requestDraw(chuncks[i]);
+                Game.Instance.chunckManager.requestDraw(chuncks[i], chuncks[i].lod);
             }
         }
         chuncks = PlanetBlockMaker.AddSphere(this.chunck.planetSide.planet, w.add(n.scale(5)), 3, BlockType.Leaf);
         for (let i = 0; i < chuncks.length; i++) {
             if (chuncks[i].lod <= 1) {
-                Game.Instance.chunckManager.requestDraw(chuncks[i]);
+                Game.Instance.chunckManager.requestDraw(chuncks[i], chuncks[i].lod);
             }
         }
     }

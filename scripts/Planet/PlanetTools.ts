@@ -207,7 +207,6 @@ class PlanetTools {
         let zDeg: number = (Math.atan(localPos.z) / Math.PI) * 180;
 
         let k: number = PlanetTools.AltitudeToKGlobal(r);
-        console.log(xDeg.toFixed(1) + " " + zDeg.toFixed(1));
         let i: number = Math.floor(((xDeg + 45) / 90) * PlanetTools.DegreeToSize(PlanetTools.KGlobalToDegree(k)));
         let j: number = Math.floor(((zDeg + 45) / 90) * PlanetTools.DegreeToSize(PlanetTools.KGlobalToDegree(k)));
 
