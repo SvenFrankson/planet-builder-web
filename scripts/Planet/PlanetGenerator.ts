@@ -40,6 +40,8 @@ class PlanetGeneratorEarth extends PlanetGenerator {
 
     public makeData(chunck: PlanetChunck, refData: number[][][], refProcedural: ProceduralTree[]): void {
         let f = Math.pow(2, this._mainHeightMap.degree - chunck.degree);
+        let maxTree = 1;
+        let treeCount = 0;
 
         for (let i: number = 0; i < PlanetTools.CHUNCKSIZE; i++) {
             refData[i] = [];
@@ -52,7 +54,7 @@ class PlanetGeneratorEarth extends PlanetGenerator {
                 let altitude = Math.floor((this._seaLevel + v * this._mountainHeight) * this.planet.kPosMax * PlanetTools.CHUNCKSIZE);
                 let rockAltitude = altitude + Math.round((rock - 0.4) * this._mountainHeight * this.planet.kPosMax * PlanetTools.CHUNCKSIZE);
 
-                if (tree > 0.6) {
+                if (tree > 0.6 && treeCount < maxTree) {
                     let localK = altitude + 1 - chunck.kPos * PlanetTools.CHUNCKSIZE;
                     if (localK >= 0 && localK < PlanetTools.CHUNCKSIZE) {
                         let tree = new ProceduralTree();
@@ -61,6 +63,7 @@ class PlanetGeneratorEarth extends PlanetGenerator {
                         tree.j = j;
                         tree.k = localK;
                         refProcedural.push(tree);
+                        treeCount++;
                     }
                 }
 
