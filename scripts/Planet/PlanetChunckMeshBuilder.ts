@@ -186,11 +186,15 @@ class PlanetChunckMeshBuilder {
         return Math.sqrt(PCMB.SquaredLength(x, y, z));
     }
     
-    private static Distance(x0: number, y0: number, z0: number, x1: number, y1: number, z1: number): number {
+    private static DistanceSquared(x0: number, y0: number, z0: number, x1: number, y1: number, z1: number): number {
         let x = x1 - x0;
         let y = y1 - y0;
         let z = z1 - z0;
-        return Math.sqrt(x * x + y * y + z * z);
+        return x * x + y * y + z * z;
+    }
+
+    private static Distance(x0: number, y0: number, z0: number, x1: number, y1: number, z1: number): number {
+        return Math.sqrt(PCMB.DistanceSquared(x0, y0, z0, x1, y1, z1));
     }
 
     public static BuildVertexData(
@@ -538,19 +542,19 @@ class PlanetChunckMeshBuilder {
                                 let corner1 = PCMB.Corners[blocks[1]];
                                 let corner2 = PCMB.Corners[blocks[2]];
 
-                                colors[4 * (l + n1)] = 1 - PCMB.Distance(x0, y0, z0, corner0.x, corner0.y, corner0.z);
-                                colors[4 * (l + n1) + 1] = 1 - PCMB.Distance(x0, y0, z0, corner1.x, corner1.y, corner1.z);
-                                colors[4 * (l + n1) + 2] = 1 - PCMB.Distance(x0, y0, z0, corner2.x, corner2.y, corner2.z);
+                                colors[4 * (l + n1)] = 1 - PCMB.DistanceSquared(x0, y0, z0, corner0.x, corner0.y, corner0.z);
+                                colors[4 * (l + n1) + 1] = 1 - PCMB.DistanceSquared(x0, y0, z0, corner1.x, corner1.y, corner1.z);
+                                colors[4 * (l + n1) + 2] = 1 - PCMB.DistanceSquared(x0, y0, z0, corner2.x, corner2.y, corner2.z);
                                 colors[4 * (l + n1) + 3] = alpha;
     
-                                colors[4 * (l + n2)] = 1 - PCMB.Distance(x1, y1, z1, corner0.x, corner0.y, corner0.z);
-                                colors[4 * (l + n2) + 1] = 1 - PCMB.Distance(x1, y1, z1, corner1.x, corner1.y, corner1.z);
-                                colors[4 * (l + n2) + 2] = 1 - PCMB.Distance(x1, y1, z1, corner2.x, corner2.y, corner2.z);
+                                colors[4 * (l + n2)] = 1 - PCMB.DistanceSquared(x1, y1, z1, corner0.x, corner0.y, corner0.z);
+                                colors[4 * (l + n2) + 1] = 1 - PCMB.DistanceSquared(x1, y1, z1, corner1.x, corner1.y, corner1.z);
+                                colors[4 * (l + n2) + 2] = 1 - PCMB.DistanceSquared(x1, y1, z1, corner2.x, corner2.y, corner2.z);
                                 colors[4 * (l + n2) + 3] = alpha;
     
-                                colors[4 * (l + n3)] = 1 - PCMB.Distance(x2, y2, z2, corner0.x, corner0.y, corner0.z);
-                                colors[4 * (l + n3) + 1] = 1 - PCMB.Distance(x2, y2, z2, corner1.x, corner1.y, corner1.z);
-                                colors[4 * (l + n3) + 2] = 1 - PCMB.Distance(x2, y2, z2, corner2.x, corner2.y, corner2.z);
+                                colors[4 * (l + n3)] = 1 - PCMB.DistanceSquared(x2, y2, z2, corner0.x, corner0.y, corner0.z);
+                                colors[4 * (l + n3) + 1] = 1 - PCMB.DistanceSquared(x2, y2, z2, corner1.x, corner1.y, corner1.z);
+                                colors[4 * (l + n3) + 2] = 1 - PCMB.DistanceSquared(x2, y2, z2, corner2.x, corner2.y, corner2.z);
                                 colors[4 * (l + n3) + 3] = alpha;
                             }
                             else {
