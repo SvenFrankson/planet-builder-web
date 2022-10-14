@@ -12,6 +12,9 @@ class PlanetChunckManager {
     
     private _viewpoint: BABYLON.Vector3;
     private _needRedraw: PlanetChunckRedrawRequest[] = [];
+    public get needRedrawCount(): number {
+        return this._needRedraw.length;
+    }
 
     private _lodLayersCount: number = 6;
     private _lodLayers: PlanetChunck[][];
@@ -178,7 +181,6 @@ class PlanetChunckManager {
         }
 
         this.chunckSortedRatio = (this.chunckSortedRatio + sortedCount / (sortedCount + unsortedCount))* 0.5;
-        (document.getElementById("chunck-sort") as DebugDisplayFrameValue).addValue(this.chunckSortedRatio * 100);
     }
 
     public isActive(): boolean {

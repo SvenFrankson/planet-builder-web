@@ -57,24 +57,28 @@ html, body {
 debug-display-frame-value {
 	display: block;
 	width: 400px;
+	margin-left: auto;
 	margin-bottom: 5px;
 }
 
 debug-display-color-input {
 	display: block;
 	width: 400px;
+	margin-left: auto;
 	margin-bottom: 5px;
 }
 
 debug-display-vector3-value {
 	display: block;
 	width: 400px;
+	margin-left: auto;
 	margin-bottom: 5px;
 }
 
 debug-display-text-value {
 	display: block;
 	width: 400px;
+	margin-left: auto;
 	margin-bottom: 5px;
 }
 

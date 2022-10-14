@@ -19,7 +19,6 @@ class Game extends Main {
 	public static ClientXOnLock: number = -1;
 	public static ClientYOnLock: number = -1;
 
-	public fpsGraphElement: DebugDisplayFrameValue;
 	public meshesInfoTotalElement: HTMLDivElement; 
 	public meshesInfoNonStaticUniqueElement: HTMLDivElement;
 	public meshesInfoStaticUniqueElement: HTMLDivElement;
@@ -45,7 +44,6 @@ class Game extends Main {
 
 		Game.CameraManager = new CameraManager(this);
 		
-		this.fpsGraphElement = document.getElementById("frame-rate") as DebugDisplayFrameValue;
 		this.meshesInfoTotalElement = document.getElementById("meshes-info-total") as HTMLDivElement;
 		this.meshesInfoNonStaticUniqueElement = document.getElementById("meshes-info-nonstatic-unique") as HTMLDivElement;
 		this.meshesInfoStaticUniqueElement = document.getElementById("meshes-info-static-unique") as HTMLDivElement;
@@ -95,6 +93,9 @@ class Game extends Main {
 					this.chunckManager.initialize();
 					planetTest.register();
 
+					let debugPlanetPerf = new DebugPlanetPerf(this);
+					debugPlanetPerf.show();
+
 					//let debugPlanetSkyColor = new DebugPlanetSkyColor(this);
 					//debugPlanetSkyColor.show();
 
@@ -134,7 +135,6 @@ class Game extends Main {
 	}
 
 	public update(): void {
-		this.fpsGraphElement.addValue(Game.Engine.getFps());
 		let uniques = this.scene.meshes.filter(m => { return !(m instanceof BABYLON.InstancedMesh); });
 		let uniquesNonStatic = uniques.filter(m => { return !m.isWorldMatrixFrozen; });
 		let uniquesStatic = uniques.filter(m => { return m.isWorldMatrixFrozen; });

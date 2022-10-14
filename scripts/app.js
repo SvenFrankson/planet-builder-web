@@ -943,6 +943,46 @@ class DebugDisplayVector3Value extends HTMLElement {
     }
 }
 customElements.define("debug-display-vector3-value", DebugDisplayVector3Value);
+class DebugPlanetPerf {
+    game;
+    _initialized = false;
+    get initialized() {
+        return this._initialized;
+    }
+    container;
+    _frameRate;
+    _chunckSort;
+    _drawRequestCount;
+    get scene() {
+        return this.game.scene;
+    }
+    constructor(game) {
+        this.game = game;
+    }
+    initialize() {
+        this.container = document.querySelector("#debug-planet-perf");
+        this._frameRate = document.querySelector("#frame-rate");
+        this._chunckSort = document.querySelector("#chunck-sort");
+        this._drawRequestCount = document.querySelector("#draw-request-count");
+        this._initialized = true;
+    }
+    _update = () => {
+        this._frameRate.addValue(Game.Engine.getFps());
+        this._chunckSort.addValue(this.game.chunckManager.chunckSortedRatio * 100);
+        this._drawRequestCount.addValue(this.game.chunckManager.needRedrawCount);
+    };
+    show() {
+        if (!this.initialized) {
+            this.initialize();
+        }
+        this.container.classList.remove("hidden");
+        this.scene.onBeforeRenderObservable.add(this._update);
+    }
+    hide() {
+        this.container.classList.add("hidden");
+        this.scene.onBeforeRenderObservable.removeCallback(this._update);
+    }
+}
 class DebugPlanetSkyColor {
     game;
     _initialized = false;
@@ -1152,7 +1192,6 @@ class Game extends Main {
     static LockedMouse = false;
     static ClientXOnLock = -1;
     static ClientYOnLock = -1;
-    fpsGraphElement;
     meshesInfoTotalElement;
     meshesInfoNonStaticUniqueElement;
     meshesInfoStaticUniqueElement;
@@ -1168,7 +1207,6 @@ class Game extends Main {
         Game.Light.diffuse = new BABYLON.Color3(1, 1, 1);
         Game.Light.groundColor = new BABYLON.Color3(0.5, 0.5, 0.5);
         Game.CameraManager = new CameraManager(this);
-        this.fpsGraphElement = document.getElementById("frame-rate");
         this.meshesInfoTotalElement = document.getElementById("meshes-info-total");
         this.meshesInfoNonStaticUniqueElement = document.getElementById("meshes-info-nonstatic-unique");
         this.meshesInfoStaticUniqueElement = document.getElementById("meshes-info-static-unique");
@@ -1205,6 +1243,8 @@ class Game extends Main {
             PlanetChunckVertexData.InitializeData().then(() => {
                 this.chunckManager.initialize();
                 planetTest.register();
+                let debugPlanetPerf = new DebugPlanetPerf(this);
+                debugPlanetPerf.show();
                 //let debugPlanetSkyColor = new DebugPlanetSkyColor(this);
                 //debugPlanetSkyColor.show();
                 //let debugTerrainColor = new DebugTerrainColor();
@@ -1237,7 +1277,6 @@ class Game extends Main {
         });
     }
     update() {
-        this.fpsGraphElement.addValue(Game.Engine.getFps());
         let uniques = this.scene.meshes.filter(m => { return !(m instanceof BABYLON.InstancedMesh); });
         let uniquesNonStatic = uniques.filter(m => { return !m.isWorldMatrixFrozen; });
         let uniquesStatic = uniques.filter(m => { return m.isWorldMatrixFrozen; });
@@ -1813,6 +1852,9 @@ class PlanetChunckManager {
     scene;
     _viewpoint;
     _needRedraw = [];
+    get needRedrawCount() {
+        return this._needRedraw.length;
+    }
     _lodLayersCount = 6;
     _lodLayers;
     _lodLayersCursors;
@@ -1956,7 +1998,6 @@ class PlanetChunckManager {
             t = performance.now();
         }
         this.chunckSortedRatio = (this.chunckSortedRatio + sortedCount / (sortedCount + unsortedCount)) * 0.5;
-        document.getElementById("chunck-sort").addValue(this.chunckSortedRatio * 100);
     };
     isActive() {
         return this._activity > 1;
