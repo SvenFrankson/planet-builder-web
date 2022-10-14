@@ -59,6 +59,7 @@ class PlanetChunck {
         return this._dataInitialized;
     }
     private data: number[][][];
+    private proceduralItems: ProceduralTree[];
     public GetData(i: number, j: number, k: number): number {
         if (!this.dataInitialized) {
             this.initializeData();
@@ -229,22 +230,14 @@ class PlanetChunck {
 
     public initializeData(): void {
         if (!this.dataInitialized) {
-            this.data = this.planetSide.planet.generator.makeData(this);
-            this.updateIsEmptyIsFull();
+            this.data = [];
+            this.proceduralItems = [];
+            this.planetSide.planet.generator.makeData(this, this.data, this.proceduralItems);
             this._dataInitialized = true;
-            if (!this.isEmpty && ! this.isFull) {
-                /*
-                setTimeout(() => {
-                    let tree = new ProceduralTree();
-                    tree.chunck = this;
-                    tree.i = Math.floor(8 * Math.random());
-                    tree.j = Math.floor(8 * Math.random());
-                    tree.k = Math.floor(8 * Math.random());
-                    tree.generateData();
-                }, 5000);
-                */ 
+            for (let i = 0; i < this.proceduralItems.length; i++) {
+                this.proceduralItems[i].generateData();
             }
-            //this.saveToLocalStorage();
+            this.updateIsEmptyIsFull();
         }
     }
 

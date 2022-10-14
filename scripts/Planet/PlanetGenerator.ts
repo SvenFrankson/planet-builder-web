@@ -8,7 +8,7 @@ abstract class PlanetGenerator {
 
     }
 
-    public abstract makeData(chunck: PlanetChunck): number[][][];
+    public abstract makeData(chunck: PlanetChunck, refData: number[][][], refProcedural: ProceduralTree[]): void;
 
     public showDebug(): void {
         for (let i = 0; i < this.heightMaps.length; i++) {
@@ -38,55 +38,54 @@ class PlanetGeneratorEarth extends PlanetGenerator {
         this.heightMaps = [this._mainHeightMap];
     }
 
-    public makeData(chunck: PlanetChunck): number[][][] {
+    public makeData(chunck: PlanetChunck, refData: number[][][], refProcedural: ProceduralTree[]): void {
         let f = Math.pow(2, this._mainHeightMap.degree - chunck.degree);
 
-        return PlanetTools.Data(
-            (i, j, k) => {
-                
+        for (let i: number = 0; i < PlanetTools.CHUNCKSIZE; i++) {
+            refData[i] = [];
+            for (let j: number = 0; j < PlanetTools.CHUNCKSIZE; j++) {
+                refData[i][j] = [];
+
                 let v = this._mainHeightMap.getForSide(chunck.side, (chunck.iPos * PlanetTools.CHUNCKSIZE + i) * f, (chunck.jPos * PlanetTools.CHUNCKSIZE + j) * f);
                 let tree = this._treeMap.getForSide(chunck.side, (chunck.iPos * PlanetTools.CHUNCKSIZE + i) * f, (chunck.jPos * PlanetTools.CHUNCKSIZE + j) * f);
                 let rock = this._rockMap.getForSide(chunck.side, (chunck.iPos * PlanetTools.CHUNCKSIZE + i) * f, (chunck.jPos * PlanetTools.CHUNCKSIZE + j) * f);
                 let altitude = Math.floor((this._seaLevel + v * this._mountainHeight) * this.planet.kPosMax * PlanetTools.CHUNCKSIZE);
                 let rockAltitude = altitude + Math.round((rock - 0.4) * this._mountainHeight * this.planet.kPosMax * PlanetTools.CHUNCKSIZE);
-                let globalK = k + chunck.kPos * PlanetTools.CHUNCKSIZE;
 
-                if (globalK <= altitude) {
-                    if (globalK > altitude - 2) {
-                        if (globalK < this._seaLevel * (this.planet.kPosMax * PlanetTools.CHUNCKSIZE) + 1) {
-                            //return BlockType.Grass;
-                            return BlockType.Sand;
-                        }
-                        return BlockType.Grass;
-                    }
-                    //return BlockType.Grass;
-                    return BlockType.Rock;
-                }
-                if (globalK <= rockAltitude) {
-                    return BlockType.Rock;
-                }
-                if (altitude >= this._seaLevel  * this.planet.kPosMax * PlanetTools.CHUNCKSIZE) {
-                    if (tree > 0.6) {
-                        if (globalK <= altitude + 7) {
-                            //return BlockType.Grass;
-                            return BlockType.Wood;
-                        }
-                        if (globalK <= altitude + 9) {
-                            //return BlockType.Grass;
-                            return BlockType.Leaf;
-                        }
-                    }
-                    else if (tree > 0.5) {
-                        if (globalK <= altitude + 1) {
-                            //return BlockType.Grass;
-                            return BlockType.Wood;
-                        }
+                if (tree > 0.6) {
+                    let localK = altitude + 1 - chunck.kPos * PlanetTools.CHUNCKSIZE;
+                    if (localK >= 0 && localK < PlanetTools.CHUNCKSIZE) {
+                        let tree = new ProceduralTree();
+                        tree.chunck = chunck;
+                        tree.i = i;
+                        tree.j = j;
+                        tree.k = localK;
+                        refProcedural.push(tree);
                     }
                 }
 
-                return BlockType.None;
+                for (let k: number = 0; k < PlanetTools.CHUNCKSIZE; k++) {
+                    let globalK = k + chunck.kPos * PlanetTools.CHUNCKSIZE;
+
+                    if (globalK <= altitude) {
+                        if (globalK > altitude - 2) {
+                            if (globalK < this._seaLevel * (this.planet.kPosMax * PlanetTools.CHUNCKSIZE) + 1) {
+                                refData[i][j][k] = BlockType.Sand;
+                            }
+                            else {
+                                refData[i][j][k] = BlockType.Grass;
+                            }
+                        }
+                        else {
+                            refData[i][j][k] = BlockType.Rock;
+                        }
+                    }
+                    else if (globalK <= rockAltitude) {
+                        refData[i][j][k] = BlockType.Rock;
+                    }
+                }
             }
-        );
+        }
     }
 }
 
@@ -96,8 +95,9 @@ class PlanetGeneratorDebug extends PlanetGenerator {
         super(planet);
     }
 
-    public makeData(chunck: PlanetChunck): number[][][] {
-        return PlanetTools.Data(
+    public makeData(chunck: PlanetChunck, refData: number[][][], refProcedural: ProceduralTree[]): void {
+        PlanetTools.Data(
+            refData,
             (i, j, k) => {
                 let iGlobal = i + chunck.iPos * PlanetTools.CHUNCKSIZE;
                 let jGlobal = j + chunck.jPos * PlanetTools.CHUNCKSIZE;
@@ -131,9 +131,10 @@ class PlanetGeneratorDebug2 extends PlanetGenerator {
         super(planet);
     }
 
-    public makeData(chunck: PlanetChunck): number[][][] {
+    public makeData(chunck: PlanetChunck, refData: number[][][], refProcedural: ProceduralTree[]): void {
         let c = Math.floor(Math.random() * 7 + 1)
-        return PlanetTools.Data(
+        PlanetTools.Data(
+            refData,
             (i, j, k) => {
                 return c;
             }
@@ -147,8 +148,9 @@ class PlanetGeneratorDebug3 extends PlanetGenerator {
         super(planet);
     }
 
-    public makeData(chunck: PlanetChunck): number[][][] {
-        return PlanetTools.Data(
+    public makeData(chunck: PlanetChunck, refData: number[][][], refProcedural: ProceduralTree[]): void {
+        PlanetTools.Data(
+            refData,
             (i, j, k) => {
                 let c = Math.floor(Math.random() * 7 + 1)
                 return c;
@@ -163,8 +165,9 @@ class PlanetGeneratorDebug4 extends PlanetGenerator {
         super(planet);
     }
 
-    public makeData(chunck: PlanetChunck): number[][][] {
-        return PlanetTools.Data(
+    public makeData(chunck: PlanetChunck, refData: number[][][], refProcedural: ProceduralTree[]): void {
+        PlanetTools.Data(
+            refData,
             (i, j, k) => {
                 let iGlobal = i + chunck.iPos * PlanetTools.CHUNCKSIZE;
                 let jGlobal = j + chunck.jPos * PlanetTools.CHUNCKSIZE;

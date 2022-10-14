@@ -66,20 +66,16 @@ class PlanetTools {
         return new BABYLON.Vector3(Math.tan(xRad), 1, Math.tan(zRad)).normalize();
     }
 
-    public static Data(callback: (i: number, j: number, k: number) => number): number[][][] {
-        let data: number[][][] = [];
-
+    public static Data(refData: number[][][], callback: (i: number, j: number, k: number) => number): void {
         for (let i: number = 0; i < PlanetTools.CHUNCKSIZE; i++) {
-            data[i] = [];
+            refData[i] = [];
             for (let j: number = 0; j < PlanetTools.CHUNCKSIZE; j++) {
-                data[i][j] = [];
+                refData[i][j] = [];
                 for (let k: number = 0; k < PlanetTools.CHUNCKSIZE; k++) {
-                    data[i][j][k] = callback(i, j, k);
+                    refData[i][j][k] = callback(i, j, k);
                 }
             }
         }
-        
-        return data;
     }
 
     public static FilledData(): number[][][] {
