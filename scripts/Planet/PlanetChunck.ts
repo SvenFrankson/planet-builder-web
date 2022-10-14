@@ -58,6 +58,22 @@ class PlanetChunck {
     public get dataInitialized(): boolean {
         return this._dataInitialized;
     }
+    private _firstI: number;
+    public get firstI(): number {
+        return this._firstI;
+    }
+    private _firstJ: number;
+    public get firstJ(): number {
+        return this._firstJ;
+    }
+    private _lastJ: number;
+    public get lastJ(): number {
+        return this._lastJ;
+    }
+    private _firstK: number;
+    public get firstK(): number {
+        return this._firstK;
+    }
     private data: number[][][];
     private proceduralItems: ProceduralTree[];
     public GetData(i: number, j: number, k: number): number {
@@ -214,6 +230,27 @@ class PlanetChunck {
             else if (this.jPos === this.chunckCount - 1) {
                 this.isCorner = true;
             }
+        }
+
+        this._firstI = 0;
+        this._firstJ = 0;
+        this._lastJ = PlanetTools.CHUNCKSIZE;
+        this._firstK = 0;
+        if (this.side === Side.Top || this.side === Side.Bottom) {
+            if (this.iPos === 0) {
+                this._firstI = - 1;
+            }
+            if (this.jPos === 0) {
+                this._firstJ = - 1;
+            }
+        }
+        if (this.side <= Side.Left) {
+            if (this.jPos === this.chunckCount - 1) {
+                this._lastJ = PlanetTools.CHUNCKSIZE - 1;
+            }
+        }
+        if (this.isDegreeLayerBottom) {
+            this._firstK = - 1;
         }
     }
 

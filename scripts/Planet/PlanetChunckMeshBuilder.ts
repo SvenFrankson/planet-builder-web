@@ -4,11 +4,8 @@ class PlanetChunckMeshBuilder {
     private static tmpVertices: BABYLON.Vector3[];
     private static tmpQuaternions: BABYLON.Quaternion[];
     private static tmpData: BlockType[][][];
-    private static firstI: number;
-    private static firstJ: number;
-    private static firstK: number;
-    private static getTmpData(i: number, j: number, k: number): BlockType {
-        return PCMB.tmpData[i - PCMB.firstI][j - PCMB.firstJ][k - PCMB.firstK];
+    private static getTmpData(i: number, j: number, k: number, chunck: PlanetChunck): BlockType {
+        return PCMB.tmpData[i - chunck.firstI][j - chunck.firstJ][k - chunck.firstK];
     }
 
     private static _BlockColor: Map<number, BABYLON.Color3>;
@@ -247,57 +244,33 @@ class PlanetChunckMeshBuilder {
         let blockAxis = PCMB.tmpVertices[17];
         let blockQuaternion = PCMB.tmpQuaternions[0];
 
-        let chunckCornerCase = false;
-
-        PCMB.firstI = 0;
-        PCMB.firstJ = 0;
-        let lastJ = PlanetTools.CHUNCKSIZE;
-        PCMB.firstK = 0;
-        if (chunck.side === Side.Top || chunck.side === Side.Bottom) {
-            if (chunck.iPos === 0) {
-                PCMB.firstI = - 1;
-            }
-            if (chunck.jPos === 0) {
-                PCMB.firstJ = - 1;
-            }
-            chunckCornerCase = chunck.isCorner;
-        }
-        if (chunck.side <= Side.Left) {
-            if (chunck.jPos === chunck.chunckCount - 1) {
-                lastJ = PlanetTools.CHUNCKSIZE - 1;
-            }
-        }
-        if (chunck.isDegreeLayerBottom) {
-            PCMB.firstK = - 1;
-        }
-
         PCMB.tmpData = [];
-        for (let i: number = PCMB.firstI; i <= PlanetTools.CHUNCKSIZE; i++) {
-            PCMB.tmpData[i - PCMB.firstI] = [];
-            for (let j: number = PCMB.firstJ; j <= lastJ; j++) {
-                PCMB.tmpData[i - PCMB.firstI][j - PCMB.firstJ] = [];
-                for (let k: number = PCMB.firstK; k <= PlanetTools.CHUNCKSIZE; k++) {
-                    PCMB.tmpData[i - PCMB.firstI][j - PCMB.firstJ][k - PCMB.firstK] = chunck.GetData(i, j, k);
+        for (let i: number = chunck.firstI; i <= PlanetTools.CHUNCKSIZE; i++) {
+            PCMB.tmpData[i - chunck.firstI] = [];
+            for (let j: number = chunck.firstJ; j <= chunck.lastJ; j++) {
+                PCMB.tmpData[i - chunck.firstI][j - chunck.firstJ] = [];
+                for (let k: number = chunck.firstK; k <= PlanetTools.CHUNCKSIZE; k++) {
+                    PCMB.tmpData[i - chunck.firstI][j - chunck.firstJ][k - chunck.firstK] = chunck.GetData(i, j, k);
                 }
             }
         }
 
-        for (let i: number = PCMB.firstI; i < PlanetTools.CHUNCKSIZE; i++) {
-            for (let j: number = PCMB.firstJ; j < lastJ; j++) {
-                for (let k: number = PCMB.firstK; k < PlanetTools.CHUNCKSIZE; k++) {
+        for (let i: number = chunck.firstI; i < PlanetTools.CHUNCKSIZE; i++) {
+            for (let j: number = chunck.firstJ; j < chunck.lastJ; j++) {
+                for (let k: number = chunck.firstK; k < PlanetTools.CHUNCKSIZE; k++) {
                     let cornerCase = false;
-                    if (chunckCornerCase) {
+                    if (chunck.isCorner) {
                         if (chunck.iPos === 0) {
                             if (chunck.jPos === 0) {
-                                if (i === PCMB.firstI) {
-                                    if (j === PCMB.firstJ) {
+                                if (i === chunck.firstI) {
+                                    if (j === chunck.firstJ) {
                                         cornerCase = true;
                                     }
                                 }
                             }
                             if (chunck.jPos === chunck.chunckCount - 1) {
-                                if (i === PCMB.firstI) {
-                                    if (j === lastJ - 1) {
+                                if (i === chunck.firstI) {
+                                    if (j === chunck.lastJ - 1) {
                                         cornerCase = true;
                                     }
                                 }
@@ -306,14 +279,14 @@ class PlanetChunckMeshBuilder {
                         if (chunck.iPos === chunck.chunckCount - 1) {
                             if (chunck.jPos === 0) {
                                 if (i === PlanetTools.CHUNCKSIZE - 1) {
-                                    if (j === PCMB.firstJ) {
+                                    if (j === chunck.firstJ) {
                                         cornerCase = true;
                                     }
                                 }
                             }
                             if (chunck.jPos === chunck.chunckCount - 1) {
                                 if (i === PlanetTools.CHUNCKSIZE - 1) {
-                                    if (j === lastJ - 1) {
+                                    if (j === chunck.lastJ - 1) {
                                         cornerCase = true;
                                     }
                                 }
@@ -322,9 +295,9 @@ class PlanetChunckMeshBuilder {
                     }
                     
                     if (cornerCase) { 
-                        let d = PCMB.getTmpData(i, j, k);
+                        let d = PCMB.getTmpData(i, j, k, chunck);
                         if (d != BlockType.None) {
-                            if (PCMB.getTmpData(i, j, k + 1) === BlockType.None) {
+                            if (PCMB.getTmpData(i, j, k + 1, chunck) === BlockType.None) {
                                 let iGlobal: number = i + iPos * PlanetTools.CHUNCKSIZE;
                                 let jGlobal: number = j + jPos * PlanetTools.CHUNCKSIZE;
                                 PCMB.GetVertexToRef(2 * size, 2 * (iGlobal) + 1, 2 * (jGlobal) + 1, PCMB.tmpVertices[0]);
@@ -353,7 +326,7 @@ class PlanetChunckMeshBuilder {
                                     v2.copyFrom(v3);
                                 }
                                 
-                                let c = PCMB.BlockColor.get(PCMB.getTmpData(i, j, k));
+                                let c = PCMB.BlockColor.get(d);
                                 if (!c) {
                                     c = PCMB.BlockColor.get(136);
                                 }
@@ -374,35 +347,35 @@ class PlanetChunckMeshBuilder {
                     }
                     else {
                         let ref = 0b0;
-                        let d0 = PCMB.getTmpData(i, j, k);
+                        let d0 = PCMB.getTmpData(i, j, k, chunck);
                         if (d0) {
                             ref |= 0b1 << 0;
                         }
-                        let d1 = PCMB.getTmpData(i + 1, j, k);
+                        let d1 = PCMB.getTmpData(i + 1, j, k, chunck);
                         if (d1) {
                             ref |= 0b1 << 1;
                         }
-                        let d2 = PCMB.getTmpData(i + 1, j + 1, k);
+                        let d2 = PCMB.getTmpData(i + 1, j + 1, k, chunck);
                         if (d2) {
                             ref |= 0b1 << 2;
                         }
-                        let d3 = PCMB.getTmpData(i, j + 1, k);
+                        let d3 = PCMB.getTmpData(i, j + 1, k, chunck);
                         if (d3) {
                             ref |= 0b1 << 3;
                         }
-                        let d4 = PCMB.getTmpData(i, j, k + 1);
+                        let d4 = PCMB.getTmpData(i, j, k + 1, chunck);
                         if (d4) {
                             ref |= 0b1 << 4;
                         }
-                        let d5 = PCMB.getTmpData(i + 1, j, k + 1);
+                        let d5 = PCMB.getTmpData(i + 1, j, k + 1, chunck);
                         if (d5) {
                             ref |= 0b1 << 5;
                         }
-                        let d6 = PCMB.getTmpData(i + 1, j + 1, k + 1);
+                        let d6 = PCMB.getTmpData(i + 1, j + 1, k + 1, chunck);
                         if (d6) {
                             ref |= 0b1 << 6;
                         }
-                        let d7 = PCMB.getTmpData(i, j + 1, k + 1);
+                        let d7 = PCMB.getTmpData(i, j + 1, k + 1, chunck);
                         if (d7) {
                             ref |= 0b1 << 7;
                         }
