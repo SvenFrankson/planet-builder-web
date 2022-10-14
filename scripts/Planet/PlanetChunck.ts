@@ -58,6 +58,10 @@ class PlanetChunck {
     public get dataInitialized(): boolean {
         return this._dataInitialized;
     }
+    private _dataNeighbourSynced: boolean = false;
+    public get dataNeighbourSynced(): boolean {
+        return this._dataNeighbourSynced;
+    }
     private _firstI: number;
     public get firstI(): number {
         return this._firstI;
@@ -80,6 +84,10 @@ class PlanetChunck {
         if (!this.dataInitialized) {
             this.initializeData();
         }
+        if (!this.dataNeighbourSynced) {
+            this.syncWithNeighbours();
+        }
+        /*
         if (this.side <= Side.Left && this.isCorner) {
             if (this.jPos === this.chunckCount - 1) {
                 if (this.iPos === 0) {
@@ -115,10 +123,11 @@ class PlanetChunck {
                 }
             }
         }
-        if (i >= 0 && i < PlanetTools.CHUNCKSIZE) {
-            if (j >= 0 && j < PlanetTools.CHUNCKSIZE) {
-                if (k >= 0 && k < PlanetTools.CHUNCKSIZE) {
-                    return this.data[i][j][k];
+        */
+        if (i >= this.firstI && i <= PlanetTools.CHUNCKSIZE) {
+            if (j >= this.firstJ && j <= this.lastJ) {
+                if (k >= this.firstK && k <= PlanetTools.CHUNCKSIZE) {
+                    return this.data[i - this.firstI][j - this.firstJ][k - this.firstK];
                 }
             }
         }
@@ -135,7 +144,7 @@ class PlanetChunck {
         if (!this.dataInitialized) {
             this.initializeData();
         }
-        this.data[i][j][k] = value;
+        this.data[i - this.firstI][j - this.firstJ][k - this.firstK] = value;
         this.updateIsEmptyIsFull();
         this.register();
     }
@@ -270,11 +279,40 @@ class PlanetChunck {
             this.data = [];
             this.proceduralItems = [];
             this.planetSide.planet.generator.makeData(this, this.data, this.proceduralItems);
+            for (let i: number = this.firstI; i <= PlanetTools.CHUNCKSIZE; i++) {
+                if (!this.data[i - this.firstI]) {
+                    this.data[i - this.firstI] = [];
+                }
+                for (let j: number = this.firstJ; j <= this.lastJ; j++) {
+                    if (!this.data[i - this.firstI][j - this.firstJ]) {
+                        this.data[i - this.firstI][j - this.firstJ] = [];
+                    }
+                    for (let k: number = this.firstK; k <= PlanetTools.CHUNCKSIZE; k++) {
+                        if (!this.data[i - this.firstI][j - this.firstJ][k - this.firstK]) {
+                            this.data[i - this.firstI][j - this.firstJ][k - this.firstK] = BlockType.None;
+                        }
+                    }
+                }
+            }
             this._dataInitialized = true;
             for (let i = 0; i < this.proceduralItems.length; i++) {
                 this.proceduralItems[i].generateData();
             }
             this.updateIsEmptyIsFull();
+        }
+    }
+    
+    public syncWithNeighbours(): void {
+        this._dataNeighbourSynced = true;
+        for (let i: number = this.firstI; i <= PlanetTools.CHUNCKSIZE; i++) {
+            for (let j: number = this.firstJ; j <= this.lastJ; j++) {
+                for (let k: number = this.firstK; k <= PlanetTools.CHUNCKSIZE; k++) {
+                    if (i < 0 || i >= PlanetTools.CHUNCKSIZE || j < 0 || j >= PlanetTools.CHUNCKSIZE || k < 0 || k >= PlanetTools.CHUNCKSIZE) {
+                        let d = this.GetDataGlobal(this.iPos * PlanetTools.CHUNCKSIZE + i, this.jPos * PlanetTools.CHUNCKSIZE + j, this.kPos * PlanetTools.CHUNCKSIZE + k);
+                        this.data[i - this.firstI][j - this.firstJ][k - this.firstK] = d;
+                    }
+                }
+            }
         }
     }
 
@@ -290,7 +328,7 @@ class PlanetChunck {
         for (let i = 0; i < PlanetTools.CHUNCKSIZE; i++) {
             for (let j = 0; j < PlanetTools.CHUNCKSIZE; j++) {
                 for (let k = 0; k < PlanetTools.CHUNCKSIZE; k++) {
-                    let block = this.data[i][j][k] > 0;
+                    let block = this.data[i - this.firstI][j - this.firstJ][k - this.firstK] > 0;
                     this._isFull = this._isFull && block;
                     this._isEmpty = this._isEmpty && !block;
                     if (!this._isFull && !this._isEmpty) {
@@ -343,6 +381,9 @@ class PlanetChunck {
     public SetMesh(): void {
         if (this.isEmptyOrHidden()) {
             return;
+        }
+        if (!this.syncWithNeighbours) {
+            this.syncWithNeighbours();
         }
         if (this.isMeshDisposed()) {
             this.mesh = new BABYLON.Mesh("chunck-" + this.iPos + "-" + this.jPos + "-" + this.kPos, this.scene);

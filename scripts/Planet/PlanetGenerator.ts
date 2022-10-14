@@ -44,9 +44,9 @@ class PlanetGeneratorEarth extends PlanetGenerator {
         let treeCount = 0;
 
         for (let i: number = 0; i < PlanetTools.CHUNCKSIZE; i++) {
-            refData[i] = [];
+            refData[i - chunck.firstI] = [];
             for (let j: number = 0; j < PlanetTools.CHUNCKSIZE; j++) {
-                refData[i][j] = [];
+                refData[i - chunck.firstI][j - chunck.firstJ] = [];
 
                 let v = this._mainHeightMap.getForSide(chunck.side, (chunck.iPos * PlanetTools.CHUNCKSIZE + i) * f, (chunck.jPos * PlanetTools.CHUNCKSIZE + j) * f);
                 let tree = this._treeMap.getForSide(chunck.side, (chunck.iPos * PlanetTools.CHUNCKSIZE + i) * f, (chunck.jPos * PlanetTools.CHUNCKSIZE + j) * f);
@@ -73,18 +73,18 @@ class PlanetGeneratorEarth extends PlanetGenerator {
                     if (globalK <= altitude) {
                         if (globalK > altitude - 2) {
                             if (globalK < this._seaLevel * (this.planet.kPosMax * PlanetTools.CHUNCKSIZE) + 1) {
-                                refData[i][j][k] = BlockType.Sand;
+                                refData[i - chunck.firstI][j - chunck.firstJ][k - chunck.firstK] = BlockType.Sand;
                             }
                             else {
-                                refData[i][j][k] = BlockType.Grass;
+                                refData[i - chunck.firstI][j - chunck.firstJ][k - chunck.firstK] = BlockType.Grass;
                             }
                         }
                         else {
-                            refData[i][j][k] = BlockType.Rock;
+                            refData[i - chunck.firstI][j - chunck.firstJ][k - chunck.firstK] = BlockType.Rock;
                         }
                     }
                     else if (globalK <= rockAltitude) {
-                        refData[i][j][k] = BlockType.Rock;
+                        refData[i - chunck.firstI][j - chunck.firstJ][k - chunck.firstK] = BlockType.Rock;
                     }
                 }
             }

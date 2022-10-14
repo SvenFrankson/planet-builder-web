@@ -5,7 +5,8 @@ var BlockTypeNames: string[] = [
     "Sand",
     "Rock",
     "Wood",
-    "Leaf"
+    "Leaf",
+    "Unknown"
 ];
 
 var BlockTypeCount: number = 7;
@@ -17,5 +18,6 @@ enum BlockType {
     Sand,
     Rock,
     Wood,
-    Leaf
+    Leaf,
+    Unknown
 }

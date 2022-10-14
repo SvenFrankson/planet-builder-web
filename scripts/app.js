@@ -1369,7 +1369,8 @@ var BlockTypeNames = [
     "Sand",
     "Rock",
     "Wood",
-    "Leaf"
+    "Leaf",
+    "Unknown"
 ];
 var BlockTypeCount = 7;
 var BlockType;
@@ -1381,6 +1382,7 @@ var BlockType;
     BlockType[BlockType["Rock"] = 4] = "Rock";
     BlockType[BlockType["Wood"] = 5] = "Wood";
     BlockType[BlockType["Leaf"] = 6] = "Leaf";
+    BlockType[BlockType["Unknown"] = 7] = "Unknown";
 })(BlockType || (BlockType = {}));
 class Planet extends BABYLON.Mesh {
     constructor(name, kPosMax, chunckManager) {
@@ -1478,6 +1480,7 @@ class PlanetChunck {
         this._chunckCount = 0;
         this._size = 0;
         this._dataInitialized = false;
+        this._dataNeighbourSynced = false;
         this._registered = false;
         this.lod = 2;
         this._isEmpty = true;
@@ -1576,6 +1579,9 @@ class PlanetChunck {
     get dataInitialized() {
         return this._dataInitialized;
     }
+    get dataNeighbourSynced() {
+        return this._dataNeighbourSynced;
+    }
     get firstI() {
         return this._firstI;
     }
@@ -1592,6 +1598,10 @@ class PlanetChunck {
         if (!this.dataInitialized) {
             this.initializeData();
         }
+        if (!this.dataNeighbourSynced) {
+            this.syncWithNeighbours();
+        }
+        /*
         if (this.side <= Side.Left && this.isCorner) {
             if (this.jPos === this.chunckCount - 1) {
                 if (this.iPos === 0) {
@@ -1609,27 +1619,29 @@ class PlanetChunck {
                     }
                 }
             }
+            
             if (this.jPos === 0) {
                 if (this.iPos === 0) {
                     if (i === 0) {
                         if (j === 0) {
-                            return this.GetData(0, -1, k);
+                            return this.GetData(0, - 1, k);
                         }
                     }
                 }
                 if (this.iPos === this.chunckCount - 1) {
                     if (i === PlanetTools.CHUNCKSIZE - 1) {
                         if (j === 0) {
-                            return this.GetData(PlanetTools.CHUNCKSIZE - 1, -1, k);
+                            return this.GetData(PlanetTools.CHUNCKSIZE - 1, - 1, k);
                         }
                     }
                 }
             }
         }
-        if (i >= 0 && i < PlanetTools.CHUNCKSIZE) {
-            if (j >= 0 && j < PlanetTools.CHUNCKSIZE) {
-                if (k >= 0 && k < PlanetTools.CHUNCKSIZE) {
-                    return this.data[i][j][k];
+        */
+        if (i >= this.firstI && i <= PlanetTools.CHUNCKSIZE) {
+            if (j >= this.firstJ && j <= this.lastJ) {
+                if (k >= this.firstK && k <= PlanetTools.CHUNCKSIZE) {
+                    return this.data[i - this.firstI][j - this.firstJ][k - this.firstK];
                 }
             }
         }
@@ -1642,7 +1654,7 @@ class PlanetChunck {
         if (!this.dataInitialized) {
             this.initializeData();
         }
-        this.data[i][j][k] = value;
+        this.data[i - this.firstI][j - this.firstJ][k - this.firstK] = value;
         this.updateIsEmptyIsFull();
         this.register();
     }
@@ -1681,11 +1693,39 @@ class PlanetChunck {
             this.data = [];
             this.proceduralItems = [];
             this.planetSide.planet.generator.makeData(this, this.data, this.proceduralItems);
+            for (let i = this.firstI; i <= PlanetTools.CHUNCKSIZE; i++) {
+                if (!this.data[i - this.firstI]) {
+                    this.data[i - this.firstI] = [];
+                }
+                for (let j = this.firstJ; j <= this.lastJ; j++) {
+                    if (!this.data[i - this.firstI][j - this.firstJ]) {
+                        this.data[i - this.firstI][j - this.firstJ] = [];
+                    }
+                    for (let k = this.firstK; k <= PlanetTools.CHUNCKSIZE; k++) {
+                        if (!this.data[i - this.firstI][j - this.firstJ][k - this.firstK]) {
+                            this.data[i - this.firstI][j - this.firstJ][k - this.firstK] = BlockType.None;
+                        }
+                    }
+                }
+            }
             this._dataInitialized = true;
             for (let i = 0; i < this.proceduralItems.length; i++) {
                 this.proceduralItems[i].generateData();
             }
             this.updateIsEmptyIsFull();
+        }
+    }
+    syncWithNeighbours() {
+        this._dataNeighbourSynced = true;
+        for (let i = this.firstI; i <= PlanetTools.CHUNCKSIZE; i++) {
+            for (let j = this.firstJ; j <= this.lastJ; j++) {
+                for (let k = this.firstK; k <= PlanetTools.CHUNCKSIZE; k++) {
+                    if (i < 0 || i >= PlanetTools.CHUNCKSIZE || j < 0 || j >= PlanetTools.CHUNCKSIZE || k < 0 || k >= PlanetTools.CHUNCKSIZE) {
+                        let d = this.GetDataGlobal(this.iPos * PlanetTools.CHUNCKSIZE + i, this.jPos * PlanetTools.CHUNCKSIZE + j, this.kPos * PlanetTools.CHUNCKSIZE + k);
+                        this.data[i - this.firstI][j - this.firstJ][k - this.firstK] = d;
+                    }
+                }
+            }
         }
     }
     initializeMesh() {
@@ -1699,7 +1739,7 @@ class PlanetChunck {
         for (let i = 0; i < PlanetTools.CHUNCKSIZE; i++) {
             for (let j = 0; j < PlanetTools.CHUNCKSIZE; j++) {
                 for (let k = 0; k < PlanetTools.CHUNCKSIZE; k++) {
-                    let block = this.data[i][j][k] > 0;
+                    let block = this.data[i - this.firstI][j - this.firstJ][k - this.firstK] > 0;
                     this._isFull = this._isFull && block;
                     this._isEmpty = this._isEmpty && !block;
                     if (!this._isFull && !this._isEmpty) {
@@ -1750,6 +1790,9 @@ class PlanetChunck {
     SetMesh() {
         if (this.isEmptyOrHidden()) {
             return;
+        }
+        if (!this.syncWithNeighbours) {
+            this.syncWithNeighbours();
         }
         if (this.isMeshDisposed()) {
             this.mesh = new BABYLON.Mesh("chunck-" + this.iPos + "-" + this.jPos + "-" + this.kPos, this.scene);
@@ -1971,9 +2014,6 @@ class PlanetChunckManager {
     }
 }
 class PlanetChunckMeshBuilder {
-    static getTmpData(i, j, k, chunck) {
-        return PCMB.tmpData[i - chunck.firstI][j - chunck.firstJ][k - chunck.firstK];
-    }
     static get BlockColor() {
         if (!PCMB._BlockColor) {
             PCMB._BlockColor = new Map();
@@ -2144,16 +2184,6 @@ class PlanetChunckMeshBuilder {
         let blockCenter = PCMB.tmpVertices[16];
         let blockAxis = PCMB.tmpVertices[17];
         let blockQuaternion = PCMB.tmpQuaternions[0];
-        PCMB.tmpData = [];
-        for (let i = chunck.firstI; i <= PlanetTools.CHUNCKSIZE; i++) {
-            PCMB.tmpData[i - chunck.firstI] = [];
-            for (let j = chunck.firstJ; j <= chunck.lastJ; j++) {
-                PCMB.tmpData[i - chunck.firstI][j - chunck.firstJ] = [];
-                for (let k = chunck.firstK; k <= PlanetTools.CHUNCKSIZE; k++) {
-                    PCMB.tmpData[i - chunck.firstI][j - chunck.firstJ][k - chunck.firstK] = chunck.GetData(i, j, k);
-                }
-            }
-        }
         for (let i = chunck.firstI; i < PlanetTools.CHUNCKSIZE; i++) {
             for (let j = chunck.firstJ; j < chunck.lastJ; j++) {
                 for (let k = chunck.firstK; k < PlanetTools.CHUNCKSIZE; k++) {
@@ -2193,9 +2223,9 @@ class PlanetChunckMeshBuilder {
                         }
                     }
                     if (cornerCase) {
-                        let d = PCMB.getTmpData(i, j, k, chunck);
+                        let d = chunck.GetData(i, j, k);
                         if (d != BlockType.None) {
-                            if (PCMB.getTmpData(i, j, k + 1, chunck) === BlockType.None) {
+                            if (chunck.GetData(i, j, k + 1) === BlockType.None) {
                                 let iGlobal = i + iPos * PlanetTools.CHUNCKSIZE;
                                 let jGlobal = j + jPos * PlanetTools.CHUNCKSIZE;
                                 PCMB.GetVertexToRef(2 * size, 2 * (iGlobal) + 1, 2 * (jGlobal) + 1, PCMB.tmpVertices[0]);
@@ -2238,35 +2268,35 @@ class PlanetChunckMeshBuilder {
                     }
                     else {
                         let ref = 0b0;
-                        let d0 = PCMB.getTmpData(i, j, k, chunck);
+                        let d0 = chunck.GetData(i, j, k);
                         if (d0) {
                             ref |= 0b1 << 0;
                         }
-                        let d1 = PCMB.getTmpData(i + 1, j, k, chunck);
+                        let d1 = chunck.GetData(i + 1, j, k);
                         if (d1) {
                             ref |= 0b1 << 1;
                         }
-                        let d2 = PCMB.getTmpData(i + 1, j + 1, k, chunck);
+                        let d2 = chunck.GetData(i + 1, j + 1, k);
                         if (d2) {
                             ref |= 0b1 << 2;
                         }
-                        let d3 = PCMB.getTmpData(i, j + 1, k, chunck);
+                        let d3 = chunck.GetData(i, j + 1, k);
                         if (d3) {
                             ref |= 0b1 << 3;
                         }
-                        let d4 = PCMB.getTmpData(i, j, k + 1, chunck);
+                        let d4 = chunck.GetData(i, j, k + 1);
                         if (d4) {
                             ref |= 0b1 << 4;
                         }
-                        let d5 = PCMB.getTmpData(i + 1, j, k + 1, chunck);
+                        let d5 = chunck.GetData(i + 1, j, k + 1);
                         if (d5) {
                             ref |= 0b1 << 5;
                         }
-                        let d6 = PCMB.getTmpData(i + 1, j + 1, k + 1, chunck);
+                        let d6 = chunck.GetData(i + 1, j + 1, k + 1);
                         if (d6) {
                             ref |= 0b1 << 6;
                         }
-                        let d7 = PCMB.getTmpData(i, j + 1, k + 1, chunck);
+                        let d7 = chunck.GetData(i, j + 1, k + 1);
                         if (d7) {
                             ref |= 0b1 << 7;
                         }
@@ -3065,9 +3095,9 @@ class PlanetGeneratorEarth extends PlanetGenerator {
         let maxTree = 1;
         let treeCount = 0;
         for (let i = 0; i < PlanetTools.CHUNCKSIZE; i++) {
-            refData[i] = [];
+            refData[i - chunck.firstI] = [];
             for (let j = 0; j < PlanetTools.CHUNCKSIZE; j++) {
-                refData[i][j] = [];
+                refData[i - chunck.firstI][j - chunck.firstJ] = [];
                 let v = this._mainHeightMap.getForSide(chunck.side, (chunck.iPos * PlanetTools.CHUNCKSIZE + i) * f, (chunck.jPos * PlanetTools.CHUNCKSIZE + j) * f);
                 let tree = this._treeMap.getForSide(chunck.side, (chunck.iPos * PlanetTools.CHUNCKSIZE + i) * f, (chunck.jPos * PlanetTools.CHUNCKSIZE + j) * f);
                 let rock = this._rockMap.getForSide(chunck.side, (chunck.iPos * PlanetTools.CHUNCKSIZE + i) * f, (chunck.jPos * PlanetTools.CHUNCKSIZE + j) * f);
@@ -3090,18 +3120,18 @@ class PlanetGeneratorEarth extends PlanetGenerator {
                     if (globalK <= altitude) {
                         if (globalK > altitude - 2) {
                             if (globalK < this._seaLevel * (this.planet.kPosMax * PlanetTools.CHUNCKSIZE) + 1) {
-                                refData[i][j][k] = BlockType.Sand;
+                                refData[i - chunck.firstI][j - chunck.firstJ][k - chunck.firstK] = BlockType.Sand;
                             }
                             else {
-                                refData[i][j][k] = BlockType.Grass;
+                                refData[i - chunck.firstI][j - chunck.firstJ][k - chunck.firstK] = BlockType.Grass;
                             }
                         }
                         else {
-                            refData[i][j][k] = BlockType.Rock;
+                            refData[i - chunck.firstI][j - chunck.firstJ][k - chunck.firstK] = BlockType.Rock;
                         }
                     }
                     else if (globalK <= rockAltitude) {
-                        refData[i][j][k] = BlockType.Rock;
+                        refData[i - chunck.firstI][j - chunck.firstJ][k - chunck.firstK] = BlockType.Rock;
                     }
                 }
             }

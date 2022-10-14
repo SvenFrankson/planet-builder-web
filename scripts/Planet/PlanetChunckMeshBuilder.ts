@@ -3,10 +3,6 @@ class PlanetChunckMeshBuilder {
     private static cachedVertices: BABYLON.Vector3[][][];
     private static tmpVertices: BABYLON.Vector3[];
     private static tmpQuaternions: BABYLON.Quaternion[];
-    private static tmpData: BlockType[][][];
-    private static getTmpData(i: number, j: number, k: number, chunck: PlanetChunck): BlockType {
-        return PCMB.tmpData[i - chunck.firstI][j - chunck.firstJ][k - chunck.firstK];
-    }
 
     private static _BlockColor: Map<number, BABYLON.Color3>;
     public static get BlockColor(): Map<number, BABYLON.Color3> {
@@ -244,17 +240,6 @@ class PlanetChunckMeshBuilder {
         let blockAxis = PCMB.tmpVertices[17];
         let blockQuaternion = PCMB.tmpQuaternions[0];
 
-        PCMB.tmpData = [];
-        for (let i: number = chunck.firstI; i <= PlanetTools.CHUNCKSIZE; i++) {
-            PCMB.tmpData[i - chunck.firstI] = [];
-            for (let j: number = chunck.firstJ; j <= chunck.lastJ; j++) {
-                PCMB.tmpData[i - chunck.firstI][j - chunck.firstJ] = [];
-                for (let k: number = chunck.firstK; k <= PlanetTools.CHUNCKSIZE; k++) {
-                    PCMB.tmpData[i - chunck.firstI][j - chunck.firstJ][k - chunck.firstK] = chunck.GetData(i, j, k);
-                }
-            }
-        }
-
         for (let i: number = chunck.firstI; i < PlanetTools.CHUNCKSIZE; i++) {
             for (let j: number = chunck.firstJ; j < chunck.lastJ; j++) {
                 for (let k: number = chunck.firstK; k < PlanetTools.CHUNCKSIZE; k++) {
@@ -295,9 +280,9 @@ class PlanetChunckMeshBuilder {
                     }
                     
                     if (cornerCase) { 
-                        let d = PCMB.getTmpData(i, j, k, chunck);
+                        let d = chunck.GetData(i, j, k);
                         if (d != BlockType.None) {
-                            if (PCMB.getTmpData(i, j, k + 1, chunck) === BlockType.None) {
+                            if (chunck.GetData(i, j, k + 1) === BlockType.None) {
                                 let iGlobal: number = i + iPos * PlanetTools.CHUNCKSIZE;
                                 let jGlobal: number = j + jPos * PlanetTools.CHUNCKSIZE;
                                 PCMB.GetVertexToRef(2 * size, 2 * (iGlobal) + 1, 2 * (jGlobal) + 1, PCMB.tmpVertices[0]);
@@ -347,35 +332,35 @@ class PlanetChunckMeshBuilder {
                     }
                     else {
                         let ref = 0b0;
-                        let d0 = PCMB.getTmpData(i, j, k, chunck);
+                        let d0 = chunck.GetData(i, j, k);
                         if (d0) {
                             ref |= 0b1 << 0;
                         }
-                        let d1 = PCMB.getTmpData(i + 1, j, k, chunck);
+                        let d1 = chunck.GetData(i + 1, j, k);
                         if (d1) {
                             ref |= 0b1 << 1;
                         }
-                        let d2 = PCMB.getTmpData(i + 1, j + 1, k, chunck);
+                        let d2 = chunck.GetData(i + 1, j + 1, k);
                         if (d2) {
                             ref |= 0b1 << 2;
                         }
-                        let d3 = PCMB.getTmpData(i, j + 1, k, chunck);
+                        let d3 = chunck.GetData(i, j + 1, k);
                         if (d3) {
                             ref |= 0b1 << 3;
                         }
-                        let d4 = PCMB.getTmpData(i, j, k + 1, chunck);
+                        let d4 = chunck.GetData(i, j, k + 1);
                         if (d4) {
                             ref |= 0b1 << 4;
                         }
-                        let d5 = PCMB.getTmpData(i + 1, j, k + 1, chunck);
+                        let d5 = chunck.GetData(i + 1, j, k + 1);
                         if (d5) {
                             ref |= 0b1 << 5;
                         }
-                        let d6 = PCMB.getTmpData(i + 1, j + 1, k + 1, chunck);
+                        let d6 = chunck.GetData(i + 1, j + 1, k + 1);
                         if (d6) {
                             ref |= 0b1 << 6;
                         }
-                        let d7 = PCMB.getTmpData(i, j + 1, k + 1, chunck);
+                        let d7 = chunck.GetData(i, j + 1, k + 1);
                         if (d7) {
                             ref |= 0b1 << 7;
                         }
