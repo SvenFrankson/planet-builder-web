@@ -4393,8 +4393,10 @@ class Player extends BABYLON.Mesh {
             this.camPos.rotation.x += rotationCamPower;
             this.camPos.rotation.x = Math.max(this.camPos.rotation.x, -Math.PI / 2);
             this.camPos.rotation.x = Math.min(this.camPos.rotation.x, Math.PI / 2);
-            this.inputHeadRight *= 0.8;
-            this.inputHeadUp *= 0.8;
+            if (Game.LockedMouse) {
+                this.inputHeadRight *= 0.8;
+                this.inputHeadUp *= 0.8;
+            }
             this._collisionPositions[0] = this.position;
             this._collisionPositions[1] = this._feetPosition;
             this._collisionAxis[0] = this._rightDirection;
@@ -4672,7 +4674,11 @@ class PlayerInputVirtualPad extends PlayerInput {
             }
         });
         this.game.canvas.addEventListener("pointerup", (ev) => {
-            this._pointerDown = false;
+            let dx = this.clientXToDX(ev.clientX);
+            let dy = this.clientYToDY(ev.clientY);
+            if (dx * dx + dy * dy < 4) {
+                this._pointerDown = false;
+            }
         });
         this.game.scene.onBeforeRenderObservable.add(this._update);
     }
@@ -4698,7 +4704,7 @@ class PlayerInputMovePad extends PlayerInputVirtualPad {
 }
 class PlayerInputHeadPad extends PlayerInputVirtualPad {
     updatePilot(dx, dy) {
-        this.player.inputHeadUp = -dy * 0.7;
-        this.player.inputHeadRight = dx * 0.7;
+        this.player.inputHeadUp = -dy * 0.5;
+        this.player.inputHeadRight = dx * 0.5;
     }
 }

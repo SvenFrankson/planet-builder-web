@@ -112,7 +112,11 @@ class PlayerInputVirtualPad extends PlayerInput {
         });
 
         this.game.canvas.addEventListener("pointerup", (ev: PointerEvent) => {
-            this._pointerDown = false;
+            let dx = this.clientXToDX(ev.clientX);
+            let dy = this.clientYToDY(ev.clientY);
+            if (dx * dx + dy * dy < 4) {
+                this._pointerDown = false;
+            }
         });
 
         this.game.scene.onBeforeRenderObservable.add(this._update);
@@ -165,7 +169,7 @@ class PlayerInputMovePad extends PlayerInputVirtualPad {
 class PlayerInputHeadPad extends PlayerInputVirtualPad {
 
     public updatePilot(dx: number, dy: number): void {
-        this.player.inputHeadUp = - dy * 0.7;
-        this.player.inputHeadRight = dx * 0.7;
+        this.player.inputHeadUp = - dy * 0.5;
+        this.player.inputHeadRight = dx * 0.5;
     }
 }

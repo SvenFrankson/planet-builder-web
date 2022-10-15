@@ -156,8 +156,10 @@ class Player extends BABYLON.Mesh {
         this.camPos.rotation.x = Math.max(this.camPos.rotation.x, -Math.PI / 2);
         this.camPos.rotation.x = Math.min(this.camPos.rotation.x, Math.PI / 2);
         
-        this.inputHeadRight *= 0.8;
-        this.inputHeadUp *= 0.8;
+        if (Game.LockedMouse) {
+            this.inputHeadRight *= 0.8;
+            this.inputHeadUp *= 0.8;
+        }
 
         this._collisionPositions[0] = this.position;
         this._collisionPositions[1] = this._feetPosition;
