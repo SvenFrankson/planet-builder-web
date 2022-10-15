@@ -281,7 +281,7 @@ class PlanetChunckMeshBuilder {
                     
                     if (cornerCase) { 
                         let d = chunck.GetData(i, j, k);
-                        if (d != BlockType.None && false) {
+                        if (d != BlockType.None) {
                             if (chunck.GetData(i, j, k + 1) === BlockType.None) {
                                 let iGlobal: number = i + iPos * PlanetTools.CHUNCKSIZE;
                                 let jGlobal: number = j + jPos * PlanetTools.CHUNCKSIZE;
@@ -364,12 +364,14 @@ class PlanetChunckMeshBuilder {
                         if (d7) {
                             ref |= 0b1 << 7;
                         }
+                        let blocks = [d0, d1, d2, d3, d4, d5, d6, d7];
     
                         if (ref === 0b0 || ref === 0b11111111) {
                             continue;
                         }
                         
-                        let partVertexData = PlanetChunckVertexData.Get(lod, ref);
+                        let extendedpartVertexData = PlanetChunckVertexData.Get(lod, ref);
+                        let partVertexData = extendedpartVertexData.vertexData;
     
                         let iGlobal: number = i + iPos * PlanetTools.CHUNCKSIZE;
                         let jGlobal: number = j + jPos * PlanetTools.CHUNCKSIZE;
@@ -398,145 +400,27 @@ class PlanetChunckMeshBuilder {
                         PCMB.tmpVertices[3].scaleInPlace(hLow);
                         
                         let l = positions.length / 3;
+                        colors.push(...partVertexData.colors);
+                        uvs.push(...partVertexData.uvs);
                         for (let n = 0; n < partVertexData.indices.length / 3; n++) {
                             let n1 = partVertexData.indices[3 * n];
                             let n2 = partVertexData.indices[3 * n + 1];
                             let n3 = partVertexData.indices[3 * n + 2];
 
-                            let x0 = partVertexData.positions[3 * n1];
-                            let y0 = partVertexData.positions[3 * n1 + 1];
-                            let z0 = partVertexData.positions[3 * n1 + 2];
+                            let alpha = blocks[extendedpartVertexData.blocks[n][0]] / 128;
+                            let u = blocks[extendedpartVertexData.blocks[n][1]] / 128;
+                            let v = blocks[extendedpartVertexData.blocks[n][2]] / 128;
 
-                            let x1 = partVertexData.positions[3 * n2];
-                            let y1 = partVertexData.positions[3 * n2 + 1];
-                            let z1 = partVertexData.positions[3 * n2 + 2];
-
-                            let x2 = partVertexData.positions[3 * n3];
-                            let y2 = partVertexData.positions[3 * n3 + 1];
-                            let z2 = partVertexData.positions[3 * n3 + 2];
-
-                            let blocks: number[] = [];
-                            let xs = [x0, x1, x2];
-                            let ys = [y0, y1, y2];
-                            let zs = [z0, z1, z2];
-                            let ds = [];
-
-                            for (let vIndex = 0; vIndex < 3; vIndex++) {
-                                let d = BlockType.None;
-                                let minDistance = Infinity;
-                                if (d0) {
-                                    let distance = PCMB.SquaredLength(xs[vIndex], ys[vIndex], zs[vIndex]);
-                                    if (distance < minDistance) {
-                                        d = d0;
-                                        blocks[vIndex] = 0;
-                                        minDistance = distance;
-                                    }
-                                }
-                                if (d1) {
-                                    let distance = PCMB.SquaredLength((1 - xs[vIndex]), ys[vIndex], zs[vIndex]);
-                                    if (distance < minDistance) {
-                                        d = d1;
-                                        blocks[vIndex] = 1;
-                                        minDistance = distance;
-                                    }
-                                }
-                                if (d2) {
-                                    let distance = PCMB.SquaredLength((1 - xs[vIndex]), ys[vIndex], (1 - zs[vIndex]));
-                                    if (distance < minDistance) {
-                                        d = d2;
-                                        blocks[vIndex] = 2;
-                                        minDistance = distance;
-                                    }
-                                }
-                                if (d3) {
-                                    let distance = PCMB.SquaredLength(xs[vIndex], ys[vIndex], (1 - zs[vIndex]));
-                                    if (distance < minDistance) {
-                                        d = d3;
-                                        blocks[vIndex] = 3;
-                                        minDistance = distance;
-                                    }
-                                }
-                                if (d4) {
-                                    let distance = PCMB.SquaredLength(xs[vIndex], (1 - ys[vIndex]), zs[vIndex]);
-                                    if (distance < minDistance) {
-                                        d = d4;
-                                        blocks[vIndex] = 4;
-                                        minDistance = distance;
-                                    }
-                                }
-                                if (d5) {
-                                    let distance = PCMB.SquaredLength((1 - xs[vIndex]), (1 - ys[vIndex]), zs[vIndex]);
-                                    if (distance < minDistance) {
-                                        d = d5;
-                                        blocks[vIndex] = 5;
-                                        minDistance = distance;
-                                    }
-                                }
-                                if (d6) {
-                                    let distance = PCMB.SquaredLength((1 - xs[vIndex]), (1 - ys[vIndex]), (1 - zs[vIndex]));
-                                    if (distance < minDistance) {
-                                        d = d6;
-                                        blocks[vIndex] = 6;
-                                        minDistance = distance;
-                                    }
-                                }
-                                if (d7) {
-                                    let distance = PCMB.SquaredLength(xs[vIndex], (1 - ys[vIndex]), (1 - zs[vIndex]));
-                                    if (distance < minDistance) {
-                                        d = d7;
-                                        blocks[vIndex] = 7;
-                                        minDistance = distance;
-                                    }
-                                }
-                                ds[vIndex] = d;
-                            }
-                            
-                            let alpha = ds[0] / 128;
-                            let u = ds[1] / 128;
-                            let v = ds[2] / 128;
-
-                            if (lod === 0) {
-                                let corner0 = PCMB.Corners[blocks[0]];
-                                let corner1 = PCMB.Corners[blocks[1]];
-                                let corner2 = PCMB.Corners[blocks[2]];
-
-                                colors[4 * (l + n1)] = 1 - PCMB.DistanceSquared(x0, y0, z0, corner0.x, corner0.y, corner0.z);
-                                colors[4 * (l + n1) + 1] = 1 - PCMB.DistanceSquared(x0, y0, z0, corner1.x, corner1.y, corner1.z);
-                                colors[4 * (l + n1) + 2] = 1 - PCMB.DistanceSquared(x0, y0, z0, corner2.x, corner2.y, corner2.z);
-                                colors[4 * (l + n1) + 3] = alpha;
-    
-                                colors[4 * (l + n2)] = 1 - PCMB.DistanceSquared(x1, y1, z1, corner0.x, corner0.y, corner0.z);
-                                colors[4 * (l + n2) + 1] = 1 - PCMB.DistanceSquared(x1, y1, z1, corner1.x, corner1.y, corner1.z);
-                                colors[4 * (l + n2) + 2] = 1 - PCMB.DistanceSquared(x1, y1, z1, corner2.x, corner2.y, corner2.z);
-                                colors[4 * (l + n2) + 3] = alpha;
-    
-                                colors[4 * (l + n3)] = 1 - PCMB.DistanceSquared(x2, y2, z2, corner0.x, corner0.y, corner0.z);
-                                colors[4 * (l + n3) + 1] = 1 - PCMB.DistanceSquared(x2, y2, z2, corner1.x, corner1.y, corner1.z);
-                                colors[4 * (l + n3) + 2] = 1 - PCMB.DistanceSquared(x2, y2, z2, corner2.x, corner2.y, corner2.z);
-                                colors[4 * (l + n3) + 3] = alpha;
-                            }
-                            else {
-                                colors[4 * (l + n1)] = 1;
-                                colors[4 * (l + n1) + 1] = 0;
-                                colors[4 * (l + n1) + 2] = 0;
-                                colors[4 * (l + n1) + 3] = alpha;
-    
-                                colors[4 * (l + n2)] = 0;
-                                colors[4 * (l + n2) + 1] = 1;
-                                colors[4 * (l + n2) + 2] = 0;
-                                colors[4 * (l + n2) + 3] = alpha;
-    
-                                colors[4 * (l + n3)] = 0;
-                                colors[4 * (l + n3) + 1] = 0;
-                                colors[4 * (l + n3) + 2] = 1;
-                                colors[4 * (l + n3) + 3] = alpha;
-                            }
-
+                            colors[4 * (l + n1) + 3] = alpha;
+                            colors[4 * (l + n2) + 3] = alpha;
+                            colors[4 * (l + n3) + 3] = alpha;
 
                             uvs[2 * (l + n1)] = u;
                             uvs[2 * (l + n1) + 1] = v;
+
                             uvs[2 * (l + n2)] = u;
                             uvs[2 * (l + n2) + 1] = v;
+
                             uvs[2 * (l + n3)] = u;
                             uvs[2 * (l + n3) + 1] = v;
                         }
@@ -576,6 +460,14 @@ class PlanetChunckMeshBuilder {
                     }
                 }
             }
+        }
+
+        if (positions.length / 3 != colors.length / 4) {
+            debugger;
+        }
+
+        if (positions.length / 3 != uvs.length / 2) {
+            debugger;
         }
 
         //BABYLON.VertexData.ComputeNormals(positions, indices, normals);
