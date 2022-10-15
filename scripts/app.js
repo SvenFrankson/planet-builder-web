@@ -1480,7 +1480,7 @@ class PlanetChunck {
         this._chunckCount = 0;
         this._size = 0;
         this._dataInitialized = false;
-        this._dataNeighbourSynced = false;
+        this._adjacentsDataSynced = false;
         this._registered = false;
         this.lod = 2;
         this._isEmpty = true;
@@ -1576,11 +1576,40 @@ class PlanetChunck {
             k: this.kPos,
         };
     }
+    findAdjacents() {
+        this._adjacents = [];
+        this.adjacentsAsArray = [];
+        for (let di = -1; di <= 1; di++) {
+            for (let dj = -1; dj <= 1; dj++) {
+                for (let dk = -1; dk <= 1; dk++) {
+                    if (di != 0 || dj != 0 || dk != 0) {
+                        if (!this._adjacents[1 + di]) {
+                            this._adjacents[1 + di] = [];
+                        }
+                        if (!this._adjacents[1 + di][1 + dj]) {
+                            this._adjacents[1 + di][1 + dj] = [];
+                        }
+                        if (!this._adjacents[1 + di][1 + dj][1 + dk]) {
+                            let n = this.planetSide.getChunck(this.iPos + di, this.jPos + dj, this.kPos + dk, this.degree);
+                            if (n instanceof PlanetChunck) {
+                                this._adjacents[1 + di][1 + dj][1 + dk] = [n];
+                                this.adjacentsAsArray.push(n);
+                            }
+                            else if (n instanceof Array) {
+                                this._adjacents[1 + di][1 + dj][1 + dk] = n;
+                                this.adjacentsAsArray.push(...n);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
     get dataInitialized() {
         return this._dataInitialized;
     }
     get dataNeighbourSynced() {
-        return this._dataNeighbourSynced;
+        return this._adjacentsDataSynced;
     }
     get firstI() {
         return this._firstI;
@@ -1599,7 +1628,7 @@ class PlanetChunck {
             this.initializeData();
         }
         if (!this.dataNeighbourSynced) {
-            this.syncWithNeighbours();
+            this.syncWithAdjacents();
         }
         /*
         if (this.side <= Side.Left && this.isCorner) {
@@ -1715,8 +1744,9 @@ class PlanetChunck {
             this.updateIsEmptyIsFull();
         }
     }
-    syncWithNeighbours() {
-        this._dataNeighbourSynced = true;
+    syncWithAdjacents() {
+        this._adjacentsDataSynced = true;
+        this.findAdjacents();
         for (let i = this.firstI; i <= PlanetTools.CHUNCKSIZE; i++) {
             for (let j = this.firstJ; j <= this.lastJ; j++) {
                 for (let k = this.firstK; k <= PlanetTools.CHUNCKSIZE; k++) {
@@ -1791,8 +1821,8 @@ class PlanetChunck {
         if (this.isEmptyOrHidden()) {
             return;
         }
-        if (!this.syncWithNeighbours) {
-            this.syncWithNeighbours();
+        if (!this.syncWithAdjacents) {
+            this.syncWithAdjacents();
         }
         if (this.isMeshDisposed()) {
             this.mesh = new BABYLON.Mesh("chunck-" + this.iPos + "-" + this.jPos + "-" + this.kPos, this.scene);
@@ -4029,6 +4059,12 @@ class PlanetTools {
         let j = Math.floor(((zDeg + 45) / 90) * PlanetTools.DegreeToSize(PlanetTools.KGlobalToDegree(k)));
         return { i: i, j: j, k: k };
     }
+    static WorldPositionToChunck(planet, worldPos) {
+        let planetSide = PlanetTools.WorldPositionToPlanetSide(planet, worldPos);
+        let globalIJK = PlanetTools.WorldPositionToGlobalIJK(planetSide, worldPos);
+        let localIJK = PlanetTools.GlobalIJKToLocalIJK(planetSide, globalIJK);
+        return localIJK.planetChunck;
+    }
     static GlobalIJKToWorldPosition(planetSide, globalIJK) {
         let size = PlanetTools.DegreeToSize(PlanetTools.KGlobalToDegree(globalIJK.k));
         let p = PlanetTools.EvaluateVertex(size, globalIJK.i + 0.5, globalIJK.j + 0.5);
@@ -4369,19 +4405,32 @@ class Player extends BABYLON.Mesh {
             let fVert = 1;
             if (this._jumpTimer === 0) {
                 let ray = new BABYLON.Ray(this.position, this._downDirection, 1.7);
-                let hit = Game.Scene.pickWithRay(ray, (mesh) => {
-                    return mesh.name.indexOf("chunck") != -1;
-                });
-                if (hit.pickedPoint) {
-                    let d = hit.pickedPoint.subtract(this.position).length();
-                    if (d > 0.01) {
-                        this._groundFactor
-                            .copyFrom(this._gravityFactor)
-                            .scaleInPlace(-1)
-                            .scaleInPlace(Math.pow(1.5 / d, 1));
+                let chunck = PlanetTools.WorldPositionToChunck(this.planet, this.position);
+                let meshes = [];
+                if (chunck.mesh) {
+                    meshes.push(chunck.mesh);
+                }
+                for (let i = 0; i < chunck.adjacentsAsArray.length; i++) {
+                    let adjChunck = chunck.adjacentsAsArray[i];
+                    if (adjChunck.mesh) {
+                        meshes.push(adjChunck.mesh);
                     }
-                    fVert = 0.005;
-                    this._isGrounded = true;
+                }
+                if (chunck.mesh) {
+                    let hit = ray.intersectsMeshes(meshes);
+                    for (let i = 0; i < hit.length; i++) {
+                        if (hit[i].pickedPoint) {
+                            let d = hit[i].pickedPoint.subtract(this.position).length();
+                            if (d > 0.01) {
+                                this._groundFactor
+                                    .copyFrom(this._gravityFactor)
+                                    .scaleInPlace(-1)
+                                    .scaleInPlace(Math.pow(1.5 / d, 1));
+                            }
+                            fVert = 0.005;
+                            this._isGrounded = true;
+                        }
+                    }
                 }
             }
             this.velocity.addInPlace(this._gravityFactor);

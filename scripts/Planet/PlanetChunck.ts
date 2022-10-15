@@ -53,14 +53,45 @@ class PlanetChunck {
             k: this.kPos,
         };
     }
+    private _adjacents: PlanetChunck[][][][];
+    public adjacentsAsArray: PlanetChunck[];
+    public findAdjacents(): void {
+        this._adjacents = [];
+        this.adjacentsAsArray = [];
+        for (let di = - 1; di <= 1; di++) {
+            for (let dj = - 1; dj <= 1; dj++) {
+                for (let dk = - 1; dk <= 1; dk++) {
+                    if (di != 0 || dj != 0 || dk != 0) {
+                        if (!this._adjacents[1 + di]) {
+                            this._adjacents[1 + di] = [];
+                        }
+                        if (!this._adjacents[1 + di][1 + dj]) {
+                            this._adjacents[1 + di][1 + dj] = [];
+                        }
+                        if (!this._adjacents[1 + di][1 + dj][1 + dk]) {
+                            let n = this.planetSide.getChunck(this.iPos + di, this.jPos + dj, this.kPos + dk, this.degree);
+                            if (n instanceof PlanetChunck) {
+                                this._adjacents[1 + di][1 + dj][1 + dk] = [n];
+                                this.adjacentsAsArray.push(n);
+                            }
+                            else if (n instanceof Array) {
+                                this._adjacents[1 + di][1 + dj][1 + dk] = n;
+                                this.adjacentsAsArray.push(...n);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
 
     private _dataInitialized: boolean = false;
     public get dataInitialized(): boolean {
         return this._dataInitialized;
     }
-    private _dataNeighbourSynced: boolean = false;
+    private _adjacentsDataSynced: boolean = false;
     public get dataNeighbourSynced(): boolean {
-        return this._dataNeighbourSynced;
+        return this._adjacentsDataSynced;
     }
     private _firstI: number;
     public get firstI(): number {
@@ -85,7 +116,7 @@ class PlanetChunck {
             this.initializeData();
         }
         if (!this.dataNeighbourSynced) {
-            this.syncWithNeighbours();
+            this.syncWithAdjacents();
         }
         /*
         if (this.side <= Side.Left && this.isCorner) {
@@ -302,8 +333,9 @@ class PlanetChunck {
         }
     }
     
-    public syncWithNeighbours(): void {
-        this._dataNeighbourSynced = true;
+    public syncWithAdjacents(): void {
+        this._adjacentsDataSynced = true;
+        this.findAdjacents();
         for (let i: number = this.firstI; i <= PlanetTools.CHUNCKSIZE; i++) {
             for (let j: number = this.firstJ; j <= this.lastJ; j++) {
                 for (let k: number = this.firstK; k <= PlanetTools.CHUNCKSIZE; k++) {
@@ -382,8 +414,8 @@ class PlanetChunck {
         if (this.isEmptyOrHidden()) {
             return;
         }
-        if (!this.syncWithNeighbours) {
-            this.syncWithNeighbours();
+        if (!this.syncWithAdjacents) {
+            this.syncWithAdjacents();
         }
         if (this.isMeshDisposed()) {
             this.mesh = new BABYLON.Mesh("chunck-" + this.iPos + "-" + this.jPos + "-" + this.kPos, this.scene);

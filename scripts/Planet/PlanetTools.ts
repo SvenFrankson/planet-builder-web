@@ -213,6 +213,13 @@ class PlanetTools {
         return { i: i, j: j, k: k };
     }
 
+    public static WorldPositionToChunck(planet: Planet, worldPos: BABYLON.Vector3): PlanetChunck {
+        let planetSide = PlanetTools.WorldPositionToPlanetSide(planet, worldPos);
+        let globalIJK = PlanetTools.WorldPositionToGlobalIJK(planetSide, worldPos);
+        let localIJK = PlanetTools.GlobalIJKToLocalIJK(planetSide, globalIJK);
+        return localIJK.planetChunck;
+    }
+
     public static GlobalIJKToWorldPosition(planetSide: PlanetSide, globalIJK: { i: number; j: number; k: number }): BABYLON.Vector3 {
         let size = PlanetTools.DegreeToSize(PlanetTools.KGlobalToDegree(globalIJK.k));
         let p = PlanetTools.EvaluateVertex(size, globalIJK.i + 0.5, globalIJK.j + 0.5);
