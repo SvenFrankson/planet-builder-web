@@ -1,12 +1,14 @@
 class Main {
 	public canvas: HTMLCanvasElement;
 	public static Engine: BABYLON.Engine;
+	public engine: BABYLON.Engine;
 	public static Scene: BABYLON.Scene;
     public scene: BABYLON.Scene;
 
     constructor(canvasElement: string) {
 		this.canvas = document.getElementById(canvasElement) as HTMLCanvasElement;
 		Main.Engine = new BABYLON.Engine(this.canvas, true);
+        this.engine = Main.Engine;
 		BABYLON.Engine.ShadersRepository = "./shaders/";
 		console.log(Main.Engine.webGLVersion);
 	}
