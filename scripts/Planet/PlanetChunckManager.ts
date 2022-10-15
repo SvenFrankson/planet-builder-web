@@ -127,6 +127,9 @@ class PlanetChunckManager {
                         chunck.lod = newLayerIndex;
                         
                         if (newLayerIndex <= 1) {
+                            if (newLayerIndex === 1 && prevLayerIndex === 0) {
+                                continue;
+                            }
                             this.requestDraw(chunck, newLayerIndex);
                         }
                         else if (newLayerIndex > 1) {
@@ -169,7 +172,7 @@ class PlanetChunckManager {
 
         // Recalculate chunck meshes.
         t0 = performance.now();
-        while (this._needRedraw.length > 0 && (t - t0) < 1000 / 60) {
+        while (this._needRedraw.length > 0 && (t - t0) < 1000 / (60 * 1.5)) {
             let request = this._needRedraw.pop();
             if (request.chunck.lod <= 1) {
                 request.chunck.initialize();
