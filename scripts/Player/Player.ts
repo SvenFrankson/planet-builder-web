@@ -189,31 +189,33 @@ class Player extends BABYLON.Mesh {
         this._groundFactor.copyFromFloats(0, 0, 0);
         let fVert = 1;
         if (this._jumpTimer === 0) {
-            let ray: BABYLON.Ray = new BABYLON.Ray(this.position, this._downDirection, 1.7);
             let chunck = PlanetTools.WorldPositionToChunck(this.planet, this.position);
-            let meshes: BABYLON.Mesh[] = [];
-            if (chunck.mesh) {
-                meshes.push(chunck.mesh);
-            }
-            for (let i = 0; i < chunck.adjacentsAsArray.length; i++) {
-                let adjChunck = chunck.adjacentsAsArray[i];
-                if (adjChunck.mesh) {
-                    meshes.push(adjChunck.mesh)
+            if (chunck) {
+                let meshes: BABYLON.Mesh[] = [];
+                if (chunck.mesh) {
+                    meshes.push(chunck.mesh);
                 }
-            }
-            if (chunck.mesh) {
-                let hit: BABYLON.PickingInfo[] = ray.intersectsMeshes(meshes);
-                for (let i = 0; i < hit.length; i++) {
-                    if (hit[i].pickedPoint) {
-                        let d: number = hit[i].pickedPoint.subtract(this.position).length();
-                        if (d > 0.01) {
-                            this._groundFactor
-                                .copyFrom(this._gravityFactor)
-                                .scaleInPlace(-1)
-                                .scaleInPlace(Math.pow(1.5 / d, 1));
+                for (let i = 0; i < chunck.adjacentsAsArray.length; i++) {
+                    let adjChunck = chunck.adjacentsAsArray[i];
+                    if (adjChunck.mesh) {
+                        meshes.push(adjChunck.mesh)
+                    }
+                }
+                if (chunck.mesh) {
+                    let ray: BABYLON.Ray = new BABYLON.Ray(this.position, this._downDirection, 1.7);
+                    let hit: BABYLON.PickingInfo[] = ray.intersectsMeshes(meshes);
+                    for (let i = 0; i < hit.length; i++) {
+                        if (hit[i].pickedPoint) {
+                            let d: number = hit[i].pickedPoint.subtract(this.position).length();
+                            if (d > 0.01) {
+                                this._groundFactor
+                                    .copyFrom(this._gravityFactor)
+                                    .scaleInPlace(-1)
+                                    .scaleInPlace(Math.pow(1.5 / d, 1));
+                            }
+                            fVert = 0.005;
+                            this._isGrounded = true;
                         }
-                        fVert = 0.005;
-                        this._isGrounded = true;
                     }
                 }
             }
