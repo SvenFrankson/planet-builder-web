@@ -135,12 +135,24 @@ class PlanetChunck {
     ): number {
         return this.planetSide.GetData(iGlobal, jGlobal, kGlobal, this.degree);
     }
-    public SetData(i: number, j: number, k: number, value: number): void {
+    public SetData(i: number, j: number, k: number, value: number, noDataSafety: boolean = false): void {
         if (!this.dataInitialized) {
             this.initializeData();
         }
+        if (!this.dataNeighbourSynced) {
+            this.syncWithAdjacents();
+        }
         this.data[i - this.firstI][j - this.firstJ][k - this.firstK] = value;
+        if (noDataSafety) {
+            return;
+        }
+        this.doDataSafety();
+    }
+    public doDataSafety(): void {
         this.updateIsEmptyIsFull();
+        this.adjacentsAsArray.forEach(adj => {
+            adj.syncWithAdjacents();
+        })
         this.register();
     }
 
@@ -298,6 +310,9 @@ class PlanetChunck {
     }
     
     public syncWithAdjacents(): void {
+        if (!this.dataInitialized) {
+            return;
+        }
         this._adjacentsDataSynced = true;
         this.findAdjacents();
         
@@ -305,38 +320,38 @@ class PlanetChunck {
             for (let j: number = this.firstJ; j <= this.lastJ; j++) {
                 for (let k: number = this.firstK; k <= PlanetTools.CHUNCKSIZE; k++) {
                     if (this.side <= Side.Left && this.isCorner) {
-                        if (this.jPos === this.chunckCount - 1) {
+                        if (this.jPos === 0) {
                             if (this.iPos === 0) {
-                                if (j === PlanetTools.CHUNCKSIZE - 1) {
+                                if (j === 0) {
                                     if (i === 0) {
-                                        let d = this.GetDataGlobal(this.iPos * PlanetTools.CHUNCKSIZE + i, this.jPos * PlanetTools.CHUNCKSIZE + PlanetTools.CHUNCKSIZE, this.kPos * PlanetTools.CHUNCKSIZE + k);
+                                        let d = this.GetDataGlobal(0, - 1, this.kPos * PlanetTools.CHUNCKSIZE + k);
                                         this.data[i - this.firstI][j - this.firstJ][k - this.firstK] = d;
                                     }
                                 }
                             }
                             if (this.iPos === this.chunckCount - 1) {
-                                if (j === PlanetTools.CHUNCKSIZE - 1) {
+                                if (j === 0) {
                                     if (i === PlanetTools.CHUNCKSIZE - 1) {
-                                        let d = this.GetDataGlobal(this.iPos * PlanetTools.CHUNCKSIZE + i, this.jPos * PlanetTools.CHUNCKSIZE + PlanetTools.CHUNCKSIZE, this.kPos * PlanetTools.CHUNCKSIZE + k);
+                                        let d = this.GetDataGlobal(this.iPos * PlanetTools.CHUNCKSIZE + i, - 1, this.kPos * PlanetTools.CHUNCKSIZE + k);
                                         this.data[i - this.firstI][j - this.firstJ][k - this.firstK] = d;
                                     }
                                 }
                             }
                         }
-                        
-                        if (this.jPos === 0) {
+
+                        if (this.jPos === this.chunckCount - 1) {
                             if (this.iPos === 0) {
-                                if (j === 0) {
-                                    if (i === 0) {
-                                        let d = this.GetDataGlobal(this.iPos * PlanetTools.CHUNCKSIZE + i, this.jPos * PlanetTools.CHUNCKSIZE - PlanetTools.CHUNCKSIZE, this.kPos * PlanetTools.CHUNCKSIZE + k);
+                                if (i === 0) {
+                                    if (j === PlanetTools.CHUNCKSIZE - 1) {
+                                        let d = this.GetDataGlobal(0, (this.jPos + 1) * PlanetTools.CHUNCKSIZE, this.kPos * PlanetTools.CHUNCKSIZE + k);
                                         this.data[i - this.firstI][j - this.firstJ][k - this.firstK] = d;
                                     }
                                 }
                             }
                             if (this.iPos === this.chunckCount - 1) {
-                                if (j === 0) {
+                                if (j === PlanetTools.CHUNCKSIZE - 1) {
                                     if (i === PlanetTools.CHUNCKSIZE - 1) {
-                                        let d = this.GetDataGlobal(this.iPos * PlanetTools.CHUNCKSIZE + i, this.jPos * PlanetTools.CHUNCKSIZE - PlanetTools.CHUNCKSIZE, this.kPos * PlanetTools.CHUNCKSIZE + k);
+                                        let d = this.GetDataGlobal(this.iPos * PlanetTools.CHUNCKSIZE + i, (this.jPos + 1) * PlanetTools.CHUNCKSIZE, this.kPos * PlanetTools.CHUNCKSIZE + k);
                                         this.data[i - this.firstI][j - this.firstJ][k - this.firstK] = d;
                                     }
                                 }

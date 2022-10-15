@@ -99,8 +99,8 @@ class Game extends Main {
 					this.chunckManager.initialize();
 					planetTest.register();
 
-					//let debugPlanetPerf = new DebugPlanetPerf(this);
-					//debugPlanetPerf.show();
+					let debugPlanetPerf = new DebugPlanetPerf(this);
+					debugPlanetPerf.show();
 
 					//let debugPlanetSkyColor = new DebugPlanetSkyColor(this);
 					//debugPlanetSkyColor.show();

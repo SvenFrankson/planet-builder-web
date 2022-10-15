@@ -15,7 +15,7 @@ class PlanetBlockMaker {
                         let localIJK = PlanetTools.GlobalIJKToLocalIJK(planetSide, globalIJK);
                         let chunck = localIJK.planetChunck;
                         if (chunck) {
-                            chunck.SetData(localIJK.i, localIJK.j, localIJK.k, block);
+                            chunck.SetData(localIJK.i, localIJK.j, localIJK.k, block, true);
                             if (impactedChunck.indexOf(chunck) === - 1) {
                                 impactedChunck.push(chunck);
                             }
@@ -43,7 +43,7 @@ class PlanetBlockMaker {
             let localIJK = PlanetTools.GlobalIJKToLocalIJK(planetSide, globalIJK);
             let chunck = localIJK.planetChunck;
             if (chunck) {
-                chunck.SetData(localIJK.i, localIJK.j, localIJK.k, block);
+                chunck.SetData(localIJK.i, localIJK.j, localIJK.k, block, true);
                 if (impactedChunck.indexOf(chunck) === - 1) {
                     impactedChunck.push(chunck);
                 }

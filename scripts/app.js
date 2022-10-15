@@ -1193,8 +1193,8 @@ class Game extends Main {
             PlanetChunckVertexData.InitializeData().then(() => {
                 this.chunckManager.initialize();
                 planetTest.register();
-                //let debugPlanetPerf = new DebugPlanetPerf(this);
-                //debugPlanetPerf.show();
+                let debugPlanetPerf = new DebugPlanetPerf(this);
+                debugPlanetPerf.show();
                 //let debugPlanetSkyColor = new DebugPlanetSkyColor(this);
                 //debugPlanetSkyColor.show();
                 //let debugTerrainColor = new DebugTerrainColor();
@@ -1434,7 +1434,7 @@ class PlanetBlockMaker {
                         let localIJK = PlanetTools.GlobalIJKToLocalIJK(planetSide, globalIJK);
                         let chunck = localIJK.planetChunck;
                         if (chunck) {
-                            chunck.SetData(localIJK.i, localIJK.j, localIJK.k, block);
+                            chunck.SetData(localIJK.i, localIJK.j, localIJK.k, block, true);
                             if (impactedChunck.indexOf(chunck) === -1) {
                                 impactedChunck.push(chunck);
                             }
@@ -1460,7 +1460,7 @@ class PlanetBlockMaker {
             let localIJK = PlanetTools.GlobalIJKToLocalIJK(planetSide, globalIJK);
             let chunck = localIJK.planetChunck;
             if (chunck) {
-                chunck.SetData(localIJK.i, localIJK.j, localIJK.k, block);
+                chunck.SetData(localIJK.i, localIJK.j, localIJK.k, block, true);
                 if (impactedChunck.indexOf(chunck) === -1) {
                     impactedChunck.push(chunck);
                 }
@@ -1646,12 +1646,24 @@ class PlanetChunck {
     GetDataGlobal(iGlobal, jGlobal, kGlobal) {
         return this.planetSide.GetData(iGlobal, jGlobal, kGlobal, this.degree);
     }
-    SetData(i, j, k, value) {
+    SetData(i, j, k, value, noDataSafety = false) {
         if (!this.dataInitialized) {
             this.initializeData();
         }
+        if (!this.dataNeighbourSynced) {
+            this.syncWithAdjacents();
+        }
         this.data[i - this.firstI][j - this.firstJ][k - this.firstK] = value;
+        if (noDataSafety) {
+            return;
+        }
+        this.doDataSafety();
+    }
+    doDataSafety() {
         this.updateIsEmptyIsFull();
+        this.adjacentsAsArray.forEach(adj => {
+            adj.syncWithAdjacents();
+        });
         this.register();
     }
     GetBaryCenter() {
@@ -1712,43 +1724,46 @@ class PlanetChunck {
         }
     }
     syncWithAdjacents() {
+        if (!this.dataInitialized) {
+            return;
+        }
         this._adjacentsDataSynced = true;
         this.findAdjacents();
         for (let i = this.firstI; i <= PlanetTools.CHUNCKSIZE; i++) {
             for (let j = this.firstJ; j <= this.lastJ; j++) {
                 for (let k = this.firstK; k <= PlanetTools.CHUNCKSIZE; k++) {
                     if (this.side <= Side.Left && this.isCorner) {
-                        if (this.jPos === this.chunckCount - 1) {
+                        if (this.jPos === 0) {
                             if (this.iPos === 0) {
-                                if (j === PlanetTools.CHUNCKSIZE - 1) {
+                                if (j === 0) {
                                     if (i === 0) {
-                                        let d = this.GetDataGlobal(this.iPos * PlanetTools.CHUNCKSIZE + i, this.jPos * PlanetTools.CHUNCKSIZE + PlanetTools.CHUNCKSIZE, this.kPos * PlanetTools.CHUNCKSIZE + k);
+                                        let d = this.GetDataGlobal(0, -1, this.kPos * PlanetTools.CHUNCKSIZE + k);
                                         this.data[i - this.firstI][j - this.firstJ][k - this.firstK] = d;
                                     }
                                 }
                             }
                             if (this.iPos === this.chunckCount - 1) {
-                                if (j === PlanetTools.CHUNCKSIZE - 1) {
+                                if (j === 0) {
                                     if (i === PlanetTools.CHUNCKSIZE - 1) {
-                                        let d = this.GetDataGlobal(this.iPos * PlanetTools.CHUNCKSIZE + i, this.jPos * PlanetTools.CHUNCKSIZE + PlanetTools.CHUNCKSIZE, this.kPos * PlanetTools.CHUNCKSIZE + k);
+                                        let d = this.GetDataGlobal(this.iPos * PlanetTools.CHUNCKSIZE + i, -1, this.kPos * PlanetTools.CHUNCKSIZE + k);
                                         this.data[i - this.firstI][j - this.firstJ][k - this.firstK] = d;
                                     }
                                 }
                             }
                         }
-                        if (this.jPos === 0) {
+                        if (this.jPos === this.chunckCount - 1) {
                             if (this.iPos === 0) {
-                                if (j === 0) {
-                                    if (i === 0) {
-                                        let d = this.GetDataGlobal(this.iPos * PlanetTools.CHUNCKSIZE + i, this.jPos * PlanetTools.CHUNCKSIZE - PlanetTools.CHUNCKSIZE, this.kPos * PlanetTools.CHUNCKSIZE + k);
+                                if (i === 0) {
+                                    if (j === PlanetTools.CHUNCKSIZE - 1) {
+                                        let d = this.GetDataGlobal(0, (this.jPos + 1) * PlanetTools.CHUNCKSIZE, this.kPos * PlanetTools.CHUNCKSIZE + k);
                                         this.data[i - this.firstI][j - this.firstJ][k - this.firstK] = d;
                                     }
                                 }
                             }
                             if (this.iPos === this.chunckCount - 1) {
-                                if (j === 0) {
+                                if (j === PlanetTools.CHUNCKSIZE - 1) {
                                     if (i === PlanetTools.CHUNCKSIZE - 1) {
-                                        let d = this.GetDataGlobal(this.iPos * PlanetTools.CHUNCKSIZE + i, this.jPos * PlanetTools.CHUNCKSIZE - PlanetTools.CHUNCKSIZE, this.kPos * PlanetTools.CHUNCKSIZE + k);
+                                        let d = this.GetDataGlobal(this.iPos * PlanetTools.CHUNCKSIZE + i, (this.jPos + 1) * PlanetTools.CHUNCKSIZE, this.kPos * PlanetTools.CHUNCKSIZE + k);
                                         this.data[i - this.firstI][j - this.firstJ][k - this.firstK] = d;
                                     }
                                 }
@@ -4267,13 +4282,9 @@ class ProceduralTree {
         let w = PlanetTools.LocalIJKToWorldPosition(this.chunck, this.i, this.j, this.k);
         let n = this.chunck.GetBaryCenter().clone().normalize();
         let chuncks = PlanetBlockMaker.AddLine(this.chunck.planetSide.planet, w, w.add(n.scale(5)), BlockType.Wood);
+        chuncks.push(...PlanetBlockMaker.AddSphere(this.chunck.planetSide.planet, w.add(n.scale(5)), 3, BlockType.Leaf));
         for (let i = 0; i < chuncks.length; i++) {
-            if (chuncks[i].lod <= 1) {
-                Game.Instance.chunckManager.requestDraw(chuncks[i], chuncks[i].lod);
-            }
-        }
-        chuncks = PlanetBlockMaker.AddSphere(this.chunck.planetSide.planet, w.add(n.scale(5)), 3, BlockType.Leaf);
-        for (let i = 0; i < chuncks.length; i++) {
+            chuncks[i].doDataSafety();
             if (chuncks[i].lod <= 1) {
                 Game.Instance.chunckManager.requestDraw(chuncks[i], chuncks[i].lod);
             }
@@ -4409,31 +4420,33 @@ class Player extends BABYLON.Mesh {
             this._groundFactor.copyFromFloats(0, 0, 0);
             let fVert = 1;
             if (this._jumpTimer === 0) {
-                let ray = new BABYLON.Ray(this.position, this._downDirection, 1.7);
                 let chunck = PlanetTools.WorldPositionToChunck(this.planet, this.position);
-                let meshes = [];
-                if (chunck.mesh) {
-                    meshes.push(chunck.mesh);
-                }
-                for (let i = 0; i < chunck.adjacentsAsArray.length; i++) {
-                    let adjChunck = chunck.adjacentsAsArray[i];
-                    if (adjChunck.mesh) {
-                        meshes.push(adjChunck.mesh);
+                if (chunck) {
+                    let meshes = [];
+                    if (chunck.mesh) {
+                        meshes.push(chunck.mesh);
                     }
-                }
-                if (chunck.mesh) {
-                    let hit = ray.intersectsMeshes(meshes);
-                    for (let i = 0; i < hit.length; i++) {
-                        if (hit[i].pickedPoint) {
-                            let d = hit[i].pickedPoint.subtract(this.position).length();
-                            if (d > 0.01) {
-                                this._groundFactor
-                                    .copyFrom(this._gravityFactor)
-                                    .scaleInPlace(-1)
-                                    .scaleInPlace(Math.pow(1.5 / d, 1));
+                    for (let i = 0; i < chunck.adjacentsAsArray.length; i++) {
+                        let adjChunck = chunck.adjacentsAsArray[i];
+                        if (adjChunck.mesh) {
+                            meshes.push(adjChunck.mesh);
+                        }
+                    }
+                    if (chunck.mesh) {
+                        let ray = new BABYLON.Ray(this.position, this._downDirection, 1.7);
+                        let hit = ray.intersectsMeshes(meshes);
+                        for (let i = 0; i < hit.length; i++) {
+                            if (hit[i].pickedPoint) {
+                                let d = hit[i].pickedPoint.subtract(this.position).length();
+                                if (d > 0.01) {
+                                    this._groundFactor
+                                        .copyFrom(this._gravityFactor)
+                                        .scaleInPlace(-1)
+                                        .scaleInPlace(Math.pow(1.5 / d, 1));
+                                }
+                                fVert = 0.005;
+                                this._isGrounded = true;
                             }
-                            fVert = 0.005;
-                            this._isGrounded = true;
                         }
                     }
                 }
