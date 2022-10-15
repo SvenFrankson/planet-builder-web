@@ -55,7 +55,7 @@ class Game extends Main {
 		return new Promise<void>(resolve => {
 			this.chunckManager = new PlanetChunckManager(this.scene);
 
-			let kPosMax = 10;
+			let kPosMax = 8;
 			let planetTest: Planet = new Planet("Paulita", kPosMax, this.chunckManager);
 
 			planetTest.generator = new PlanetGeneratorEarth(planetTest, 0.60, 0.1);
@@ -66,6 +66,12 @@ class Game extends Main {
 
 			Game.Player = new Player(new BABYLON.Vector3(0, (kPosMax + 1) * PlanetTools.CHUNCKSIZE * 0.8, 0), planetTest, this);
 			this.player = Game.Player;
+
+			let movePad = new PlayerInputMovePad(this.player);
+			movePad.connectInput(true);
+
+			let headPad = new PlayerInputHeadPad(this.player);
+			headPad.connectInput(false);
 			
 			this.player.registerControl();
 			this.chunckManager.onNextInactive(() => {
@@ -93,8 +99,8 @@ class Game extends Main {
 					this.chunckManager.initialize();
 					planetTest.register();
 
-					let debugPlanetPerf = new DebugPlanetPerf(this);
-					debugPlanetPerf.show();
+					//let debugPlanetPerf = new DebugPlanetPerf(this);
+					//debugPlanetPerf.show();
 
 					//let debugPlanetSkyColor = new DebugPlanetSkyColor(this);
 					//debugPlanetSkyColor.show();
@@ -102,8 +108,8 @@ class Game extends Main {
 					//let debugTerrainColor = new DebugTerrainColor();
 					//debugTerrainColor.show();
 
-					let debugPlayerPosition = new DebugPlayerPosition(this);
-					debugPlayerPosition.show();
+					//let debugPlayerPosition = new DebugPlayerPosition(this);
+					//debugPlayerPosition.show();
 
 					resolve();
 				}

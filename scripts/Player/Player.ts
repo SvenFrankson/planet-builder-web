@@ -6,10 +6,8 @@ class Player extends BABYLON.Mesh {
 
     private underWater: boolean = false;
     public camPos: BABYLON.AbstractMesh;
-    public pForward: boolean;
-    public back: boolean;
-    public pRight: boolean;
-    public left: boolean;
+    public inputForward: number;
+    public inputRight: number;
     public godMode: boolean;
 
     public PositionLeg(): BABYLON.Vector3 {
@@ -52,31 +50,31 @@ class Player extends BABYLON.Mesh {
 
     private _keyDown = (e: KeyboardEvent) => {
         if (e.code === "KeyW") {
-            this.pForward = true;
+            this.inputForward = 1;
         }
         if (e.code === "KeyS") {
-            this.back = true;
+            this.inputForward = - 1;
         }
         if (e.code === "KeyA") {
-            this.left = true;
+            this.inputRight = - 1;
         }
         if (e.code === "KeyD") {
-            this.pRight = true;
+            this.inputRight = 1;
         }
     };
 
     private _keyUp = (e: KeyboardEvent) => {
         if (e.code === "KeyW") {
-            this.pForward = false;
+            this.inputForward = 0;
         }
         if (e.code === "KeyS") {
-            this.back = false;
+            this.inputForward = 0;
         }
         if (e.code === "KeyA") {
-            this.left = false;
+            this.inputRight = 0;
         }
         if (e.code === "KeyD") {
-            this.pRight = false;
+            this.inputRight = 0;
         }
         if (e.code === "KeyG") {
             if (!this._initialized) {
@@ -226,18 +224,8 @@ class Player extends BABYLON.Mesh {
 
         // Add input force.
         this._controlFactor.copyFromFloats(0, 0, 0);
-        if (this.pRight) {
-            this._controlFactor.addInPlace(this._rightDirection);
-        }
-        if (this.left) {
-            this._controlFactor.addInPlace(this._leftDirection);
-        }
-        if (this.pForward) {
-            this._controlFactor.addInPlace(this._forwardDirection);
-        }
-        if (this.back) {
-            this._controlFactor.addInPlace(this._backwardDirection);
-        }
+        this._controlFactor.addInPlace(this._rightDirection.scale(this.inputRight));
+        this._controlFactor.addInPlace(this._forwardDirection.scale(this.inputForward));
         if (this._controlFactor.lengthSquared() > 0.1) {
             this._controlFactor.normalize();
         }
