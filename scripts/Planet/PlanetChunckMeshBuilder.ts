@@ -244,7 +244,7 @@ class PlanetChunckMeshBuilder {
             for (let j: number = chunck.firstJ; j < chunck.lastJ; j++) {
                 for (let k: number = chunck.firstK; k < PlanetTools.CHUNCKSIZE; k++) {
                     let cornerCase = false;
-                    if (chunck.isCorner) {
+                    if ((chunck.side === Side.Top || chunck.side === Side.Bottom) && chunck.isCorner) {
                         if (chunck.iPos === 0) {
                             if (chunck.jPos === 0) {
                                 if (i === chunck.firstI) {
@@ -281,7 +281,7 @@ class PlanetChunckMeshBuilder {
                     
                     if (cornerCase) { 
                         let d = chunck.GetData(i, j, k);
-                        if (d != BlockType.None) {
+                        if (d != BlockType.None && false) {
                             if (chunck.GetData(i, j, k + 1) === BlockType.None) {
                                 let iGlobal: number = i + iPos * PlanetTools.CHUNCKSIZE;
                                 let jGlobal: number = j + jPos * PlanetTools.CHUNCKSIZE;
