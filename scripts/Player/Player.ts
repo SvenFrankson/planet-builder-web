@@ -6,8 +6,10 @@ class Player extends BABYLON.Mesh {
 
     private underWater: boolean = false;
     public camPos: BABYLON.AbstractMesh;
-    public inputForward: number;
-    public inputRight: number;
+    public inputForward: number = 0;
+    public inputRight: number = 0;
+    public inputHeadUp: number = 0;
+    public inputHeadRight: number = 0;
     public godMode: boolean;
 
     public PositionLeg(): BABYLON.Vector3 {
@@ -102,26 +104,10 @@ class Player extends BABYLON.Mesh {
         if (Game.LockedMouse) {
             let movementX: number = event.movementX;
             let movementY: number = event.movementY;
-            if (movementX > 20) {
-                movementX = 20;
-            }
-            if (movementX < -20) {
-                movementX = -20;
-            }
-            if (movementY > 20) {
-                movementY = 20;
-            }
-            if (movementY < -20) {
-                movementY = -20;
-            }
-            let rotationPower: number = movementX / 500;
-            let localY: BABYLON.Vector3 = BABYLON.Vector3.TransformNormal(BABYLON.Axis.Y, this.getWorldMatrix());
-            let rotation: BABYLON.Quaternion = BABYLON.Quaternion.RotationAxis(localY, rotationPower);
-            this.rotationQuaternion = rotation.multiply(this.rotationQuaternion);
-            let rotationCamPower: number = movementY / 500;
-            this.camPos.rotation.x += rotationCamPower;
-            this.camPos.rotation.x = Math.max(this.camPos.rotation.x, -Math.PI / 2);
-            this.camPos.rotation.x = Math.min(this.camPos.rotation.x, Math.PI / 2);
+            this.inputHeadRight += movementX / 100;
+            this.inputHeadUp += movementY / 100;
+            this.inputHeadRight = Math.max(Math.min(this.inputHeadRight, 1), -1);
+            this.inputHeadUp = Math.max(Math.min(this.inputHeadUp, 1), -1);
         }
     };
 
@@ -160,6 +146,18 @@ class Player extends BABYLON.Mesh {
         this._jumpTimer = Math.max(this._jumpTimer - deltaTime, 0);
 
         this._keepUp();
+
+        let rotationPower: number = this.inputHeadRight * 0.05;
+        let rotationCamPower: number = this.inputHeadUp * 0.05;
+        let localY: BABYLON.Vector3 = BABYLON.Vector3.TransformNormal(BABYLON.Axis.Y, this.getWorldMatrix());
+        let rotation: BABYLON.Quaternion = BABYLON.Quaternion.RotationAxis(localY, rotationPower);
+        this.rotationQuaternion = rotation.multiply(this.rotationQuaternion);
+        this.camPos.rotation.x += rotationCamPower;
+        this.camPos.rotation.x = Math.max(this.camPos.rotation.x, -Math.PI / 2);
+        this.camPos.rotation.x = Math.min(this.camPos.rotation.x, Math.PI / 2);
+        
+        this.inputHeadRight *= 0.8;
+        this.inputHeadUp *= 0.8;
 
         this._collisionPositions[0] = this.position;
         this._collisionPositions[1] = this._feetPosition;

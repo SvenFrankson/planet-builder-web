@@ -165,13 +165,7 @@ class PlayerInputMovePad extends PlayerInputVirtualPad {
 class PlayerInputHeadPad extends PlayerInputVirtualPad {
 
     public updatePilot(dx: number, dy: number): void {
-        let rotationPower: number = dx / 30;
-        let rotationCamPower: number = - dy / 30;
-        let localY: BABYLON.Vector3 = BABYLON.Vector3.TransformNormal(BABYLON.Axis.Y, this.player.getWorldMatrix());
-        let rotation: BABYLON.Quaternion = BABYLON.Quaternion.RotationAxis(localY, rotationPower);
-        this.player.rotationQuaternion = rotation.multiply(this.player.rotationQuaternion);
-        this.player.camPos.rotation.x += rotationCamPower;
-        this.player.camPos.rotation.x = Math.max(this.player.camPos.rotation.x, -Math.PI / 2);
-        this.player.camPos.rotation.x = Math.min(this.player.camPos.rotation.x, Math.PI / 2);
+        this.player.inputHeadUp = - dy * 0.7;
+        this.player.inputHeadRight = dx * 0.7;
     }
 }
