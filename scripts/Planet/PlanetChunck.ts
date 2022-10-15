@@ -111,6 +111,10 @@ class PlanetChunck {
     }
     private data: number[][][];
     private proceduralItems: ProceduralTree[];
+    private _proceduralItemsGenerated: boolean = false;
+    public get proceduralItemsGenerated(): boolean {
+        return this._proceduralItemsGenerated;
+    }
     public GetData(i: number, j: number, k: number): number {
         if (!this.dataInitialized) {
             this.initializeData();
@@ -302,9 +306,6 @@ class PlanetChunck {
                 }
             }
             this._dataInitialized = true;
-            for (let i = 0; i < this.proceduralItems.length; i++) {
-                this.proceduralItems[i].generateData();
-            }
             this.updateIsEmptyIsFull();
         }
     }
@@ -435,6 +436,12 @@ class PlanetChunck {
         }
         if (!this.syncWithAdjacents) {
             this.syncWithAdjacents();
+        }
+        if (!this.proceduralItemsGenerated) {
+            this._proceduralItemsGenerated = true;
+            for (let i = 0; i < this.proceduralItems.length; i++) {
+                this.proceduralItems[i].generateData();
+            }
         }
         if (this.isMeshDisposed()) {
             this.mesh = new BABYLON.Mesh("chunck-" + this.iPos + "-" + this.jPos + "-" + this.kPos, this.scene);

@@ -1163,7 +1163,7 @@ class Game extends Main {
     async initialize() {
         return new Promise(resolve => {
             this.chunckManager = new PlanetChunckManager(this.scene);
-            let kPosMax = 8;
+            let kPosMax = 10;
             let planetTest = new Planet("Paulita", kPosMax, this.chunckManager);
             planetTest.generator = new PlanetGeneratorEarth(planetTest, 0.60, 0.1);
             //planetTest.generator = new PlanetGeneratorDebug4(planetTest);
@@ -1500,6 +1500,7 @@ class PlanetChunck {
         this._size = 0;
         this._dataInitialized = false;
         this._adjacentsDataSynced = false;
+        this._proceduralItemsGenerated = false;
         this._registered = false;
         this.lod = 2;
         this._isEmpty = true;
@@ -1642,6 +1643,9 @@ class PlanetChunck {
     get firstK() {
         return this._firstK;
     }
+    get proceduralItemsGenerated() {
+        return this._proceduralItemsGenerated;
+    }
     GetData(i, j, k) {
         if (!this.dataInitialized) {
             this.initializeData();
@@ -1732,9 +1736,6 @@ class PlanetChunck {
                 }
             }
             this._dataInitialized = true;
-            for (let i = 0; i < this.proceduralItems.length; i++) {
-                this.proceduralItems[i].generateData();
-            }
             this.updateIsEmptyIsFull();
         }
     }
@@ -1858,6 +1859,12 @@ class PlanetChunck {
         }
         if (!this.syncWithAdjacents) {
             this.syncWithAdjacents();
+        }
+        if (!this.proceduralItemsGenerated) {
+            this._proceduralItemsGenerated = true;
+            for (let i = 0; i < this.proceduralItems.length; i++) {
+                this.proceduralItems[i].generateData();
+            }
         }
         if (this.isMeshDisposed()) {
             this.mesh = new BABYLON.Mesh("chunck-" + this.iPos + "-" + this.jPos + "-" + this.kPos, this.scene);
@@ -4444,26 +4451,28 @@ class Player extends BABYLON.Mesh {
                     if (chunck.mesh) {
                         meshes.push(chunck.mesh);
                     }
-                    for (let i = 0; i < chunck.adjacentsAsArray.length; i++) {
-                        let adjChunck = chunck.adjacentsAsArray[i];
-                        if (adjChunck.mesh) {
-                            meshes.push(adjChunck.mesh);
+                    if (chunck.adjacentsAsArray) {
+                        for (let i = 0; i < chunck.adjacentsAsArray.length; i++) {
+                            let adjChunck = chunck.adjacentsAsArray[i];
+                            if (adjChunck.mesh) {
+                                meshes.push(adjChunck.mesh);
+                            }
                         }
-                    }
-                    if (chunck.mesh) {
-                        let ray = new BABYLON.Ray(this.position, this._downDirection, 1.7);
-                        let hit = ray.intersectsMeshes(meshes);
-                        for (let i = 0; i < hit.length; i++) {
-                            if (hit[i].pickedPoint) {
-                                let d = hit[i].pickedPoint.subtract(this.position).length();
-                                if (d > 0.01) {
-                                    this._groundFactor
-                                        .copyFrom(this._gravityFactor)
-                                        .scaleInPlace(-1)
-                                        .scaleInPlace(Math.pow(1.5 / d, 1));
+                        if (chunck.mesh) {
+                            let ray = new BABYLON.Ray(this.position, this._downDirection, 1.7);
+                            let hit = ray.intersectsMeshes(meshes);
+                            for (let i = 0; i < hit.length; i++) {
+                                if (hit[i].pickedPoint) {
+                                    let d = hit[i].pickedPoint.subtract(this.position).length();
+                                    if (d > 0.01) {
+                                        this._groundFactor
+                                            .copyFrom(this._gravityFactor)
+                                            .scaleInPlace(-1)
+                                            .scaleInPlace(Math.pow(1.5 / d, 1));
+                                    }
+                                    fVert = 0.005;
+                                    this._isGrounded = true;
                                 }
-                                fVert = 0.005;
-                                this._isGrounded = true;
                             }
                         }
                     }
