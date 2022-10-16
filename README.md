@@ -1,7 +1,7 @@
 # planet-builder-web
 Typescript implementation of PlanetBuilder generation algorithms.
 
-![preview screenshot](http://svenfrankson.github.io/wiki/img/planet-builder-web/beta-view.png)
+![preview screenshot](https://svenfrankson.github.io/public/img/planet-build-web-2022-first-shot.png)
 
 # Try it here !
 
