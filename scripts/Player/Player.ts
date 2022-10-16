@@ -12,28 +12,18 @@ class Player extends BABYLON.Mesh {
     public inputHeadRight: number = 0;
     public godMode: boolean;
 
-    public PositionLeg(): BABYLON.Vector3 {
-        let posLeg: BABYLON.Vector3 = this.position.add(BABYLON.Vector3.TransformNormal(BABYLON.Axis.Y, this.getWorldMatrix()).scale(-1));
-        return posLeg;
-    }
-
-    public PositionRoot(): BABYLON.Vector3 {
-        return this.position.add(this._downDirection.scale(0.75));
-    }
-
-    public PositionHead(): BABYLON.Vector3 {
-        return this.position;
-    }
-
     constructor(position: BABYLON.Vector3, public planet: Planet, public game: Game) {
         super("Player", Game.Scene);
-        console.log("Create Player");
         this.planet = planet;
         this.position = position;
         this.rotationQuaternion = BABYLON.Quaternion.Identity();
         this.camPos = new BABYLON.Mesh("Dummy", Game.Scene);
         this.camPos.parent = this;
         this.camPos.position = new BABYLON.Vector3(0, 1, 0);
+        BABYLON.VertexData.CreateSphere({ diameterX: 1, diameterY: 2, diameterZ: 1 }).applyToMesh(this);
+        let material = new BABYLON.StandardMaterial("material", this.getScene());
+        material.alpha = 0.5;
+        this.material = material;
     }
 
     private _initialized: boolean = false;
@@ -137,6 +127,9 @@ class Player extends BABYLON.Mesh {
     private _jumpTimer: number = 0;
     private _isGrounded: boolean = false;
 
+    private _debugCollisionMesh: BABYLON.Mesh;
+    private _meshes: BABYLON.Mesh[] = [];
+
     private _update = () => {
         if (Game.CameraManager.cameraMode != CameraMode.Player) {
             return;
@@ -188,37 +181,48 @@ class Player extends BABYLON.Mesh {
         this._gravityFactor.copyFrom(this._downDirection).scaleInPlace(9.8 * deltaTime);
         this._groundFactor.copyFromFloats(0, 0, 0);
         let fVert = 1;
+
+        this._meshes.forEach((m) => {
+            m.material = SharedMaterials.MainMaterial();
+        })
+        this._meshes = [];
         if (this._jumpTimer === 0) {
             let chunck = PlanetTools.WorldPositionToChunck(this.planet, this.position);
             if (chunck) {
-                let meshes: BABYLON.Mesh[] = [];
                 if (chunck.mesh) {
-                    meshes.push(chunck.mesh);
+                    this._meshes.push(chunck.mesh);
                 }
                 if (chunck.adjacentsAsArray) {
                     for (let i = 0; i < chunck.adjacentsAsArray.length; i++) {
                         let adjChunck = chunck.adjacentsAsArray[i];
                         if (adjChunck.mesh) {
-                            meshes.push(adjChunck.mesh)
+                            this._meshes.push(adjChunck.mesh)
                         }
                     }
-                    if (chunck.mesh) {
-                        let ray: BABYLON.Ray = new BABYLON.Ray(this.position, this._downDirection, 1.7);
-                        let hit: BABYLON.PickingInfo[] = ray.intersectsMeshes(meshes);
-                        hit = hit.sort((h1, h2) => { return h2.distance - h1.distance; });
-                        for (let i = 0; i < hit.length; i++) {
-                            if (hit[i].pickedPoint) {
-                                let d: number = hit[i].pickedPoint.subtract(this.position).length();
-                                if (d > 0.01) {
-                                    this._groundFactor
-                                        .copyFrom(this._gravityFactor)
-                                        .scaleInPlace(-1)
-                                        .scaleInPlace(Math.pow(1.5 / d, 1));
-                                }
-                                fVert = 0.005;
-                                this._isGrounded = true;
-                            }
-                        }
+                }
+                this._meshes.forEach((m) => {
+                    m.material = SharedMaterials.DebugMaterial();
+                })
+                let ray: BABYLON.Ray = new BABYLON.Ray(this.position.add(this.up), this._downDirection);
+                let hit: BABYLON.PickingInfo[] = ray.intersectsMeshes(this._meshes);
+                hit = hit.sort((h1, h2) => { return h1.distance - h2.distance; });
+                if (hit[0] && hit[0].pickedPoint) {
+                    if (!this._debugCollisionMesh) {
+                        this._debugCollisionMesh = BABYLON.MeshBuilder.CreateSphere("debug-collision-mesh", { diameter: 0.2 }, this.getScene());
+                        let material = new BABYLON.StandardMaterial("material", this.getScene());
+                        material.alpha = 0.5;
+                        this._debugCollisionMesh.material = material;
+                    }
+                    this._debugCollisionMesh.position.copyFrom(hit[0].pickedPoint);
+                    let d: number = BABYLON.Vector3.Dot(this.position.subtract(hit[0].pickedPoint), this.up) + 1;
+                    if (d > 0 && d < 2.1) {
+                        console.log(d.toFixed(3) + " _ " + (1 / d).toFixed(3));
+                        this._groundFactor
+                            .copyFrom(this._gravityFactor)
+                            .scaleInPlace(-1)
+                            .scaleInPlace(1 / (d * 0.5));
+                        fVert = 0.005;
+                        this._isGrounded = true;
                     }
                 }
             }

@@ -64,6 +64,7 @@ class PlanetEditor {
     }
 
     private _update = () => {
+        /*
         let removeMode: boolean = this.data === 0;
         let worldPos: BABYLON.Vector3 = PlanetEditor.GetHitWorldPos(removeMode);
 
@@ -89,9 +90,11 @@ class PlanetEditor {
             this._previewMesh.dispose();
             this._previewMesh = undefined;
         }
+        */
     }
 
     private _pointerUp(): void {
+        /*
         let removeMode: boolean = this.data === 0;
         let worldPos: BABYLON.Vector3 = PlanetEditor.GetHitWorldPos(removeMode);
         if (worldPos) {
@@ -111,5 +114,6 @@ class PlanetEditor {
                 }
             }
         }
+        */
     }
 }

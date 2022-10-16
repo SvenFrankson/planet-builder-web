@@ -30,7 +30,7 @@ class CameraManager {
             this.cameraMode = newCameraMode;
             if (this.cameraMode === CameraMode.Player) {
                 this.freeCamera.parent = this.player.camPos;
-                this.freeCamera.position.copyFromFloats(0, 0, 0);
+                this.freeCamera.position.copyFromFloats(0, 0, -5);
                 this.freeCamera.rotationQuaternion.copyFrom(BABYLON.Quaternion.Identity());
                 this.freeCamera.computeWorldMatrix();
                 Game.Scene.activeCamera = this.freeCamera;
@@ -232,12 +232,14 @@ class PlanetEditor {
         this.planet = planet;
         this.data = 0;
         this._update = () => {
-            let removeMode = this.data === 0;
-            let worldPos = PlanetEditor.GetHitWorldPos(removeMode);
+            /*
+            let removeMode: boolean = this.data === 0;
+            let worldPos: BABYLON.Vector3 = PlanetEditor.GetHitWorldPos(removeMode);
+    
             if (worldPos) {
                 if (this.data === 0 || worldPos.subtract(Game.Player.PositionHead()).lengthSquared() > 1) {
                     if (this.data === 0 || worldPos.subtract(Game.Player.PositionLeg()).lengthSquared() > 1) {
-                        let planetSide = PlanetTools.WorldPositionToPlanetSide(this.planet, worldPos);
+                        let planetSide: PlanetSide = PlanetTools.WorldPositionToPlanetSide(this.planet, worldPos);
                         if (planetSide) {
                             let global = PlanetTools.WorldPositionToGlobalIJK(planetSide, worldPos);
                             if (!this._previewMesh) {
@@ -256,6 +258,7 @@ class PlanetEditor {
                 this._previewMesh.dispose();
                 this._previewMesh = undefined;
             }
+            */
         };
     }
     static GetHitWorldPos(remove = false) {
@@ -302,12 +305,16 @@ class PlanetEditor {
         Game.Scene.onBeforeRenderObservable.removeCallback(this._update);
     }
     _pointerUp() {
-        let removeMode = this.data === 0;
-        let worldPos = PlanetEditor.GetHitWorldPos(removeMode);
+        /*
+        let removeMode: boolean = this.data === 0;
+        let worldPos: BABYLON.Vector3 = PlanetEditor.GetHitWorldPos(removeMode);
         if (worldPos) {
             if (this.data === 0 || worldPos.subtract(Game.Player.PositionHead()).lengthSquared() > 1) {
                 if (this.data === 0 || worldPos.subtract(Game.Player.PositionLeg()).lengthSquared() > 1) {
-                    let planetSide = PlanetTools.WorldPositionToPlanetSide(this.planet, worldPos);
+                    let planetSide: PlanetSide = PlanetTools.WorldPositionToPlanetSide(
+                        this.planet,
+                        worldPos
+                    );
                     if (planetSide) {
                         let global = PlanetTools.WorldPositionToGlobalIJK(planetSide, worldPos);
                         let local = PlanetTools.GlobalIJKToLocalIJK(planetSide, global);
@@ -318,6 +325,7 @@ class PlanetEditor {
                 }
             }
         }
+        */
     }
 }
 class PlanetToolsTest {
@@ -370,6 +378,12 @@ class SharedMaterials {
             SharedMaterials.mainMaterial = new TerrainToonMaterial("mainMaterial", Game.Scene);
         }
         return SharedMaterials.mainMaterial;
+    }
+    static DebugMaterial() {
+        if (!SharedMaterials.debugMaterial) {
+            SharedMaterials.debugMaterial = new BABYLON.StandardMaterial("debugMaterial", Game.Scene);
+        }
+        return SharedMaterials.debugMaterial;
     }
     static WaterMaterial() {
         if (!SharedMaterials.waterMaterial) {
@@ -4441,6 +4455,7 @@ class Player extends BABYLON.Mesh {
         this._collisionPositions = [];
         this._jumpTimer = 0;
         this._isGrounded = false;
+        this._meshes = [];
         this._update = () => {
             if (Game.CameraManager.cameraMode != CameraMode.Player) {
                 return;
@@ -4482,37 +4497,47 @@ class Player extends BABYLON.Mesh {
             this._gravityFactor.copyFrom(this._downDirection).scaleInPlace(9.8 * deltaTime);
             this._groundFactor.copyFromFloats(0, 0, 0);
             let fVert = 1;
+            this._meshes.forEach((m) => {
+                m.material = SharedMaterials.MainMaterial();
+            });
+            this._meshes = [];
             if (this._jumpTimer === 0) {
                 let chunck = PlanetTools.WorldPositionToChunck(this.planet, this.position);
                 if (chunck) {
-                    let meshes = [];
                     if (chunck.mesh) {
-                        meshes.push(chunck.mesh);
+                        this._meshes.push(chunck.mesh);
                     }
                     if (chunck.adjacentsAsArray) {
                         for (let i = 0; i < chunck.adjacentsAsArray.length; i++) {
                             let adjChunck = chunck.adjacentsAsArray[i];
                             if (adjChunck.mesh) {
-                                meshes.push(adjChunck.mesh);
+                                this._meshes.push(adjChunck.mesh);
                             }
                         }
-                        if (chunck.mesh) {
-                            let ray = new BABYLON.Ray(this.position, this._downDirection, 1.7);
-                            let hit = ray.intersectsMeshes(meshes);
-                            hit = hit.sort((h1, h2) => { return h2.distance - h1.distance; });
-                            for (let i = 0; i < hit.length; i++) {
-                                if (hit[i].pickedPoint) {
-                                    let d = hit[i].pickedPoint.subtract(this.position).length();
-                                    if (d > 0.01) {
-                                        this._groundFactor
-                                            .copyFrom(this._gravityFactor)
-                                            .scaleInPlace(-1)
-                                            .scaleInPlace(Math.pow(1.5 / d, 1));
-                                    }
-                                    fVert = 0.005;
-                                    this._isGrounded = true;
-                                }
-                            }
+                    }
+                    this._meshes.forEach((m) => {
+                        m.material = SharedMaterials.DebugMaterial();
+                    });
+                    let ray = new BABYLON.Ray(this.position.add(this.up), this._downDirection);
+                    let hit = ray.intersectsMeshes(this._meshes);
+                    hit = hit.sort((h1, h2) => { return h1.distance - h2.distance; });
+                    if (hit[0] && hit[0].pickedPoint) {
+                        if (!this._debugCollisionMesh) {
+                            this._debugCollisionMesh = BABYLON.MeshBuilder.CreateSphere("debug-collision-mesh", { diameter: 0.2 }, this.getScene());
+                            let material = new BABYLON.StandardMaterial("material", this.getScene());
+                            material.alpha = 0.5;
+                            this._debugCollisionMesh.material = material;
+                        }
+                        this._debugCollisionMesh.position.copyFrom(hit[0].pickedPoint);
+                        let d = BABYLON.Vector3.Dot(this.position.subtract(hit[0].pickedPoint), this.up) + 1;
+                        if (d > 0 && d < 2.1) {
+                            console.log(d.toFixed(3) + " _ " + (1 / d).toFixed(3));
+                            this._groundFactor
+                                .copyFrom(this._gravityFactor)
+                                .scaleInPlace(-1)
+                                .scaleInPlace(1 / (d * 0.5));
+                            fVert = 0.005;
+                            this._isGrounded = true;
                         }
                     }
                 }
@@ -4569,23 +4594,16 @@ class Player extends BABYLON.Mesh {
             this.position.addInPlace(this.velocity.scale(deltaTime));
             //document.querySelector("#camera-altitude").textContent = this.camPos.absolutePosition.length().toFixed(1);
         };
-        console.log("Create Player");
         this.planet = planet;
         this.position = position;
         this.rotationQuaternion = BABYLON.Quaternion.Identity();
         this.camPos = new BABYLON.Mesh("Dummy", Game.Scene);
         this.camPos.parent = this;
         this.camPos.position = new BABYLON.Vector3(0, 1, 0);
-    }
-    PositionLeg() {
-        let posLeg = this.position.add(BABYLON.Vector3.TransformNormal(BABYLON.Axis.Y, this.getWorldMatrix()).scale(-1));
-        return posLeg;
-    }
-    PositionRoot() {
-        return this.position.add(this._downDirection.scale(0.75));
-    }
-    PositionHead() {
-        return this.position;
+        BABYLON.VertexData.CreateSphere({ diameterX: 1, diameterY: 2, diameterZ: 1 }).applyToMesh(this);
+        let material = new BABYLON.StandardMaterial("material", this.getScene());
+        material.alpha = 0.5;
+        this.material = material;
     }
     initialize() {
         if (!this._initialized) {

@@ -7,6 +7,14 @@ class SharedMaterials {
         return SharedMaterials.mainMaterial;
     }
 
+    private static debugMaterial: BABYLON.StandardMaterial;
+    public static DebugMaterial(): BABYLON.StandardMaterial {
+        if (!SharedMaterials.debugMaterial) {
+            SharedMaterials.debugMaterial = new BABYLON.StandardMaterial("debugMaterial", Game.Scene);
+        }
+        return SharedMaterials.debugMaterial;
+    }
+
     private static waterMaterial: BABYLON.StandardMaterial;
     public static WaterMaterial(): BABYLON.StandardMaterial {
         if (!SharedMaterials.waterMaterial) {
