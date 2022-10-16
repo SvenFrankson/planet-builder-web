@@ -1143,9 +1143,16 @@ window.addEventListener("DOMContentLoaded", () => {
 });
 /// <reference path="../../lib/babylon.d.ts"/>
 /// <reference path="Main.ts"/>
+var InputMode;
+(function (InputMode) {
+    InputMode[InputMode["Unknown"] = 0] = "Unknown";
+    InputMode[InputMode["Mouse"] = 1] = "Mouse";
+    InputMode[InputMode["Touch"] = 2] = "Touch";
+})(InputMode || (InputMode = {}));
 class Game extends Main {
     constructor(canvasElement) {
         super(canvasElement);
+        this.inputMode = InputMode.Unknown;
         Game.Instance = this;
     }
     createScene() {
@@ -1154,28 +1161,19 @@ class Game extends Main {
         Game.Light.diffuse = new BABYLON.Color3(1, 1, 1);
         Game.Light.groundColor = new BABYLON.Color3(0.5, 0.5, 0.5);
         Game.CameraManager = new CameraManager(this);
-        this.meshesInfoTotalElement = document.getElementById("meshes-info-total");
-        this.meshesInfoNonStaticUniqueElement = document.getElementById("meshes-info-nonstatic-unique");
-        this.meshesInfoStaticUniqueElement = document.getElementById("meshes-info-static-unique");
-        this.meshesInfoNonStaticInstanceElement = document.getElementById("meshes-info-nonstatic-instance");
-        this.meshesInfoStaticInstanceElement = document.getElementById("meshes-info-static-instance");
     }
     async initialize() {
         return new Promise(resolve => {
             this.chunckManager = new PlanetChunckManager(this.scene);
-            let kPosMax = 10;
+            let kPosMax = 8;
             let planetTest = new Planet("Paulita", kPosMax, this.chunckManager);
             planetTest.generator = new PlanetGeneratorEarth(planetTest, 0.60, 0.1);
             //planetTest.generator = new PlanetGeneratorDebug4(planetTest);
             let r = kPosMax * PlanetTools.CHUNCKSIZE * 0.7;
-            document.querySelector("#planet-surface").textContent = (4 * Math.PI * r * r / 1000 / 1000).toFixed(2) + " km²";
+            //document.querySelector("#planet-surface").textContent = (4 * Math.PI * r * r / 1000 / 1000).toFixed(2) + " km²"
             //planetTest.generator.showDebug();
             Game.Player = new Player(new BABYLON.Vector3(0, (kPosMax + 1) * PlanetTools.CHUNCKSIZE * 0.8, 0), planetTest, this);
             this.player = Game.Player;
-            let movePad = new PlayerInputMovePad(this.player);
-            movePad.connectInput(true);
-            let headPad = new PlayerInputHeadPad(this.player);
-            headPad.connectInput(false);
             this.player.registerControl();
             this.chunckManager.onNextInactive(() => {
                 this.player.initialize();
@@ -1208,11 +1206,17 @@ class Game extends Main {
                 if (Game.CameraManager.cameraMode === CameraMode.Sky) {
                     return;
                 }
-                if (!Game.LockedMouse) {
-                    Game.LockMouse(event);
+                if (event["pointerType"] === "mouse") {
+                    this.setInputMode(InputMode.Mouse);
+                    if (!Game.LockedMouse) {
+                        Game.LockMouse(event);
+                    }
                 }
             });
-            document.addEventListener("pointermove", (event) => {
+            this.canvas.addEventListener("touchstart", (event) => {
+                this.setInputMode(InputMode.Touch);
+            });
+            document.addEventListener("mousemove", (event) => {
                 if (Game.CameraManager.cameraMode === CameraMode.Sky) {
                     return;
                 }
@@ -1228,17 +1232,26 @@ class Game extends Main {
         });
     }
     update() {
-        let uniques = this.scene.meshes.filter(m => { return !(m instanceof BABYLON.InstancedMesh); });
-        let uniquesNonStatic = uniques.filter(m => { return !m.isWorldMatrixFrozen; });
-        let uniquesStatic = uniques.filter(m => { return m.isWorldMatrixFrozen; });
-        let instances = this.scene.meshes.filter(m => { return m instanceof BABYLON.InstancedMesh; });
-        let instancesNonStatic = instances.filter(m => { return !m.isWorldMatrixFrozen; });
-        let instancesStatic = instances.filter(m => { return m.isWorldMatrixFrozen; });
-        this.meshesInfoTotalElement.innerText = this.scene.meshes.length.toFixed(0).padStart(4, "0");
-        this.meshesInfoNonStaticUniqueElement.innerText = uniquesNonStatic.length.toFixed(0).padStart(4, "0");
-        this.meshesInfoStaticUniqueElement.innerText = uniquesStatic.length.toFixed(0).padStart(4, "0");
-        this.meshesInfoNonStaticInstanceElement.innerText = instancesNonStatic.length.toFixed(0).padStart(4, "0");
-        this.meshesInfoStaticInstanceElement.innerText = instancesStatic.length.toFixed(0).padStart(4, "0");
+    }
+    setInputMode(newInputMode) {
+        if (newInputMode != this.inputMode) {
+            this.inputMode = newInputMode;
+            if (this.inputMode === InputMode.Touch) {
+                this.movePad = new PlayerInputMovePad(this.player);
+                this.movePad.connectInput(true);
+                this.headPad = new PlayerInputHeadPad(this.player);
+                this.headPad.connectInput(false);
+            }
+            else {
+                if (this.movePad) {
+                    this.movePad.disconnect();
+                }
+                if (this.headPad) {
+                    this.headPad.disconnect();
+                }
+            }
+            return;
+        }
     }
     static LockMouse(event) {
         if (Game.LockedMouse) {
@@ -4443,7 +4456,7 @@ class Player extends BABYLON.Mesh {
             this.camPos.rotation.x += rotationCamPower;
             this.camPos.rotation.x = Math.max(this.camPos.rotation.x, -Math.PI / 2);
             this.camPos.rotation.x = Math.min(this.camPos.rotation.x, Math.PI / 2);
-            if (Game.LockedMouse) {
+            if (this.game.inputMode === InputMode.Mouse) {
                 this.inputHeadRight *= 0.8;
                 this.inputHeadUp *= 0.8;
             }
@@ -4486,6 +4499,7 @@ class Player extends BABYLON.Mesh {
                         if (chunck.mesh) {
                             let ray = new BABYLON.Ray(this.position, this._downDirection, 1.7);
                             let hit = ray.intersectsMeshes(meshes);
+                            hit = hit.sort((h1, h2) => { return h2.distance - h1.distance; });
                             for (let i = 0; i < hit.length; i++) {
                                 if (hit[i].pickedPoint) {
                                     let d = hit[i].pickedPoint.subtract(this.position).length();
@@ -4553,7 +4567,7 @@ class Player extends BABYLON.Mesh {
                 this.velocity.copyFromFloats(-0.1 + 0.2 * Math.random(), -0.1 + 0.2 * Math.random(), -0.1 + 0.2 * Math.random());
             }
             this.position.addInPlace(this.velocity.scale(deltaTime));
-            document.querySelector("#camera-altitude").textContent = this.camPos.absolutePosition.length().toFixed(1);
+            //document.querySelector("#camera-altitude").textContent = this.camPos.absolutePosition.length().toFixed(1);
         };
         console.log("Create Player");
         this.planet = planet;
@@ -4664,8 +4678,8 @@ class PlayerInputVirtualPad extends PlayerInput {
         };
     }
     connectInput(left) {
-        let svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-        svg.setAttribute("viewBox", "0 0 1000 1000");
+        this.svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+        this.svg.setAttribute("viewBox", "0 0 1000 1000");
         this.clientWidth = document.body.clientWidth;
         this.clientHeight = document.body.clientHeight;
         let ratio = this.clientWidth / this.clientHeight;
@@ -4676,21 +4690,21 @@ class PlayerInputVirtualPad extends PlayerInput {
             this.size = this.clientWidth * 0.25;
         }
         let margin = Math.min(50, this.size * 0.3);
-        svg.style.display = "block";
-        svg.style.position = "fixed";
-        svg.style.width = this.size.toFixed(0) + "px";
-        svg.style.height = this.size.toFixed(0) + "px";
-        svg.style.zIndex = "2";
+        this.svg.style.display = "block";
+        this.svg.style.position = "fixed";
+        this.svg.style.width = this.size.toFixed(0) + "px";
+        this.svg.style.height = this.size.toFixed(0) + "px";
+        this.svg.style.zIndex = "2";
         if (left) {
-            svg.style.left = margin.toFixed(0) + "px";
+            this.svg.style.left = margin.toFixed(0) + "px";
         }
         else {
-            svg.style.right = margin.toFixed(0) + "px";
+            this.svg.style.right = margin.toFixed(0) + "px";
         }
-        svg.style.bottom = margin.toFixed(0) + "px";
-        svg.style.overflow = "visible";
-        svg.style.pointerEvents = "none";
-        document.body.appendChild(svg);
+        this.svg.style.bottom = margin.toFixed(0) + "px";
+        this.svg.style.overflow = "visible";
+        this.svg.style.pointerEvents = "none";
+        document.body.appendChild(this.svg);
         let base = document.createElementNS("http://www.w3.org/2000/svg", "circle");
         base.setAttribute("cx", "500");
         base.setAttribute("cy", "500");
@@ -4699,7 +4713,7 @@ class PlayerInputVirtualPad extends PlayerInput {
         base.setAttribute("fill-opacity", "10%");
         base.setAttribute("stroke-width", "4");
         base.setAttribute("stroke", "white");
-        svg.appendChild(base);
+        this.svg.appendChild(base);
         this.pad = document.createElementNS("http://www.w3.org/2000/svg", "circle");
         this.pad.setAttribute("cx", "500");
         this.pad.setAttribute("cy", "500");
@@ -4708,7 +4722,7 @@ class PlayerInputVirtualPad extends PlayerInput {
         this.pad.setAttribute("fill-opacity", "50%");
         this.pad.setAttribute("stroke-width", "4");
         this.pad.setAttribute("stroke", "white");
-        svg.appendChild(this.pad);
+        this.svg.appendChild(this.pad);
         if (left) {
             this.centerX = this.size * 0.5 + margin;
         }
@@ -4754,6 +4768,12 @@ class PlayerInputVirtualPad extends PlayerInput {
             }
         });
         this.game.scene.onBeforeRenderObservable.add(this._update);
+    }
+    disconnect() {
+        if (this.svg) {
+            document.body.removeChild(this.svg);
+        }
+        this.game.scene.onBeforeRenderObservable.removeCallback(this._update);
     }
     clientXToDX(clientX) {
         return (clientX - this.centerX) / (this.size * 0.5);

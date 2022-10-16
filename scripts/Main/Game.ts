@@ -1,6 +1,12 @@
 /// <reference path="../../lib/babylon.d.ts"/>
 /// <reference path="Main.ts"/>
 
+enum InputMode {
+	Unknown,
+	Mouse,
+	Touch
+}
+
 class Game extends Main {
 
 	public static ShowDebugPlanetHeightMap: boolean = false;
@@ -15,15 +21,12 @@ class Game extends Main {
 	public chunckManager: PlanetChunckManager;
 	public planetSky: PlanetSky;
 
+	public inputMode: InputMode = InputMode.Unknown;
+	public headPad: PlayerInputHeadPad;
+	public movePad: PlayerInputMovePad;
 	public static LockedMouse: boolean = false;
 	public static ClientXOnLock: number = -1;
 	public static ClientYOnLock: number = -1;
-
-	public meshesInfoTotalElement: HTMLDivElement; 
-	public meshesInfoNonStaticUniqueElement: HTMLDivElement;
-	public meshesInfoStaticUniqueElement: HTMLDivElement;
-	public meshesInfoNonStaticInstanceElement: HTMLDivElement;
-	public meshesInfoStaticInstanceElement: HTMLDivElement;
 
 	constructor(canvasElement: string) {
 		super(canvasElement);
@@ -43,35 +46,23 @@ class Game extends Main {
 		Game.Light.groundColor = new BABYLON.Color3(0.5, 0.5, 0.5);
 
 		Game.CameraManager = new CameraManager(this);
-		
-		this.meshesInfoTotalElement = document.getElementById("meshes-info-total") as HTMLDivElement;
-		this.meshesInfoNonStaticUniqueElement = document.getElementById("meshes-info-nonstatic-unique") as HTMLDivElement;
-		this.meshesInfoStaticUniqueElement = document.getElementById("meshes-info-static-unique") as HTMLDivElement;
-		this.meshesInfoNonStaticInstanceElement = document.getElementById("meshes-info-nonstatic-instance") as HTMLDivElement;
-		this.meshesInfoStaticInstanceElement = document.getElementById("meshes-info-static-instance") as HTMLDivElement;
 	}
 
     public async initialize(): Promise<void> {
 		return new Promise<void>(resolve => {
 			this.chunckManager = new PlanetChunckManager(this.scene);
 
-			let kPosMax = 10;
+			let kPosMax = 8;
 			let planetTest: Planet = new Planet("Paulita", kPosMax, this.chunckManager);
 
 			planetTest.generator = new PlanetGeneratorEarth(planetTest, 0.60, 0.1);
 			//planetTest.generator = new PlanetGeneratorDebug4(planetTest);
 			let r = kPosMax * PlanetTools.CHUNCKSIZE * 0.7;
-			document.querySelector("#planet-surface").textContent = (4 * Math.PI * r * r / 1000 / 1000).toFixed(2) + " km²"
+			//document.querySelector("#planet-surface").textContent = (4 * Math.PI * r * r / 1000 / 1000).toFixed(2) + " km²"
 			//planetTest.generator.showDebug();
 
 			Game.Player = new Player(new BABYLON.Vector3(0, (kPosMax + 1) * PlanetTools.CHUNCKSIZE * 0.8, 0), planetTest, this);
 			this.player = Game.Player;
-
-			let movePad = new PlayerInputMovePad(this.player);
-			movePad.connectInput(true);
-
-			let headPad = new PlayerInputHeadPad(this.player);
-			headPad.connectInput(false);
 			
 			this.player.registerControl();
 			this.chunckManager.onNextInactive(() => {
@@ -119,12 +110,19 @@ class Game extends Main {
 				if (Game.CameraManager.cameraMode === CameraMode.Sky) {
 					return;
 				}
-				if (!Game.LockedMouse) {
-					Game.LockMouse(event);
+				if (event["pointerType"] === "mouse") {
+					this.setInputMode(InputMode.Mouse);
+					if (!Game.LockedMouse) {
+						Game.LockMouse(event);
+					}
 				}
 			});
 
-			document.addEventListener("pointermove", (event: MouseEvent) => {
+			this.canvas.addEventListener("touchstart", (event: MouseEvent) => {
+				this.setInputMode(InputMode.Touch);
+			});
+
+			document.addEventListener("mousemove", (event: MouseEvent) => {
 				if (Game.CameraManager.cameraMode === CameraMode.Sky) {
 					return;
 				}
@@ -141,17 +139,29 @@ class Game extends Main {
 	}
 
 	public update(): void {
-		let uniques = this.scene.meshes.filter(m => { return !(m instanceof BABYLON.InstancedMesh); });
-		let uniquesNonStatic = uniques.filter(m => { return !m.isWorldMatrixFrozen; });
-		let uniquesStatic = uniques.filter(m => { return m.isWorldMatrixFrozen; });
-		let instances = this.scene.meshes.filter(m => { return m instanceof BABYLON.InstancedMesh; });
-		let instancesNonStatic = instances.filter(m => { return !m.isWorldMatrixFrozen; });
-		let instancesStatic = instances.filter(m => { return m.isWorldMatrixFrozen; });
-		this.meshesInfoTotalElement.innerText = this.scene.meshes.length.toFixed(0).padStart(4, "0");
-		this.meshesInfoNonStaticUniqueElement.innerText = uniquesNonStatic.length.toFixed(0).padStart(4, "0");
-		this.meshesInfoStaticUniqueElement.innerText = uniquesStatic.length.toFixed(0).padStart(4, "0");
-		this.meshesInfoNonStaticInstanceElement.innerText = instancesNonStatic.length.toFixed(0).padStart(4, "0");
-		this.meshesInfoStaticInstanceElement.innerText = instancesStatic.length.toFixed(0).padStart(4, "0");
+		
+	}
+
+	public setInputMode(newInputMode: InputMode): void {
+		if (newInputMode != this.inputMode) {
+			this.inputMode = newInputMode;
+			if (this.inputMode === InputMode.Touch) {
+				this.movePad = new PlayerInputMovePad(this.player);
+				this.movePad.connectInput(true);
+
+				this.headPad = new PlayerInputHeadPad(this.player);
+				this.headPad.connectInput(false);
+			}
+			else {
+				if (this.movePad) {
+					this.movePad.disconnect();
+				}
+				if (this.headPad) {
+					this.headPad.disconnect();
+				}
+			}
+			return;
+		}
 	}
 
 	public static LockMouse(event: MouseEvent): void {

@@ -156,7 +156,7 @@ class Player extends BABYLON.Mesh {
         this.camPos.rotation.x = Math.max(this.camPos.rotation.x, -Math.PI / 2);
         this.camPos.rotation.x = Math.min(this.camPos.rotation.x, Math.PI / 2);
         
-        if (Game.LockedMouse) {
+        if (this.game.inputMode === InputMode.Mouse) {
             this.inputHeadRight *= 0.8;
             this.inputHeadUp *= 0.8;
         }
@@ -205,6 +205,7 @@ class Player extends BABYLON.Mesh {
                     if (chunck.mesh) {
                         let ray: BABYLON.Ray = new BABYLON.Ray(this.position, this._downDirection, 1.7);
                         let hit: BABYLON.PickingInfo[] = ray.intersectsMeshes(meshes);
+                        hit = hit.sort((h1, h2) => { return h2.distance - h1.distance; });
                         for (let i = 0; i < hit.length; i++) {
                             if (hit[i].pickedPoint) {
                                 let d: number = hit[i].pickedPoint.subtract(this.position).length();
@@ -277,7 +278,7 @@ class Player extends BABYLON.Mesh {
         }
         this.position.addInPlace(this.velocity.scale(deltaTime));
 
-        document.querySelector("#camera-altitude").textContent = this.camPos.absolutePosition.length().toFixed(1);
+        //document.querySelector("#camera-altitude").textContent = this.camPos.absolutePosition.length().toFixed(1);
     };
 
     private _keepUp(): void {

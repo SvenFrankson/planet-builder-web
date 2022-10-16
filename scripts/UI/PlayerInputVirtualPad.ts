@@ -14,11 +14,12 @@ class PlayerInputVirtualPad extends PlayerInput {
     private _dx: number = 0;
     private _dy: number = 0;
 
+    public svg: SVGElement;
     public pad: SVGCircleElement;
 
     public connectInput(left?: boolean): void {
-        let svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-        svg.setAttribute("viewBox", "0 0 1000 1000");
+        this.svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+        this.svg.setAttribute("viewBox", "0 0 1000 1000");
 
         this.clientWidth = document.body.clientWidth;
         this.clientHeight = document.body.clientHeight;
@@ -31,22 +32,22 @@ class PlayerInputVirtualPad extends PlayerInput {
         }
         let margin = Math.min(50, this.size * 0.3);
 
-        svg.style.display = "block";
-        svg.style.position = "fixed";
-        svg.style.width = this.size.toFixed(0) + "px";
-        svg.style.height = this.size.toFixed(0) + "px";
-        svg.style.zIndex = "2";
+        this.svg.style.display = "block";
+        this.svg.style.position = "fixed";
+        this.svg.style.width = this.size.toFixed(0) + "px";
+        this.svg.style.height = this.size.toFixed(0) + "px";
+        this.svg.style.zIndex = "2";
         if (left) {
-            svg.style.left = margin.toFixed(0) + "px";
+            this.svg.style.left = margin.toFixed(0) + "px";
         }
         else {
-            svg.style.right = margin.toFixed(0) + "px";
+            this.svg.style.right = margin.toFixed(0) + "px";
         }
-        svg.style.bottom = margin.toFixed(0) + "px";
-        svg.style.overflow = "visible";
-        svg.style.pointerEvents = "none";
+        this.svg.style.bottom = margin.toFixed(0) + "px";
+        this.svg.style.overflow = "visible";
+        this.svg.style.pointerEvents = "none";
         
-        document.body.appendChild(svg);
+        document.body.appendChild(this.svg);
 
         let base = document.createElementNS("http://www.w3.org/2000/svg", "circle");
         base.setAttribute("cx", "500");
@@ -57,7 +58,7 @@ class PlayerInputVirtualPad extends PlayerInput {
         base.setAttribute("stroke-width", "4");
         base.setAttribute("stroke", "white");      
         
-        svg.appendChild(base);
+        this.svg.appendChild(base);
 
         this.pad = document.createElementNS("http://www.w3.org/2000/svg", "circle");
         this.pad.setAttribute("cx", "500");
@@ -68,7 +69,7 @@ class PlayerInputVirtualPad extends PlayerInput {
         this.pad.setAttribute("stroke-width", "4");
         this.pad.setAttribute("stroke", "white");      
         
-        svg.appendChild(this.pad);
+        this.svg.appendChild(this.pad);
 
         if (left) {
             this.centerX = this.size * 0.5 + margin;
@@ -120,6 +121,13 @@ class PlayerInputVirtualPad extends PlayerInput {
         });
 
         this.game.scene.onBeforeRenderObservable.add(this._update);
+    }
+
+    public disconnect(): void {
+        if (this.svg) {
+            document.body.removeChild(this.svg);
+        }
+        this.game.scene.onBeforeRenderObservable.removeCallback(this._update);
     }
 
     public clientXToDX(clientX: number): number {

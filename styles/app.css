@@ -9,7 +9,6 @@ html, body {
 #renderCanvas {
 	width: 100%;
 	height: 100%;
-	touch-action: none;
 	margin: 0;
 	padding: 0;
 }
