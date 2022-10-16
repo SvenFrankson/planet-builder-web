@@ -1793,6 +1793,8 @@ class PlanetChunck {
                 }
             }
         }
+        this.updateIsEmptyIsFull();
+        this.register();
     }
     initializeMesh() {
         if (this.dataInitialized) {
@@ -1802,9 +1804,9 @@ class PlanetChunck {
     updateIsEmptyIsFull() {
         this._isEmpty = true;
         this._isFull = true;
-        for (let i = 0; i < PlanetTools.CHUNCKSIZE; i++) {
-            for (let j = 0; j < PlanetTools.CHUNCKSIZE; j++) {
-                for (let k = 0; k < PlanetTools.CHUNCKSIZE; k++) {
+        for (let i = this.firstI; i <= PlanetTools.CHUNCKSIZE; i++) {
+            for (let j = this.firstJ; j <= this.lastJ; j++) {
+                for (let k = this.firstK; k <= PlanetTools.CHUNCKSIZE; k++) {
                     let block = this.data[i - this.firstI][j - this.firstJ][k - this.firstK] > 0;
                     this._isFull = this._isFull && block;
                     this._isEmpty = this._isEmpty && !block;
@@ -1816,42 +1818,13 @@ class PlanetChunck {
         }
     }
     isEmptyOrHidden() {
-        if (this.isFull || this.isEmpty) {
-            let iPrev = this.planetSide.getChunck(this.iPos - 1, this.jPos, this.kPos, this.degree);
-            let iNext = this.planetSide.getChunck(this.iPos + 1, this.jPos, this.kPos, this.degree);
-            let jPrev = this.planetSide.getChunck(this.iPos, this.jPos - 1, this.kPos, this.degree);
-            let jNext = this.planetSide.getChunck(this.iPos, this.jPos + 1, this.kPos, this.degree);
-            let kPrev = this.planetSide.getChunck(this.iPos, this.jPos, this.kPos - 1, this.degree);
-            let kNext = this.planetSide.getChunck(this.iPos, this.jPos, this.kPos + 1, this.degree);
-            if (iPrev instanceof PlanetChunck && iNext instanceof PlanetChunck && jPrev instanceof PlanetChunck && jNext instanceof PlanetChunck && kPrev instanceof PlanetChunck && kNext) {
-                iPrev.initializeData();
-                iNext.initializeData();
-                jPrev.initializeData();
-                jNext.initializeData();
-                kPrev.initializeData();
-                let kNextIsFull = true;
-                let kNextIsEmpty = true;
-                if (kNext instanceof PlanetChunck) {
-                    kNext.initializeData();
-                    kNextIsFull = kNext.isFull;
-                    kNextIsEmpty = kNext.isEmpty;
-                }
-                else {
-                    kNext.forEach(c => {
-                        c.initializeData();
-                        kNextIsFull = kNextIsFull && c.isFull;
-                        kNextIsEmpty = kNextIsEmpty && c.isEmpty;
-                    });
-                }
-                if (this.isFull && iPrev.isFull && iNext.isFull && jPrev.isFull && jNext.isFull && kPrev.isFull && kNextIsFull) {
-                    return true;
-                }
-                if (this.isEmpty && iPrev.isEmpty && iNext.isEmpty && jPrev.isEmpty && jNext.isEmpty && kPrev.isEmpty && kNextIsEmpty) {
-                    return true;
-                }
-            }
+        if (!this.dataInitialized) {
+            this.initializeData();
         }
-        return false;
+        if (!this.dataNeighbourSynced) {
+            this.syncWithAdjacents();
+        }
+        return this.isEmpty || this.isFull;
     }
     SetMesh() {
         if (this.isEmptyOrHidden()) {
@@ -2402,6 +2375,18 @@ class PlanetChunckMeshBuilder {
                         PCMB.tmpVertices[1].scaleInPlace(hLow);
                         PCMB.tmpVertices[2].scaleInPlace(hLow);
                         PCMB.tmpVertices[3].scaleInPlace(hLow);
+                        /*
+                        let center = BABYLON.Vector3.Zero();
+                        for (let i = 0; i < 8; i++) {
+                            center.addInPlace(PCMB.tmpVertices[i]);
+                        }
+                        center.scaleInPlace(1 / 8);
+
+                        center.scaleInPlace(0.015);
+                        for (let i = 0; i < 8; i++) {
+                            PCMB.tmpVertices[i].scaleInPlace(0.985).addInPlace(center);
+                        }
+                        */
                         let l = positions.length / 3;
                         colors.push(...partVertexData.colors);
                         uvs.push(...partVertexData.uvs);

@@ -398,6 +398,19 @@ class PlanetChunckMeshBuilder {
                         PCMB.tmpVertices[1].scaleInPlace(hLow);
                         PCMB.tmpVertices[2].scaleInPlace(hLow);
                         PCMB.tmpVertices[3].scaleInPlace(hLow);
+
+                        /*
+                        let center = BABYLON.Vector3.Zero();
+                        for (let i = 0; i < 8; i++) {
+                            center.addInPlace(PCMB.tmpVertices[i]);
+                        }
+                        center.scaleInPlace(1 / 8);
+
+                        center.scaleInPlace(0.015);
+                        for (let i = 0; i < 8; i++) {
+                            PCMB.tmpVertices[i].scaleInPlace(0.985).addInPlace(center);
+                        }
+                        */
                         
                         let l = positions.length / 3;
                         colors.push(...partVertexData.colors);

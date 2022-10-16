@@ -366,6 +366,8 @@ class PlanetChunck {
                 }
             }
         }
+        this.updateIsEmptyIsFull();
+        this.register();
     }
 
     public initializeMesh(): void {
@@ -377,9 +379,9 @@ class PlanetChunck {
     public updateIsEmptyIsFull(): void {
         this._isEmpty = true;
         this._isFull = true;
-        for (let i = 0; i < PlanetTools.CHUNCKSIZE; i++) {
-            for (let j = 0; j < PlanetTools.CHUNCKSIZE; j++) {
-                for (let k = 0; k < PlanetTools.CHUNCKSIZE; k++) {
+        for (let i = this.firstI; i <= PlanetTools.CHUNCKSIZE; i++) {
+            for (let j = this.firstJ; j <= this.lastJ; j++) {
+                for (let k = this.firstK; k <= PlanetTools.CHUNCKSIZE; k++) {
                     let block = this.data[i - this.firstI][j - this.firstJ][k - this.firstK] > 0;
                     this._isFull = this._isFull && block;
                     this._isEmpty = this._isEmpty && !block;
@@ -392,42 +394,13 @@ class PlanetChunck {
     }
 
     public isEmptyOrHidden(): boolean {
-        if (this.isFull || this.isEmpty) {
-            let iPrev = this.planetSide.getChunck(this.iPos - 1, this.jPos, this.kPos, this.degree);
-            let iNext = this.planetSide.getChunck(this.iPos + 1, this.jPos, this.kPos, this.degree);
-            let jPrev = this.planetSide.getChunck(this.iPos, this.jPos - 1, this.kPos, this.degree);
-            let jNext = this.planetSide.getChunck(this.iPos, this.jPos + 1, this.kPos, this.degree);
-            let kPrev = this.planetSide.getChunck(this.iPos, this.jPos, this.kPos - 1, this.degree);
-            let kNext = this.planetSide.getChunck(this.iPos, this.jPos, this.kPos + 1, this.degree);
-            if (iPrev instanceof PlanetChunck && iNext instanceof PlanetChunck && jPrev instanceof PlanetChunck && jNext instanceof PlanetChunck && kPrev instanceof PlanetChunck && kNext) {
-                iPrev.initializeData();
-                iNext.initializeData();
-                jPrev.initializeData();
-                jNext.initializeData();
-                kPrev.initializeData();
-                let kNextIsFull = true;
-                let kNextIsEmpty = true;
-                if (kNext instanceof PlanetChunck) {
-                    kNext.initializeData();
-                    kNextIsFull = kNext.isFull;
-                    kNextIsEmpty = kNext.isEmpty;
-                }
-                else {
-                    kNext.forEach(c => {
-                        c.initializeData();
-                        kNextIsFull = kNextIsFull && c.isFull;
-                        kNextIsEmpty = kNextIsEmpty && c.isEmpty;
-                    })
-                }
-                if (this.isFull && iPrev.isFull && iNext.isFull && jPrev.isFull && jNext.isFull && kPrev.isFull && kNextIsFull) {
-                    return true;
-                }
-                if (this.isEmpty && iPrev.isEmpty && iNext.isEmpty && jPrev.isEmpty && jNext.isEmpty && kPrev.isEmpty && kNextIsEmpty) {
-                    return true;
-                }
-            }
+        if (!this.dataInitialized) {
+            this.initializeData();
         }
-        return false;
+        if (!this.dataNeighbourSynced) {
+            this.syncWithAdjacents();
+        }
+        return this.isEmpty || this.isFull;
     }
 
     public SetMesh(): void {
