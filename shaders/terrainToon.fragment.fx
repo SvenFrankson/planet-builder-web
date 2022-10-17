@@ -3,6 +3,7 @@ precision highp float;
  
 uniform vec3 lightInvDirW;
 uniform vec3 terrainColors[7];
+uniform vec3 globalColor;
 
 in vec3 vPositionW;
 in vec3 vNormalW;
@@ -54,5 +55,5 @@ void main() {
       color = terrainColors[d2];
    }
 
-   outColor = vec4(color * lightFactor, 1.);
+   outColor = vec4(globalColor + color * lightFactor, 1.);
 }

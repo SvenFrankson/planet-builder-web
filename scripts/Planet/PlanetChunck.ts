@@ -316,6 +316,9 @@ class PlanetChunck {
         }
         this._adjacentsDataSynced = true;
         this.findAdjacents();
+        if (!this._adjacents[0][1][1]) {
+            
+        }
         
         for (let i: number = this.firstI; i <= PlanetTools.CHUNCKSIZE; i++) {
             for (let j: number = this.firstJ; j <= this.lastJ; j++) {
@@ -442,6 +445,18 @@ class PlanetChunck {
         this.mesh.parent = this.planetSide;
         this.mesh.freezeWorldMatrix();
         this.mesh.refreshBoundingInfo();
+    }
+
+    public highlight(): void {
+        if (this.mesh) {
+            this.mesh.material = SharedMaterials.HighlightChunckMaterial();
+        }
+    }
+
+    public unlit(): void {
+        if (this.mesh) {
+            this.mesh.material = SharedMaterials.MainMaterial();
+        }
     }
 
     public disposeMesh(): void {

@@ -379,6 +379,13 @@ class SharedMaterials {
         }
         return SharedMaterials.mainMaterial;
     }
+    static HighlightChunckMaterial() {
+        if (!SharedMaterials.highlightChunckMaterial) {
+            SharedMaterials.highlightChunckMaterial = new TerrainToonMaterial("highlightChunckMaterial", Game.Scene);
+            SharedMaterials.highlightChunckMaterial.setGlobalColor(new BABYLON.Color3(0, 1, 1));
+        }
+        return SharedMaterials.highlightChunckMaterial;
+    }
     static DebugMaterial() {
         if (!SharedMaterials.debugMaterial) {
             SharedMaterials.debugMaterial = new BABYLON.StandardMaterial("debugMaterial", Game.Scene);
@@ -1049,8 +1056,10 @@ class DebugPlayerPosition {
             this._playerGlobalIJK.setValue(globalIJK);
             let localIJK = PlanetTools.GlobalIJKToLocalIJK(planetSide, globalIJK);
             let chunck = localIJK.planetChunck;
-            this._playerChunck.setValue(chunck.iPos, chunck.jPos, chunck.kPos);
-            this._playerLocalIJK.setValue(localIJK);
+            if (chunck) {
+                this._playerChunck.setValue(chunck.iPos, chunck.jPos, chunck.kPos);
+                this._playerLocalIJK.setValue(localIJK);
+            }
         };
     }
     get initialized() {
@@ -1212,8 +1221,8 @@ class Game extends Main {
                 //debugPlanetSkyColor.show();
                 //let debugTerrainColor = new DebugTerrainColor();
                 //debugTerrainColor.show();
-                //let debugPlayerPosition = new DebugPlayerPosition(this);
-                //debugPlayerPosition.show();
+                let debugPlayerPosition = new DebugPlayerPosition(this);
+                debugPlayerPosition.show();
                 resolve();
             });
             this.canvas.addEventListener("pointerup", (event) => {
@@ -1772,6 +1781,8 @@ class PlanetChunck {
         }
         this._adjacentsDataSynced = true;
         this.findAdjacents();
+        if (!this._adjacents[0][1][1]) {
+        }
         for (let i = this.firstI; i <= PlanetTools.CHUNCKSIZE; i++) {
             for (let j = this.firstJ; j <= this.lastJ; j++) {
                 for (let k = this.firstK; k <= PlanetTools.CHUNCKSIZE; k++) {
@@ -1883,6 +1894,16 @@ class PlanetChunck {
         this.mesh.parent = this.planetSide;
         this.mesh.freezeWorldMatrix();
         this.mesh.refreshBoundingInfo();
+    }
+    highlight() {
+        if (this.mesh) {
+            this.mesh.material = SharedMaterials.HighlightChunckMaterial();
+        }
+    }
+    unlit() {
+        if (this.mesh) {
+            this.mesh.material = SharedMaterials.MainMaterial();
+        }
     }
     disposeMesh() {
         if (this.mesh) {
@@ -3645,6 +3666,7 @@ class TerrainToonMaterial extends BABYLON.ShaderMaterial {
             attributes: ["position", "normal", "uv", "color"],
             uniforms: ["world", "worldView", "worldViewProjection", "view", "projection"]
         });
+        this._globalColor = BABYLON.Color3.Black();
         this.setVector3("lightInvDirW", (new BABYLON.Vector3(0.5, 2.5, 1.5)).normalize());
         this._terrainColors = [];
         this._terrainColors[BlockType.None] = new BABYLON.Color3(0, 0, 0);
@@ -3654,7 +3676,15 @@ class TerrainToonMaterial extends BABYLON.ShaderMaterial {
         this._terrainColors[BlockType.Rock] = new BABYLON.Color3(0.522, 0.522, 0.522);
         this._terrainColors[BlockType.Wood] = new BABYLON.Color3(0.600, 0.302, 0.020);
         this._terrainColors[BlockType.Leaf] = new BABYLON.Color3(0.431, 0.839, 0.020);
+        this.setColor3("globalColor", this._globalColor);
         this.setColor3Array("terrainColors", this._terrainColors);
+    }
+    getGlobalColor() {
+        return this._globalColor;
+    }
+    setGlobalColor(color) {
+        this._globalColor.copyFrom(color);
+        this.setColor3("globalColor", this._globalColor);
     }
     getColor(blockType) {
         return this._terrainColors[blockType];
@@ -4455,6 +4485,7 @@ class Player extends BABYLON.Mesh {
         this._collisionPositions = [];
         this._jumpTimer = 0;
         this._isGrounded = false;
+        this._chuncks = [];
         this._meshes = [];
         this._update = () => {
             if (Game.CameraManager.cameraMode != CameraMode.Player) {
@@ -4497,26 +4528,29 @@ class Player extends BABYLON.Mesh {
             this._gravityFactor.copyFrom(this._downDirection).scaleInPlace(9.8 * deltaTime);
             this._groundFactor.copyFromFloats(0, 0, 0);
             let fVert = 1;
-            this._meshes.forEach((m) => {
-                m.material = SharedMaterials.MainMaterial();
+            this._chuncks.forEach((chunck) => {
+                chunck.unlit();
             });
+            this._chuncks = [];
             this._meshes = [];
             if (this._jumpTimer === 0) {
                 let chunck = PlanetTools.WorldPositionToChunck(this.planet, this.position);
                 if (chunck) {
+                    this._chuncks.push(chunck);
                     if (chunck.mesh) {
                         this._meshes.push(chunck.mesh);
                     }
                     if (chunck.adjacentsAsArray) {
                         for (let i = 0; i < chunck.adjacentsAsArray.length; i++) {
                             let adjChunck = chunck.adjacentsAsArray[i];
+                            this._chuncks.push(adjChunck);
                             if (adjChunck.mesh) {
                                 this._meshes.push(adjChunck.mesh);
                             }
                         }
                     }
-                    this._meshes.forEach((m) => {
-                        m.material = SharedMaterials.DebugMaterial();
+                    this._chuncks.forEach((chunck) => {
+                        chunck.highlight();
                     });
                     let ray = new BABYLON.Ray(this.position.add(this.up), this._downDirection);
                     let hit = ray.intersectsMeshes(this._meshes);
@@ -4530,7 +4564,7 @@ class Player extends BABYLON.Mesh {
                         }
                         this._debugCollisionMesh.position.copyFrom(hit[0].pickedPoint);
                         let d = BABYLON.Vector3.Dot(this.position.subtract(hit[0].pickedPoint), this.up) + 1;
-                        if (d > 0 && d < 2.1) {
+                        if (d > 0 && d < 2.5) {
                             console.log(d.toFixed(3) + " _ " + (1 / d).toFixed(3));
                             this._groundFactor
                                 .copyFrom(this._gravityFactor)

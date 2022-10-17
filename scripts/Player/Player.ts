@@ -128,6 +128,7 @@ class Player extends BABYLON.Mesh {
     private _isGrounded: boolean = false;
 
     private _debugCollisionMesh: BABYLON.Mesh;
+    private _chuncks: PlanetChunck[] = [];
     private _meshes: BABYLON.Mesh[] = [];
 
     private _update = () => {
@@ -182,26 +183,29 @@ class Player extends BABYLON.Mesh {
         this._groundFactor.copyFromFloats(0, 0, 0);
         let fVert = 1;
 
-        this._meshes.forEach((m) => {
-            m.material = SharedMaterials.MainMaterial();
+        this._chuncks.forEach((chunck) => {
+            chunck.unlit();
         })
+        this._chuncks = [];
         this._meshes = [];
         if (this._jumpTimer === 0) {
             let chunck = PlanetTools.WorldPositionToChunck(this.planet, this.position);
             if (chunck) {
+                this._chuncks.push(chunck);
                 if (chunck.mesh) {
                     this._meshes.push(chunck.mesh);
                 }
                 if (chunck.adjacentsAsArray) {
                     for (let i = 0; i < chunck.adjacentsAsArray.length; i++) {
                         let adjChunck = chunck.adjacentsAsArray[i];
+                        this._chuncks.push(adjChunck);
                         if (adjChunck.mesh) {
-                            this._meshes.push(adjChunck.mesh)
+                            this._meshes.push(adjChunck.mesh);
                         }
                     }
                 }
-                this._meshes.forEach((m) => {
-                    m.material = SharedMaterials.DebugMaterial();
+                this._chuncks.forEach((chunck) => {
+                    chunck.highlight();
                 })
                 let ray: BABYLON.Ray = new BABYLON.Ray(this.position.add(this.up), this._downDirection);
                 let hit: BABYLON.PickingInfo[] = ray.intersectsMeshes(this._meshes);
@@ -215,7 +219,7 @@ class Player extends BABYLON.Mesh {
                     }
                     this._debugCollisionMesh.position.copyFrom(hit[0].pickedPoint);
                     let d: number = BABYLON.Vector3.Dot(this.position.subtract(hit[0].pickedPoint), this.up) + 1;
-                    if (d > 0 && d < 2.1) {
+                    if (d > 0 && d < 2.5) {
                         console.log(d.toFixed(3) + " _ " + (1 / d).toFixed(3));
                         this._groundFactor
                             .copyFrom(this._gravityFactor)

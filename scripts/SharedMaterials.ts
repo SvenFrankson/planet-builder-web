@@ -6,6 +6,15 @@ class SharedMaterials {
         }
         return SharedMaterials.mainMaterial;
     }
+    
+    private static highlightChunckMaterial: TerrainToonMaterial;
+    public static HighlightChunckMaterial(): TerrainToonMaterial {
+        if (!SharedMaterials.highlightChunckMaterial) {
+            SharedMaterials.highlightChunckMaterial = new TerrainToonMaterial("highlightChunckMaterial", Game.Scene);
+            SharedMaterials.highlightChunckMaterial.setGlobalColor(new BABYLON.Color3(0, 1, 1));
+        }
+        return SharedMaterials.highlightChunckMaterial;
+    }
 
     private static debugMaterial: BABYLON.StandardMaterial;
     public static DebugMaterial(): BABYLON.StandardMaterial {

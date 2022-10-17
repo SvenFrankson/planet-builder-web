@@ -99,8 +99,8 @@ class Game extends Main {
 					//let debugTerrainColor = new DebugTerrainColor();
 					//debugTerrainColor.show();
 
-					//let debugPlayerPosition = new DebugPlayerPosition(this);
-					//debugPlayerPosition.show();
+					let debugPlayerPosition = new DebugPlayerPosition(this);
+					debugPlayerPosition.show();
 
 					resolve();
 				}

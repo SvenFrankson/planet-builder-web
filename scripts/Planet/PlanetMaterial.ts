@@ -1,5 +1,6 @@
 class TerrainToonMaterial extends BABYLON.ShaderMaterial {
 
+    private _globalColor: BABYLON.Color3 = BABYLON.Color3.Black();
     private _terrainColors: BABYLON.Color3[];
 
     constructor(name: string, scene: BABYLON.Scene) {
@@ -26,7 +27,17 @@ class TerrainToonMaterial extends BABYLON.ShaderMaterial {
         this._terrainColors[BlockType.Wood] = new BABYLON.Color3(0.600, 0.302, 0.020);
         this._terrainColors[BlockType.Leaf] = new BABYLON.Color3(0.431, 0.839, 0.020);
 
+        this.setColor3("globalColor", this._globalColor);
         this.setColor3Array("terrainColors", this._terrainColors);
+    }
+
+    public getGlobalColor(): BABYLON.Color3 {
+        return this._globalColor;
+    }
+
+    public setGlobalColor(color: BABYLON.Color3): void {
+        this._globalColor.copyFrom(color);
+        this.setColor3("globalColor", this._globalColor);
     }
 
     public getColor(blockType: BlockType): BABYLON.Color3 {
