@@ -220,7 +220,6 @@ class Player extends BABYLON.Mesh {
                     this._debugCollisionMesh.position.copyFrom(hit[0].pickedPoint);
                     let d: number = BABYLON.Vector3.Dot(this.position.subtract(hit[0].pickedPoint), this.up) + 1;
                     if (d > 0 && d < 2.5) {
-                        console.log(d.toFixed(3) + " _ " + (1 / d).toFixed(3));
                         this._groundFactor
                             .copyFrom(this._gravityFactor)
                             .scaleInPlace(-1)

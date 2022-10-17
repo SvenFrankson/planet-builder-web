@@ -1190,6 +1190,7 @@ class Game extends Main {
             this.chunckManager = new PlanetChunckManager(this.scene);
             let kPosMax = 8;
             let planetTest = new Planet("Paulita", kPosMax, this.chunckManager);
+            window["PlanetTest"] = planetTest;
             planetTest.generator = new PlanetGeneratorEarth(planetTest, 0.60, 0.1);
             //planetTest.generator = new PlanetGeneratorDebug4(planetTest);
             let r = kPosMax * PlanetTools.CHUNCKSIZE * 0.7;
@@ -3775,7 +3776,7 @@ class PlanetSide extends BABYLON.Mesh {
             let chunckCount = this.chuncks[kPos].length;
             if (iPos < 0) {
                 if (this.side <= Side.Left) {
-                    let side = this.planet.GetSide((this.side + 3) % 4);
+                    let side = this.planet.GetSide((this.side + 1) % 4);
                     return side.getChunck(chunckCount + iPos, jPos, kPos, degree);
                 }
                 else if (this.side === Side.Top) {
@@ -4565,7 +4566,6 @@ class Player extends BABYLON.Mesh {
                         this._debugCollisionMesh.position.copyFrom(hit[0].pickedPoint);
                         let d = BABYLON.Vector3.Dot(this.position.subtract(hit[0].pickedPoint), this.up) + 1;
                         if (d > 0 && d < 2.5) {
-                            console.log(d.toFixed(3) + " _ " + (1 / d).toFixed(3));
                             this._groundFactor
                                 .copyFrom(this._gravityFactor)
                                 .scaleInPlace(-1)

@@ -54,6 +54,7 @@ class Game extends Main {
 
 			let kPosMax = 8;
 			let planetTest: Planet = new Planet("Paulita", kPosMax, this.chunckManager);
+			window["PlanetTest"] = planetTest;
 
 			planetTest.generator = new PlanetGeneratorEarth(planetTest, 0.60, 0.1);
 			//planetTest.generator = new PlanetGeneratorDebug4(planetTest);

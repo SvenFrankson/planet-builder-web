@@ -67,7 +67,7 @@ class PlanetSide extends BABYLON.Mesh {
             let chunckCount = this.chuncks[kPos].length;
             if (iPos < 0) {
                 if (this.side <= Side.Left) {
-                    let side = this.planet.GetSide((this.side + 3) % 4);
+                    let side = this.planet.GetSide((this.side + 1) % 4);
                     return side.getChunck(chunckCount + iPos, jPos, kPos, degree);
                 }
                 else if (this.side === Side.Top) {
