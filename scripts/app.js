@@ -4525,7 +4525,7 @@ class Player extends BABYLON.Mesh {
             this._backwardDirection.copyFrom(this._forwardDirection);
             this._backwardDirection.scaleInPlace(-1);
             this._feetPosition.copyFrom(this.position);
-            this._feetPosition.addInPlace(this._downDirection.scale(1.5));
+            this._feetPosition.addInPlace(this._downDirection.scale(-0.5));
             this._headPosition.copyFrom(this.position);
             this._headPosition.addInPlace(this._downDirection.scale(0.5));
             // Add gravity and ground reaction.
@@ -4560,13 +4560,13 @@ class Player extends BABYLON.Mesh {
                     let hit = ray.intersectsMeshes(this._meshes);
                     hit = hit.sort((h1, h2) => { return h1.distance - h2.distance; });
                     if (hit[0] && hit[0].pickedPoint) {
-                        if (!this._debugCollisionMesh) {
-                            this._debugCollisionMesh = BABYLON.MeshBuilder.CreateSphere("debug-collision-mesh", { diameter: 0.2 }, this.getScene());
+                        if (!this._debugCollisionGroundMesh) {
+                            this._debugCollisionGroundMesh = BABYLON.MeshBuilder.CreateSphere("debug-collision-mesh", { diameter: 0.2 }, this.getScene());
                             let material = new BABYLON.StandardMaterial("material", this.getScene());
                             material.alpha = 0.5;
-                            this._debugCollisionMesh.material = material;
+                            this._debugCollisionGroundMesh.material = material;
                         }
-                        this._debugCollisionMesh.position.copyFrom(hit[0].pickedPoint);
+                        this._debugCollisionGroundMesh.position.copyFrom(hit[0].pickedPoint);
                         let d = BABYLON.Vector3.Dot(this.position.subtract(hit[0].pickedPoint), this.up) + 1;
                         if (d > 0 && d < 2.5) {
                             this._groundFactor
@@ -4604,6 +4604,13 @@ class Player extends BABYLON.Mesh {
                     let hit = ray.intersectsMeshes(this._meshes);
                     hit = hit.sort((h1, h2) => { return h1.distance - h2.distance; });
                     if (hit[0] && hit[0].pickedPoint) {
+                        if (!this._debugCollisionWallMesh) {
+                            this._debugCollisionWallMesh = BABYLON.MeshBuilder.CreateSphere("debug-collision-mesh", { diameter: 0.2 }, this.getScene());
+                            let material = new BABYLON.StandardMaterial("material", this.getScene());
+                            material.alpha = 0.5;
+                            this._debugCollisionWallMesh.material = material;
+                        }
+                        this._debugCollisionWallMesh.position.copyFrom(hit[0].pickedPoint);
                         let d = hit[0].pickedPoint.subtract(pos).length();
                         if (d > 0.01) {
                             this._surfaceFactor.addInPlace(axis.scale((((-10 / this.mass) * 0.3) / d) * deltaTime));
