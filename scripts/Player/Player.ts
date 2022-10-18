@@ -120,6 +120,7 @@ class Player extends BABYLON.Mesh {
     private _backwardDirection: BABYLON.Vector3 = new BABYLON.Vector3(0, 0, -1);
 
     private _feetPosition: BABYLON.Vector3 = BABYLON.Vector3.Zero();
+    private _headPosition: BABYLON.Vector3 = BABYLON.Vector3.Zero();
 
     private _collisionAxis: BABYLON.Vector3[] = [];
     private _collisionPositions: BABYLON.Vector3[] = [];
@@ -155,7 +156,7 @@ class Player extends BABYLON.Mesh {
             this.inputHeadUp *= 0.8;
         }
 
-        this._collisionPositions[0] = this.position;
+        this._collisionPositions[0] = this._headPosition;
         this._collisionPositions[1] = this._feetPosition;
         this._collisionAxis[0] = this._rightDirection;
         this._collisionAxis[1] = this._leftDirection;
@@ -176,7 +177,10 @@ class Player extends BABYLON.Mesh {
         this._backwardDirection.scaleInPlace(-1);
 
         this._feetPosition.copyFrom(this.position);
-        this._feetPosition.addInPlace(this._downDirection);
+        this._feetPosition.addInPlace(this._downDirection.scale(1.5));
+
+        this._headPosition.copyFrom(this.position);
+        this._headPosition.addInPlace(this._downDirection.scale(0.5));
 
         // Add gravity and ground reaction.
         this._gravityFactor.copyFrom(this._downDirection).scaleInPlace(9.8 * deltaTime);
@@ -255,17 +259,16 @@ class Player extends BABYLON.Mesh {
             for (let j = 0; j < this._collisionAxis.length; j++) {
                 let axis = this._collisionAxis[j];
                 let ray: BABYLON.Ray = new BABYLON.Ray(pos, axis, 0.35);
-                let hit: BABYLON.PickingInfo = Game.Scene.pickWithRay(ray, (mesh: BABYLON.Mesh) => {
-                    return mesh instanceof PlanetChunck;
-                });
-                if (hit.pickedPoint) {
-                    let d: number = hit.pickedPoint.subtract(pos).length();
+                let hit: BABYLON.PickingInfo[] = ray.intersectsMeshes(this._meshes);
+                hit = hit.sort((h1, h2) => { return h1.distance - h2.distance; });
+                if (hit[0] && hit[0].pickedPoint) {
+                    let d: number = hit[0].pickedPoint.subtract(pos).length();
                     if (d > 0.01) {
                         this._surfaceFactor.addInPlace(axis.scale((((-10 / this.mass) * 0.3) / d) * deltaTime));
                         fLat = 0.1;
                     } else {
                         // In case where it stuck to the surface, force push.
-                        this.position.addInPlace(hit.getNormal(true).scale(0.01));
+                        this.position.addInPlace(hit[0].getNormal(true).scale(0.01));
                     }
                 }
             }
