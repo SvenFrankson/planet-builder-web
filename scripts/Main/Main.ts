@@ -17,6 +17,7 @@ class Main {
 		Main.Scene = new BABYLON.Scene(Main.Engine);
 		this.scene = Main.Scene;
 		this.scene.clearColor.copyFromFloats(166 / 255, 231 / 255, 255 / 255, 1);
+        this.scene.autoClearDepthAndStencil = false
 	}
 
 	public animate(): void {

@@ -9,6 +9,7 @@ class CameraManager {
 
     public arcRotateCamera: BABYLON.ArcRotateCamera;
     public freeCamera: BABYLON.FreeCamera;
+    public noOutlineCamera: BABYLON.FreeCamera;
 
     public player: Player;
 
@@ -39,6 +40,13 @@ class CameraManager {
         );
         this.freeCamera.rotationQuaternion = BABYLON.Quaternion.Identity();
         this.freeCamera.minZ = 0.1;
+        this.noOutlineCamera = new BABYLON.FreeCamera(
+            "Camera",
+            BABYLON.Vector3.Zero(),
+            game.scene
+        );
+        this.noOutlineCamera.layerMask = 0x10000000;
+        this.noOutlineCamera.parent = this.freeCamera;
 
         OutlinePostProcess.AddOutlinePostProcess(this.freeCamera);
     }
@@ -56,7 +64,7 @@ class CameraManager {
                 this.freeCamera.position.copyFromFloats(0, 0, - 5);
                 this.freeCamera.rotationQuaternion.copyFrom(BABYLON.Quaternion.Identity());
                 this.freeCamera.computeWorldMatrix();
-                Game.Scene.activeCamera = this.freeCamera;
+                Game.Scene.activeCameras.push(this.freeCamera, this.noOutlineCamera);
             }
             if (this.cameraMode === CameraMode.Sky) {
                 Game.Scene.activeCamera = this.arcRotateCamera;

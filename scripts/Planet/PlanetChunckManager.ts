@@ -35,7 +35,7 @@ class PlanetChunckManager {
     }
 
     public initialize(): void {
-        this._viewpoint = this.scene.activeCamera.globalPosition.clone();
+        this._viewpoint = this.scene.activeCameras[0].globalPosition.clone();
         
         this._lodLayers = [];
         this._lodLayersCursors = [];
@@ -103,7 +103,7 @@ class PlanetChunckManager {
     }
 
     private _update = () => {
-        this._viewpoint.copyFrom(this.scene.activeCamera.globalPosition);
+        this._viewpoint.copyFrom(this.scene.activeCameras[0].globalPosition);
         
         let t0 = performance.now();
         let t = t0;

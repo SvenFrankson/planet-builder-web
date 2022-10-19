@@ -12,6 +12,9 @@ class CameraManager {
         this.freeCamera = new BABYLON.FreeCamera("Camera", BABYLON.Vector3.Zero(), Game.Scene);
         this.freeCamera.rotationQuaternion = BABYLON.Quaternion.Identity();
         this.freeCamera.minZ = 0.1;
+        this.noOutlineCamera = new BABYLON.FreeCamera("Camera", BABYLON.Vector3.Zero(), game.scene);
+        this.noOutlineCamera.layerMask = 0x10000000;
+        this.noOutlineCamera.parent = this.freeCamera;
         OutlinePostProcess.AddOutlinePostProcess(this.freeCamera);
     }
     get absolutePosition() {
@@ -33,7 +36,7 @@ class CameraManager {
                 this.freeCamera.position.copyFromFloats(0, 0, -5);
                 this.freeCamera.rotationQuaternion.copyFrom(BABYLON.Quaternion.Identity());
                 this.freeCamera.computeWorldMatrix();
-                Game.Scene.activeCamera = this.freeCamera;
+                Game.Scene.activeCameras.push(this.freeCamera, this.noOutlineCamera);
             }
             if (this.cameraMode === CameraMode.Sky) {
                 Game.Scene.activeCamera = this.arcRotateCamera;
@@ -1132,6 +1135,7 @@ class Main {
         Main.Scene = new BABYLON.Scene(Main.Engine);
         this.scene = Main.Scene;
         this.scene.clearColor.copyFromFloats(166 / 255, 231 / 255, 255 / 255, 1);
+        this.scene.autoClearDepthAndStencil = false;
     }
     animate() {
         Main.Engine.runRenderLoop(() => {
@@ -1959,7 +1963,7 @@ class PlanetChunckManager {
         this._maxActivity = 10;
         this._activity = this._maxActivity;
         this._update = () => {
-            this._viewpoint.copyFrom(this.scene.activeCamera.globalPosition);
+            this._viewpoint.copyFrom(this.scene.activeCameras[0].globalPosition);
             let t0 = performance.now();
             let t = t0;
             let sortedCount = 0;
@@ -2038,7 +2042,7 @@ class PlanetChunckManager {
         return this._needRedraw.length;
     }
     initialize() {
-        this._viewpoint = this.scene.activeCamera.globalPosition.clone();
+        this._viewpoint = this.scene.activeCameras[0].globalPosition.clone();
         this._lodLayers = [];
         this._lodLayersCursors = [];
         this._lodLayersSqrDistances = [];
