@@ -24,6 +24,7 @@ class Player extends BABYLON.Mesh {
         let material = new BABYLON.StandardMaterial("material", this.getScene());
         material.alpha = 0.5;
         this.material = material;
+        //this.layerMask = 0x10000000;
     }
 
     private _initialized: boolean = false;
