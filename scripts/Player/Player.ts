@@ -190,8 +190,8 @@ class Player extends BABYLON.Mesh {
         let fVert = 1;
 
         this._chuncks.forEach((chunck) => {
-            chunck.unlit();
-        })
+            //chunck.unlit();
+        });
         this._chuncks = [];
         this._meshes = [];
         if (this._jumpTimer === 0) {
@@ -211,8 +211,8 @@ class Player extends BABYLON.Mesh {
                     }
                 }
                 this._chuncks.forEach((chunck) => {
-                    chunck.highlight();
-                })
+                    //chunck.highlight();
+                });
                 let ray: BABYLON.Ray = new BABYLON.Ray(this.position.add(this.up), this._downDirection);
                 let hit: BABYLON.PickingInfo[] = ray.intersectsMeshes(this._meshes);
                 hit = hit.sort((h1, h2) => { return h1.distance - h2.distance; });

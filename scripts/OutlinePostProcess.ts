@@ -1,6 +1,6 @@
 class OutlinePostProcess {
     
-    public static AddOutlinePostProcess(camera: BABYLON.Camera): void {
+    public static AddOutlinePostProcess(camera: BABYLON.Camera): BABYLON.PostProcess {
         let scene = camera.getScene();
         let engine = scene.getEngine();
 
@@ -78,5 +78,6 @@ class OutlinePostProcess {
 			effect.setFloat("width", engine.getRenderWidth());
 			effect.setFloat("height", engine.getRenderHeight());
 		};
+		return postProcess;
     }
 }

@@ -18,7 +18,7 @@ class Main {
 		this.scene = Main.Scene;
 		this.scene.clearColor.copyFromFloats(166 / 255, 231 / 255, 255 / 255, 1);
         //gthis.scene.autoClearDepthAndStencil = false
-        this.scene.autoClearDepthAndStencil = false;
+        //this.scene.autoClearDepthAndStencil = false;
 	}
 
 	public animate(): void {

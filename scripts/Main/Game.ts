@@ -68,7 +68,7 @@ class Game extends Main {
 			let textPage = new TextPage(this);
 			textPage.instantiate();
 			textPage.redraw();
-			textPage.setPosition(new BABYLON.Vector3(0, (kPosMax) * PlanetTools.CHUNCKSIZE * 0.8, 0));
+			textPage.setPosition(new BABYLON.Vector3(0, (kPosMax + 0.5) * PlanetTools.CHUNCKSIZE * 0.8, 0));
 			
 			this.player.registerControl();
 			this.chunckManager.onNextInactive(() => {

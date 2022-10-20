@@ -12,10 +12,23 @@ class CameraManager {
         this.freeCamera = new BABYLON.FreeCamera("Camera", BABYLON.Vector3.Zero(), Game.Scene);
         this.freeCamera.rotationQuaternion = BABYLON.Quaternion.Identity();
         this.freeCamera.minZ = 0.1;
+        const rtt = new BABYLON.RenderTargetTexture('render target', { width: this.game.engine.getRenderWidth(), height: this.game.engine.getRenderHeight() }, this.game.scene);
+        rtt.samples = 1;
+        this.freeCamera.outputRenderTarget = rtt;
         this.noOutlineCamera = new BABYLON.FreeCamera("Camera", BABYLON.Vector3.Zero(), game.scene);
+        this.noOutlineCamera.minZ = 0.1;
         this.noOutlineCamera.layerMask = 0x10000000;
         this.noOutlineCamera.parent = this.freeCamera;
-        OutlinePostProcess.AddOutlinePostProcess(this.freeCamera);
+        let postProcess = OutlinePostProcess.AddOutlinePostProcess(this.freeCamera);
+        postProcess.onSizeChangedObservable.add(() => {
+            if (!postProcess.inputTexture.depthStencilTexture) {
+                postProcess.inputTexture.createDepthStencilTexture(0, true, false, 4);
+                postProcess.inputTexture._shareDepth(rtt.renderTarget);
+            }
+        });
+        const pp = new BABYLON.PassPostProcess("pass", 1, this.noOutlineCamera);
+        pp.inputTexture = rtt.renderTarget;
+        pp.autoClear = false;
     }
     get absolutePosition() {
         if (this.cameraMode === CameraMode.Sky) {
@@ -28,7 +41,7 @@ class CameraManager {
     setMode(newCameraMode) {
         if (newCameraMode != this.cameraMode) {
             if (this.cameraMode === CameraMode.Sky) {
-                this.arcRotateCamera.detachControl(this.game.canvas);
+                this.arcRotateCamera.detachControl();
             }
             this.cameraMode = newCameraMode;
             if (this.cameraMode === CameraMode.Player) {
@@ -36,7 +49,7 @@ class CameraManager {
                 this.freeCamera.position.copyFromFloats(0, 0, -5);
                 this.freeCamera.rotationQuaternion.copyFrom(BABYLON.Quaternion.Identity());
                 this.freeCamera.computeWorldMatrix();
-                Game.Scene.activeCameras.push(this.freeCamera, this.noOutlineCamera);
+                Game.Scene.activeCameras = [this.freeCamera, this.noOutlineCamera];
             }
             if (this.cameraMode === CameraMode.Sky) {
                 Game.Scene.activeCamera = this.arcRotateCamera;
@@ -228,6 +241,7 @@ class OutlinePostProcess {
             effect.setFloat("width", engine.getRenderWidth());
             effect.setFloat("height", engine.getRenderHeight());
         };
+        return postProcess;
     }
 }
 class PlanetEditor {
@@ -1136,7 +1150,7 @@ class Main {
         this.scene = Main.Scene;
         this.scene.clearColor.copyFromFloats(166 / 255, 231 / 255, 255 / 255, 1);
         //gthis.scene.autoClearDepthAndStencil = false
-        this.scene.autoClearDepthAndStencil = false;
+        //this.scene.autoClearDepthAndStencil = false;
     }
     animate() {
         Main.Engine.runRenderLoop(() => {
@@ -1206,7 +1220,7 @@ class Game extends Main {
             let textPage = new TextPage(this);
             textPage.instantiate();
             textPage.redraw();
-            textPage.setPosition(new BABYLON.Vector3(0, (kPosMax) * PlanetTools.CHUNCKSIZE * 0.8, 0));
+            textPage.setPosition(new BABYLON.Vector3(0, (kPosMax + 0.5) * PlanetTools.CHUNCKSIZE * 0.8, 0));
             this.player.registerControl();
             this.chunckManager.onNextInactive(() => {
                 this.player.initialize();
@@ -4542,7 +4556,7 @@ class Player extends BABYLON.Mesh {
             this._groundFactor.copyFromFloats(0, 0, 0);
             let fVert = 1;
             this._chuncks.forEach((chunck) => {
-                chunck.unlit();
+                //chunck.unlit();
             });
             this._chuncks = [];
             this._meshes = [];
@@ -4563,7 +4577,7 @@ class Player extends BABYLON.Mesh {
                         }
                     }
                     this._chuncks.forEach((chunck) => {
-                        chunck.highlight();
+                        //chunck.highlight();
                     });
                     let ray = new BABYLON.Ray(this.position.add(this.up), this._downDirection);
                     let hit = ray.intersectsMeshes(this._meshes);
@@ -4908,8 +4922,8 @@ class TextPage {
         let fontSize = 30;
         let context = this.texture.getContext();
         context.clearRect(0, 0, this._w, this._h);
-        context.fillStyle = "rgba(25, 22, 79, 0.8)";
-        context.fillRect(marginLeft * 0.5, marginTop * 0.5, this._w - marginLeft, this._h - marginTop);
+        context.fillStyle = "rgba(20, 20, 40, 0.8)";
+        context.fillRect(0, 15, this._w, this._h - 2 * 15);
         context.fillStyle = "rgba(255, 255, 255, 1)";
         context.font = fontSize.toFixed(0) + "px Consolas";
         let line = this.lines[0];
@@ -4930,17 +4944,21 @@ class TextPage {
             i++;
             line = this.lines[i];
         }
-        context.lineWidth = 6;
-        context.strokeStyle = "rgba(25, 22, 79, 1)";
+        context.lineWidth = 20;
+        context.strokeStyle = "rgba(0, 255, 255, 1)";
         context.beginPath();
-        context.moveTo(10, 10);
-        context.lineTo(this._w - 10, 10);
-        context.moveTo(30, 30);
-        context.lineTo(this._w - 10, 30);
-        context.moveTo(10, 10);
-        context.lineTo(10, this._h - 10);
-        context.moveTo(30, 30);
-        context.lineTo(30, this._h - 10);
+        context.moveTo(0, 15);
+        context.lineTo(this._w, 15);
+        context.moveTo(0, this._h - 15);
+        context.lineTo(this._w, this._h - 15);
+        context.lineWidth = 25;
+        context.strokeStyle = "rgba(255, 255, 255, 0.5)";
+        context.stroke();
+        context.lineWidth = 20;
+        context.strokeStyle = "rgba(127, 255, 255, 0.5)";
+        context.stroke();
+        context.lineWidth = 15;
+        context.strokeStyle = "rgba(0, 255, 255, 0.5)";
         context.stroke();
         this.texture.update();
     }

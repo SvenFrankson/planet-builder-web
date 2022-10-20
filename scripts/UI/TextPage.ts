@@ -48,8 +48,8 @@ class TextPage {
 
         let context = this.texture.getContext();
         context.clearRect(0, 0, this._w, this._h);
-        context.fillStyle = "rgba(25, 22, 79, 0.8)";
-        context.fillRect(marginLeft * 0.5,  marginTop * 0.5, this._w - marginLeft, this._h - marginTop);
+        context.fillStyle = "rgba(20, 20, 40, 0.8)";
+        context.fillRect(0, 15, this._w, this._h - 2 * 15);
         context.fillStyle = "rgba(255, 255, 255, 1)";
         context.font = fontSize.toFixed(0) + "px Consolas";
         let line = this.lines[0];
@@ -70,17 +70,21 @@ class TextPage {
             i++;
             line = this.lines[i];
         }
-        context.lineWidth = 6;
-        context.strokeStyle = "rgba(25, 22, 79, 1)";
+        context.lineWidth = 20;
+        context.strokeStyle = "rgba(0, 255, 255, 1)";
         context.beginPath();
-        context.moveTo(10, 10);
-        context.lineTo(this._w - 10, 10);
-        context.moveTo(30, 30);
-        context.lineTo(this._w - 10, 30);
-        context.moveTo(10, 10);
-        context.lineTo(10, this._h - 10);
-        context.moveTo(30, 30);
-        context.lineTo(30, this._h - 10);
+        context.moveTo(0, 15);
+        context.lineTo(this._w, 15);
+        context.moveTo(0, this._h - 15);
+        context.lineTo(this._w, this._h - 15);
+        context.lineWidth = 25;
+        context.strokeStyle = "rgba(255, 255, 255, 0.5)";
+        context.stroke();
+        context.lineWidth = 20;
+        context.strokeStyle = "rgba(127, 255, 255, 0.5)";
+        context.stroke();
+        context.lineWidth = 15;
+        context.strokeStyle = "rgba(0, 255, 255, 0.5)";
         context.stroke();
         this.texture.update();
     }
