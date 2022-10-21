@@ -56,7 +56,8 @@ class Game extends Main {
 			let planetTest: Planet = new Planet("Paulita", kPosMax, this.chunckManager);
 			window["PlanetTest"] = planetTest;
 
-			planetTest.generator = new PlanetGeneratorEarth(planetTest, 0.60, 0.1);
+			//planetTest.generator = new PlanetGeneratorEarth(planetTest, 0.60, 0.1);
+			planetTest.generator = new PlanetGeneratorFlat(planetTest, 0.60, 0.1);
 			//planetTest.generator = new PlanetGeneratorDebug4(planetTest);
 			let r = kPosMax * PlanetTools.CHUNCKSIZE * 0.7;
 			//document.querySelector("#planet-surface").textContent = (4 * Math.PI * r * r / 1000 / 1000).toFixed(2) + " km²"
@@ -68,7 +69,7 @@ class Game extends Main {
 			let textPage = new TextPage(this);
 			textPage.instantiate();
 			textPage.redraw();
-			textPage.setPosition(new BABYLON.Vector3(0, (kPosMax + 0.5) * PlanetTools.CHUNCKSIZE * 0.8, 0));
+			textPage.setPosition(new BABYLON.Vector3(0, (kPosMax + 0.2) * PlanetTools.CHUNCKSIZE * 0.8, 0));
 			
 			this.player.registerControl();
 			this.chunckManager.onNextInactive(() => {

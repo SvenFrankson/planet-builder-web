@@ -9,6 +9,18 @@ class TextPage {
     private _w: number = 1600;
     private _h: number = 1000;
 
+    private _angle = 0.8;
+    private _radius = 2;
+    private _cz = -2;
+
+    private xTextureToPos(x: number): BABYLON.Vector2 {
+        let a = (x - this._w / 2) / this._w * this._angle
+        return new BABYLON.Vector2(
+            Math.sin(a) * this._radius,
+            Math.cos(a) * this._radius + this._cz
+        );
+    }
+
     constructor(public game: Game) {
 
     }
@@ -16,6 +28,33 @@ class TextPage {
     public instantiate(): void {
         this.mesh = BABYLON.MeshBuilder.CreatePlane("text-page", { width: this._w / 500, height: this._h / 500, sideOrientation: 2 }, this.game.scene);
         this.mesh.layerMask = 0x10000000;
+
+        let data = new BABYLON.VertexData();
+        let positions: number[] = [];
+        let indices: number[] = [];
+        let uvs: number[] = [];
+        let normals: number[] = [];
+
+        console.log(BABYLON.Vector2.Distance(this.xTextureToPos(0), this.xTextureToPos(1600)));
+        for (let i = 0; i <= 8; i++) {
+            let p = this.xTextureToPos(i * 1600 / 8);
+            let l = positions.length / 3;
+            positions.push(p.x, 0, p.y);
+            positions.push(p.x, 1, p.y);
+            uvs.push(i / 8, 0);
+            uvs.push(i / 8, 1);
+            if (i < 8) {
+                indices.push(l + 1, l, l + 2);
+                indices.push(l + 1, l + 2, l + 3);
+            }
+        }
+        BABYLON.VertexData.ComputeNormals(positions, indices, normals);
+        data.positions = positions;
+        data.indices = indices;
+        data.uvs = uvs;
+        data.normals = normals;
+
+        data.applyToMesh(this.mesh);
 
         this.material = new BABYLON.StandardMaterial("text-page-material", this.game.scene);
         this.material.useAlphaFromDiffuseTexture = true;
@@ -43,13 +82,162 @@ class TextPage {
     public redraw(): void {
         let marginLeft = 200;
         let maxChar = 75;
-        let marginTop = 100;
+        let marginTop = 150;
         let fontSize = 30;
+
+        let texW = this._w;
+        let texH = this._h;
+        let frameOffset = 100;
+        let frameW = this._w - 2 * frameOffset;
+        let frameH = this._h - 2 * frameOffset;
+        let cornerSize = 50;
+        let sCornerSize = cornerSize * 0.5;
+        let frameX0 = frameOffset;
+        let frameX1 = frameOffset + frameW;
+        let frameY0 = frameOffset;
+        let frameY1 = frameOffset + frameH;
+
+        let grey = new BABYLON.Color3(0.5, 0.5, 0.5);
 
         let context = this.texture.getContext();
         context.clearRect(0, 0, this._w, this._h);
-        context.fillStyle = "rgba(20, 20, 40, 0.8)";
-        context.fillRect(0, 15, this._w, this._h - 2 * 15);
+        
+        let decoyPath0 = TextPage.MakePath([
+            frameX0 - sCornerSize, frameY0 + frameH * 0.25 + sCornerSize,
+            frameX0 - sCornerSize, frameY0 + sCornerSize,
+            frameX0 + sCornerSize, frameY0 - sCornerSize,
+            frameX0 + frameW * 0.25 + sCornerSize, frameY0 - sCornerSize,
+        ]);
+
+        TextPage.DrawGlowPath(
+            decoyPath0,
+            1,
+            BABYLON.Color3.FromHexString("#2c4b7d"),
+            1,
+            false,
+            context
+        );
+
+        let decoyPath1 = TextPage.MakePath([
+            frameX1 + sCornerSize, frameY0 + frameH * 0.25 + sCornerSize,
+            frameX1 + sCornerSize, frameY0 + sCornerSize,
+            frameX1 - sCornerSize, frameY0 - sCornerSize,
+            frameX1 - frameW * 0.25 - sCornerSize, frameY0 - sCornerSize,
+        ]);
+
+        TextPage.DrawGlowPath(
+            decoyPath1,
+            1,
+            BABYLON.Color3.FromHexString("#2c4b7d"),
+            1,
+            false,
+            context
+        );
+        
+        let decoyPath2 = TextPage.MakePath([
+            frameX1 + sCornerSize, frameY1 - frameH * 0.25 - sCornerSize,
+            frameX1 + sCornerSize, frameY1 - sCornerSize,
+            frameX1 - sCornerSize, frameY1 + sCornerSize,
+            frameX1 - frameW * 0.25 - sCornerSize, frameY1 + sCornerSize,
+        ]);
+
+        TextPage.DrawGlowPath(
+            decoyPath2,
+            1,
+            BABYLON.Color3.FromHexString("#2c4b7d"),
+            1,
+            false,
+            context
+        );
+        
+        let decoyPath3 = TextPage.MakePath([
+            frameX0 - sCornerSize, frameY1 - frameH * 0.25 - sCornerSize,
+            frameX0 - sCornerSize, frameY1 - sCornerSize,
+            frameX0 + sCornerSize, frameY1 + sCornerSize,
+            frameX0 + frameW * 0.25 + sCornerSize, frameY1 + sCornerSize,
+        ]);
+
+        TextPage.DrawGlowPath(
+            decoyPath3,
+            1,
+            BABYLON.Color3.FromHexString("#2c4b7d"),
+            1,
+            false,
+            context
+        );
+        
+        let path = TextPage.MakePath([
+            frameX0 + cornerSize, frameY0,
+            frameX0 + frameW * 0.25, frameY0,
+            frameX0 + frameW * 0.25 + cornerSize, frameY0 - cornerSize,
+            frameX1 - frameW * 0.25 - cornerSize, frameY0 - cornerSize,
+            frameX1 - frameW * 0.25, frameY0,
+            frameX1 - cornerSize, frameY0,
+
+            frameX1, frameY0 + cornerSize,
+            frameX1, frameY0 + frameH * 0.25,
+            frameX1 + cornerSize, frameY0 + frameH * 0.25 + cornerSize,
+            frameX1 + cornerSize, frameY1 - frameH * 0.25 - cornerSize,
+            frameX1, frameY1 - frameH * 0.25,
+            frameX1, frameY1 - cornerSize,
+
+            frameX1 - cornerSize, frameY1,
+            frameX1 - frameW * 0.25, frameY1,
+            frameX1 - frameW * 0.25 - cornerSize, frameY1 + cornerSize,
+            frameX0 + frameW * 0.25 + cornerSize, frameY1 + cornerSize,
+            frameX0 + frameW * 0.25, frameY1,
+            frameX0 + cornerSize, frameY1,
+            
+            frameX0, frameY1 - cornerSize,
+            frameX0, frameY1 - frameH * 0.25,
+            frameX0 - cornerSize, frameY1 - frameH * 0.25 - cornerSize,
+            frameX0 - cornerSize, frameY0 + frameH * 0.25 + cornerSize,
+            frameX0, frameY0 + frameH * 0.25,
+            frameX0, frameY0 + cornerSize,
+        ]);
+
+        let nLine = 12;
+        let step = frameW / nLine;
+        for (let i = 0; i < nLine; i++) {
+            let x = frameX0 + step * (i + 0.5);
+            let y0 = frameY0;
+            let y1 = frameY1;
+            if (i >= nLine / 4 && i < 3 * nLine / 4) {
+                y0 -= cornerSize;
+                y1 += cornerSize;
+            }
+            TextPage.DrawGlowLine(x, y0, x, y1, 1, grey, 0.7, context);
+        }
+
+        nLine = 7;
+        step = frameH / nLine;
+        for (let i = 0; i < nLine; i++) {
+            let x0 = frameX0;
+            let x1 = frameX1;
+            let y = frameY0 + step * (i + 0.5);
+            if (i >= 2 && i <= 4) {
+                x0 -= cornerSize;
+                x1 += cornerSize;
+            }
+            TextPage.DrawGlowLine(x0, y, x1, y, 1, grey, 0.7, context);
+        }
+
+        TextPage.FillPath(
+            path,
+            BABYLON.Color3.FromHexString("#3a3e45"),
+            0.8,
+            context
+        );
+
+        TextPage.DrawGlowPath(
+            path,
+            2,
+            BABYLON.Color3.FromHexString("#2c4b7d"),
+            1,
+            true,
+            context
+        );
+
         context.fillStyle = "rgba(255, 255, 255, 1)";
         context.font = fontSize.toFixed(0) + "px Consolas";
         let line = this.lines[0];
@@ -70,22 +258,57 @@ class TextPage {
             i++;
             line = this.lines[i];
         }
-        context.lineWidth = 20;
-        context.strokeStyle = "rgba(0, 255, 255, 1)";
-        context.beginPath();
-        context.moveTo(0, 15);
-        context.lineTo(this._w, 15);
-        context.moveTo(0, this._h - 15);
-        context.lineTo(this._w, this._h - 15);
-        context.lineWidth = 25;
-        context.strokeStyle = "rgba(255, 255, 255, 0.5)";
-        context.stroke();
-        context.lineWidth = 20;
-        context.strokeStyle = "rgba(127, 255, 255, 0.5)";
-        context.stroke();
-        context.lineWidth = 15;
-        context.strokeStyle = "rgba(0, 255, 255, 0.5)";
-        context.stroke();
         this.texture.update();
+    }
+
+    public static MakePath(points: number[]): BABYLON.Vector2[] {
+        let path: BABYLON.Vector2[] = [];
+        for (let i = 0; i < points.length / 2; i++) {
+            path.push(new BABYLON.Vector2(points[2 * i], points[2 * i + 1]));
+        }
+        return path;
+    }
+
+    public static FillPath(path: BABYLON.Vector2[], color: BABYLON.Color3, alpha: number, context: BABYLON.ICanvasRenderingContext): void {
+        context.beginPath();
+        context.moveTo(path[0].x, path[0].y);
+        for (let i = 1; i < path.length; i++) {
+            context.lineTo(path[i].x, path[i].y);
+        }
+        context.closePath();
+        let r = color.r * 255;
+        let g = color.g * 255;
+        let b = color.b * 255;
+        context.fillStyle = "rgba(" + r.toFixed(0) + ", " + g.toFixed(0) + ", " + b.toFixed(0) + ", " + alpha.toFixed(2) + ")";
+        context.fill();
+    }
+
+    public static DrawGlowLine(x0: number, y0: number, x1: number, y1: number, width: number, color: BABYLON.Color3, alpha: number, context: BABYLON.ICanvasRenderingContext): void {
+        TextPage.DrawGlowPath([new BABYLON.Vector2(x0, y0), new BABYLON.Vector2(x1, y1)], width, color, alpha, false, context);
+    }
+
+    public static DrawGlowPath(path: BABYLON.Vector2[], width: number, color: BABYLON.Color3, alpha: number, closePath: boolean, context: BABYLON.ICanvasRenderingContext): void {
+        let w2 = width * 10;
+        let w = width;
+        let rMax = Math.min(1, 2 * color.r);
+        let gMax = Math.min(1, 2 * color.g);
+        let bMax = Math.min(1, 2 * color.b);
+        context.beginPath();
+        context.moveTo(path[0].x, path[0].y);
+        for (let i = 1; i < path.length; i++) {
+            context.lineTo(path[i].x, path[i].y);
+        }
+        if (closePath) {
+            context.closePath();
+        }
+        for (let i = 0; i < 5; i++) {
+            let r = rMax * 255 * i / 4 + color.r * 255 * (1 - i / 4);
+            let g = gMax * 255 * i / 4 + color.g * 255 * (1 - i / 4);
+            let b = bMax * 255 * i / 4 + color.b * 255 * (1 - i / 4);
+            let a = alpha * ((i + 1) / 5);
+            context.lineWidth = w2 * (1 - i / 4) + w * i / 4;
+            context.strokeStyle = "rgba(" + r.toFixed(0) + ", " + g.toFixed(0) + ", " + b.toFixed(0) + ", " + a.toFixed(2) + ")";
+            context.stroke();
+        }
     }
 }

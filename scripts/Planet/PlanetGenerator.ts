@@ -92,6 +92,33 @@ class PlanetGeneratorEarth extends PlanetGenerator {
     }
 }
 
+class PlanetGeneratorFlat extends PlanetGenerator {
+
+    constructor(planet: Planet, private _seaLevel: number, private _mountainHeight: number) {
+        super(planet);
+    }
+
+    public makeData(chunck: PlanetChunck, refData: number[][][], refProcedural: ProceduralTree[]): void {
+
+        for (let i: number = 0; i < PlanetTools.CHUNCKSIZE; i++) {
+            refData[i - chunck.firstI] = [];
+            for (let j: number = 0; j < PlanetTools.CHUNCKSIZE; j++) {
+                refData[i - chunck.firstI][j - chunck.firstJ] = [];
+
+                let altitude = Math.floor(this._seaLevel * this.planet.kPosMax * PlanetTools.CHUNCKSIZE);
+
+                for (let k: number = 0; k < PlanetTools.CHUNCKSIZE; k++) {
+                    let globalK = k + chunck.kPos * PlanetTools.CHUNCKSIZE;
+
+                    if (globalK <= altitude) {
+                        refData[i - chunck.firstI][j - chunck.firstJ][k - chunck.firstK] = BlockType.Grass;
+                    }
+                }
+            }
+        }
+    }
+}
+
 class PlanetGeneratorDebug extends PlanetGenerator {
 
     constructor(planet: Planet) {
