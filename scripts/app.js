@@ -4959,6 +4959,7 @@ class PlayerInputHeadPad extends PlayerInputVirtualPad {
 class TextPage {
     constructor(game) {
         this.game = game;
+        // 24 lines of 80 characters each
         this.lines = [];
         this._w = 1600;
         this._h = 1000;
@@ -5036,12 +5037,12 @@ class TextPage {
         this.mesh.rotation.y = Math.PI;
         this.mesh.scaling.x = 0.1;
         this.mesh.scaling.y = 0.1;
+        this.mesh.alphaIndex = 100;
         let data = new BABYLON.VertexData();
         let positions = [];
         let indices = [];
         let uvs = [];
         let normals = [];
-        console.log(BABYLON.Vector2.Distance(this.xTextureToPos(0), this.xTextureToPos(1600)));
         for (let i = 0; i <= 8; i++) {
             let p = this.xTextureToPos(i * 1600 / 8);
             let l = positions.length / 3;
@@ -5068,6 +5069,58 @@ class TextPage {
         this.texture = new BABYLON.DynamicTexture("text-page-texture", { width: this._w, height: this._h }, this.game.scene, true);
         this.texture.hasAlpha = true;
         this.material.diffuseTexture = this.texture;
+        this.meshOnOff = new BABYLON.Mesh("text-page");
+        this.meshOnOff.layerMask = 0x10000000;
+        this.meshOnOff.parent = this.baseMesh;
+        this.meshOnOff.position.y = 1.05;
+        this.meshOnOff.position.z = 0.05;
+        this.meshOnOff.rotation.y = Math.PI;
+        data = new BABYLON.VertexData();
+        positions = [];
+        indices = [];
+        uvs = [];
+        normals = [];
+        for (let i = 0; i <= 2; i++) {
+            let p = this.xTextureToPos(730 + 70 * i);
+            let l = positions.length / 3;
+            positions.push(p.x, -0.07, p.y);
+            positions.push(p.x, 0.07, p.y);
+            uvs.push(i / 2, 0);
+            uvs.push(i / 2, 1);
+            if (i < 2) {
+                indices.push(l + 1, l, l + 2);
+                indices.push(l + 1, l + 2, l + 3);
+            }
+        }
+        BABYLON.VertexData.ComputeNormals(positions, indices, normals);
+        data.positions = positions;
+        data.indices = indices;
+        data.uvs = uvs;
+        data.normals = normals;
+        data.applyToMesh(this.meshOnOff);
+        this.materialOnOff = new BABYLON.StandardMaterial("text-page-material-on-off", this.game.scene);
+        this.materialOnOff.useAlphaFromDiffuseTexture = true;
+        this.materialOnOff.specularColor.copyFromFloats(0, 0, 0);
+        this.materialOnOff.emissiveColor.copyFromFloats(1, 1, 1);
+        this.meshOnOff.material = this.materialOnOff;
+        this.textureOnOff = new BABYLON.DynamicTexture("text-page-texture-on-off", { width: 140, height: 140 }, this.game.scene, true);
+        this.textureOnOff.hasAlpha = true;
+        this.materialOnOff.diffuseTexture = this.textureOnOff;
+        let context = this.textureOnOff.getContext();
+        context.clearRect(0, 0, 140, 140);
+        let path = TextPage.MakePath([
+            50, 20,
+            90, 20,
+            120, 50,
+            120, 90,
+            90, 120,
+            50, 120,
+            20, 90,
+            20, 50,
+        ]);
+        TextPage.FillPath(path, BABYLON.Color3.FromHexString("#3a3e45"), 0.8, context);
+        TextPage.DrawGlowPath(path, 10, BABYLON.Color3.FromHexString("#2c4b7d"), 1, true, true, context);
+        this.textureOnOff.update();
         this.lines[0] = "You know what? It is beets. I've crashed into a beet truck. Jaguar shark! So tell me - does it really exist? Is this my espresso machine? Wh-what is-h-how did you get my espresso machine? Hey, take a look at the earthlings. Goodbye! I was part of something special.";
         this.lines[1] = "Yeah, but John, if The Pirates of the Caribbean breaks down, the pirates don’t eat the tourists. Jaguar shark! So tell me - does it really exist? Did he just throw my cat out of the window? You're a very talented young man, with your own clever thoughts and ideas. Do you need a manager?";
         this.lines[2] = "Forget the fat lady! You're obsessed with the fat lady! Drive us out of here! God creates dinosaurs. God destroys dinosaurs. God creates Man. Man destroys God. Man creates Dinosaurs. You know what? It is beets. I've crashed into a beet truck. Hey, you know how I'm, like, always trying to save the planet? Here's my chance.";
@@ -5097,9 +5150,9 @@ class TextPage {
         this.baseMesh.rotationQuaternion = BABYLON.Quaternion.RotationQuaternionFromAxis(x, y, z);
     }
     redraw() {
-        let marginLeft = 200;
+        let marginLeft = 142;
         let maxChar = 75;
-        let marginTop = 150;
+        let marginTop = 130;
         let fontSize = 30;
         let texW = this._w;
         let texH = this._h;
@@ -5121,28 +5174,28 @@ class TextPage {
             frameX0 + sCornerSize, frameY0 - sCornerSize,
             frameX0 + frameW * 0.25 + sCornerSize, frameY0 - sCornerSize,
         ]);
-        TextPage.DrawGlowPath(decoyPath0, 1, BABYLON.Color3.FromHexString("#2c4b7d"), 1, false, context);
+        TextPage.DrawGlowPath(decoyPath0, 6, BABYLON.Color3.FromHexString("#2c4b7d"), 1, false, true, context);
         let decoyPath1 = TextPage.MakePath([
             frameX1 + sCornerSize, frameY0 + frameH * 0.25 + sCornerSize,
             frameX1 + sCornerSize, frameY0 + sCornerSize,
             frameX1 - sCornerSize, frameY0 - sCornerSize,
             frameX1 - frameW * 0.25 - sCornerSize, frameY0 - sCornerSize,
         ]);
-        TextPage.DrawGlowPath(decoyPath1, 1, BABYLON.Color3.FromHexString("#2c4b7d"), 1, false, context);
+        TextPage.DrawGlowPath(decoyPath1, 6, BABYLON.Color3.FromHexString("#2c4b7d"), 1, false, true, context);
         let decoyPath2 = TextPage.MakePath([
             frameX1 + sCornerSize, frameY1 - frameH * 0.25 - sCornerSize,
             frameX1 + sCornerSize, frameY1 - sCornerSize,
             frameX1 - sCornerSize, frameY1 + sCornerSize,
             frameX1 - frameW * 0.25 - sCornerSize, frameY1 + sCornerSize,
         ]);
-        TextPage.DrawGlowPath(decoyPath2, 1, BABYLON.Color3.FromHexString("#2c4b7d"), 1, false, context);
+        TextPage.DrawGlowPath(decoyPath2, 6, BABYLON.Color3.FromHexString("#2c4b7d"), 1, false, true, context);
         let decoyPath3 = TextPage.MakePath([
             frameX0 - sCornerSize, frameY1 - frameH * 0.25 - sCornerSize,
             frameX0 - sCornerSize, frameY1 - sCornerSize,
             frameX0 + sCornerSize, frameY1 + sCornerSize,
             frameX0 + frameW * 0.25 + sCornerSize, frameY1 + sCornerSize,
         ]);
-        TextPage.DrawGlowPath(decoyPath3, 1, BABYLON.Color3.FromHexString("#2c4b7d"), 1, false, context);
+        TextPage.DrawGlowPath(decoyPath3, 6, BABYLON.Color3.FromHexString("#2c4b7d"), 1, false, true, context);
         let path = TextPage.MakePath([
             frameX0 + cornerSize, frameY0,
             frameX0 + frameW * 0.25, frameY0,
@@ -5179,7 +5232,7 @@ class TextPage {
                 y0 -= cornerSize;
                 y1 += cornerSize;
             }
-            TextPage.DrawGlowLine(x, y0, x, y1, 1, grey, 0.7, context);
+            TextPage.DrawGlowLine(x, y0, x, y1, 1, grey, 0.7, false, context);
         }
         nLine = 7;
         step = frameH / nLine;
@@ -5191,26 +5244,26 @@ class TextPage {
                 x0 -= cornerSize;
                 x1 += cornerSize;
             }
-            TextPage.DrawGlowLine(x0, y, x1, y, 1, grey, 0.7, context);
+            TextPage.DrawGlowLine(x0, y, x1, y, 1, grey, 0.7, false, context);
         }
         TextPage.FillPath(path, BABYLON.Color3.FromHexString("#3a3e45"), 0.8, context);
-        TextPage.DrawGlowPath(path, 2, BABYLON.Color3.FromHexString("#2c4b7d"), 1, true, context);
+        TextPage.DrawGlowPath(path, 10, BABYLON.Color3.FromHexString("#2c4b7d"), 1, true, true, context);
         context.fillStyle = "rgba(255, 255, 255, 1)";
         context.font = fontSize.toFixed(0) + "px Consolas";
         let line = this.lines[0];
         let i = 0;
         let ii = 0;
         while (line && ii < 1000 / fontSize) {
-            context.fillText((i + 1).toFixed(0) + ":", marginLeft - 2 * fontSize, marginTop + fontSize * (ii + 1));
-            let cutLine = line.substring(0, 75);
+            //context.fillText((i + 1).toFixed(0) + ":", marginLeft - 2 * fontSize, marginTop + fontSize * (ii + 1));
+            let cutLine = line.substring(0, 100);
             context.fillText(cutLine, marginLeft, marginTop + fontSize * (ii + 1));
             ii++;
-            line = line.substring(75);
+            line = line.substring(100);
             while (line.length > 0) {
-                cutLine = line.substring(0, 75);
+                cutLine = line.substring(0, 100);
                 context.fillText(cutLine, marginLeft, marginTop + fontSize * (ii + 1));
                 ii++;
-                line = line.substring(75);
+                line = line.substring(100);
             }
             i++;
             line = this.lines[i];
@@ -5237,10 +5290,10 @@ class TextPage {
         context.fillStyle = "rgba(" + r.toFixed(0) + ", " + g.toFixed(0) + ", " + b.toFixed(0) + ", " + alpha.toFixed(2) + ")";
         context.fill();
     }
-    static DrawGlowLine(x0, y0, x1, y1, width, color, alpha, context) {
-        TextPage.DrawGlowPath([new BABYLON.Vector2(x0, y0), new BABYLON.Vector2(x1, y1)], width, color, alpha, false, context);
+    static DrawGlowLine(x0, y0, x1, y1, width, color, alpha, outline, context) {
+        TextPage.DrawGlowPath([new BABYLON.Vector2(x0, y0), new BABYLON.Vector2(x1, y1)], width, color, alpha, false, outline, context);
     }
-    static DrawGlowPath(path, width, color, alpha, closePath, context) {
+    static DrawGlowPath(path, width, color, alpha, closePath, outline, context) {
         let w2 = width * 10;
         let w = width;
         let rMax = Math.min(1, 2 * color.r);
@@ -5254,14 +5307,16 @@ class TextPage {
         if (closePath) {
             context.closePath();
         }
-        for (let i = 0; i < 5; i++) {
-            let r = rMax * 255 * i / 4 + color.r * 255 * (1 - i / 4);
-            let g = gMax * 255 * i / 4 + color.g * 255 * (1 - i / 4);
-            let b = bMax * 255 * i / 4 + color.b * 255 * (1 - i / 4);
-            let a = alpha * ((i + 1) / 5);
-            context.lineWidth = w2 * (1 - i / 4) + w * i / 4;
-            context.strokeStyle = "rgba(" + r.toFixed(0) + ", " + g.toFixed(0) + ", " + b.toFixed(0) + ", " + a.toFixed(2) + ")";
+        if (outline) {
+            context.lineWidth = w + 4;
+            context.strokeStyle = "black";
             context.stroke();
         }
+        context.lineWidth = w;
+        context.strokeStyle = "rgba(" + (color.r * 255).toFixed(0) + ", " + (color.g * 255).toFixed(0) + ", " + (color.b * 255).toFixed(0) + ", " + alpha.toFixed(2) + ")";
+        context.stroke();
+        context.lineWidth = w * 0.5;
+        context.strokeStyle = "rgba(" + (rMax * 255).toFixed(0) + ", " + (gMax * 255).toFixed(0) + ", " + (bMax * 255).toFixed(0) + ", " + alpha.toFixed(2) + ")";
+        context.stroke();
     }
 }

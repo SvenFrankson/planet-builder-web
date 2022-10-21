@@ -3,8 +3,12 @@ class TextPage {
     public baseMesh: BABYLON.Mesh;
     public mesh: BABYLON.Mesh;
     public material: BABYLON.StandardMaterial;
+    public meshOnOff: BABYLON.Mesh;
+    public materialOnOff: BABYLON.StandardMaterial;
     public texture: BABYLON.DynamicTexture;
+    public textureOnOff: BABYLON.DynamicTexture;
 
+    // 24 lines of 80 characters each
     public lines: string[] = [];
 
     private _w: number = 1600;
@@ -96,6 +100,7 @@ class TextPage {
         this.mesh.rotation.y = Math.PI;
         this.mesh.scaling.x = 0.1;
         this.mesh.scaling.y = 0.1;
+        this.mesh.alphaIndex = 100;
 
         let data = new BABYLON.VertexData();
         let positions: number[] = [];
@@ -103,7 +108,6 @@ class TextPage {
         let uvs: number[] = [];
         let normals: number[] = [];
 
-        console.log(BABYLON.Vector2.Distance(this.xTextureToPos(0), this.xTextureToPos(1600)));
         for (let i = 0; i <= 8; i++) {
             let p = this.xTextureToPos(i * 1600 / 8);
             let l = positions.length / 3;
@@ -133,6 +137,80 @@ class TextPage {
         this.texture = new BABYLON.DynamicTexture("text-page-texture", { width: this._w, height: this._h }, this.game.scene, true);
         this.texture.hasAlpha = true;
         this.material.diffuseTexture = this.texture;
+
+        this.meshOnOff = new BABYLON.Mesh("text-page");
+        this.meshOnOff.layerMask = 0x10000000;
+        this.meshOnOff.parent = this.baseMesh;
+        this.meshOnOff.position.y = 1.05;
+        this.meshOnOff.position.z = 0.05;
+        this.meshOnOff.rotation.y = Math.PI;
+
+        data = new BABYLON.VertexData();
+        positions = [];
+        indices = [];
+        uvs = [];
+        normals = [];
+
+        for (let i = 0; i <= 2; i++) {
+            let p = this.xTextureToPos(730 + 70 * i);
+            let l = positions.length / 3;
+            positions.push(p.x, -0.07, p.y);
+            positions.push(p.x, 0.07, p.y);
+            uvs.push(i / 2, 0);
+            uvs.push(i / 2, 1);
+            if (i < 2) {
+                indices.push(l + 1, l, l + 2);
+                indices.push(l + 1, l + 2, l + 3);
+            }
+        }
+
+        BABYLON.VertexData.ComputeNormals(positions, indices, normals);
+        data.positions = positions;
+        data.indices = indices;
+        data.uvs = uvs;
+        data.normals = normals;
+
+        data.applyToMesh(this.meshOnOff);
+
+        this.materialOnOff = new BABYLON.StandardMaterial("text-page-material-on-off", this.game.scene);
+        this.materialOnOff.useAlphaFromDiffuseTexture = true;
+        this.materialOnOff.specularColor.copyFromFloats(0, 0, 0);
+        this.materialOnOff.emissiveColor.copyFromFloats(1, 1, 1);
+        this.meshOnOff.material = this.materialOnOff;
+
+        this.textureOnOff = new BABYLON.DynamicTexture("text-page-texture-on-off", { width: 140, height: 140 }, this.game.scene, true);
+        this.textureOnOff.hasAlpha = true;
+        this.materialOnOff.diffuseTexture = this.textureOnOff;
+
+        let context = this.textureOnOff.getContext();
+        context.clearRect(0, 0, 140, 140);
+        let path = TextPage.MakePath([
+            50, 20,
+            90, 20,
+            120, 50,
+            120, 90,
+            90, 120,
+            50, 120,
+            20, 90,
+            20, 50,
+        ]);
+        TextPage.FillPath(
+            path,
+            BABYLON.Color3.FromHexString("#3a3e45"),
+            0.8,
+            context
+        );
+
+        TextPage.DrawGlowPath(
+            path,
+            10,
+            BABYLON.Color3.FromHexString("#2c4b7d"),
+            1,
+            true,
+            true,
+            context
+        );
+        this.textureOnOff.update();
 
         this.lines[0] = "You know what? It is beets. I've crashed into a beet truck. Jaguar shark! So tell me - does it really exist? Is this my espresso machine? Wh-what is-h-how did you get my espresso machine? Hey, take a look at the earthlings. Goodbye! I was part of something special.";
         this.lines[1] = "Yeah, but John, if The Pirates of the Caribbean breaks down, the pirates don’t eat the tourists. Jaguar shark! So tell me - does it really exist? Did he just throw my cat out of the window? You're a very talented young man, with your own clever thoughts and ideas. Do you need a manager?";
@@ -168,9 +246,9 @@ class TextPage {
     }
 
     public redraw(): void {
-        let marginLeft = 200;
+        let marginLeft = 142;
         let maxChar = 75;
-        let marginTop = 150;
+        let marginTop = 130;
         let fontSize = 30;
 
         let texW = this._w;
@@ -199,10 +277,11 @@ class TextPage {
 
         TextPage.DrawGlowPath(
             decoyPath0,
-            1,
+            6,
             BABYLON.Color3.FromHexString("#2c4b7d"),
             1,
             false,
+            true,
             context
         );
 
@@ -215,10 +294,11 @@ class TextPage {
 
         TextPage.DrawGlowPath(
             decoyPath1,
-            1,
+            6,
             BABYLON.Color3.FromHexString("#2c4b7d"),
             1,
             false,
+            true,
             context
         );
         
@@ -231,10 +311,11 @@ class TextPage {
 
         TextPage.DrawGlowPath(
             decoyPath2,
-            1,
+            6,
             BABYLON.Color3.FromHexString("#2c4b7d"),
             1,
             false,
+            true,
             context
         );
         
@@ -247,10 +328,11 @@ class TextPage {
 
         TextPage.DrawGlowPath(
             decoyPath3,
-            1,
+            6,
             BABYLON.Color3.FromHexString("#2c4b7d"),
             1,
             false,
+            true,
             context
         );
         
@@ -294,7 +376,7 @@ class TextPage {
                 y0 -= cornerSize;
                 y1 += cornerSize;
             }
-            TextPage.DrawGlowLine(x, y0, x, y1, 1, grey, 0.7, context);
+            TextPage.DrawGlowLine(x, y0, x, y1, 1, grey, 0.7, false, context);
         }
 
         nLine = 7;
@@ -307,7 +389,7 @@ class TextPage {
                 x0 -= cornerSize;
                 x1 += cornerSize;
             }
-            TextPage.DrawGlowLine(x0, y, x1, y, 1, grey, 0.7, context);
+            TextPage.DrawGlowLine(x0, y, x1, y, 1, grey, 0.7, false, context);
         }
 
         TextPage.FillPath(
@@ -319,9 +401,10 @@ class TextPage {
 
         TextPage.DrawGlowPath(
             path,
-            2,
+            10,
             BABYLON.Color3.FromHexString("#2c4b7d"),
             1,
+            true,
             true,
             context
         );
@@ -332,16 +415,16 @@ class TextPage {
         let i = 0;
         let ii = 0;
         while (line && ii < 1000 / fontSize) {
-            context.fillText((i + 1).toFixed(0) + ":", marginLeft - 2 * fontSize, marginTop + fontSize * (ii + 1));
-            let cutLine = line.substring(0, 75);
+            //context.fillText((i + 1).toFixed(0) + ":", marginLeft - 2 * fontSize, marginTop + fontSize * (ii + 1));
+            let cutLine = line.substring(0, 100);
             context.fillText(cutLine, marginLeft, marginTop + fontSize * (ii + 1));
             ii++;
-            line = line.substring(75);
+            line = line.substring(100);
             while (line.length > 0) {
-                cutLine = line.substring(0, 75);
+                cutLine = line.substring(0, 100);
                 context.fillText(cutLine, marginLeft, marginTop + fontSize * (ii + 1));
                 ii++;
-                line = line.substring(75);
+                line = line.substring(100);
             }
             i++;
             line = this.lines[i];
@@ -371,11 +454,11 @@ class TextPage {
         context.fill();
     }
 
-    public static DrawGlowLine(x0: number, y0: number, x1: number, y1: number, width: number, color: BABYLON.Color3, alpha: number, context: BABYLON.ICanvasRenderingContext): void {
-        TextPage.DrawGlowPath([new BABYLON.Vector2(x0, y0), new BABYLON.Vector2(x1, y1)], width, color, alpha, false, context);
+    public static DrawGlowLine(x0: number, y0: number, x1: number, y1: number, width: number, color: BABYLON.Color3, alpha: number, outline: boolean, context: BABYLON.ICanvasRenderingContext): void {
+        TextPage.DrawGlowPath([new BABYLON.Vector2(x0, y0), new BABYLON.Vector2(x1, y1)], width, color, alpha, false, outline, context);
     }
 
-    public static DrawGlowPath(path: BABYLON.Vector2[], width: number, color: BABYLON.Color3, alpha: number, closePath: boolean, context: BABYLON.ICanvasRenderingContext): void {
+    public static DrawGlowPath(path: BABYLON.Vector2[], width: number, color: BABYLON.Color3, alpha: number, closePath: boolean, outline: boolean, context: BABYLON.ICanvasRenderingContext): void {
         let w2 = width * 10;
         let w = width;
         let rMax = Math.min(1, 2 * color.r);
@@ -389,14 +472,19 @@ class TextPage {
         if (closePath) {
             context.closePath();
         }
-        for (let i = 0; i < 5; i++) {
-            let r = rMax * 255 * i / 4 + color.r * 255 * (1 - i / 4);
-            let g = gMax * 255 * i / 4 + color.g * 255 * (1 - i / 4);
-            let b = bMax * 255 * i / 4 + color.b * 255 * (1 - i / 4);
-            let a = alpha * ((i + 1) / 5);
-            context.lineWidth = w2 * (1 - i / 4) + w * i / 4;
-            context.strokeStyle = "rgba(" + r.toFixed(0) + ", " + g.toFixed(0) + ", " + b.toFixed(0) + ", " + a.toFixed(2) + ")";
+
+        if (outline) {
+            context.lineWidth = w + 4;
+            context.strokeStyle = "black";
             context.stroke();
         }
+        
+        context.lineWidth = w;
+        context.strokeStyle = "rgba(" + (color.r * 255).toFixed(0) + ", " + (color.g * 255).toFixed(0) + ", " + (color.b * 255).toFixed(0) + ", " + alpha.toFixed(2) + ")";
+        context.stroke();
+        
+        context.lineWidth = w * 0.5;
+        context.strokeStyle = "rgba(" + (rMax * 255).toFixed(0) + ", " + (gMax * 255).toFixed(0) + ", " + (bMax * 255).toFixed(0) + ", " + alpha.toFixed(2) + ")";
+        context.stroke();
     }
 }
