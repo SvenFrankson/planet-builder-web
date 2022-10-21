@@ -155,7 +155,11 @@ class PlanetChunck {
     public doDataSafety(): void {
         this.updateIsEmptyIsFull();
         this.adjacentsAsArray.forEach(adj => {
-            adj.syncWithAdjacents();
+            if (adj.syncWithAdjacents()) {
+                if (adj.lod <= 1) {
+                    adj.chunckManager.requestDraw(adj, adj.lod);
+                }
+            }
         })
         this.register();
     }
@@ -183,6 +187,10 @@ class PlanetChunck {
     private _isFull: boolean = false;
     public get isFull(): boolean {
         return this._isFull;
+    }
+    private _isDirty: boolean = false;
+    public get isDirty(): boolean {
+        return this._isDirty;
     }
 
     private bedrock: BABYLON.Mesh;
@@ -310,15 +318,13 @@ class PlanetChunck {
         }
     }
     
-    public syncWithAdjacents(): void {
+    public syncWithAdjacents(): boolean {
+        let hasUpdated = false;
         if (!this.dataInitialized) {
-            return;
+            return hasUpdated;
         }
         this._adjacentsDataSynced = true;
         this.findAdjacents();
-        if (!this._adjacents[0][1][1]) {
-            
-        }
         
         for (let i: number = this.firstI; i <= PlanetTools.CHUNCKSIZE; i++) {
             for (let j: number = this.firstJ; j <= this.lastJ; j++) {
@@ -329,6 +335,9 @@ class PlanetChunck {
                                 if (j === 0) {
                                     if (i === 0) {
                                         let d = this.GetDataGlobal(0, - 1, this.kPos * PlanetTools.CHUNCKSIZE + k);
+                                        if (this.data[i - this.firstI][j - this.firstJ][k - this.firstK] != d) {
+                                            hasUpdated = true;
+                                        }
                                         this.data[i - this.firstI][j - this.firstJ][k - this.firstK] = d;
                                     }
                                 }
@@ -337,6 +346,9 @@ class PlanetChunck {
                                 if (j === 0) {
                                     if (i === PlanetTools.CHUNCKSIZE - 1) {
                                         let d = this.GetDataGlobal(this.iPos * PlanetTools.CHUNCKSIZE + i, - 1, this.kPos * PlanetTools.CHUNCKSIZE + k);
+                                        if (this.data[i - this.firstI][j - this.firstJ][k - this.firstK] != d) {
+                                            hasUpdated = true;
+                                        }
                                         this.data[i - this.firstI][j - this.firstJ][k - this.firstK] = d;
                                     }
                                 }
@@ -348,6 +360,9 @@ class PlanetChunck {
                                 if (i === 0) {
                                     if (j === PlanetTools.CHUNCKSIZE - 1) {
                                         let d = this.GetDataGlobal(0, (this.jPos + 1) * PlanetTools.CHUNCKSIZE, this.kPos * PlanetTools.CHUNCKSIZE + k);
+                                        if (this.data[i - this.firstI][j - this.firstJ][k - this.firstK] != d) {
+                                            hasUpdated = true;
+                                        }
                                         this.data[i - this.firstI][j - this.firstJ][k - this.firstK] = d;
                                     }
                                 }
@@ -356,6 +371,9 @@ class PlanetChunck {
                                 if (j === PlanetTools.CHUNCKSIZE - 1) {
                                     if (i === PlanetTools.CHUNCKSIZE - 1) {
                                         let d = this.GetDataGlobal(this.iPos * PlanetTools.CHUNCKSIZE + i, (this.jPos + 1) * PlanetTools.CHUNCKSIZE, this.kPos * PlanetTools.CHUNCKSIZE + k);
+                                        if (this.data[i - this.firstI][j - this.firstJ][k - this.firstK] != d) {
+                                            hasUpdated = true;
+                                        }
                                         this.data[i - this.firstI][j - this.firstJ][k - this.firstK] = d;
                                     }
                                 }
@@ -364,6 +382,9 @@ class PlanetChunck {
                     }
                     if (i < 0 || i >= PlanetTools.CHUNCKSIZE || j < 0 || j >= PlanetTools.CHUNCKSIZE || k < 0 || k >= PlanetTools.CHUNCKSIZE) {
                         let d = this.GetDataGlobal(this.iPos * PlanetTools.CHUNCKSIZE + i, this.jPos * PlanetTools.CHUNCKSIZE + j, this.kPos * PlanetTools.CHUNCKSIZE + k);
+                        if (this.data[i - this.firstI][j - this.firstJ][k - this.firstK] != d) {
+                            hasUpdated = true;
+                        }
                         this.data[i - this.firstI][j - this.firstJ][k - this.firstK] = d;
                     }
                 }
@@ -371,6 +392,7 @@ class PlanetChunck {
         }
         this.updateIsEmptyIsFull();
         this.register();
+        return hasUpdated;
     }
 
     public initializeMesh(): void {
