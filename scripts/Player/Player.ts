@@ -39,6 +39,7 @@ class Player extends BABYLON.Mesh {
         this.game.canvas.addEventListener("keydown", this._keyDown);
         this.game.canvas.addEventListener("keyup", this._keyUp);
         this.game.canvas.addEventListener("mousemove", this._mouseMove);
+        this.game.canvas.addEventListener("mouseup", this._action);
     }
 
     private _keyDown = (e: KeyboardEvent) => {
@@ -106,6 +107,7 @@ class Player extends BABYLON.Mesh {
         this.game.canvas.removeEventListener("keydown", this._keyDown);
         this.game.canvas.removeEventListener("keyup", this._keyUp);
         this.game.canvas.removeEventListener("mousemove", this._mouseMove);
+        this.game.canvas.removeEventListener("mouseup", this._action);
     }
 
     private _gravityFactor: BABYLON.Vector3 = BABYLON.Vector3.Zero();
@@ -131,8 +133,33 @@ class Player extends BABYLON.Mesh {
 
     private _debugCollisionGroundMesh: BABYLON.Mesh;
     private _debugCollisionWallMesh: BABYLON.Mesh;
+    private _debugAimGroundMesh: BABYLON.Mesh;
     private _chuncks: PlanetChunck[] = [];
     private _meshes: BABYLON.Mesh[] = [];
+
+    private _action = () => {
+        let ray: BABYLON.Ray = new BABYLON.Ray(this.camPos.absolutePosition, this.camPos.forward);
+        let hit: BABYLON.PickingInfo[] = ray.intersectsMeshes(this._meshes);
+        hit = hit.sort((h1, h2) => { return h1.distance - h2.distance; });
+        if (hit[0] && hit[0].pickedPoint) {
+            if (!this._debugAimGroundMesh) {
+                this._debugAimGroundMesh = BABYLON.MeshBuilder.CreateSphere("debug-aim-mesh", { diameter: 0.2 }, this.getScene());
+                let material = new BABYLON.StandardMaterial("material", this.getScene());
+                material.alpha = 0.5;
+                this._debugAimGroundMesh.material = material;
+            }
+            this._debugAimGroundMesh.position.copyFrom(hit[0].pickedPoint);
+            let chunck = PlanetTools.WorldPositionToChunck(this.planet, hit[0].pickedPoint);
+            if (chunck) {
+                let textPage = new TextPage(this.game);
+                textPage.instantiate();
+                textPage.redraw();
+                textPage.setPosition(hit[0].pickedPoint);
+                textPage.setTarget(this.position);
+                textPage.open();
+            }
+        }
+    }
 
     private _update = () => {
         if (Game.CameraManager.cameraMode != CameraMode.Player) {

@@ -1,5 +1,6 @@
 class TextPage {
 
+    public baseMesh: BABYLON.Mesh;
     public mesh: BABYLON.Mesh;
     public material: BABYLON.StandardMaterial;
     public texture: BABYLON.DynamicTexture;
@@ -25,9 +26,76 @@ class TextPage {
 
     }
 
+    private async _animatePosY(posYTarget: number, duration: number): Promise<void> {
+        return new Promise<void>(resolve => {
+            let yZero = this.mesh.position.y;
+            let t = 0;
+            let cb = () => {
+                t += this.game.engine.getDeltaTime() / 1000;
+                if (t < duration) {
+                    let f = t / duration;
+                    this.mesh.position.y = yZero * (1 - f) + posYTarget * f;
+                }
+                else {
+                    this.mesh.position.y = posYTarget;
+                    this.game.scene.onBeforeRenderObservable.removeCallback(cb);
+                    resolve();
+                }
+            }
+            this.game.scene.onBeforeRenderObservable.add(cb);
+        });
+    }
+
+    private async _animateScaleX(xTarget: number, duration: number): Promise<void> {
+        return new Promise<void>(resolve => {
+            let xZero = this.mesh.scaling.x;
+            let t = 0;
+            let cb = () => {
+                t += this.game.engine.getDeltaTime() / 1000;
+                if (t < duration) {
+                    let f = t / duration;
+                    this.mesh.scaling.x = xZero * (1 - f) + xTarget * f;
+                }
+                else {
+                    this.mesh.scaling.x = xTarget;
+                    this.game.scene.onBeforeRenderObservable.removeCallback(cb);
+                    resolve();
+                }
+            }
+            this.game.scene.onBeforeRenderObservable.add(cb);
+        });
+    }
+
+    private async _animateScaleY(yTarget: number, duration: number): Promise<void> {
+        return new Promise<void>(resolve => {
+            let yZero = this.mesh.scaling.y;
+            let t = 0;
+            let cb = () => {
+                t += this.game.engine.getDeltaTime() / 1000;
+                if (t < duration) {
+                    let f = t / duration;
+                    this.mesh.scaling.y = yZero * (1 - f) + yTarget * f;
+                }
+                else {
+                    this.mesh.scaling.y = yTarget;
+                    this.game.scene.onBeforeRenderObservable.removeCallback(cb);
+                    resolve();
+                }
+            }
+            this.game.scene.onBeforeRenderObservable.add(cb);
+        });
+    }
+
     public instantiate(): void {
-        this.mesh = BABYLON.MeshBuilder.CreatePlane("text-page", { width: this._w / 500, height: this._h / 500, sideOrientation: 2 }, this.game.scene);
+        this.baseMesh = BABYLON.MeshBuilder.CreateCylinder("text-page-base", { height: 0.1, diameter: 0.5 });
+
+        this.mesh = new BABYLON.Mesh("text-page");
         this.mesh.layerMask = 0x10000000;
+        this.mesh.parent = this.baseMesh;
+        this.mesh.position.y = 0;
+        this.mesh.rotation.y = Math.PI;
+        this.mesh.scaling.x = 0.1;
+        this.mesh.scaling.y = 0.1;
 
         let data = new BABYLON.VertexData();
         let positions: number[] = [];
@@ -39,8 +107,8 @@ class TextPage {
         for (let i = 0; i <= 8; i++) {
             let p = this.xTextureToPos(i * 1600 / 8);
             let l = positions.length / 3;
-            positions.push(p.x, 0, p.y);
-            positions.push(p.x, 1, p.y);
+            positions.push(p.x, -0.5, p.y);
+            positions.push(p.x, 0.5, p.y);
             uvs.push(i / 8, 0);
             uvs.push(i / 8, 1);
             if (i < 8) {
@@ -73,10 +141,30 @@ class TextPage {
         this.lines[4] = "Checkmate... Must go faster... go, go, go, go, go! Hey, you know how I'm, like, always trying to save the planet? Here's my chance. God creates dinosaurs. God destroys dinosaurs. God creates Man. Man destroys God. Man creates Dinosaurs. Checkmate... You're a very talented young man, with your own clever thoughts and ideas. Do you need a manager?";
     }
 
+    public async open(): Promise<void> {
+        await this._animatePosY(1.5, 0.3);
+        await this._animateScaleX(1, 0.2);
+        await this._animateScaleY(1, 0.2);
+    }
+
+    public async close(): Promise<void> {
+        await this._animateScaleY(0.05, 0.1);
+        await this._animateScaleX(0.05, 0.1);
+        await this._animatePosY(0, 0.2);
+    }
+
     public setPosition(position: BABYLON.Vector3): void {
-        if (this.mesh) {
-            this.mesh.position = position;
+        if (this.baseMesh) {
+            this.baseMesh.position = position;
         }
+    }
+
+    public setTarget(target: BABYLON.Vector3): void {
+        let y = this.baseMesh.position.clone().normalize();
+        let z = target.subtract(this.baseMesh.position);
+        let x = BABYLON.Vector3.Cross(y, z);
+        z = BABYLON.Vector3.Cross(x, y);
+        this.baseMesh.rotationQuaternion = BABYLON.Quaternion.RotationQuaternionFromAxis(x, y, z);
     }
 
     public redraw(): void {
