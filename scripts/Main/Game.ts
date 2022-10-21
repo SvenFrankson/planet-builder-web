@@ -65,11 +65,6 @@ class Game extends Main {
 
 			Game.Player = new Player(new BABYLON.Vector3(0, (kPosMax + 1) * PlanetTools.CHUNCKSIZE * 0.8, 0), planetTest, this);
 			this.player = Game.Player;
-
-			let textPage = new TextPage(this);
-			textPage.instantiate();
-			textPage.redraw();
-			textPage.setPosition(new BABYLON.Vector3(0, (kPosMax) * PlanetTools.CHUNCKSIZE * 0.8 - 0.2, 0));
 			
 			this.player.registerControl();
 			this.chunckManager.onNextInactive(() => {
