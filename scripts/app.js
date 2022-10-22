@@ -964,6 +964,9 @@ class DebugDisplayVector3Value extends HTMLElement {
     }
 }
 customElements.define("debug-display-vector3-value", DebugDisplayVector3Value);
+class DebugDefine {
+}
+DebugDefine.USE_VERTEX_SET_MESH_HISTORY = true;
 class DebugPlanetPerf {
     constructor(game) {
         this.game = game;
@@ -1563,6 +1566,7 @@ class PlanetChunck {
         this._isEmpty = true;
         this._isFull = false;
         this._isDirty = false;
+        this._setMeshHistory = [];
         this.planetSide = planetSide;
         this.iPos = iPos;
         this.jPos = jPos;
@@ -1938,6 +1942,9 @@ class PlanetChunck {
         this.mesh.parent = this.planetSide;
         this.mesh.freezeWorldMatrix();
         this.mesh.refreshBoundingInfo();
+        if (DebugDefine.USE_VERTEX_SET_MESH_HISTORY) {
+            this._setMeshHistory.push(performance.now());
+        }
     }
     highlight() {
         if (this.mesh) {
@@ -1983,6 +1990,16 @@ class PlanetChunck {
     }
     saveToLocalStorage() {
         localStorage.setItem(this.name, this.serialize());
+    }
+    debugTextInfo() {
+        let textInfo = [];
+        textInfo[0] = this.name + ". degree=" + this.degree + ". adjacentsCount=" + this.adjacentsAsArray.length + ".";
+        if (DebugDefine.USE_VERTEX_SET_MESH_HISTORY) {
+            for (let i = 0; i < this._setMeshHistory.length; i++) {
+                textInfo.push(this._setMeshHistory[i].toFixed(0));
+            }
+        }
+        return textInfo;
     }
 }
 class PlanetChunckRedrawRequest {
@@ -4570,9 +4587,7 @@ class Player extends BABYLON.Mesh {
                 if (chunck) {
                     let textPage = new TextPage(this.game);
                     textPage.instantiate();
-                    textPage.lines = [
-                        chunck.name + ". degree=" + chunck.degree + ". adjacentsCount=" + chunck.adjacentsAsArray.length
-                    ];
+                    textPage.lines = chunck.debugTextInfo();
                     textPage.redraw();
                     textPage.setPosition(hit[0].pickedPoint);
                     textPage.setTarget(this.position);

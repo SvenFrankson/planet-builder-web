@@ -153,9 +153,7 @@ class Player extends BABYLON.Mesh {
             if (chunck) {
                 let textPage = new TextPage(this.game);
                 textPage.instantiate();
-                textPage.lines = [
-                    chunck.name + ". degree=" + chunck.degree + ". adjacentsCount=" + chunck.adjacentsAsArray.length
-                ]
+                textPage.lines = chunck.debugTextInfo();
                 textPage.redraw();
                 textPage.setPosition(hit[0].pickedPoint);
                 textPage.setTarget(this.position);

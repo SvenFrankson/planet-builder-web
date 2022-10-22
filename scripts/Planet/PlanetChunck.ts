@@ -192,6 +192,7 @@ class PlanetChunck {
     public get isDirty(): boolean {
         return this._isDirty;
     }
+    private _setMeshHistory: number[] = [];
 
     private bedrock: BABYLON.Mesh;
 
@@ -467,6 +468,9 @@ class PlanetChunck {
         this.mesh.parent = this.planetSide;
         this.mesh.freezeWorldMatrix();
         this.mesh.refreshBoundingInfo();
+        if (DebugDefine.USE_VERTEX_SET_MESH_HISTORY) {
+            this._setMeshHistory.push(performance.now());
+        }
     }
 
     public highlight(): void {
@@ -518,5 +522,16 @@ class PlanetChunck {
 
     public saveToLocalStorage(): void {
         localStorage.setItem(this.name, this.serialize());
+    }
+
+    public debugTextInfo(): string[] {
+        let textInfo:string[] = [];
+        textInfo[0] = this.name + ". degree=" + this.degree + ". adjacentsCount=" + this.adjacentsAsArray.length + ".";
+        if (DebugDefine.USE_VERTEX_SET_MESH_HISTORY) {
+            for (let i = 0; i < this._setMeshHistory.length; i++) {
+                textInfo.push(this._setMeshHistory[i].toFixed(0));
+            }
+        }
+        return textInfo;
     }
 }
