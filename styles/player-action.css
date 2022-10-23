@@ -1,0 +1,22 @@
+#player-action {
+    position: fixed;
+    top: 0px;
+    left: 0px;
+}
+
+.player-action-item {
+    position: relative;
+    width: 80px;
+    height: 80px;
+    margin: 5px;
+    background-image: url("/datas/images/inventory-item-background.svg");
+    background-size: cover;
+}
+
+.player-action-item .index {
+    position: absolute;
+    bottom: 6%;
+    right: 11%;
+    color: white;
+    font-family: Consolas;
+}
