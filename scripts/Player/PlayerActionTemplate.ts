@@ -31,13 +31,15 @@ class PlayerActionTemplate {
             let hit: BABYLON.PickingInfo[] = ray.intersectsMeshes(player.meshes);
             hit = hit.sort((h1, h2) => { return h1.distance - h2.distance; });
             if (hit[0] && hit[0].pickedPoint) {
-                let localIJK = PlanetTools.WorldPositionToLocalIJK(player.planet, hit[0].pickedPoint);
+                let n =  hit[0].getNormal(true).scaleInPlace(0.2);
+                let localIJK = PlanetTools.WorldPositionToLocalIJK(player.planet, hit[0].pickedPoint.add(n));
                 if (localIJK) {
                     if (!previewMesh) {
-                        previewMesh = BABYLON.MeshBuilder.CreateSphere("preview-mesh", { diameter: 0.5 });
+                        previewMesh = BABYLON.MeshBuilder.CreateSphere("preview-mesh", { diameter: 1 });
                     }
-                    let worldPos = PlanetTools.LocalIJKToWorldPosition(localIJK);
+                    let worldPos = PlanetTools.LocalIJKToWorldPosition(localIJK, true);
                     previewMesh.position.copyFrom(worldPos);
+
                     return;
                 }
             }
@@ -52,7 +54,8 @@ class PlayerActionTemplate {
             let hit: BABYLON.PickingInfo[] = ray.intersectsMeshes(player.meshes);
             hit = hit.sort((h1, h2) => { return h1.distance - h2.distance; });
             if (hit[0] && hit[0].pickedPoint) {
-                let localIJK = PlanetTools.WorldPositionToLocalIJK(player.planet, hit[0].pickedPoint);
+                let n =  hit[0].getNormal(true).scaleInPlace(0.2);
+                let localIJK = PlanetTools.WorldPositionToLocalIJK(player.planet, hit[0].pickedPoint.add(n));
                 if (localIJK) {
                     localIJK.planetChunck.SetData(localIJK.i, localIJK.j, localIJK.k, blockType);
                     Game.Instance.chunckManager.requestDraw(localIJK.planetChunck, localIJK.planetChunck.lod);

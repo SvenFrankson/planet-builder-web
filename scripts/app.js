@@ -4280,10 +4280,15 @@ class PlanetTools {
         let localIJK = PlanetTools.WorldPositionToLocalIJK(planet, worldPos);
         return localIJK ? localIJK.planetChunck : undefined;
     }
-    static GlobalIJKToWorldPosition(planetSide, globalIJK) {
+    static GlobalIJKToWorldPosition(planetSide, globalIJK, middleAltitude) {
         let size = PlanetTools.DegreeToSize(PlanetTools.KGlobalToDegree(globalIJK.k));
         let p = PlanetTools.EvaluateVertex(size, globalIJK.i + 0.5, globalIJK.j + 0.5);
-        p.scaleInPlace(PlanetTools.KGlobalToAltitude(globalIJK.k));
+        if (middleAltitude) {
+            p.scaleInPlace(PlanetTools.KGlobalToAltitude(globalIJK.k) * 0.5 + PlanetTools.KGlobalToAltitude(globalIJK.k + 1) * 0.5);
+        }
+        else {
+            p.scaleInPlace(PlanetTools.KGlobalToAltitude(globalIJK.k));
+        }
         p = BABYLON.Vector3.TransformCoordinates(p, planetSide.computeWorldMatrix(true));
         return p;
     }
@@ -4304,25 +4309,31 @@ class PlanetTools {
             k: planetChunck.kPos * PlanetTools.CHUNCKSIZE + localK
         };
     }
-    static LocalIJKToWorldPosition(a, localI, localJ, localK) {
+    static LocalIJKToWorldPosition(a, b, localJ, localK, middleAltitude) {
         let planetChunck;
+        let localI;
         if (a instanceof PlanetChunck) {
             planetChunck = a;
+            localI = b;
         }
         else {
             planetChunck = a.planetChunck;
             localI = a.i;
             localJ = a.j;
             localK = a.k;
+            middleAltitude = b;
         }
         let globalIJK = PlanetTools.LocalIJKToGlobalIJK(planetChunck, localI, localJ, localK);
-        return PlanetTools.GlobalIJKToWorldPosition(planetChunck.planetSide, globalIJK);
+        return PlanetTools.GlobalIJKToWorldPosition(planetChunck.planetSide, globalIJK, middleAltitude);
     }
     static KGlobalToDegree(k) {
         return PlanetTools.KPosToDegree(Math.floor(k / PlanetTools.CHUNCKSIZE));
     }
     static KPosToDegree(kPos) {
         return PlanetTools.KPosToDegree8(kPos);
+    }
+    static KPosToSize(kPos) {
+        return PlanetTools.DegreeToSize(PlanetTools.KPosToDegree(kPos));
     }
     static get BSizes() {
         if (!PlanetTools._BSizes) {
@@ -4434,6 +4445,12 @@ class PlanetTools {
         let altitudes = PlanetTools.Altitudes[degree];
         let summedLength = PlanetTools.SummedBSizesLength[degree];
         return altitudes[kGlobal - summedLength];
+    }
+    static KLocalToAltitude(chunck, k) {
+        let degree = PlanetTools.KGlobalToDegree(chunck.kPos * PlanetTools.CHUNCKSIZE + k);
+        let altitudes = PlanetTools.Altitudes[degree];
+        let summedLength = PlanetTools.SummedBSizesLength[degree];
+        return altitudes[chunck.kPos * PlanetTools.CHUNCKSIZE + k - summedLength];
     }
     /*
     public static KPosToDegree16(kPos: number): number {
@@ -5016,12 +5033,13 @@ class PlayerActionTemplate {
             let hit = ray.intersectsMeshes(player.meshes);
             hit = hit.sort((h1, h2) => { return h1.distance - h2.distance; });
             if (hit[0] && hit[0].pickedPoint) {
-                let localIJK = PlanetTools.WorldPositionToLocalIJK(player.planet, hit[0].pickedPoint);
+                let n = hit[0].getNormal(true).scaleInPlace(0.2);
+                let localIJK = PlanetTools.WorldPositionToLocalIJK(player.planet, hit[0].pickedPoint.add(n));
                 if (localIJK) {
                     if (!previewMesh) {
-                        previewMesh = BABYLON.MeshBuilder.CreateSphere("preview-mesh", { diameter: 0.5 });
+                        previewMesh = BABYLON.MeshBuilder.CreateSphere("preview-mesh", { diameter: 1 });
                     }
-                    let worldPos = PlanetTools.LocalIJKToWorldPosition(localIJK);
+                    let worldPos = PlanetTools.LocalIJKToWorldPosition(localIJK, true);
                     previewMesh.position.copyFrom(worldPos);
                     return;
                 }
@@ -5036,7 +5054,8 @@ class PlayerActionTemplate {
             let hit = ray.intersectsMeshes(player.meshes);
             hit = hit.sort((h1, h2) => { return h1.distance - h2.distance; });
             if (hit[0] && hit[0].pickedPoint) {
-                let localIJK = PlanetTools.WorldPositionToLocalIJK(player.planet, hit[0].pickedPoint);
+                let n = hit[0].getNormal(true).scaleInPlace(0.2);
+                let localIJK = PlanetTools.WorldPositionToLocalIJK(player.planet, hit[0].pickedPoint.add(n));
                 if (localIJK) {
                     localIJK.planetChunck.SetData(localIJK.i, localIJK.j, localIJK.k, blockType);
                     Game.Instance.chunckManager.requestDraw(localIJK.planetChunck, localIJK.planetChunck.lod);

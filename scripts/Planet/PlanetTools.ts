@@ -228,10 +228,15 @@ class PlanetTools {
         return localIJK ? localIJK.planetChunck : undefined;
     }
 
-    public static GlobalIJKToWorldPosition(planetSide: PlanetSide, globalIJK: { i: number; j: number; k: number }): BABYLON.Vector3 {
+    public static GlobalIJKToWorldPosition(planetSide: PlanetSide, globalIJK: { i: number; j: number; k: number }, middleAltitude?: boolean): BABYLON.Vector3 {
         let size = PlanetTools.DegreeToSize(PlanetTools.KGlobalToDegree(globalIJK.k));
         let p = PlanetTools.EvaluateVertex(size, globalIJK.i + 0.5, globalIJK.j + 0.5);
-        p.scaleInPlace(PlanetTools.KGlobalToAltitude(globalIJK.k));
+        if (middleAltitude) {
+            p.scaleInPlace(PlanetTools.KGlobalToAltitude(globalIJK.k) * 0.5 + PlanetTools.KGlobalToAltitude(globalIJK.k + 1) * 0.5);
+        }
+        else {
+            p.scaleInPlace(PlanetTools.KGlobalToAltitude(globalIJK.k));
+        }
         p = BABYLON.Vector3.TransformCoordinates(p, planetSide.computeWorldMatrix(true));
         return p;
     }
@@ -258,21 +263,24 @@ class PlanetTools {
         }
     }
 
-    public static LocalIJKToWorldPosition(planetChunck: PlanetChunck, localI: number, localJ: number, localK: number): BABYLON.Vector3;
-    public static LocalIJKToWorldPosition(localIJK: { planetChunck: PlanetChunck; i: number; j: number; k: number }): BABYLON.Vector3;
-    public static LocalIJKToWorldPosition(a: any, localI?: number, localJ?: number, localK?: number): BABYLON.Vector3 {
+    public static LocalIJKToWorldPosition(planetChunck: PlanetChunck, localI: number, localJ: number, localK: number, middleAltitude?: boolean): BABYLON.Vector3;
+    public static LocalIJKToWorldPosition(localIJK: { planetChunck: PlanetChunck; i: number; j: number; k: number }, middleAltitude?: boolean): BABYLON.Vector3;
+    public static LocalIJKToWorldPosition(a: any, b: any, localJ?: number, localK?: number, middleAltitude?: boolean): BABYLON.Vector3 {
         let planetChunck: PlanetChunck;
+        let localI: number;
         if (a instanceof PlanetChunck) {
             planetChunck = a;
+            localI = b;
         }
         else {
             planetChunck = a.planetChunck;
             localI = a.i;
             localJ = a.j;
             localK = a.k;
+            middleAltitude = b;
         }
         let globalIJK = PlanetTools.LocalIJKToGlobalIJK(planetChunck, localI, localJ, localK);
-        return PlanetTools.GlobalIJKToWorldPosition(planetChunck.planetSide, globalIJK);
+        return PlanetTools.GlobalIJKToWorldPosition(planetChunck.planetSide, globalIJK, middleAltitude);
     }
 
     public static KGlobalToDegree(k: number): number {
@@ -281,6 +289,10 @@ class PlanetTools {
 
     public static KPosToDegree(kPos: number): number {
         return PlanetTools.KPosToDegree8(kPos);
+    }
+
+    public static KPosToSize(kPos: number): number {
+        return PlanetTools.DegreeToSize(PlanetTools.KPosToDegree(kPos));
     }
 
     private static _BSizes: number[][];
@@ -402,6 +414,13 @@ class PlanetTools {
         let altitudes = PlanetTools.Altitudes[degree];
         let summedLength = PlanetTools.SummedBSizesLength[degree];
         return altitudes[kGlobal - summedLength];
+    }
+
+    public static KLocalToAltitude(chunck: PlanetChunck, k: number): number {
+        let degree = PlanetTools.KGlobalToDegree(chunck.kPos * PlanetTools.CHUNCKSIZE + k);
+        let altitudes = PlanetTools.Altitudes[degree];
+        let summedLength = PlanetTools.SummedBSizesLength[degree];
+        return altitudes[chunck.kPos * PlanetTools.CHUNCKSIZE + k - summedLength];
     }
 
     /*
