@@ -386,8 +386,8 @@ class PlanetChunckMeshBuilder {
                         BABYLON.Quaternion.RotationAxisToRef(blockAxis, angle, blockQuaternion);
     
                         let hGlobal = (k + kPos * PlanetTools.CHUNCKSIZE + 1);
-                        let hLow = PlanetTools.KGlobalToAltitude(hGlobal) * 0.5 + PlanetTools.KGlobalToAltitude(hGlobal + 1) * 0.5;
-                        let hHigh = PlanetTools.KGlobalToAltitude(hGlobal + 1) * 0.5 + PlanetTools.KGlobalToAltitude(hGlobal + 2) * 0.5;
+                        let hLow = PlanetTools.KGlobalToAltitude(hGlobal - 1) * 0.5 + PlanetTools.KGlobalToAltitude(hGlobal) * 0.5;
+                        let hHigh = PlanetTools.KGlobalToAltitude(hGlobal) * 0.5 + PlanetTools.KGlobalToAltitude(hGlobal + 1) * 0.5;
     
                         PCMB.tmpVertices[0].scaleToRef(hHigh, PCMB.tmpVertices[4]);
                         PCMB.tmpVertices[1].scaleToRef(hHigh, PCMB.tmpVertices[5]);

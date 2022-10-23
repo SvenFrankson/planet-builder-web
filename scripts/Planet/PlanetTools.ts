@@ -213,11 +213,19 @@ class PlanetTools {
         return { i: i, j: j, k: k };
     }
 
-    public static WorldPositionToChunck(planet: Planet, worldPos: BABYLON.Vector3): PlanetChunck {
+    public static WorldPositionToLocalIJK(
+        planet: Planet,
+        worldPos: BABYLON.Vector3
+    ): { planetChunck: PlanetChunck; i: number; j: number; k: number } {
         let planetSide = PlanetTools.WorldPositionToPlanetSide(planet, worldPos);
         let globalIJK = PlanetTools.WorldPositionToGlobalIJK(planetSide, worldPos);
         let localIJK = PlanetTools.GlobalIJKToLocalIJK(planetSide, globalIJK);
-        return localIJK.planetChunck;
+        return localIJK;
+    }
+
+    public static WorldPositionToChunck(planet: Planet, worldPos: BABYLON.Vector3): PlanetChunck {
+        let localIJK = PlanetTools.WorldPositionToLocalIJK(planet, worldPos);
+        return localIJK ? localIJK.planetChunck : undefined;
     }
 
     public static GlobalIJKToWorldPosition(planetSide: PlanetSide, globalIJK: { i: number; j: number; k: number }): BABYLON.Vector3 {
@@ -250,7 +258,19 @@ class PlanetTools {
         }
     }
 
-    public static LocalIJKToWorldPosition(planetChunck: PlanetChunck, localI: number, localJ: number, localK: number): BABYLON.Vector3 {
+    public static LocalIJKToWorldPosition(planetChunck: PlanetChunck, localI: number, localJ: number, localK: number): BABYLON.Vector3;
+    public static LocalIJKToWorldPosition(localIJK: { planetChunck: PlanetChunck; i: number; j: number; k: number }): BABYLON.Vector3;
+    public static LocalIJKToWorldPosition(a: any, localI?: number, localJ?: number, localK?: number): BABYLON.Vector3 {
+        let planetChunck: PlanetChunck;
+        if (a instanceof PlanetChunck) {
+            planetChunck = a;
+        }
+        else {
+            planetChunck = a.planetChunck;
+            localI = a.i;
+            localJ = a.j;
+            localK = a.k;
+        }
         let globalIJK = PlanetTools.LocalIJKToGlobalIJK(planetChunck, localI, localJ, localK);
         return PlanetTools.GlobalIJKToWorldPosition(planetChunck.planetSide, globalIJK);
     }

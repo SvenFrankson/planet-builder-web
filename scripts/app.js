@@ -1221,6 +1221,7 @@ class Game extends Main {
             //planetTest.generator.showDebug();
             Game.Player = new Player(new BABYLON.Vector3(0, (kPosMax + 1) * PlanetTools.CHUNCKSIZE * 0.8, 0), planetTest, this);
             this.player = Game.Player;
+            this.player.currentAction = PlayerActionTemplate.CreateBlockAction(this.player, BlockType.Rock);
             this.player.registerControl();
             this.chunckManager.onNextInactive(() => {
                 this.player.initialize();
@@ -2474,8 +2475,8 @@ class PlanetChunckMeshBuilder {
                         BABYLON.Vector3.CrossToRef(BABYLON.Axis.Y, blockCenter, blockAxis);
                         BABYLON.Quaternion.RotationAxisToRef(blockAxis, angle, blockQuaternion);
                         let hGlobal = (k + kPos * PlanetTools.CHUNCKSIZE + 1);
-                        let hLow = PlanetTools.KGlobalToAltitude(hGlobal) * 0.5 + PlanetTools.KGlobalToAltitude(hGlobal + 1) * 0.5;
-                        let hHigh = PlanetTools.KGlobalToAltitude(hGlobal + 1) * 0.5 + PlanetTools.KGlobalToAltitude(hGlobal + 2) * 0.5;
+                        let hLow = PlanetTools.KGlobalToAltitude(hGlobal - 1) * 0.5 + PlanetTools.KGlobalToAltitude(hGlobal) * 0.5;
+                        let hHigh = PlanetTools.KGlobalToAltitude(hGlobal) * 0.5 + PlanetTools.KGlobalToAltitude(hGlobal + 1) * 0.5;
                         PCMB.tmpVertices[0].scaleToRef(hHigh, PCMB.tmpVertices[4]);
                         PCMB.tmpVertices[1].scaleToRef(hHigh, PCMB.tmpVertices[5]);
                         PCMB.tmpVertices[2].scaleToRef(hHigh, PCMB.tmpVertices[6]);
@@ -4269,11 +4270,15 @@ class PlanetTools {
         let j = Math.floor(((zDeg + 45) / 90) * PlanetTools.DegreeToSize(PlanetTools.KGlobalToDegree(k)));
         return { i: i, j: j, k: k };
     }
-    static WorldPositionToChunck(planet, worldPos) {
+    static WorldPositionToLocalIJK(planet, worldPos) {
         let planetSide = PlanetTools.WorldPositionToPlanetSide(planet, worldPos);
         let globalIJK = PlanetTools.WorldPositionToGlobalIJK(planetSide, worldPos);
         let localIJK = PlanetTools.GlobalIJKToLocalIJK(planetSide, globalIJK);
-        return localIJK.planetChunck;
+        return localIJK;
+    }
+    static WorldPositionToChunck(planet, worldPos) {
+        let localIJK = PlanetTools.WorldPositionToLocalIJK(planet, worldPos);
+        return localIJK ? localIJK.planetChunck : undefined;
     }
     static GlobalIJKToWorldPosition(planetSide, globalIJK) {
         let size = PlanetTools.DegreeToSize(PlanetTools.KGlobalToDegree(globalIJK.k));
@@ -4299,7 +4304,17 @@ class PlanetTools {
             k: planetChunck.kPos * PlanetTools.CHUNCKSIZE + localK
         };
     }
-    static LocalIJKToWorldPosition(planetChunck, localI, localJ, localK) {
+    static LocalIJKToWorldPosition(a, localI, localJ, localK) {
+        let planetChunck;
+        if (a instanceof PlanetChunck) {
+            planetChunck = a;
+        }
+        else {
+            planetChunck = a.planetChunck;
+            localI = a.i;
+            localJ = a.j;
+            localK = a.k;
+        }
         let globalIJK = PlanetTools.LocalIJKToGlobalIJK(planetChunck, localI, localJ, localK);
         return PlanetTools.GlobalIJKToWorldPosition(planetChunck.planetSide, globalIJK);
     }
@@ -4479,6 +4494,176 @@ class ProceduralTree {
                 Game.Instance.chunckManager.requestDraw(chuncks[i], chuncks[i].lod);
             }
         }
+    }
+}
+var KeyInput;
+(function (KeyInput) {
+    KeyInput[KeyInput["NULL"] = -1] = "NULL";
+    KeyInput[KeyInput["ACTION_SLOT_0"] = 0] = "ACTION_SLOT_0";
+    KeyInput[KeyInput["ACTION_SLOT_1"] = 1] = "ACTION_SLOT_1";
+    KeyInput[KeyInput["ACTION_SLOT_2"] = 2] = "ACTION_SLOT_2";
+    KeyInput[KeyInput["ACTION_SLOT_3"] = 3] = "ACTION_SLOT_3";
+    KeyInput[KeyInput["ACTION_SLOT_4"] = 4] = "ACTION_SLOT_4";
+    KeyInput[KeyInput["ACTION_SLOT_5"] = 5] = "ACTION_SLOT_5";
+    KeyInput[KeyInput["ACTION_SLOT_6"] = 6] = "ACTION_SLOT_6";
+    KeyInput[KeyInput["ACTION_SLOT_7"] = 7] = "ACTION_SLOT_7";
+    KeyInput[KeyInput["ACTION_SLOT_8"] = 8] = "ACTION_SLOT_8";
+    KeyInput[KeyInput["ACTION_SLOT_9"] = 9] = "ACTION_SLOT_9";
+    KeyInput[KeyInput["INVENTORY"] = 10] = "INVENTORY";
+    KeyInput[KeyInput["MOVE_FORWARD"] = 11] = "MOVE_FORWARD";
+    KeyInput[KeyInput["MOVE_LEFT"] = 12] = "MOVE_LEFT";
+    KeyInput[KeyInput["MOVE_BACK"] = 13] = "MOVE_BACK";
+    KeyInput[KeyInput["MOVE_RIGHT"] = 14] = "MOVE_RIGHT";
+    KeyInput[KeyInput["JUMP"] = 15] = "JUMP";
+})(KeyInput || (KeyInput = {}));
+class InputManager {
+    constructor() {
+        this.keyInputMap = new Map();
+        this.keyInputDown = new UniqueList();
+        this.keyDownListeners = [];
+        this.mappedKeyDownListeners = new Map();
+        this.keyUpListeners = [];
+        this.mappedKeyUpListeners = new Map();
+    }
+    initialize() {
+        this.keyInputMap.set("Digit0", KeyInput.ACTION_SLOT_0);
+        this.keyInputMap.set("Digit1", KeyInput.ACTION_SLOT_1);
+        this.keyInputMap.set("Digit2", KeyInput.ACTION_SLOT_2);
+        this.keyInputMap.set("Digit3", KeyInput.ACTION_SLOT_3);
+        this.keyInputMap.set("Digit4", KeyInput.ACTION_SLOT_4);
+        this.keyInputMap.set("Digit5", KeyInput.ACTION_SLOT_5);
+        this.keyInputMap.set("Digit6", KeyInput.ACTION_SLOT_6);
+        this.keyInputMap.set("Digit7", KeyInput.ACTION_SLOT_7);
+        this.keyInputMap.set("Digit8", KeyInput.ACTION_SLOT_8);
+        this.keyInputMap.set("Digit9", KeyInput.ACTION_SLOT_9);
+        this.keyInputMap.set("KeyI", KeyInput.INVENTORY);
+        this.keyInputMap.set("KeyW", KeyInput.MOVE_FORWARD);
+        this.keyInputMap.set("KeyA", KeyInput.MOVE_LEFT);
+        this.keyInputMap.set("KeyS", KeyInput.MOVE_BACK);
+        this.keyInputMap.set("KeyD", KeyInput.MOVE_RIGHT);
+        this.keyInputMap.set("Space", KeyInput.JUMP);
+        window.addEventListener("keydown", (e) => {
+            let keyInput = this.keyInputMap.get(e.code);
+            if (isFinite(keyInput)) {
+                this.keyInputDown.push(keyInput);
+                for (let i = 0; i < this.keyDownListeners.length; i++) {
+                    this.keyDownListeners[i](keyInput);
+                }
+                let listeners = this.mappedKeyDownListeners.get(keyInput);
+                if (listeners) {
+                    for (let i = 0; i < listeners.length; i++) {
+                        listeners[i]();
+                    }
+                }
+            }
+        });
+        window.addEventListener("keyup", (e) => {
+            let keyInput = this.keyInputMap.get(e.code);
+            if (isFinite(keyInput)) {
+                this.keyInputDown.remove(keyInput);
+                for (let i = 0; i < this.keyUpListeners.length; i++) {
+                    this.keyUpListeners[i](keyInput);
+                }
+                let listeners = this.mappedKeyUpListeners.get(keyInput);
+                if (listeners) {
+                    for (let i = 0; i < listeners.length; i++) {
+                        listeners[i]();
+                    }
+                }
+            }
+        });
+    }
+    addKeyDownListener(callback) {
+        this.keyDownListeners.push(callback);
+    }
+    addMappedKeyDownListener(k, callback) {
+        let listeners = this.mappedKeyDownListeners.get(k);
+        if (listeners) {
+            listeners.push(callback);
+        }
+        else {
+            listeners = [callback];
+            this.mappedKeyDownListeners.set(k, listeners);
+        }
+    }
+    removeKeyDownListener(callback) {
+        let i = this.keyDownListeners.indexOf(callback);
+        if (i != -1) {
+            this.keyDownListeners.splice(i, 1);
+        }
+    }
+    removeMappedKeyDownListener(k, callback) {
+        let listeners = this.mappedKeyDownListeners.get(k);
+        if (listeners) {
+            let i = listeners.indexOf(callback);
+            if (i != -1) {
+                listeners.splice(i, 1);
+            }
+        }
+    }
+    addKeyUpListener(callback) {
+        this.keyUpListeners.push(callback);
+    }
+    addMappedKeyUpListener(k, callback) {
+        let listeners = this.mappedKeyUpListeners.get(k);
+        if (listeners) {
+            listeners.push(callback);
+        }
+        else {
+            listeners = [callback];
+            this.mappedKeyUpListeners.set(k, listeners);
+        }
+    }
+    removeKeyUpListener(callback) {
+        let i = this.keyUpListeners.indexOf(callback);
+        if (i != -1) {
+            this.keyUpListeners.splice(i, 1);
+        }
+    }
+    removeMappedKeyUpListener(k, callback) {
+        let listeners = this.mappedKeyUpListeners.get(k);
+        if (listeners) {
+            let i = listeners.indexOf(callback);
+            if (i != -1) {
+                listeners.splice(i, 1);
+            }
+        }
+    }
+    isKeyInputDown(keyInput) {
+        return this.keyInputDown.contains(keyInput);
+    }
+    getkeyInputActionSlotDown() {
+        if (this.keyInputDown.contains(KeyInput.ACTION_SLOT_0)) {
+            return KeyInput.ACTION_SLOT_0;
+        }
+        if (this.keyInputDown.contains(KeyInput.ACTION_SLOT_1)) {
+            return KeyInput.ACTION_SLOT_1;
+        }
+        if (this.keyInputDown.contains(KeyInput.ACTION_SLOT_2)) {
+            return KeyInput.ACTION_SLOT_2;
+        }
+        if (this.keyInputDown.contains(KeyInput.ACTION_SLOT_3)) {
+            return KeyInput.ACTION_SLOT_3;
+        }
+        if (this.keyInputDown.contains(KeyInput.ACTION_SLOT_4)) {
+            return KeyInput.ACTION_SLOT_4;
+        }
+        if (this.keyInputDown.contains(KeyInput.ACTION_SLOT_5)) {
+            return KeyInput.ACTION_SLOT_5;
+        }
+        if (this.keyInputDown.contains(KeyInput.ACTION_SLOT_6)) {
+            return KeyInput.ACTION_SLOT_6;
+        }
+        if (this.keyInputDown.contains(KeyInput.ACTION_SLOT_7)) {
+            return KeyInput.ACTION_SLOT_7;
+        }
+        if (this.keyInputDown.contains(KeyInput.ACTION_SLOT_8)) {
+            return KeyInput.ACTION_SLOT_8;
+        }
+        if (this.keyInputDown.contains(KeyInput.ACTION_SLOT_9)) {
+            return KeyInput.ACTION_SLOT_9;
+        }
+        return KeyInput.NULL;
     }
 }
 class Player extends BABYLON.Mesh {
@@ -4741,6 +4926,12 @@ class Player extends BABYLON.Mesh {
                 this.velocity.copyFromFloats(-0.1 + 0.2 * Math.random(), -0.1 + 0.2 * Math.random(), -0.1 + 0.2 * Math.random());
             }
             this.position.addInPlace(this.velocity.scale(deltaTime));
+            // Update action
+            if (this.currentAction) {
+                if (this.currentAction.onUpdate) {
+                    this.currentAction.onUpdate();
+                }
+            }
             //document.querySelector("#camera-altitude").textContent = this.camPos.absolutePosition.length().toFixed(1);
         };
         this.planet = planet;
@@ -4765,13 +4956,22 @@ class Player extends BABYLON.Mesh {
         this.game.canvas.addEventListener("keydown", this._keyDown);
         this.game.canvas.addEventListener("keyup", this._keyUp);
         this.game.canvas.addEventListener("mousemove", this._mouseMove);
-        this.game.canvas.addEventListener("mouseup", this._action);
+        this.game.canvas.addEventListener("mouseup", () => {
+            if (this.currentAction) {
+                if (this.currentAction.onClick) {
+                    this.currentAction.onClick();
+                }
+            }
+        });
     }
     unregisterControl() {
         this.game.canvas.removeEventListener("keydown", this._keyDown);
         this.game.canvas.removeEventListener("keyup", this._keyUp);
         this.game.canvas.removeEventListener("mousemove", this._mouseMove);
         this.game.canvas.removeEventListener("mouseup", this._action);
+    }
+    get meshes() {
+        return this._meshes;
     }
     _keepUp() {
         if (!this) {
@@ -4784,6 +4984,191 @@ class Player extends BABYLON.Mesh {
         if (correctionAngle > 0.001) {
             let rotation = BABYLON.Quaternion.RotationAxis(correctionAxis, correctionAngle / 5);
             this.rotationQuaternion = rotation.multiply(this.rotationQuaternion);
+        }
+    }
+}
+var ACTIVE_DEBUG_PLAYER_ACTION = true;
+var ADD_BRICK_ANIMATION_DURATION = 1000;
+class PlayerActionTemplate {
+    static CreateBlockAction(player, blockType) {
+        let action = new PlayerAction("cube-", player);
+        let previewMesh;
+        action.iconUrl = "./datas/textures/miniatures/";
+        if (blockType === BlockType.Dirt) {
+            action.name += "dirt";
+            action.iconUrl += "dirt";
+        }
+        if (blockType === BlockType.Rock) {
+            action.name += "rock";
+            action.iconUrl += "rock";
+        }
+        if (blockType === BlockType.Sand) {
+            action.name += "sand";
+            action.iconUrl += "sand";
+        }
+        if (blockType === BlockType.None) {
+            action.name += "delete";
+            action.iconUrl += "delete";
+        }
+        action.iconUrl += "-miniature.png";
+        action.onUpdate = () => {
+            let ray = new BABYLON.Ray(player.camPos.absolutePosition, player.camPos.forward);
+            let hit = ray.intersectsMeshes(player.meshes);
+            hit = hit.sort((h1, h2) => { return h1.distance - h2.distance; });
+            if (hit[0] && hit[0].pickedPoint) {
+                let localIJK = PlanetTools.WorldPositionToLocalIJK(player.planet, hit[0].pickedPoint);
+                if (localIJK) {
+                    if (!previewMesh) {
+                        previewMesh = BABYLON.MeshBuilder.CreateSphere("preview-mesh", { diameter: 0.5 });
+                    }
+                    let worldPos = PlanetTools.LocalIJKToWorldPosition(localIJK);
+                    previewMesh.position.copyFrom(worldPos);
+                    return;
+                }
+            }
+            if (previewMesh) {
+                previewMesh.dispose();
+                previewMesh = undefined;
+            }
+        };
+        action.onClick = () => {
+            let ray = new BABYLON.Ray(player.camPos.absolutePosition, player.camPos.forward);
+            let hit = ray.intersectsMeshes(player.meshes);
+            hit = hit.sort((h1, h2) => { return h1.distance - h2.distance; });
+            if (hit[0] && hit[0].pickedPoint) {
+                let localIJK = PlanetTools.WorldPositionToLocalIJK(player.planet, hit[0].pickedPoint);
+                if (localIJK) {
+                    localIJK.planetChunck.SetData(localIJK.i, localIJK.j, localIJK.k, blockType);
+                    Game.Instance.chunckManager.requestDraw(localIJK.planetChunck, localIJK.planetChunck.lod);
+                }
+            }
+        };
+        action.onUnequip = () => {
+            if (previewMesh) {
+                previewMesh.dispose();
+                previewMesh = undefined;
+            }
+        };
+        return action;
+    }
+}
+class PlayerAction {
+    constructor(name, player) {
+        this.name = name;
+        this.player = player;
+        this.r = 0;
+    }
+}
+class PlayerActionManager {
+    constructor(player, game) {
+        this.player = player;
+        this.game = game;
+        this.linkedActions = [];
+        this.hintedSlotIndex = new UniqueList();
+        this.update = () => {
+            if (this.hintedSlotIndex.length > 0) {
+                let t = (new Date()).getTime();
+                let thickness = Math.cos(2 * Math.PI * t / 1000) * 2 + 3;
+                let opacity = (Math.cos(2 * Math.PI * t / 1000) + 1) * 0.5 * 0.5 + 0.25;
+                for (let i = 0; i < this.hintedSlotIndex.length; i++) {
+                    let slotIndex = this.hintedSlotIndex.get(i);
+                    console.log(thickness);
+                    document.getElementById("player-action-" + slotIndex + "-icon").style.backgroundColor = "rgba(255, 255, 255, " + opacity.toFixed(2) + ")";
+                }
+            }
+        };
+    }
+    initialize() {
+        Main.Scene.onBeforeRenderObservable.add(this.update);
+        this.game.inputManager.addKeyDownListener((e) => {
+            let slotIndex = e;
+            if (slotIndex >= 0 && slotIndex < 10) {
+                if (!document.pointerLockElement) {
+                    this.startHint(slotIndex);
+                }
+            }
+        });
+        this.game.inputManager.addKeyUpListener((e) => {
+            let slotIndex = e;
+            if (slotIndex >= 0 && slotIndex < 10) {
+                this.stopHint(slotIndex);
+                if (!document.pointerLockElement) {
+                    return;
+                }
+                for (let i = 0; i < 10; i++) {
+                    document.getElementById("player-action-" + i + "-icon").style.border = "";
+                    document.getElementById("player-action-" + i + "-icon").style.margin = "";
+                }
+                // Unequip current action
+                if (this.player.currentAction) {
+                    if (this.player.currentAction.onUnequip) {
+                        this.player.currentAction.onUnequip();
+                    }
+                }
+                if (this.linkedActions[slotIndex]) {
+                    // If request action was already equiped, remove it.
+                    if (this.player.currentAction === this.linkedActions[slotIndex]) {
+                        this.player.currentAction = undefined;
+                    }
+                    // Equip new action.
+                    else {
+                        this.player.currentAction = this.linkedActions[slotIndex];
+                        if (this.player.currentAction) {
+                            document.getElementById("player-action-" + slotIndex + "-icon").style.border = "solid 3px white";
+                            document.getElementById("player-action-" + slotIndex + "-icon").style.margin = "-2px -2px -2px 8px";
+                            if (this.player.currentAction.onEquip) {
+                                this.player.currentAction.onEquip();
+                            }
+                        }
+                    }
+                }
+                else {
+                    this.player.currentAction = undefined;
+                }
+            }
+        });
+    }
+    linkAction(action, slotIndex) {
+        if (slotIndex >= 0 && slotIndex <= 9) {
+            this.linkedActions[slotIndex] = action;
+            console.log(slotIndex + " " + action.iconUrl);
+            document.getElementById("player-action-" + slotIndex + "-icon").style.backgroundImage = "url(" + action.iconUrl + ")";
+        }
+    }
+    unlinkAction(slotIndex) {
+        if (slotIndex >= 0 && slotIndex <= 9) {
+            this.linkedActions[slotIndex] = undefined;
+            document.getElementById("player-action-" + slotIndex + "-icon").style.backgroundImage = "";
+        }
+    }
+    startHint(slotIndex) {
+        this.hintedSlotIndex.push(slotIndex);
+    }
+    stopHint(slotIndex) {
+        this.hintedSlotIndex.remove(slotIndex);
+        document.getElementById("player-action-" + slotIndex + "-icon").style.backgroundColor = "";
+    }
+    serialize() {
+        let linkedActionsNames = [];
+        for (let i = 0; i < this.linkedActions.length; i++) {
+            if (this.linkedActions[i]) {
+                linkedActionsNames[i] = this.linkedActions[i].name;
+            }
+        }
+        return {
+            linkedActionsNames: linkedActionsNames
+        };
+    }
+    deserialize(data) {
+        if (data && data.linkedActionsNames) {
+            for (let i = 0; i < data.linkedActionsNames.length; i++) {
+                let linkedActionName = data.linkedActionsNames[i];
+                //let item = this.player.inventory.getItemByPlayerActionName(linkedActionName);
+                //if (item) {
+                //    this.linkAction(item.playerAction, i);
+                //    item.timeUse = (new Date()).getTime();
+                //}
+            }
         }
     }
 }
@@ -5333,5 +5718,143 @@ class TextPage {
         context.lineWidth = w * 0.5;
         context.strokeStyle = "rgba(" + (rMax * 255).toFixed(0) + ", " + (gMax * 255).toFixed(0) + ", " + (bMax * 255).toFixed(0) + ", " + alpha.toFixed(2) + ")";
         context.stroke();
+    }
+}
+class ColorUtils {
+    static RGBToHSL(color) {
+        let r = color.r;
+        let g = color.g;
+        let b = color.b;
+        let cMax = Math.max(r, g, b);
+        let cMin = Math.min(r, g, b);
+        let d = cMax - cMin;
+        let h = 0;
+        let s = 0;
+        let l = (cMax + cMin) * 0.5;
+        if (d > 0) {
+            if (d === r) {
+                h = Math.round(60 * ((g - b) / d));
+            }
+            else if (d === g) {
+                h = Math.round(60 * ((b - r) / d));
+            }
+            else if (d === b) {
+                h = Math.round(60 * ((r - g) / d));
+            }
+            if (h >= 360) {
+                h -= 360;
+            }
+            s = d / (1 - Math.abs(2 * l - 1));
+        }
+        return {
+            h: h,
+            s: s,
+            l: l
+        };
+    }
+    static HSLToRGBToRef(hsl, ref) {
+        let c = (1 - Math.abs(2 * hsl.l - 1)) * hsl.s;
+        let x = c * (1 - Math.abs((hsl.h / 60) % 2 - 1));
+        let m = hsl.l - c / 2;
+        if (hsl.h < 60) {
+            ref.r = c + m;
+            ref.g = x + m;
+            ref.b = m;
+        }
+        else if (hsl.h < 120) {
+            ref.r = x + m;
+            ref.g = c + m;
+            ref.b = m;
+        }
+        else if (hsl.h < 180) {
+            ref.r = m;
+            ref.g = c + m;
+            ref.b = x + m;
+        }
+        else if (hsl.h < 240) {
+            ref.r = m;
+            ref.g = x + m;
+            ref.b = c + m;
+        }
+        else if (hsl.h < 300) {
+            ref.r = x + m;
+            ref.g = m;
+            ref.b = c + m;
+        }
+        else {
+            ref.r = c + m;
+            ref.g = m;
+            ref.b = x + m;
+        }
+    }
+}
+class Random {
+    static Initialize() {
+        let piDecimals = [];
+        for (let i = 0; i < Random.PiDecimalsString.length / 4 - 1; i++) {
+            piDecimals.push(parseInt(Random.PiDecimalsString.substring(4 * i, 4 * (i + 1))));
+        }
+        Random.Values = (piDecimals.map(v => { return v / 9999; }));
+        Random.Length1 = Random.Values.length;
+        Random.Length2 = Math.floor(Math.pow(Random.Length1, 1 / 2));
+        Random.Length3 = Math.floor(Math.pow(Random.Length1, 1 / 3));
+        Random.Length4 = Math.floor(Math.pow(Random.Length1, 1 / 4));
+    }
+    static GetN1(n, s = Random.Seed) {
+        let i = (n + s) % Random.Length1;
+        return Random.Values[i];
+    }
+    static GetN2(x, y, s = Random.Seed) {
+        let i = (x + s) % Random.Length2;
+        let j = (y + s) % Random.Length2;
+        return Random.Values[i + j * Random.Length2];
+    }
+    static GetN3(x, y, z, s = Random.Seed) {
+        let i = (x + s) % Random.Length3;
+        let j = (y + s) % Random.Length3;
+        let k = (z + s) % Random.Length3;
+        return Random.Values[i + j * Random.Length3 + k * Random.Length3 * Random.Length3];
+    }
+    static GetN4(x, y, z, w, s = Random.Seed) {
+        let i = (x + s) % Random.Length4;
+        let j = (y + s) % Random.Length4;
+        let k = (z + s) % Random.Length4;
+        let l = (w + s) % Random.Length4;
+        return Random.Values[i + j * Random.Length4 + k * Random.Length4 * Random.Length4 + l * Random.Length4 * Random.Length4 * Random.Length4];
+    }
+}
+Random.Seed = 0;
+Random.Length1 = 1;
+Random.Length2 = 1;
+Random.Length3 = 1;
+Random.Length4 = 1;
+Random.PiDecimalsString = "14159265358979323846264338327950288419716939937510582097494459230781640628620899862803482534211706798214808651328230664709384460955058223172535940812848111745028410270193852110555964462294895493038196442881097566593344612847564823378678316527120190914564856692346034861045432664821339360726024914127372458700660631558817488152092096282925409171536436789259036001133053054882046652138414695194151160943305727036575959195309218611738193261179310511854807446237996274956735188575272489122793818301194912983367336244065664308602139494639522473719070217986094370277053921717629317675238467481846766940513200056812714526356082778577134275778960917363717872146844090122495343014654958537105079227968925892354201995611212902196086403441815981362977477130996051870721134999999837297804995105973173281609631859502445945534690830264252230825334468503526193118817101000313783875288658753320838142061717766914730359825349042875546873115956286388235378759375195778185778053217122680661300192787661119590921642019893809525720106548586327886593615338182796823030195203530185296899577362259941389124972177528347913151557485724245415069595082953311686172785588907509838175463746493931925506040092770167113900984882401285836160356370766010471018194295559619894676783744944825537977472684710404753464620804668425906949129331367702898915210475216205696602405803815019351125338243003558764024749647326391419927260426992279678235478163600934172164121992458631503028618297455570674983850549458858692699569092721079750930295532116534498720275596023648066549911988183479775356636980742654252786255181841757467289097777279380008164706001614524919217321721477235014144197356854816136115735255213347574184946843852332390739414333454776241686251898356948556209921922218427255025425688767179049460165346680498862723279178608578438382796797668145410095388378636095068006422512520511739298489608412848862694560424196528502221066118630674427862203919494504712371378696095636437191728746776465757396241389086583264599581339047802759009946576407895126946839835259570982582262052248940772671947826848260147699090264013639443745530506820349625245174939965143142980919065925093722169646151570985838741059788595977297549893016175392846813826868386894277415599185592524595395943104997252468084598727364469584865383673622262609912460805124388439045124413654976278079771569143599770012961608944169486855584840635342207222582848864815845602850601684273945226746767889525213852254995466672782398645659611635488623057745649803559363456817432411251507606947945109659609402522887971089314566913686722874894056010150330861792868092087476091782493858900971490967598526136554978189312978482168299894872265880485756401427047755513237964145152374623436454285844479526586782105114135473573952311342716610213596953623144295248493718711014576540359027993440374200731057853906219838744780847848968332144571386875194350643021845319104848100537061468067491927819119793995206141966342875444064374512371819217999839101591956181467514269123974894090718649423196156794520809514655022523160388193014209376213785595663893778708303906979207734672218256259966150142150306803844773454920260541466592520149744285073251866600213243408819071048633173464965145390579626856100550810665879699816357473638405257145910289706414011097120628043903975951567715770042033786993600723055876317635942187312514712053292819182618612586732157919841484882916447060957527069572209175671167229109816909152801735067127485832228718352093539657251210835791513698820914442100675103346711031412671113699086585163983150197016515116851714376576183515565088490998985998238734552833163550764791853589322618548963213293308985706420467525907091548141654985946163718027098199430992448895757128289059232332609729971208443357326548938239119325974636673058360414281388303203824903758985243744170291327656180937734440307074692112019130203303801976211011004492932151608424448596376698389522868478312355265821314495768572624334418930396864262434107732269780280731891544110104468232527162010526522721116603966655730925471105578537634668206531098965269186205647693125705863566201855810072936065987648611791045334885034611365768675324944166803962657978771855608455296541266540853061434443185867697514566140680070023787765913440171274947042056223053899456131407112700040785473326993908145466464588079727082668306343285878569830523580893306575740679545716377525420211495576158140025012622859413021647155097925923099079654737612551765675135751782966645477917450112996148903046399471329621073404375189573596145890193897131117904297828564750320319869151402870808599048010941214722131794764777262241425485454033215718530614228813758504306332175182979866223717215916077166925474873898665494945011465406284336639379003976926567214638530673609657120918076383271664162748888007869256029022847210403172118608204190004229661711963779213375751149595015660496318629472654736425230817703675159067350235072835405670403867435136222247715891504953098444893330963408780769325993978054193414473774418426312986080998886874132604721";
+Random.Initialize();
+class UniqueList {
+    constructor() {
+        this._elements = [];
+    }
+    get length() {
+        return this._elements.length;
+    }
+    get(i) {
+        return this._elements[i];
+    }
+    getLast() {
+        return this.get(this.length - 1);
+    }
+    push(e) {
+        if (this._elements.indexOf(e) === -1) {
+            this._elements.push(e);
+        }
+    }
+    remove(e) {
+        let i = this._elements.indexOf(e);
+        if (i != -1) {
+            this._elements.splice(i, 1);
+        }
+    }
+    contains(e) {
+        return this._elements.indexOf(e) != -1;
     }
 }

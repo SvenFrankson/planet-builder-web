@@ -11,6 +11,8 @@ class Player extends BABYLON.Mesh {
     public inputHeadUp: number = 0;
     public inputHeadRight: number = 0;
     public godMode: boolean;
+    
+    public currentAction: PlayerAction;
 
     constructor(position: BABYLON.Vector3, public planet: Planet, public game: Game) {
         super("Player", Game.Scene);
@@ -39,7 +41,13 @@ class Player extends BABYLON.Mesh {
         this.game.canvas.addEventListener("keydown", this._keyDown);
         this.game.canvas.addEventListener("keyup", this._keyUp);
         this.game.canvas.addEventListener("mousemove", this._mouseMove);
-        this.game.canvas.addEventListener("mouseup", this._action);
+        this.game.canvas.addEventListener("mouseup", () => {
+            if (this.currentAction) {
+                if (this.currentAction.onClick) {
+                    this.currentAction.onClick();
+                }
+            }
+        });
     }
 
     private _keyDown = (e: KeyboardEvent) => {
@@ -136,6 +144,9 @@ class Player extends BABYLON.Mesh {
     private _debugAimGroundMesh: BABYLON.Mesh;
     private _chuncks: PlanetChunck[] = [];
     private _meshes: BABYLON.Mesh[] = [];
+    public get meshes(): BABYLON.Mesh[] {
+        return this._meshes;
+    }
 
     private _action = () => {
         let ray: BABYLON.Ray = new BABYLON.Ray(this.camPos.absolutePosition, this.camPos.forward);
@@ -324,6 +335,13 @@ class Player extends BABYLON.Mesh {
             this.velocity.copyFromFloats(-0.1 + 0.2 * Math.random(), -0.1 + 0.2 * Math.random(), -0.1 + 0.2 * Math.random());
         }
         this.position.addInPlace(this.velocity.scale(deltaTime));
+
+        // Update action
+        if (this.currentAction) {
+            if (this.currentAction.onUpdate) {
+                this.currentAction.onUpdate();
+            }
+        }
 
         //document.querySelector("#camera-altitude").textContent = this.camPos.absolutePosition.length().toFixed(1);
     };

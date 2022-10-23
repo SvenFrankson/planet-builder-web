@@ -20,6 +20,7 @@ class Game extends Main {
 	public player: Player;
 	public chunckManager: PlanetChunckManager;
 	public planetSky: PlanetSky;
+	public inputManager: InputManager;
 
 	public inputMode: InputMode = InputMode.Unknown;
 	public headPad: PlayerInputHeadPad;
@@ -65,6 +66,7 @@ class Game extends Main {
 
 			Game.Player = new Player(new BABYLON.Vector3(0, (kPosMax + 1) * PlanetTools.CHUNCKSIZE * 0.8, 0), planetTest, this);
 			this.player = Game.Player;
+			this.player.currentAction = PlayerActionTemplate.CreateBlockAction(this.player, BlockType.Rock);
 			
 			this.player.registerControl();
 			this.chunckManager.onNextInactive(() => {
