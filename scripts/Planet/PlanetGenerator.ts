@@ -57,7 +57,7 @@ class PlanetGeneratorEarth extends PlanetGenerator {
                 if (tree > 0.6 && treeCount < maxTree) {
                     let localK = altitude + 1 - chunck.kPos * PlanetTools.CHUNCKSIZE;
                     if (localK >= 0 && localK < PlanetTools.CHUNCKSIZE) {
-                        let tree = new ProceduralTree();
+                        let tree = new ProceduralTree(chunck.chunckManager);
                         tree.chunck = chunck;
                         tree.i = i;
                         tree.j = j;
@@ -72,7 +72,7 @@ class PlanetGeneratorEarth extends PlanetGenerator {
 
                     if (globalK <= altitude) {
                         if (globalK > altitude - 2) {
-                            if (globalK < this._seaLevel * (this.planet.kPosMax * PlanetTools.CHUNCKSIZE) + 1) {
+                            if (globalK < this._seaLevel * (this.planet.kPosMax * PlanetTools.CHUNCKSIZE)) {
                                 refData[i - chunck.firstI][j - chunck.firstJ][k - chunck.firstK] = BlockType.Sand;
                             }
                             else {

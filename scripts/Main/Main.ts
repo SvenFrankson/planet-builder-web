@@ -4,6 +4,7 @@ class Main {
 	public engine: BABYLON.Engine;
 	public static Scene: BABYLON.Scene;
     public scene: BABYLON.Scene;
+    public vertexDataLoader: VertexDataLoader;
 
     constructor(canvasElement: string) {
 		this.canvas = document.getElementById(canvasElement) as HTMLCanvasElement;
@@ -17,8 +18,7 @@ class Main {
 		Main.Scene = new BABYLON.Scene(Main.Engine);
 		this.scene = Main.Scene;
 		this.scene.clearColor.copyFromFloats(166 / 255, 231 / 255, 255 / 255, 1);
-        //gthis.scene.autoClearDepthAndStencil = false
-        //this.scene.autoClearDepthAndStencil = false;
+        this.vertexDataLoader = new VertexDataLoader(this.scene);
 	}
 
 	public animate(): void {
@@ -55,6 +55,13 @@ window.addEventListener("DOMContentLoaded", () => {
         miniature.createScene();
         miniature.initialize().then(() => {
             miniature.animate();
+        });
+    }
+    else if (window.location.href.indexOf("demo.html") != -1) {
+        let demo: Demo = new Demo("renderCanvas");
+        demo.createScene();
+        demo.initialize().then(() => {
+            demo.animate();
         });
     }
     else {

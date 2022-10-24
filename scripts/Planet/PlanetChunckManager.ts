@@ -35,13 +35,18 @@ class PlanetChunckManager {
     }
 
     public initialize(): void {
-        this._viewpoint = this.scene.activeCameras[0].globalPosition.clone();
+        if (this.scene.activeCameras && this.scene.activeCameras.length > 0) {
+            this._viewpoint = this.scene.activeCameras[0].globalPosition.clone();
+        }
+        else {
+            this._viewpoint = this.scene.activeCamera.globalPosition.clone();
+        }
         
         this._lodLayers = [];
         this._lodLayersCursors = [];
         this._lodLayersSqrDistances = [];
         for (let i = 0; i < this._lodLayersCount - 1; i++) {
-            let d = (i + 1) * 60;
+            let d = (i + 1) * 120;
             this._lodLayers[i] = [];
             this._lodLayersCursors[i] = 0;
             this._lodLayersSqrDistances[i] = d * d;
@@ -103,7 +108,12 @@ class PlanetChunckManager {
     }
 
     private _update = () => {
-        this._viewpoint.copyFrom(this.scene.activeCameras[0].globalPosition);
+        if (this.scene.activeCameras && this.scene.activeCameras.length > 0) {
+            this._viewpoint.copyFrom(this.scene.activeCameras[0].globalPosition);
+        }
+        else {
+            this._viewpoint.copyFrom(this.scene.activeCamera.globalPosition);
+        }
         
         let t0 = performance.now();
         let t = t0;

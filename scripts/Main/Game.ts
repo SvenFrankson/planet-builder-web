@@ -92,7 +92,9 @@ class Game extends Main {
 
 			//Game.CameraManager.plane = Game.Plane;
 			Game.CameraManager.player = this.player;
-			Game.CameraManager.setMode(CameraMode.Player);
+			//Game.CameraManager.setMode(CameraMode.Player);
+			
+			Game.CameraManager.setMode(CameraMode.Sky);
 
 			//planetTest.AsyncInitialize();
 

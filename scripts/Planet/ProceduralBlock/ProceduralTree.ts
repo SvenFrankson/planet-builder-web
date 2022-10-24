@@ -5,6 +5,10 @@ class ProceduralTree {
     public j: number;
     public k: number;
 
+    constructor(public chunckManager: PlanetChunckManager) {
+
+    }
+
     public generateData(): void {
         let w = PlanetTools.LocalIJKToWorldPosition(this.chunck, this.i, this.j, this.k);
         let n = this.chunck.GetBaryCenter().clone().normalize();
@@ -13,7 +17,7 @@ class ProceduralTree {
         for (let i = 0; i < chuncks.length; i++) {
             chuncks[i].doDataSafety();
             if (chuncks[i].lod <= 1) {
-                Game.Instance.chunckManager.requestDraw(chuncks[i], chuncks[i].lod);
+                this.chunckManager.requestDraw(chuncks[i], chuncks[i].lod);
             }
         }
     }

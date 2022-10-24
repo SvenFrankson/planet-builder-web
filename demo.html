@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html" charset="utf-8"/>
+		<title>Planet Builder Web Demo</title>
+		<script src="https://cdn.babylonjs.com/babylon.max.js"></script>
+		<script src="./scripts/app.js"></script>
+		<script src="https://preview.babylonjs.com/loaders/babylonjs.loaders.js"></script>
+		<link rel="stylesheet" type="text/css" href="./styles/app.css">
+	</head>
+	<body>
+		<canvas id="renderCanvas"></canvas>
+		<div id="meshes-info">				
+			<div id="debug-planet-perf" class="debug hidden">
+				<debug-display-frame-value id="frame-rate" label="Frame Rate fps" min="0" max="60"></debug-display-frame-value>
+				<debug-display-frame-value id="chunck-sort" label="Chuncks Sort %" min="95" max="100"></debug-display-frame-value>
+				<debug-display-frame-value id="draw-request-count" label="Draw Requests" min="0" max="100"></debug-display-frame-value>
+			</div>
+		</div>
+	</body>
+</html>

@@ -15,7 +15,7 @@ class DebugPlanetPerf {
         return this.game.scene;
     }
 
-    constructor(public game: Game) {
+    constructor(public game: Game | Demo) {
 
     }
 
