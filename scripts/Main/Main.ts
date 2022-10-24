@@ -50,6 +50,13 @@ window.addEventListener("DOMContentLoaded", () => {
             planetToy.animate();
         });
     }
+    else if (window.location.href.indexOf("miniature.html") != -1) {
+        let miniature: Miniature = new Miniature("renderCanvas");
+        miniature.createScene();
+        miniature.initialize().then(() => {
+            miniature.animate();
+        });
+    }
     else {
         let game: Game = new Game("renderCanvas");
         game.createScene();
