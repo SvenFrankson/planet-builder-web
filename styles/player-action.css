@@ -13,6 +13,10 @@
     background-size: cover;
 }
 
+.player-action-item .icon {
+    width: 100%;
+}
+
 .player-action-item .index {
     position: absolute;
     bottom: 6%;

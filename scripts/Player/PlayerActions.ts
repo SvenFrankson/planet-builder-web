@@ -54,8 +54,7 @@ class PlayerActionManager {
                     return;
                 }
                 for (let i = 0; i < 10; i++) {
-                    document.getElementById("player-action-" + i + "-icon").style.border = "";
-                    document.getElementById("player-action-" + i + "-icon").style.margin = "";
+                    (document.querySelector("#player-action-" + i) as HTMLDivElement).style.outline = "";
                 }
                 // Unequip current action
                 if (this.player.currentAction) {
@@ -72,8 +71,7 @@ class PlayerActionManager {
                     else {
                         this.player.currentAction = this.linkedActions[slotIndex];
                         if (this.player.currentAction) {
-                            document.getElementById("player-action-" + slotIndex + "-icon").style.border = "solid 3px white";
-                            document.getElementById("player-action-" + slotIndex + "-icon").style.margin = "-2px -2px -2px 8px";
+                            (document.querySelector("#player-action-" + slotIndex) as HTMLDivElement).style.outline = "solid 3px white";
                             if (this.player.currentAction.onEquip) {
                                 this.player.currentAction.onEquip();
                             }
@@ -95,7 +93,7 @@ class PlayerActionManager {
             for (let i = 0; i < this.hintedSlotIndex.length; i++) {
                 let slotIndex = this.hintedSlotIndex.get(i);
                 console.log(thickness);
-                document.getElementById("player-action-" + slotIndex + "-icon").style.backgroundColor = "rgba(255, 255, 255, " + opacity.toFixed(2) + ")";
+                (document.querySelector("#player-action-" + slotIndex) as HTMLDivElement).style.backgroundColor = "rgba(255, 255, 255, " + opacity.toFixed(2) + ")";
             }
         }
     }
@@ -104,14 +102,14 @@ class PlayerActionManager {
         if (slotIndex >= 0 && slotIndex <= 9) {
             this.linkedActions[slotIndex] = action;
             console.log(slotIndex + " " + action.iconUrl);
-            document.getElementById("player-action-" + slotIndex + "-icon").style.backgroundImage = "url(" + action.iconUrl + ")";
+            (document.querySelector("#player-action-" + slotIndex + " .icon") as HTMLImageElement).src = action.iconUrl;
         }
     }
 
     public unlinkAction(slotIndex: number): void {
         if (slotIndex >= 0 && slotIndex <= 9) {
             this.linkedActions[slotIndex] = undefined;
-            document.getElementById("player-action-" + slotIndex + "-icon").style.backgroundImage = "";
+            (document.querySelector("#player-action-" + slotIndex + " .icon") as HTMLImageElement).src = "";
         }
     }
 
@@ -121,7 +119,7 @@ class PlayerActionManager {
 
     public stopHint(slotIndex: number): void {
         this.hintedSlotIndex.remove(slotIndex);
-        document.getElementById("player-action-" + slotIndex + "-icon").style.backgroundColor = "";
+        (document.querySelector("#player-action-" + slotIndex) as HTMLDivElement).style.backgroundColor = "";
     }
 
     public serialize(): IPlayerActionManagerData {

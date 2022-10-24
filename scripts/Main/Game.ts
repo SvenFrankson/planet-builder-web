@@ -18,6 +18,7 @@ class Game extends Main {
 	public static CameraManager: CameraManager;
 	public static Player: Player;
 	public player: Player;
+	public actionManager: PlayerActionManager;
 	public chunckManager: PlanetChunckManager;
 	public planetSky: PlanetSky;
 	public inputManager: InputManager;
@@ -66,7 +67,17 @@ class Game extends Main {
 
 			Game.Player = new Player(new BABYLON.Vector3(0, (kPosMax + 1) * PlanetTools.CHUNCKSIZE * 0.8, 0), planetTest, this);
 			this.player = Game.Player;
-			this.player.currentAction = PlayerActionTemplate.CreateBlockAction(this.player, BlockType.Rock);
+
+			this.inputManager = new InputManager();
+			this.inputManager.initialize();
+
+			this.actionManager = new PlayerActionManager(this.player, this);
+			this.actionManager.initialize();
+			let slotIndex = 1;
+			for (let i = 1; i < BlockType.Unknown; i++) {
+				this.actionManager.linkAction(PlayerActionTemplate.CreateBlockAction(this.player, i), slotIndex);
+				slotIndex++;
+			}
 			
 			this.player.registerControl();
 			this.chunckManager.onNextInactive(() => {

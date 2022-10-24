@@ -7,24 +7,7 @@ class PlayerActionTemplate {
     public static CreateBlockAction(player: Player, blockType: BlockType): PlayerAction {
         let action = new PlayerAction("cube-", player);
         let previewMesh: BABYLON.Mesh;
-        action.iconUrl = "./datas/textures/miniatures/";
-        if (blockType === BlockType.Dirt) {
-            action.name += "dirt";
-            action.iconUrl += "dirt";
-        }
-        if (blockType === BlockType.Rock) {
-            action.name += "rock";
-            action.iconUrl += "rock";
-        }
-        if (blockType === BlockType.Sand) {
-            action.name += "sand";
-            action.iconUrl += "sand";
-        }
-        if (blockType === BlockType.None) {
-            action.name += "delete";
-            action.iconUrl += "delete";
-        }
-        action.iconUrl += "-miniature.png";
+        action.iconUrl = "/datas/images/block-icon-" + BlockTypeNames[blockType] + "-miniature.png";
 
         action.onUpdate = () => {
             let ray: BABYLON.Ray = new BABYLON.Ray(player.camPos.absolutePosition, player.camPos.forward);
