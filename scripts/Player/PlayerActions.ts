@@ -54,7 +54,7 @@ class PlayerActionManager {
                     return;
                 }
                 for (let i = 0; i < 10; i++) {
-                    (document.querySelector("#player-action-" + i) as HTMLDivElement).style.outline = "";
+                    (document.querySelector("#player-action-" + i + " .background") as HTMLImageElement).src ="/datas/images/inventory-item-background.svg";
                 }
                 // Unequip current action
                 if (this.player.currentAction) {
@@ -71,7 +71,7 @@ class PlayerActionManager {
                     else {
                         this.player.currentAction = this.linkedActions[slotIndex];
                         if (this.player.currentAction) {
-                            (document.querySelector("#player-action-" + slotIndex) as HTMLDivElement).style.outline = "solid 3px white";
+                            (document.querySelector("#player-action-" + slotIndex + " .background") as HTMLImageElement).src ="/datas/images/inventory-item-background-highlit.svg";
                             if (this.player.currentAction.onEquip) {
                                 this.player.currentAction.onEquip();
                             }

@@ -29,7 +29,7 @@ class Miniature extends Main {
 
 			let f = (size - 0.4) / (7.90 - 0.4);
             //cameraPosition.scaleInPlace(Math.pow(size, 0.6) * 3.2);
-            cameraPosition.scaleInPlace(1 * (1 - f) + 12 * f).scaleInPlace(2);
+            cameraPosition.scaleInPlace(1 * (1 - f) + 12 * f).scaleInPlace(1);
             cameraPosition.addInPlace(this.camera.target);
             this.camera.setPosition(cameraPosition);
 
@@ -101,7 +101,7 @@ class Miniature extends Main {
 
 	public async createBlock(blockType: BlockType): Promise<void> {
 		
-        let vertexData = BABYLON.CreateBoxVertexData( { size: 2 });
+        let vertexData = (await this.vertexDataLoader.get("chunck-part"))[0];
         let colors = [];
         let uvs = [];
         for (let i = 0; i < vertexData.positions.length / 3; i++) {

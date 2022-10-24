@@ -19,6 +19,9 @@ class PlayerActionTemplate {
                 if (localIJK) {
                     if (!previewMesh) {
                         previewMesh = BABYLON.MeshBuilder.CreateSphere("preview-mesh", { diameter: 1 });
+                        let material = new BABYLON.StandardMaterial("material");
+                        material.alpha = 0.5;
+                        previewMesh.material = material;
                     }
                     let worldPos = PlanetTools.LocalIJKToWorldPosition(localIJK, true);
                     previewMesh.position.copyFrom(worldPos);

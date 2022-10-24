@@ -1,0 +1,49 @@
+Exporter version: 6.4.5, Blender version: 2.90.1
+========= Conversion from Blender to Babylon.js =========
+	Scene settings used :
+		Inline textures     :  false
+		Material Type       :  PBR
+		Positions Precision :  4
+		Normals Precision   :  3
+		UVs Precision       :  3
+		Vert Color Precision:  3
+		Mat Weight Precision:  2
+		Keep Z-up r-handed  :  no
+		Texture directory   :  C:\Users\svent\Documents\Sven Frankson\planet-builder-web\datas\meshes\
+	Python World class constructor completed
+	WARNING: No active camera has been assigned, or is not in a currently selected Blender layer
+	processing begun of mesh:  Cube
+		WARNING: No materials have been assigned: 
+		num positions      :  63
+		num normals        :  63
+		num tangents       :  0
+		num uvs            :  126
+		num uvs2           :  0
+		num colors         :  0
+		num triangles      :  24
+	processing begun of mesh:  10000000
+		processing begun of material:  Green
+		num positions      :  56
+		num normals        :  56
+		num tangents       :  0
+		num uvs            :  112
+		num uvs2           :  0
+		num colors         :  0
+		num triangles      :  108
+	processing begun of mesh:  zero
+		processing begun of material:  Green
+		registered as also a user of material:  Green
+		num positions      :  113
+		num normals        :  113
+		num tangents       :  0
+		num uvs            :  226
+		num uvs2           :  0
+		num colors         :  0
+		num triangles      :  108
+========= Writing of JSON file started =========
+	writing mesh:  Cube
+	writing mesh:  10000000
+	writing mesh:  zero
+========= Writing of JSON file completed =========
+========= end of processing =========
+elapsed time:  0 min, 0.0887 secs
