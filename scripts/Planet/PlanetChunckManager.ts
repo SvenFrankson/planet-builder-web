@@ -46,7 +46,7 @@ class PlanetChunckManager {
         this._lodLayersCursors = [];
         this._lodLayersSqrDistances = [];
         for (let i = 0; i < this._lodLayersCount - 1; i++) {
-            let d = (i + 1) * 120;
+            let d = (i + 1) * 60;
             this._lodLayers[i] = [];
             this._lodLayersCursors[i] = 0;
             this._lodLayersSqrDistances[i] = d * d;
