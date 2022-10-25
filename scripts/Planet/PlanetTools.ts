@@ -8,6 +8,17 @@ class PlanetTools {
     public static readonly ALPHALIMIT = Math.PI / 4;
     public static readonly DISTANCELIMITSQUARED = 128 * 128;
 
+    private static _tmpVertices: BABYLON.Vector3[];
+    public static get tmpVertices(): BABYLON.Vector3[] {
+        if (!PlanetTools._tmpVertices || PlanetTools._tmpVertices.length < 15) {
+            PlanetTools._tmpVertices = [];
+            for (let i: number = 0; i < 15; i++) {
+                PlanetTools._tmpVertices[i] = BABYLON.Vector3.Zero();
+            }
+        }
+        return PlanetTools._tmpVertices;
+    }
+
     private static _emptyVertexData: BABYLON.VertexData;
     public static EmptyVertexData(): BABYLON.VertexData {
         if (!PlanetTools._emptyVertexData) {
@@ -44,26 +55,120 @@ class PlanetTools {
         i: number,
         j: number
     ): BABYLON.Vector3 {
+        let v = new BABYLON.Vector3();
+        return PlanetTools.EvaluateVertexToRef(size, i, j, v);
+    }
+
+    public static EvaluateVertexToRef(
+        size: number,
+        i: number,
+        j: number,
+        ref: BABYLON.Vector3
+    ): BABYLON.Vector3 {
         if (i < 0) {
             let v = PlanetTools.EvaluateVertex(size, i + size, j);
-            return new BABYLON.Vector3(- v.y, v.x, v.z);
+            ref.copyFromFloats(- v.y, v.x, v.z);
+            return ref;
         }
         if (i > size) {
             let v = PlanetTools.EvaluateVertex(size, i - size, j);
-            return new BABYLON.Vector3(v.y, - v.x, v.z);
+            ref.copyFromFloats(v.y, - v.x, v.z);
+            return ref;
         }
         if (j < 0) {
             let v = PlanetTools.EvaluateVertex(size, i, j + size);
-            return new BABYLON.Vector3(v.x, v.z, - v.y);
+            ref.copyFromFloats(v.x, v.z, - v.y);
+            return ref;
         }
         if (j > size) {
             let v = PlanetTools.EvaluateVertex(size, i, j - size);
-            return new BABYLON.Vector3(v.x, - v.z, v.y);
+            ref.copyFromFloats(v.x, - v.z, v.y);
+            return ref;
         }
         let xRad: number = - PI4 + PI2 * (i / size);
         let zRad: number = - PI4 + PI2 * (j / size);
 
-        return new BABYLON.Vector3(Math.tan(xRad), 1, Math.tan(zRad)).normalize();
+        ref.copyFromFloats(Math.tan(xRad), 1, Math.tan(zRad)).normalize();
+        return ref;
+    }
+
+    public static SkewVertexData(
+        vertexData: BABYLON.VertexData,
+        size: number,
+        i: number,
+        j: number,
+        k: number
+    ): BABYLON.VertexData {
+        let h0 = PlanetTools.KGlobalToAltitude(k);
+        let h1 = PlanetTools.KGlobalToAltitude(k + 1);
+
+        let v0 = PlanetTools.tmpVertices[0];
+        let v1 = PlanetTools.tmpVertices[1];
+        let v2 = PlanetTools.tmpVertices[2];
+        let v3 = PlanetTools.tmpVertices[3];
+        let v4 = PlanetTools.tmpVertices[4];
+        let v5 = PlanetTools.tmpVertices[5];
+        let v6 = PlanetTools.tmpVertices[6];
+        let v7 = PlanetTools.tmpVertices[7];
+        let v01 = PlanetTools.tmpVertices[8];
+        let v32 = PlanetTools.tmpVertices[9];
+        let v45 = PlanetTools.tmpVertices[10];
+        let v76 = PlanetTools.tmpVertices[11];
+        let v0132 = PlanetTools.tmpVertices[12];
+        let v4576 = PlanetTools.tmpVertices[13];
+        let v = PlanetTools.tmpVertices[14];
+        
+        PlanetTools.EvaluateVertexToRef(size, i, j, v0);
+        PlanetTools.EvaluateVertexToRef(size, i + 1, j, v1);
+        PlanetTools.EvaluateVertexToRef(size, i + 1, j + 1, v2);
+        PlanetTools.EvaluateVertexToRef(size, i, j + 1, v3);
+        v4.copyFrom(v0).scaleInPlace(h1);
+        v5.copyFrom(v1).scaleInPlace(h1);
+        v6.copyFrom(v2).scaleInPlace(h1);
+        v7.copyFrom(v3).scaleInPlace(h1);
+
+        v0.scaleInPlace(h0);
+        v1.scaleInPlace(h0);
+        v2.scaleInPlace(h0);
+        v3.scaleInPlace(h0);
+        
+        let skewedVertexData = new BABYLON.VertexData();
+        let positions: number[] = [];
+        let normals: number[] = [...vertexData.normals];
+        let indices: number[] = [...vertexData.indices];
+        let uvs: number[] = [...vertexData.uvs];
+        let colors: number[];
+        if (vertexData.colors) {
+            colors = [...vertexData.colors];
+        }
+
+        for (let n = 0; n < vertexData.positions.length / 3; n++) {
+            let x = vertexData.positions[3 * n];
+            let y = vertexData.positions[3 * n + 1];
+            let z = vertexData.positions[3 * n + 2];
+            
+            v01.copyFrom(v1).subtractInPlace(v0).scaleInPlace(x).addInPlace(v0);
+            v32.copyFrom(v2).subtractInPlace(v3).scaleInPlace(x).addInPlace(v3);
+            v45.copyFrom(v5).subtractInPlace(v4).scaleInPlace(x).addInPlace(v4);
+            v76.copyFrom(v6).subtractInPlace(v7).scaleInPlace(x).addInPlace(v7);
+
+            v0132.copyFrom(v32).subtractInPlace(v01).scaleInPlace(z).addInPlace(v01);
+            v4576.copyFrom(v76).subtractInPlace(v45).scaleInPlace(z).addInPlace(v45);
+
+            v.copyFrom(v4576).subtractInPlace(v0132).scaleInPlace(y).addInPlace(v0132);
+            
+            positions.push(v.x);
+            positions.push(v.y);
+            positions.push(v.z);
+        }
+
+        skewedVertexData.positions = positions;
+        skewedVertexData.normals = normals;
+        skewedVertexData.indices = indices;
+        skewedVertexData.colors = colors;
+        skewedVertexData.uvs = uvs;
+
+        return skewedVertexData;
     }
 
     public static Data(refData: number[][][], callback: (i: number, j: number, k: number) => number): void {
@@ -254,8 +359,19 @@ class PlanetTools {
             k: global.k % PlanetTools.CHUNCKSIZE,
         };
     }
-
-    public static LocalIJKToGlobalIJK(planetChunck: PlanetChunck, localI: number, localJ: number, localK: number): { i: number; j: number; k: number } {
+    public static LocalIJKToGlobalIJK(planetChunck: PlanetChunck, localI: number, localJ: number, localK: number): { i: number; j: number; k: number };
+    public static LocalIJKToGlobalIJK(localIJK: { planetChunck: PlanetChunck; i: number; j: number; k: number }): { i: number; j: number; k: number };
+    public static LocalIJKToGlobalIJK(a: any, localI?: any, localJ?: number, localK?: number): { i: number; j: number; k: number } {
+        let planetChunck: PlanetChunck;
+        if (a instanceof PlanetChunck) {
+            planetChunck = a;
+        }
+        else {
+            planetChunck = a.planetChunck;
+            localI = a.i;
+            localJ = a.j;
+            localK = a.k;
+        }
         return {
             i: planetChunck.iPos * PlanetTools.CHUNCKSIZE + localI,
             j: planetChunck.jPos * PlanetTools.CHUNCKSIZE + localJ,
