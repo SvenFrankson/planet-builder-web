@@ -5220,33 +5220,7 @@ class Player extends BABYLON.Mesh {
         this.inputHeadUp = 0;
         this.inputHeadRight = 0;
         this._initialized = false;
-        this._keyDown = (e) => {
-            if (e.code === "KeyW") {
-                this.inputForward = 1;
-            }
-            if (e.code === "KeyS") {
-                this.inputForward = -1;
-            }
-            if (e.code === "KeyA") {
-                this.inputRight = -1;
-            }
-            if (e.code === "KeyD") {
-                this.inputRight = 1;
-            }
-        };
         this._keyUp = (e) => {
-            if (e.code === "KeyW") {
-                this.inputForward = 0;
-            }
-            if (e.code === "KeyS") {
-                this.inputForward = 0;
-            }
-            if (e.code === "KeyA") {
-                this.inputRight = 0;
-            }
-            if (e.code === "KeyD") {
-                this.inputRight = 0;
-            }
             if (e.code === "KeyG") {
                 if (!this._initialized) {
                     this.initialize();
@@ -5493,7 +5467,30 @@ class Player extends BABYLON.Mesh {
         }
     }
     registerControl() {
-        this.game.canvas.addEventListener("keydown", this._keyDown);
+        this.game.inputManager.addMappedKeyDownListener(KeyInput.MOVE_FORWARD, () => {
+            this.inputForward = 1;
+        });
+        this.game.inputManager.addMappedKeyDownListener(KeyInput.MOVE_BACK, () => {
+            this.inputForward = -1;
+        });
+        this.game.inputManager.addMappedKeyDownListener(KeyInput.MOVE_RIGHT, () => {
+            this.inputRight = 1;
+        });
+        this.game.inputManager.addMappedKeyDownListener(KeyInput.MOVE_LEFT, () => {
+            this.inputRight = -1;
+        });
+        this.game.inputManager.addMappedKeyUpListener(KeyInput.MOVE_FORWARD, () => {
+            this.inputForward = 0;
+        });
+        this.game.inputManager.addMappedKeyUpListener(KeyInput.MOVE_BACK, () => {
+            this.inputForward = 0;
+        });
+        this.game.inputManager.addMappedKeyUpListener(KeyInput.MOVE_RIGHT, () => {
+            this.inputRight = 0;
+        });
+        this.game.inputManager.addMappedKeyUpListener(KeyInput.MOVE_LEFT, () => {
+            this.inputRight = 0;
+        });
         this.game.canvas.addEventListener("keyup", this._keyUp);
         this.game.canvas.addEventListener("mousemove", this._mouseMove);
         this.game.canvas.addEventListener("mouseup", () => {
@@ -5505,7 +5502,6 @@ class Player extends BABYLON.Mesh {
         });
     }
     unregisterControl() {
-        this.game.canvas.removeEventListener("keydown", this._keyDown);
         this.game.canvas.removeEventListener("keyup", this._keyUp);
         this.game.canvas.removeEventListener("mousemove", this._mouseMove);
         this.game.canvas.removeEventListener("mouseup", this._action);
