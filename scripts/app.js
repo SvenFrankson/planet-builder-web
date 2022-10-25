@@ -1503,6 +1503,14 @@ class Game extends Main {
                 this.movePad.connectInput(true);
                 this.headPad = new PlayerInputHeadPad(this.player);
                 this.headPad.connectInput(false);
+                this.actionButton = new PlayerInputVirtualButton(this.player);
+                this.actionButton.connectInput(() => {
+                    if (this.player.currentAction) {
+                        if (this.player.currentAction.onClick) {
+                            this.player.currentAction.onClick();
+                        }
+                    }
+                });
             }
             else {
                 if (this.movePad) {
@@ -5636,41 +5644,14 @@ class PlayerActionManager {
         });
         this.game.inputManager.addKeyUpListener((e) => {
             let slotIndex = e;
-            if (slotIndex >= 0 && slotIndex < 10) {
-                this.stopHint(slotIndex);
-                if (!document.pointerLockElement) {
-                    return;
-                }
-                for (let i = 0; i < 10; i++) {
-                    document.querySelector("#player-action-" + i + " .background").src = "/datas/images/inventory-item-background.svg";
-                }
-                // Unequip current action
-                if (this.player.currentAction) {
-                    if (this.player.currentAction.onUnequip) {
-                        this.player.currentAction.onUnequip();
-                    }
-                }
-                if (this.linkedActions[slotIndex]) {
-                    // If request action was already equiped, remove it.
-                    if (this.player.currentAction === this.linkedActions[slotIndex]) {
-                        this.player.currentAction = undefined;
-                    }
-                    // Equip new action.
-                    else {
-                        this.player.currentAction = this.linkedActions[slotIndex];
-                        if (this.player.currentAction) {
-                            document.querySelector("#player-action-" + slotIndex + " .background").src = "/datas/images/inventory-item-background-highlit.svg";
-                            if (this.player.currentAction.onEquip) {
-                                this.player.currentAction.onEquip();
-                            }
-                        }
-                    }
-                }
-                else {
-                    this.player.currentAction = undefined;
-                }
-            }
+            this.equipAction(slotIndex);
         });
+        for (let i = 0; i < 10; i++) {
+            let slotIndex = i;
+            document.querySelector("#player-action-" + slotIndex).addEventListener("touchend", () => {
+                this.equipAction(slotIndex);
+            });
+        }
     }
     linkAction(action, slotIndex) {
         if (slotIndex >= 0 && slotIndex <= 9) {
@@ -5683,6 +5664,39 @@ class PlayerActionManager {
         if (slotIndex >= 0 && slotIndex <= 9) {
             this.linkedActions[slotIndex] = undefined;
             document.querySelector("#player-action-" + slotIndex + " .icon").src = "";
+        }
+    }
+    equipAction(slotIndex) {
+        if (slotIndex >= 0 && slotIndex < 10) {
+            this.stopHint(slotIndex);
+            for (let i = 0; i < 10; i++) {
+                document.querySelector("#player-action-" + i + " .background").src = "/datas/images/inventory-item-background.svg";
+            }
+            // Unequip current action
+            if (this.player.currentAction) {
+                if (this.player.currentAction.onUnequip) {
+                    this.player.currentAction.onUnequip();
+                }
+            }
+            if (this.linkedActions[slotIndex]) {
+                // If request action was already equiped, remove it.
+                if (this.player.currentAction === this.linkedActions[slotIndex]) {
+                    this.player.currentAction = undefined;
+                }
+                // Otherwise, equip new action.
+                else {
+                    this.player.currentAction = this.linkedActions[slotIndex];
+                    if (this.player.currentAction) {
+                        document.querySelector("#player-action-" + slotIndex + " .background").src = "/datas/images/inventory-item-background-highlit.svg";
+                        if (this.player.currentAction.onEquip) {
+                            this.player.currentAction.onEquip();
+                        }
+                    }
+                }
+            }
+            else {
+                this.player.currentAction = undefined;
+            }
         }
     }
     startHint(slotIndex) {
@@ -5743,6 +5757,74 @@ class PlayerInput {
         this.game = player.game;
     }
     connectInput() {
+    }
+}
+/// <reference path="PlayerInput.ts"/>
+class PlayerInputVirtualButton extends PlayerInput {
+    constructor() {
+        super(...arguments);
+        this.clientWidth = 100;
+        this.clientHeight = 100;
+        this.size = 10;
+        this.marginLeft = 10;
+        this.marginBottom = 10;
+        this.centerX = 20;
+        this.centerY = 20;
+    }
+    connectInput(callback) {
+        this.svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+        this.svg.setAttribute("viewBox", "0 0 1000 1000");
+        this.clientWidth = document.body.clientWidth;
+        this.clientHeight = document.body.clientHeight;
+        let ratio = this.clientWidth / this.clientHeight;
+        if (ratio > 1) {
+            this.size = this.clientHeight * 0.25;
+        }
+        else {
+            this.size = this.clientWidth * 0.25;
+        }
+        let margin = Math.min(50, this.size * 0.3);
+        this.centerX = this.clientWidth * 0.5;
+        this.centerY = this.clientHeight - this.size * 0.5 - margin;
+        this.svg.style.display = "block";
+        this.svg.style.position = "fixed";
+        this.svg.style.width = this.size.toFixed(0) + "px";
+        this.svg.style.height = this.size.toFixed(0) + "px";
+        this.svg.style.zIndex = "2";
+        this.svg.style.left = (this.clientWidth * 0.75 * 0.5).toFixed(0) + "px";
+        this.svg.style.bottom = margin.toFixed(0) + "px";
+        this.svg.style.overflow = "visible";
+        this.svg.style.pointerEvents = "none";
+        document.body.appendChild(this.svg);
+        let base = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+        base.setAttribute("cx", "500");
+        base.setAttribute("cy", "500");
+        base.setAttribute("r", "500");
+        base.setAttribute("fill", "white");
+        base.setAttribute("fill-opacity", "10%");
+        base.setAttribute("stroke-width", "4");
+        base.setAttribute("stroke", "white");
+        this.svg.appendChild(base);
+        if (callback) {
+            this.game.canvas.addEventListener("pointerdown", (ev) => {
+                let dx = this.clientXToDX(ev.clientX);
+                let dy = this.clientYToDY(ev.clientY);
+                if (dx * dx + dy * dy < 1) {
+                    callback(ev);
+                }
+            });
+        }
+    }
+    clientXToDX(clientX) {
+        return (clientX - this.centerX) / (this.size * 0.5);
+    }
+    clientYToDY(clientY) {
+        return -(clientY - this.centerY) / (this.size * 0.5);
+    }
+    disconnect() {
+        if (this.svg) {
+            document.body.removeChild(this.svg);
+        }
     }
 }
 /// <reference path="PlayerInput.ts"/>

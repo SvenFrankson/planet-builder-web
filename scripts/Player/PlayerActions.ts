@@ -48,41 +48,14 @@ class PlayerActionManager {
         });
         this.game.inputManager.addKeyUpListener((e: KeyInput) => {
             let slotIndex = e;
-            if (slotIndex >= 0 && slotIndex < 10) {
-                this.stopHint(slotIndex);
-                if (!document.pointerLockElement) {
-                    return;
-                }
-                for (let i = 0; i < 10; i++) {
-                    (document.querySelector("#player-action-" + i + " .background") as HTMLImageElement).src ="/datas/images/inventory-item-background.svg";
-                }
-                // Unequip current action
-                if (this.player.currentAction) {
-                    if (this.player.currentAction.onUnequip) {
-                        this.player.currentAction.onUnequip();
-                    }
-                }
-                if (this.linkedActions[slotIndex]) {
-                    // If request action was already equiped, remove it.
-                    if (this.player.currentAction === this.linkedActions[slotIndex]) {
-                        this.player.currentAction = undefined;
-                    }
-                    // Equip new action.
-                    else {
-                        this.player.currentAction = this.linkedActions[slotIndex];
-                        if (this.player.currentAction) {
-                            (document.querySelector("#player-action-" + slotIndex + " .background") as HTMLImageElement).src ="/datas/images/inventory-item-background-highlit.svg";
-                            if (this.player.currentAction.onEquip) {
-                                this.player.currentAction.onEquip();
-                            }
-                        }
-                    }
-                }
-                else {
-                    this.player.currentAction = undefined;
-                }
-            }
+            this.equipAction(slotIndex);
         });
+        for (let i = 0; i < 10; i++) {
+            let slotIndex = i;
+            (document.querySelector("#player-action-" + slotIndex) as HTMLDivElement).addEventListener("touchend", () => {
+                this.equipAction(slotIndex);
+            });
+        }
     }
 
     public update = () => {
@@ -110,6 +83,40 @@ class PlayerActionManager {
         if (slotIndex >= 0 && slotIndex <= 9) {
             this.linkedActions[slotIndex] = undefined;
             (document.querySelector("#player-action-" + slotIndex + " .icon") as HTMLImageElement).src = "";
+        }
+    }
+
+    public equipAction(slotIndex: number): void {
+        if (slotIndex >= 0 && slotIndex < 10) {
+            this.stopHint(slotIndex);
+            for (let i = 0; i < 10; i++) {
+                (document.querySelector("#player-action-" + i + " .background") as HTMLImageElement).src ="/datas/images/inventory-item-background.svg";
+            }
+            // Unequip current action
+            if (this.player.currentAction) {
+                if (this.player.currentAction.onUnequip) {
+                    this.player.currentAction.onUnequip();
+                }
+            }
+            if (this.linkedActions[slotIndex]) {
+                // If request action was already equiped, remove it.
+                if (this.player.currentAction === this.linkedActions[slotIndex]) {
+                    this.player.currentAction = undefined;
+                }
+                // Otherwise, equip new action.
+                else {
+                    this.player.currentAction = this.linkedActions[slotIndex];
+                    if (this.player.currentAction) {
+                        (document.querySelector("#player-action-" + slotIndex + " .background") as HTMLImageElement).src ="/datas/images/inventory-item-background-highlit.svg";
+                        if (this.player.currentAction.onEquip) {
+                            this.player.currentAction.onEquip();
+                        }
+                    }
+                }
+            }
+            else {
+                this.player.currentAction = undefined;
+            }
         }
     }
 

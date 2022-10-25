@@ -26,6 +26,7 @@ class Game extends Main {
 	public inputMode: InputMode = InputMode.Unknown;
 	public headPad: PlayerInputHeadPad;
 	public movePad: PlayerInputMovePad;
+	public actionButton: PlayerInputVirtualButton;
 	public static LockedMouse: boolean = false;
 	public static ClientXOnLock: number = -1;
 	public static ClientYOnLock: number = -1;
@@ -169,6 +170,15 @@ class Game extends Main {
 
 				this.headPad = new PlayerInputHeadPad(this.player);
 				this.headPad.connectInput(false);
+
+				this.actionButton = new PlayerInputVirtualButton(this.player);
+				this.actionButton.connectInput(() => {
+					if (this.player.currentAction) {
+						if (this.player.currentAction.onClick) {
+							this.player.currentAction.onClick();
+						}
+					}
+				});
 			}
 			else {
 				if (this.movePad) {
