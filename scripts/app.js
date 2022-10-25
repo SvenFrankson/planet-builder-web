@@ -1428,11 +1428,14 @@ class Game extends Main {
             this.inputManager.initialize();
             this.actionManager = new PlayerActionManager(this.player, this);
             this.actionManager.initialize();
-            let slotIndex = 1;
-            for (let i = 1; i < BlockType.Unknown; i++) {
-                this.actionManager.linkAction(PlayerActionTemplate.CreateBlockAction(this.player, i), slotIndex);
-                slotIndex++;
-            }
+            let ass = async () => {
+                let slotIndex = 1;
+                for (let i = 1; i < BlockType.Unknown; i++) {
+                    this.actionManager.linkAction(await PlayerActionTemplate.CreateBlockAction(this.player, i), slotIndex);
+                    slotIndex++;
+                }
+            };
+            ass();
             this.player.registerControl();
             this.chunckManager.onNextInactive(() => {
                 this.player.initialize();
@@ -4518,6 +4521,15 @@ var PI4 = Math.PI / 4;
 var PI2 = Math.PI / 2;
 var PI = Math.PI;
 class PlanetTools {
+    static get tmpVertices() {
+        if (!PlanetTools._tmpVertices || PlanetTools._tmpVertices.length < 15) {
+            PlanetTools._tmpVertices = [];
+            for (let i = 0; i < 15; i++) {
+                PlanetTools._tmpVertices[i] = BABYLON.Vector3.Zero();
+            }
+        }
+        return PlanetTools._tmpVertices;
+    }
     static EmptyVertexData() {
         if (!PlanetTools._emptyVertexData) {
             let emptyMesh = new BABYLON.Mesh("Empty", Game.Scene);
@@ -4547,25 +4559,95 @@ class PlanetTools {
         }
     }
     static EvaluateVertex(size, i, j) {
+        let v = new BABYLON.Vector3();
+        return PlanetTools.EvaluateVertexToRef(size, i, j, v);
+    }
+    static EvaluateVertexToRef(size, i, j, ref) {
         if (i < 0) {
             let v = PlanetTools.EvaluateVertex(size, i + size, j);
-            return new BABYLON.Vector3(-v.y, v.x, v.z);
+            ref.copyFromFloats(-v.y, v.x, v.z);
+            return ref;
         }
         if (i > size) {
             let v = PlanetTools.EvaluateVertex(size, i - size, j);
-            return new BABYLON.Vector3(v.y, -v.x, v.z);
+            ref.copyFromFloats(v.y, -v.x, v.z);
+            return ref;
         }
         if (j < 0) {
             let v = PlanetTools.EvaluateVertex(size, i, j + size);
-            return new BABYLON.Vector3(v.x, v.z, -v.y);
+            ref.copyFromFloats(v.x, v.z, -v.y);
+            return ref;
         }
         if (j > size) {
             let v = PlanetTools.EvaluateVertex(size, i, j - size);
-            return new BABYLON.Vector3(v.x, -v.z, v.y);
+            ref.copyFromFloats(v.x, -v.z, v.y);
+            return ref;
         }
         let xRad = -PI4 + PI2 * (i / size);
         let zRad = -PI4 + PI2 * (j / size);
-        return new BABYLON.Vector3(Math.tan(xRad), 1, Math.tan(zRad)).normalize();
+        ref.copyFromFloats(Math.tan(xRad), 1, Math.tan(zRad)).normalize();
+        return ref;
+    }
+    static SkewVertexData(vertexData, size, i, j, k) {
+        let h0 = PlanetTools.KGlobalToAltitude(k);
+        let h1 = PlanetTools.KGlobalToAltitude(k + 1);
+        let v0 = PlanetTools.tmpVertices[0];
+        let v1 = PlanetTools.tmpVertices[1];
+        let v2 = PlanetTools.tmpVertices[2];
+        let v3 = PlanetTools.tmpVertices[3];
+        let v4 = PlanetTools.tmpVertices[4];
+        let v5 = PlanetTools.tmpVertices[5];
+        let v6 = PlanetTools.tmpVertices[6];
+        let v7 = PlanetTools.tmpVertices[7];
+        let v01 = PlanetTools.tmpVertices[8];
+        let v32 = PlanetTools.tmpVertices[9];
+        let v45 = PlanetTools.tmpVertices[10];
+        let v76 = PlanetTools.tmpVertices[11];
+        let v0132 = PlanetTools.tmpVertices[12];
+        let v4576 = PlanetTools.tmpVertices[13];
+        let v = PlanetTools.tmpVertices[14];
+        PlanetTools.EvaluateVertexToRef(size, i, j, v0);
+        PlanetTools.EvaluateVertexToRef(size, i + 1, j, v1);
+        PlanetTools.EvaluateVertexToRef(size, i + 1, j + 1, v2);
+        PlanetTools.EvaluateVertexToRef(size, i, j + 1, v3);
+        v4.copyFrom(v0).scaleInPlace(h1);
+        v5.copyFrom(v1).scaleInPlace(h1);
+        v6.copyFrom(v2).scaleInPlace(h1);
+        v7.copyFrom(v3).scaleInPlace(h1);
+        v0.scaleInPlace(h0);
+        v1.scaleInPlace(h0);
+        v2.scaleInPlace(h0);
+        v3.scaleInPlace(h0);
+        let skewedVertexData = new BABYLON.VertexData();
+        let positions = [];
+        let normals = [...vertexData.normals];
+        let indices = [...vertexData.indices];
+        let uvs = [...vertexData.uvs];
+        let colors;
+        if (vertexData.colors) {
+            colors = [...vertexData.colors];
+        }
+        for (let n = 0; n < vertexData.positions.length / 3; n++) {
+            let x = vertexData.positions[3 * n];
+            let y = vertexData.positions[3 * n + 1];
+            let z = vertexData.positions[3 * n + 2];
+            v01.copyFrom(v1).subtractInPlace(v0).scaleInPlace(x).addInPlace(v0);
+            v32.copyFrom(v2).subtractInPlace(v3).scaleInPlace(x).addInPlace(v3);
+            v45.copyFrom(v5).subtractInPlace(v4).scaleInPlace(x).addInPlace(v4);
+            v76.copyFrom(v6).subtractInPlace(v7).scaleInPlace(x).addInPlace(v7);
+            v0132.copyFrom(v32).subtractInPlace(v01).scaleInPlace(z).addInPlace(v01);
+            v4576.copyFrom(v76).subtractInPlace(v45).scaleInPlace(z).addInPlace(v45);
+            v.copyFrom(v4576).subtractInPlace(v0132).scaleInPlace(y).addInPlace(v0132);
+            positions.push(v.x);
+            positions.push(v.y);
+            positions.push(v.z);
+        }
+        skewedVertexData.positions = positions;
+        skewedVertexData.normals = normals;
+        skewedVertexData.indices = indices;
+        skewedVertexData.colors = colors;
+        skewedVertexData.uvs = uvs;
+        return skewedVertexData;
     }
     static Data(refData, callback) {
         for (let i = 0; i < PlanetTools.CHUNCKSIZE; i++) {
@@ -4722,7 +4804,17 @@ class PlanetTools {
             k: global.k % PlanetTools.CHUNCKSIZE,
         };
     }
-    static LocalIJKToGlobalIJK(planetChunck, localI, localJ, localK) {
+    static LocalIJKToGlobalIJK(a, localI, localJ, localK) {
+        let planetChunck;
+        if (a instanceof PlanetChunck) {
+            planetChunck = a;
+        }
+        else {
+            planetChunck = a.planetChunck;
+            localI = a.i;
+            localJ = a.j;
+            localK = a.k;
+        }
         return {
             i: planetChunck.iPos * PlanetTools.CHUNCKSIZE + localI,
             j: planetChunck.jPos * PlanetTools.CHUNCKSIZE + localJ,
@@ -5430,10 +5522,15 @@ class Player extends BABYLON.Mesh {
 var ACTIVE_DEBUG_PLAYER_ACTION = true;
 var ADD_BRICK_ANIMATION_DURATION = 1000;
 class PlayerActionTemplate {
-    static CreateBlockAction(player, blockType) {
+    static async CreateBlockAction(player, blockType) {
         let action = new PlayerAction("cube-", player);
         let previewMesh;
         action.iconUrl = "/datas/images/block-icon-" + BlockTypeNames[blockType] + "-miniature.png";
+        let vData = (await player.game.vertexDataLoader.get("chunck-part"))[0];
+        let lastSize;
+        let lastI;
+        let lastJ;
+        let lastK;
         action.onUpdate = () => {
             let ray = new BABYLON.Ray(player.camPos.absolutePosition, player.camPos.forward);
             let hit = ray.intersectsMeshes(player.meshes);
@@ -5442,14 +5539,35 @@ class PlayerActionTemplate {
                 let n = hit[0].getNormal(true).scaleInPlace(0.2);
                 let localIJK = PlanetTools.WorldPositionToLocalIJK(player.planet, hit[0].pickedPoint.add(n));
                 if (localIJK) {
+                    // Redraw block preview
                     if (!previewMesh) {
                         previewMesh = BABYLON.MeshBuilder.CreateSphere("preview-mesh", { diameter: 1 });
                         let material = new BABYLON.StandardMaterial("material");
-                        material.alpha = 0.5;
+                        material.alpha = 0.25;
                         previewMesh.material = material;
                     }
-                    let worldPos = PlanetTools.LocalIJKToWorldPosition(localIJK, true);
-                    previewMesh.position.copyFrom(worldPos);
+                    let globalIJK = PlanetTools.LocalIJKToGlobalIJK(localIJK);
+                    let needRedrawMesh = false;
+                    if (lastSize != localIJK.planetChunck.size) {
+                        lastSize = localIJK.planetChunck.size;
+                        needRedrawMesh = true;
+                    }
+                    if (lastI != localIJK.i) {
+                        lastI = localIJK.i;
+                        needRedrawMesh = true;
+                    }
+                    if (lastJ != localIJK.j) {
+                        lastJ = localIJK.j;
+                        needRedrawMesh = true;
+                    }
+                    if (lastK != localIJK.k) {
+                        lastK = localIJK.k;
+                        needRedrawMesh = true;
+                    }
+                    if (needRedrawMesh) {
+                        PlanetTools.SkewVertexData(vData, localIJK.planetChunck.size, globalIJK.i, globalIJK.j, globalIJK.k).applyToMesh(previewMesh);
+                        previewMesh.parent = localIJK.planetChunck.planetSide;
+                    }
                     return;
                 }
             }

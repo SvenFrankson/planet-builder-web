@@ -73,11 +73,14 @@ class Game extends Main {
 
 			this.actionManager = new PlayerActionManager(this.player, this);
 			this.actionManager.initialize();
-			let slotIndex = 1;
-			for (let i = 1; i < BlockType.Unknown; i++) {
-				this.actionManager.linkAction(PlayerActionTemplate.CreateBlockAction(this.player, i), slotIndex);
-				slotIndex++;
+			let ass = async () => {
+				let slotIndex = 1;
+				for (let i = 1; i < BlockType.Unknown; i++) {
+					this.actionManager.linkAction(await PlayerActionTemplate.CreateBlockAction(this.player, i), slotIndex);
+					slotIndex++;
+				}
 			}
+			ass();
 			
 			this.player.registerControl();
 			this.chunckManager.onNextInactive(() => {
