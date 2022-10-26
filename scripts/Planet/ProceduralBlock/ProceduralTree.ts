@@ -11,7 +11,7 @@ class ProceduralTree {
 
     public generateData(): void {
         let w = PlanetTools.LocalIJKToWorldPosition(this.chunck, this.i, this.j, this.k);
-        let n = this.chunck.GetBaryCenter().clone().normalize();
+        let n = this.chunck.normal;
         let chuncks = PlanetBlockMaker.AddLine(this.chunck.planetSide.planet, w, w.add(n.scale(5)), BlockType.Wood);
         chuncks.push(...PlanetBlockMaker.AddSphere(this.chunck.planetSide.planet, w.add(n.scale(5)), 3, BlockType.Leaf));
         for (let i = 0; i < chuncks.length; i++) {

@@ -1863,6 +1863,60 @@ class PlanetToy extends Main {
         this.camera.beta = Math.PI / 2 + Math.PI / 6 * Math.sin(this._tCamera / this.periodCamera * 2 * Math.PI);
     }
 }
+class AbstractPlanetChunck {
+    constructor(iPos, jPos, kPos, planetSide) {
+        this.iPos = iPos;
+        this.jPos = jPos;
+        this.kPos = kPos;
+        this.planetSide = planetSide;
+        this._degree = 0;
+        this._chunckCount = 0;
+        this._size = 0;
+        this._registered = false;
+        this.lod = 2;
+        this._degree = PlanetTools.KPosToDegree(this.kPos);
+        this._size = PlanetTools.DegreeToSize(this.degree);
+        this._chunckCount = PlanetTools.DegreeToChuncksCount(this.degree);
+    }
+    get scene() {
+        return this.planetSide.getScene();
+    }
+    get side() {
+        return this.planetSide.side;
+    }
+    get chunckManager() {
+        return this.planetSide.chunckManager;
+    }
+    get degree() {
+        return this._degree;
+    }
+    get chunckCount() {
+        return this._chunckCount;
+    }
+    get size() {
+        return this._size;
+    }
+    get planetName() {
+        return this.planetSide.GetPlanetName();
+    }
+    get kPosMax() {
+        return this.planetSide.kPosMax;
+    }
+    get registered() {
+        return this._registered;
+    }
+    get barycenter() {
+        return this._barycenter;
+    }
+    get normal() {
+        return this._normal;
+    }
+    register() {
+        if (!this.registered) {
+            this._registered = this.chunckManager.registerChunck(this);
+        }
+    }
+}
 var BlockTypeNames = [
     "None",
     "Grass",
@@ -1966,6 +2020,7 @@ class PlanetBlockMaker {
         return impactedChunck;
     }
 }
+/// <reference path="AbstractPlanetChunck.ts"/>
 var Neighbour;
 (function (Neighbour) {
     Neighbour[Neighbour["IPlus"] = 0] = "IPlus";
@@ -1975,31 +2030,20 @@ var Neighbour;
     Neighbour[Neighbour["JMinus"] = 4] = "JMinus";
     Neighbour[Neighbour["KMinus"] = 5] = "KMinus";
 })(Neighbour || (Neighbour = {}));
-class PlanetChunck {
+class PlanetChunck extends AbstractPlanetChunck {
     constructor(iPos, jPos, kPos, planetSide) {
-        this._degree = 0;
-        this._chunckCount = 0;
-        this._size = 0;
+        super(iPos, jPos, kPos, planetSide);
         this._dataInitialized = false;
         this._adjacentsDataSynced = false;
         this._proceduralItemsGenerated = false;
-        this._registered = false;
-        this.lod = 2;
         this._isEmpty = true;
         this._isFull = false;
         this._isDirty = false;
         this._setMeshHistory = [];
-        this.planetSide = planetSide;
-        this.iPos = iPos;
-        this.jPos = jPos;
-        this.kPos = kPos;
-        this._degree = PlanetTools.KPosToDegree(this.kPos);
-        this._size = PlanetTools.DegreeToSize(this.degree);
-        this._chunckCount = PlanetTools.DegreeToChuncksCount(this.degree);
         this.name = "chunck:" + this.side + ":" + this.iPos + "-" + this.jPos + "-" + this.kPos;
-        this.barycenter = PlanetTools.EvaluateVertex(this.size, PlanetTools.CHUNCKSIZE * (this.iPos + 0.5), PlanetTools.CHUNCKSIZE * (this.jPos + 0.5)).scale(PlanetTools.KGlobalToAltitude((this.kPos + 0.5) * PlanetTools.CHUNCKSIZE));
-        this.barycenter = BABYLON.Vector3.TransformCoordinates(this.barycenter, planetSide.computeWorldMatrix(true));
-        this.normal = BABYLON.Vector3.Normalize(this.barycenter);
+        this._barycenter = PlanetTools.EvaluateVertex(this.size, PlanetTools.CHUNCKSIZE * (this.iPos + 0.5), PlanetTools.CHUNCKSIZE * (this.jPos + 0.5)).scale(PlanetTools.KGlobalToAltitude((this.kPos + 0.5) * PlanetTools.CHUNCKSIZE));
+        this._barycenter = BABYLON.Vector3.TransformCoordinates(this._barycenter, planetSide.computeWorldMatrix(true));
+        this._normal = BABYLON.Vector3.Normalize(this.barycenter);
         if (this.kPos === 0) {
             this.bedrock = new BABYLON.Mesh(this.name + "-bedrock", this.scene);
             this.bedrock.parent = this.planetSide;
@@ -2048,30 +2092,6 @@ class PlanetChunck {
         if (this.isDegreeLayerBottom) {
             this._firstK = -1;
         }
-    }
-    get scene() {
-        return this.planetSide.getScene();
-    }
-    get side() {
-        return this.planetSide.side;
-    }
-    get chunckManager() {
-        return this.planetSide.chunckManager;
-    }
-    get degree() {
-        return this._degree;
-    }
-    get chunckCount() {
-        return this._chunckCount;
-    }
-    get size() {
-        return this._size;
-    }
-    GetPlanetName() {
-        return this.planetSide.GetPlanetName();
-    }
-    get kPosMax() {
-        return this.planetSide.kPosMax;
     }
     Position() {
         return {
@@ -2173,15 +2193,6 @@ class PlanetChunck {
         });
         this.register();
     }
-    GetBaryCenter() {
-        return this.barycenter;
-    }
-    GetNormal() {
-        return this.normal;
-    }
-    get registered() {
-        return this._registered;
-    }
     get isEmpty() {
         return this._isEmpty;
     }
@@ -2196,11 +2207,6 @@ class PlanetChunck {
     }
     isMeshDisposed() {
         return !this.mesh || this.mesh.isDisposed();
-    }
-    register() {
-        if (!this.registered) {
-            this._registered = this.chunckManager.registerChunck(this);
-        }
     }
     initialize() {
         this.initializeData();
@@ -2424,6 +2430,29 @@ class PlanetChunck {
         return textInfo;
     }
 }
+class PlanetChunckGroup extends AbstractPlanetChunck {
+    constructor(iPos, jPos, kPos, planetSide, level) {
+        super(iPos, jPos, kPos, planetSide);
+        this.level = level;
+        this.children = [];
+    }
+    subdivide() {
+        for (let i = 0; i < 2; i++) {
+            for (let j = 0; j < 2; j++) {
+                for (let k = 0; k < 2; k++) {
+                    if (this.level === 1) {
+                        let chunck = new PlanetChunck(this.iPos * 2 + i, this.jPos * 2 + j, this.kPos * 2 + k, this.planetSide);
+                        chunck.register();
+                    }
+                    else {
+                        let chunck = new PlanetChunckGroup(this.iPos * 2 + i, this.jPos * 2 + j, this.kPos * 2 + k, this.planetSide, this.level - 1);
+                        chunck.register();
+                    }
+                }
+            }
+        }
+    }
+}
 class PlanetChunckRedrawRequest {
     constructor(chunck, callback) {
         this.chunck = chunck;
@@ -2458,7 +2487,7 @@ class PlanetChunckManager {
                     let cursor = this._lodLayersCursors[prevLayerIndex];
                     let chunck = this._lodLayers[prevLayerIndex][cursor];
                     if (chunck) {
-                        chunck.sqrDistanceToViewpoint = BABYLON.Vector3.DistanceSquared(this._viewpoint, chunck.GetBaryCenter());
+                        chunck.sqrDistanceToViewpoint = BABYLON.Vector3.DistanceSquared(this._viewpoint, chunck.barycenter);
                         let newLayerIndex = this._getLayerIndex(chunck.sqrDistanceToViewpoint);
                         if (newLayerIndex != prevLayerIndex) {
                             let adequateLayerCursor = this._lodLayersCursors[newLayerIndex];
@@ -2469,11 +2498,15 @@ class PlanetChunckManager {
                                 if (newLayerIndex === 1 && prevLayerIndex === 0) {
                                     continue;
                                 }
-                                this.requestDraw(chunck, newLayerIndex);
+                                if (chunck instanceof PlanetChunck) {
+                                    this.requestDraw(chunck, newLayerIndex);
+                                }
                             }
                             else if (newLayerIndex > 1) {
-                                chunck.disposeMesh();
-                                this.cancelDraw(chunck);
+                                if (chunck instanceof PlanetChunck) {
+                                    chunck.disposeMesh();
+                                    this.cancelDraw(chunck);
+                                }
                             }
                             this._lodLayersCursors[newLayerIndex]++;
                             if (this._lodLayersCursors[newLayerIndex] >= this._lodLayers[newLayerIndex].length) {
@@ -2549,19 +2582,18 @@ class PlanetChunckManager {
         this.scene.onBeforeRenderObservable.removeCallback(this._update);
     }
     registerChunck(chunck) {
-        if (!chunck.isEmptyOrHidden()) {
-            chunck.sqrDistanceToViewpoint = BABYLON.Vector3.DistanceSquared(this._viewpoint, chunck.GetBaryCenter());
-            let layerIndex = this._getLayerIndex(chunck.sqrDistanceToViewpoint);
-            if (this._lodLayers[layerIndex].indexOf(chunck) === -1) {
-                this._lodLayers[layerIndex].push(chunck);
-                chunck.lod = layerIndex;
+        chunck.sqrDistanceToViewpoint = BABYLON.Vector3.DistanceSquared(this._viewpoint, chunck.barycenter);
+        let layerIndex = this._getLayerIndex(chunck.sqrDistanceToViewpoint);
+        if (this._lodLayers[layerIndex].indexOf(chunck) === -1) {
+            this._lodLayers[layerIndex].push(chunck);
+            chunck.lod = layerIndex;
+            if (chunck instanceof PlanetChunck) {
                 if (layerIndex <= 1) {
                     this.requestDraw(chunck, layerIndex);
                 }
-                return true;
             }
         }
-        return false;
+        return true;
     }
     async requestDraw(chunck, prio) {
         return new Promise(resolve => {
@@ -5025,7 +5057,7 @@ class ProceduralTree {
     }
     generateData() {
         let w = PlanetTools.LocalIJKToWorldPosition(this.chunck, this.i, this.j, this.k);
-        let n = this.chunck.GetBaryCenter().clone().normalize();
+        let n = this.chunck.normal;
         let chuncks = PlanetBlockMaker.AddLine(this.chunck.planetSide.planet, w, w.add(n.scale(5)), BlockType.Wood);
         chuncks.push(...PlanetBlockMaker.AddSphere(this.chunck.planetSide.planet, w.add(n.scale(5)), 3, BlockType.Leaf));
         for (let i = 0; i < chuncks.length; i++) {

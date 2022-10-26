@@ -1,3 +1,5 @@
+/// <reference path="AbstractPlanetChunck.ts"/>
+
 enum Neighbour {
     IPlus = 0,
     JPlus = 1,
@@ -7,43 +9,8 @@ enum Neighbour {
     KMinus = 5,
 }
 
-class PlanetChunck {
+class PlanetChunck extends AbstractPlanetChunck {
     
-    public planetSide: PlanetSide;
-    public get scene(): BABYLON.Scene {
-        return this.planetSide.getScene();
-    }
-
-    public name: string;
-
-    public get side(): Side {
-        return this.planetSide.side;
-    }
-    public get chunckManager(): PlanetChunckManager {
-        return this.planetSide.chunckManager;
-    }
-    private _degree: number = 0;
-    public get degree(): number {
-        return this._degree;
-    }
-    private _chunckCount: number = 0;
-    public get chunckCount(): number {
-        return this._chunckCount;
-    }
-    private _size: number = 0;
-    public get size(): number {
-        return this._size;
-    }
-    public GetPlanetName(): string {
-        return this.planetSide.GetPlanetName();
-    }
-    public get kPosMax(): number {
-        return this.planetSide.kPosMax;
-    }
-
-    public iPos: number;
-    public jPos: number;
-    public kPos: number;
     public isDegreeLayerBottom: boolean;
     public isCorner: boolean;
     public Position(): { i: number; j: number; k: number } {
@@ -164,22 +131,6 @@ class PlanetChunck {
         this.register();
     }
 
-    private barycenter: BABYLON.Vector3;
-    public GetBaryCenter(): BABYLON.Vector3 {
-        return this.barycenter;
-    }
-    private normal: BABYLON.Vector3;
-    public GetNormal(): BABYLON.Vector3 {
-        return this.normal;
-    }
-
-    private _registered: boolean = false;
-    public get registered(): boolean {
-        return this._registered;
-    }
-    public sqrDistanceToViewpoint: number;
-    public lod: number = 2;
-
     private _isEmpty: boolean = true;
     public get isEmpty(): boolean {
         return this._isEmpty;
@@ -210,26 +161,20 @@ class PlanetChunck {
         kPos: number,
         planetSide: PlanetSide
     ) {
-        this.planetSide = planetSide;
-        this.iPos = iPos;
-        this.jPos = jPos;
-        this.kPos = kPos;
-        this._degree = PlanetTools.KPosToDegree(this.kPos);
-        this._size = PlanetTools.DegreeToSize(this.degree);
-        this._chunckCount = PlanetTools.DegreeToChuncksCount(this.degree);
+        super(iPos, jPos, kPos, planetSide);
         this.name = "chunck:" + this.side + ":" + this.iPos + "-" + this.jPos	+ "-" + this.kPos;
-        this.barycenter = PlanetTools.EvaluateVertex(
+        this._barycenter = PlanetTools.EvaluateVertex(
             this.size,
             PlanetTools.CHUNCKSIZE * (this.iPos + 0.5),
             PlanetTools.CHUNCKSIZE * (this.jPos + 0.5)
         ).scale(
             PlanetTools.KGlobalToAltitude((this.kPos + 0.5) * PlanetTools.CHUNCKSIZE)
         );
-        this.barycenter = BABYLON.Vector3.TransformCoordinates(
-            this.barycenter,
+        this._barycenter = BABYLON.Vector3.TransformCoordinates(
+            this._barycenter,
             planetSide.computeWorldMatrix(true)
         );
-        this.normal = BABYLON.Vector3.Normalize(this.barycenter);
+        this._normal = BABYLON.Vector3.Normalize(this.barycenter);
         
         if (this.kPos === 0) {
             this.bedrock = new BABYLON.Mesh(this.name + "-bedrock", this.scene);
@@ -281,12 +226,6 @@ class PlanetChunck {
         if (this.isDegreeLayerBottom) {
             this._firstK = - 1;
         }
-    }
-
-    public register(): void {
-        if (!this.registered) {
-            this._registered = this.chunckManager.registerChunck(this);
-        }        
     }
     
     public initialize(): void {
