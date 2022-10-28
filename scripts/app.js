@@ -1413,7 +1413,7 @@ class Game extends Main {
     async initialize() {
         return new Promise(resolve => {
             this.chunckManager = new PlanetChunckManager(this.scene);
-            let kPosMax = 8;
+            let kPosMax = 20;
             let planetTest = new Planet("Paulita", kPosMax, this.chunckManager);
             window["PlanetTest"] = planetTest;
             planetTest.generator = new PlanetGeneratorEarth(planetTest, 0.60, 0.1);
@@ -2435,22 +2435,28 @@ class PlanetChunckGroup extends AbstractPlanetChunck {
         super(iPos, jPos, kPos, planetSide);
         this.level = level;
         this.children = [];
+        this.kOffset = PlanetTools.DegreeToKOffset(this.degree);
+        this.kOffsetNext = PlanetTools.DegreeToKOffset(this.degree + 1);
     }
     subdivide() {
         for (let i = 0; i < 2; i++) {
             for (let j = 0; j < 2; j++) {
                 for (let k = 0; k < 2; k++) {
-                    if (this.level === 1) {
-                        let chunck = new PlanetChunck(this.iPos * 2 + i, this.jPos * 2 + j, this.kPos * 2 + k, this.planetSide);
-                        chunck.register();
-                    }
-                    else {
-                        let chunck = new PlanetChunckGroup(this.iPos * 2 + i, this.jPos * 2 + j, this.kPos * 2 + k, this.planetSide, this.level - 1);
-                        chunck.register();
+                    let childKPos = this.kPos * 2 + k;
+                    if (childKPos < this.kOffsetNext) {
+                        if (this.level === 1) {
+                            let chunck = new PlanetChunck(this.iPos * 2 + i, this.jPos * 2 + j, this.kPos * 2 + k, this.planetSide);
+                            chunck.register();
+                        }
+                        else {
+                            let chunck = new PlanetChunckGroup(this.iPos * 2 + i, this.jPos * 2 + j, this.kOffset + this.kPos * 2 + k, this.planetSide, this.level - 1);
+                            chunck.register();
+                        }
                     }
                 }
             }
         }
+        this.chunckManager.unregister(this);
     }
 }
 class PlanetChunckRedrawRequest {
@@ -2594,6 +2600,16 @@ class PlanetChunckManager {
             }
         }
         return true;
+    }
+    unregister(chunck) {
+        for (let layerIndex = 0; layerIndex < this._lodLayers.length; layerIndex++) {
+            let index = this._lodLayers[layerIndex].indexOf(chunck);
+            if (index != -1) {
+                this._lodLayers[layerIndex].splice(index, 0);
+                return true;
+            }
+        }
+        return false;
     }
     async requestDraw(chunck, prio) {
         return new Promise(resolve => {
@@ -5003,6 +5019,9 @@ class PlanetTools {
         let altitudes = PlanetTools.Altitudes[degree];
         let summedLength = PlanetTools.SummedBSizesLength[degree];
         return altitudes[chunck.kPos * PlanetTools.CHUNCKSIZE + k - summedLength];
+    }
+    static DegreeToKOffset(degree) {
+        return PlanetTools._SummedBSizesLength[degree] / PlanetTools.CHUNCKSIZE;
     }
     /*
     public static KPosToDegree16(kPos: number): number {

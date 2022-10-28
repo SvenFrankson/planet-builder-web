@@ -539,6 +539,10 @@ class PlanetTools {
         return altitudes[chunck.kPos * PlanetTools.CHUNCKSIZE + k - summedLength];
     }
 
+    public static DegreeToKOffset(degree: number): number {
+        return PlanetTools._SummedBSizesLength[degree] / PlanetTools.CHUNCKSIZE;
+    }
+
     /*
     public static KPosToDegree16(kPos: number): number {
         if (kPos < 1) {
