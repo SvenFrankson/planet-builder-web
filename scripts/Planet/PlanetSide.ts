@@ -35,6 +35,7 @@ class PlanetSide extends BABYLON.Mesh {
     }
     private chuncksLength: number;
     private chuncks: Array<Array<Array<PlanetChunck>>>;
+    private chunckGroups: PlanetChunckGroup[];
 
     public getChunck(iPos: number, jPos: number, kPos: number, degree: number): PlanetChunck | PlanetChunck[] {
         if (PlanetTools.KPosToDegree(kPos) === degree + 1) {
@@ -267,30 +268,27 @@ class PlanetSide extends BABYLON.Mesh {
         this.computeWorldMatrix();
         this.freezeWorldMatrix();
 
-        this.chuncks = new Array<Array<Array<PlanetChunck>>>();
-        for (let k: number = 0; k <= this.kPosMax; k++) {
-            this.chuncks[k] = new Array<Array<PlanetChunck>>();
-            let chuncksCount: number = PlanetTools.DegreeToChuncksCount(
-                PlanetTools.KPosToDegree(k)
-            );
-            for (let i: number = 0; i < chuncksCount; i++) {
-                this.chuncks[k][i] = new Array<PlanetChunck>();
-                for (let j: number = 0; j < chuncksCount; j++) {
-                    this.chuncks[k][i][j] = new PlanetChunck(i, j, k, this);
-                }
-            }
+        this.chuncks = [];
+        this.chunckGroups = [];
+        for (let degree = 4; degree <= PlanetTools.KPosToDegree(this.kPosMax); degree++) {
+            this.chunckGroups[degree] = new PlanetChunckGroup(0, 0, 0, this, degree - 3);
         }
+    }
+
+    public setChunck(chunck: PlanetChunck): void {
+        if (!this.chuncks[chunck.kPos]) {
+            this.chuncks[chunck.kPos] = [];
+        }
+        if (!this.chuncks[chunck.kPos][chunck.iPos]) {
+            this.chuncks[chunck.kPos][chunck.iPos] = [];
+        }
+        this.chuncks[chunck.kPos][chunck.iPos][chunck.jPos] = chunck;
     }
 
     public register(): number {
         let chunckCount: number = 0;
-        for (let k: number = 0; k <= this.kPosMax; k++) {
-            for (let i: number = 0; i < this.chuncks[k].length; i++) {
-                for (let j: number = 0; j < this.chuncks[k][i].length; j++) {
-                    this.chuncks[k][i][j].register();
-                    chunckCount++;
-                }
-            }
+        for (let degree = 4; degree <= PlanetTools.KPosToDegree(this.kPosMax); degree++) {
+            this.chunckGroups[degree].register();
         }
         return chunckCount;
     }
