@@ -68,9 +68,12 @@ class PlanetChunckManager {
         if (this._lodLayers[layerIndex].indexOf(chunck) === -1) {
             this._lodLayers[layerIndex].push(chunck);
             chunck.lod = layerIndex;
-            if (chunck instanceof PlanetChunck) {
-                if (layerIndex <= 1) {
+            if (layerIndex <= 1) {
+                if (chunck instanceof PlanetChunck) {
                     this.requestDraw(chunck, layerIndex);
+                }
+                else if (chunck instanceof PlanetChunckGroup) {
+                    chunck.subdivide();
                 }
             }
         }
@@ -153,11 +156,40 @@ class PlanetChunckManager {
                             if (chunck instanceof PlanetChunck) {
                                 this.requestDraw(chunck, newLayerIndex);
                             }
+                            else if (chunck instanceof PlanetChunckGroup) {
+                                chunck.subdivide();
+                            }
                         }
-                        else if (newLayerIndex > 1) {
+                        else if (newLayerIndex === 2) {
                             if (chunck instanceof PlanetChunck) {
                                 chunck.disposeMesh();
                                 this.cancelDraw(chunck);
+                            }
+                            else if (chunck instanceof PlanetChunckGroup) {
+                                if (chunck.level <= 1) {
+                                    chunck.subdivide();
+                                }
+                            }
+                        }
+                        else if (newLayerIndex === 3) {
+                            if (chunck instanceof PlanetChunckGroup) {
+                                if (chunck.level <= 2) {
+                                    chunck.subdivide();
+                                }
+                            }
+                        }
+                        else if (newLayerIndex === 4) {
+                            if (chunck instanceof PlanetChunckGroup) {
+                                if (chunck.level <= 3) {
+                                    chunck.subdivide();
+                                }
+                            }
+                        }
+                        else if (newLayerIndex === 5) {
+                            if (chunck instanceof PlanetChunckGroup) {
+                                if (chunck.level <= 4) {
+                                    chunck.subdivide();
+                                }
                             }
                         }
 

@@ -14,6 +14,19 @@ class PlanetChunckGroup extends AbstractPlanetChunck {
         super(iPos, jPos, kPos, planetSide);
         this.kOffset = PlanetTools.DegreeToKOffset(this.degree);
         this.kOffsetNext = PlanetTools.DegreeToKOffset(this.degree + 1);
+
+        let levelCoef = Math.pow(2, level);
+        this._barycenter = PlanetTools.EvaluateVertex(
+            this.size,
+            PlanetTools.CHUNCKSIZE * (this.iPos * levelCoef + 0.5),
+            PlanetTools.CHUNCKSIZE * (this.jPos * levelCoef + 0.5)
+        ).scale(
+            PlanetTools.KGlobalToAltitude((this.kOffsetNext + this.kPos * levelCoef + 0.5) * PlanetTools.CHUNCKSIZE)
+        );
+        this._barycenter = BABYLON.Vector3.TransformCoordinates(
+            this._barycenter,
+            planetSide.computeWorldMatrix(true)
+        );
     }
 
     public subdivide(): void {
