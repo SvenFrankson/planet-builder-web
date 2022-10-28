@@ -4467,7 +4467,7 @@ class PlanetSide extends BABYLON.Mesh {
             }
         }
         if (kPos >= 0 && kPos < this.kPosMax) {
-            let chunckCount = this.chuncks[kPos].length;
+            let chunckCount = PlanetTools.DegreeToChuncksCount(PlanetTools.KPosToDegree(kPos));
             if (iPos < 0) {
                 if (this.side <= Side.Left) {
                     let side = this.planet.GetSide((this.side + 1) % 4);
