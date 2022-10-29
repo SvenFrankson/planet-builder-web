@@ -10,6 +10,7 @@ class DebugPlanetPerf {
     private _frameRate: DebugDisplayFrameValue;
     private _chunckSort: DebugDisplayFrameValue;
     private _drawRequestCount: DebugDisplayFrameValue;
+    private _layerCounts: DebugDisplayTextValue[];
 
     public get scene(): BABYLON.Scene {
         return this.game.scene;
@@ -25,6 +26,10 @@ class DebugPlanetPerf {
         this._frameRate = document.querySelector("#frame-rate") as DebugDisplayFrameValue;
         this._chunckSort = document.querySelector("#chunck-sort") as DebugDisplayFrameValue;
         this._drawRequestCount = document.querySelector("#draw-request-count") as DebugDisplayFrameValue;
+        this._layerCounts = [];
+        for (let i = 0; i < 6; i++) {
+            this._layerCounts[i] = document.querySelector("#layer-" + i + "-count") as DebugDisplayTextValue;
+        }
 
         this._initialized = true;
     }
@@ -33,6 +38,9 @@ class DebugPlanetPerf {
 		this._frameRate.addValue(Game.Engine.getFps());
         this._chunckSort.addValue(this.game.chunckManager.chunckSortedRatio * 100);
         this._drawRequestCount.addValue(this.game.chunckManager.needRedrawCount);
+        for (let i = 0; i < 6; i++) {
+            this._layerCounts[i].setText(this.game.chunckManager.lodLayerCount(i).toFixed(0));
+        }
     }
 
     public show(): void {

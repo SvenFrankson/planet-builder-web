@@ -12,15 +12,15 @@ abstract class AbstractPlanetChunck {
     public get chunckManager(): PlanetChunckManager {
         return this.planetSide.chunckManager;
     }
-    private _degree: number = 0;
+    protected _degree: number = 0;
     public get degree(): number {
         return this._degree;
     }
-    private _chunckCount: number = 0;
+    protected _chunckCount: number = 0;
     public get chunckCount(): number {
         return this._chunckCount;
     }
-    private _size: number = 0;
+    protected _size: number = 0;
     public get size(): number {
         return this._size;
     }
@@ -51,11 +51,10 @@ abstract class AbstractPlanetChunck {
         public iPos: number,
         public jPos: number,
         public kPos: number,
-        public planetSide: PlanetSide
+        public planetSide: PlanetSide,
+        public parentGroup: PlanetChunckGroup
     ) {
-        this._degree = PlanetTools.KPosToDegree(this.kPos);
-        this._size = PlanetTools.DegreeToSize(this.degree);
-        this._chunckCount = PlanetTools.DegreeToChuncksCount(this.degree);
+        
     }
 
     public register(): void {
@@ -63,4 +62,13 @@ abstract class AbstractPlanetChunck {
             this._registered = this.chunckManager.registerChunck(this);
         }        
     }
+
+    public unregister(): void {
+        if (this.registered) {
+            this.chunckManager.unregister(this);
+            this._registered = false;
+        }   
+    }
+
+    public abstract collapse(): void;
 }

@@ -159,9 +159,14 @@ class PlanetChunck extends AbstractPlanetChunck {
         iPos: number,
         jPos: number,
         kPos: number,
-        planetSide: PlanetSide
+        planetSide: PlanetSide,
+        parentGroup: PlanetChunckGroup
     ) {
-        super(iPos, jPos, kPos, planetSide);
+        super(iPos, jPos, kPos, planetSide, parentGroup);
+        this._degree = PlanetTools.KPosToDegree(this.kPos);
+        this._size = PlanetTools.DegreeToSize(this.degree);
+        this._chunckCount = PlanetTools.DegreeToChuncksCount(this.degree);
+        
         this.name = "chunck:" + this.side + ":" + this.iPos + "-" + this.jPos	+ "-" + this.kPos;
         this._barycenter = PlanetTools.EvaluateVertex(
             this.size,
@@ -255,6 +260,12 @@ class PlanetChunck extends AbstractPlanetChunck {
             }
             this._dataInitialized = true;
             this.updateIsEmptyIsFull();
+        }
+    }
+
+    public collapse(): void {
+        if (this.parentGroup) {
+            this.parentGroup.collapse();
         }
     }
     

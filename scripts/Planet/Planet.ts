@@ -1,5 +1,7 @@
 class Planet extends BABYLON.Mesh {
 
+    public static DEBUG_INSTANCE: Planet;
+
     private sides: PlanetSide[];
     public GetSide(side: Side): PlanetSide {
         return this.sides[side];
@@ -19,6 +21,8 @@ class Planet extends BABYLON.Mesh {
         public chunckManager: PlanetChunckManager
     ) {
         super(name, Game.Scene);
+        Planet.DEBUG_INSTANCE = this;
+        
         this.kPosMax = kPosMax;
 		
         this.sides = [];

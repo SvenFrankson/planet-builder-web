@@ -271,7 +271,7 @@ class PlanetSide extends BABYLON.Mesh {
         this.chuncks = [];
         this.chunckGroups = [];
         for (let degree = 4; degree <= PlanetTools.KPosToDegree(this.kPosMax); degree++) {
-            this.chunckGroups[degree] = new PlanetChunckGroup(0, 0, 0, this, degree - 3);
+            this.chunckGroups[degree] = new PlanetChunckGroup(0, 0, 0, this, undefined, degree, degree - 3);
         }
     }
 
@@ -282,7 +282,20 @@ class PlanetSide extends BABYLON.Mesh {
         if (!this.chuncks[chunck.kPos][chunck.iPos]) {
             this.chuncks[chunck.kPos][chunck.iPos] = [];
         }
+        if (this.chuncks[chunck.kPos][chunck.iPos][chunck.jPos]) {
+            console.log("collision on " + chunck.name);
+        }
         this.chuncks[chunck.kPos][chunck.iPos][chunck.jPos] = chunck;
+    }
+
+    public removeChunck(chunck: PlanetChunck): void {
+        if (!this.chuncks[chunck.kPos]) {
+            this.chuncks[chunck.kPos] = [];
+        }
+        if (!this.chuncks[chunck.kPos][chunck.iPos]) {
+            this.chuncks[chunck.kPos][chunck.iPos] = [];
+        }
+        this.chuncks[chunck.kPos][chunck.iPos][chunck.jPos] = undefined;
     }
 
     public register(): number {
