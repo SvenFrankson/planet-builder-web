@@ -77,6 +77,9 @@ class PlanetChunckGroup extends AbstractPlanetChunck {
 
     private _count: number = 0;
     private _subdivided: boolean = false;
+    public get subdivided(): boolean {
+        return this._subdivided;
+    }
     public subdivide(): void {
         console.log("subdivide " + this.name);
         this.unregister();
@@ -132,6 +135,9 @@ class PlanetChunckGroup extends AbstractPlanetChunck {
                 child.unregister();
             }
             else if (child instanceof PlanetChunckGroup) {
+                if (child.subdivided) {
+                    child.collapseChildren();
+                }
                 child.mesh.dispose();
                 child.lines.forEach(l => { l.dispose() });
                 child.unregister();

@@ -69,7 +69,6 @@ class PlanetChunckManager {
         while (this.unregister(chunck)) {
 
         }
-        chunck.sqrDistanceToViewpoint = BABYLON.Vector3.DistanceSquared(this._viewpoint, chunck.barycenter);
         if (this._lodLayers[this._lodLayersCount - 1].indexOf(chunck) === -1) {
             this._lodLayers[this._lodLayersCount - 1].push(chunck);
             chunck.lod = this._lodLayersCount - 1;

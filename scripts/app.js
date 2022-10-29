@@ -1368,14 +1368,14 @@ class Demo extends Main {
         this.light.diffuse = new BABYLON.Color3(1, 1, 1);
         this.light.groundColor = new BABYLON.Color3(0.5, 0.5, 0.5);
         this.camera = new BABYLON.ArcRotateCamera("camera", 0, Math.PI / 4, 10, BABYLON.Vector3.Zero());
-        this.camera.radius = 400;
+        this.camera.radius = 500;
         this.camera.speed *= 0.2;
         this.camera.attachControl(this.canvas);
     }
     async initialize() {
         return new Promise(resolve => {
             this.chunckManager = new PlanetChunckManager(this.scene);
-            let kPosMax = 6;
+            let kPosMax = 5;
             let planetTest = new Planet("Paulita", kPosMax, this.chunckManager);
             window["PlanetTest"] = planetTest;
             planetTest.generator = new PlanetGeneratorEarth(planetTest, 0.60, 0.1);
@@ -2500,6 +2500,9 @@ class PlanetChunckGroup extends AbstractPlanetChunck {
         this.mesh.position = this._barycenter;
         this.mesh.freezeWorldMatrix();
     }
+    get subdivided() {
+        return this._subdivided;
+    }
     subdivide() {
         console.log("subdivide " + this.name);
         this.unregister();
@@ -2552,6 +2555,9 @@ class PlanetChunckGroup extends AbstractPlanetChunck {
                 child.unregister();
             }
             else if (child instanceof PlanetChunckGroup) {
+                if (child.subdivided) {
+                    child.collapseChildren();
+                }
                 child.mesh.dispose();
                 child.lines.forEach(l => { l.dispose(); });
                 child.unregister();
@@ -2755,7 +2761,6 @@ class PlanetChunckManager {
     registerChunck(chunck) {
         while (this.unregister(chunck)) {
         }
-        chunck.sqrDistanceToViewpoint = BABYLON.Vector3.DistanceSquared(this._viewpoint, chunck.barycenter);
         if (this._lodLayers[this._lodLayersCount - 1].indexOf(chunck) === -1) {
             this._lodLayers[this._lodLayersCount - 1].push(chunck);
             chunck.lod = this._lodLayersCount - 1;
