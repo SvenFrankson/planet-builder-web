@@ -17,7 +17,7 @@ class ProceduralTree {
         for (let i = 0; i < chuncks.length; i++) {
             chuncks[i].doDataSafety();
             if (chuncks[i].lod <= 1) {
-                this.chunckManager.requestDraw(chuncks[i], chuncks[i].lod);
+                this.chunckManager.requestDraw(chuncks[i], chuncks[i].lod, "ProceduralTree.generateData");
             }
         }
     }

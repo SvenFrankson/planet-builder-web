@@ -1368,14 +1368,14 @@ class Demo extends Main {
         this.light.diffuse = new BABYLON.Color3(1, 1, 1);
         this.light.groundColor = new BABYLON.Color3(0.5, 0.5, 0.5);
         this.camera = new BABYLON.ArcRotateCamera("camera", 0, Math.PI / 4, 10, BABYLON.Vector3.Zero());
-        this.camera.radius = 500;
+        this.camera.radius = 400;
         this.camera.speed *= 0.2;
         this.camera.attachControl(this.canvas);
     }
     async initialize() {
         return new Promise(resolve => {
             this.chunckManager = new PlanetChunckManager(this.scene);
-            let kPosMax = 5;
+            let kPosMax = 15;
             let planetTest = new Planet("Paulita", kPosMax, this.chunckManager);
             window["PlanetTest"] = planetTest;
             planetTest.generator = new PlanetGeneratorEarth(planetTest, 0.60, 0.1);
@@ -1386,7 +1386,9 @@ class Demo extends Main {
             debugPlanetPerf.show();
             PlanetChunckVertexData.InitializeData().then(() => {
                 this.chunckManager.initialize();
-                planetTest.register();
+                setTimeout(() => {
+                    planetTest.register();
+                }, 1000);
                 resolve();
             });
         });
@@ -1420,7 +1422,7 @@ class Game extends Main {
     async initialize() {
         return new Promise(resolve => {
             this.chunckManager = new PlanetChunckManager(this.scene);
-            let kPosMax = 20;
+            let kPosMax = 16;
             let planetTest = new Planet("Paulita", kPosMax, this.chunckManager);
             window["PlanetTest"] = planetTest;
             planetTest.generator = new PlanetGeneratorEarth(planetTest, 0.60, 0.1);
@@ -1881,7 +1883,7 @@ class AbstractPlanetChunck {
         this._chunckCount = 0;
         this._size = 0;
         this._registered = false;
-        this.lod = 2;
+        this.lod = NaN;
     }
     get scene() {
         return this.planetSide.getScene();
@@ -1926,6 +1928,22 @@ class AbstractPlanetChunck {
             this.chunckManager.unregister(this);
             this._registered = false;
         }
+    }
+    canCollapse() {
+        if (this.parentGroup) {
+            let siblings = this.parentGroup.children;
+            let level = 0;
+            if (this instanceof PlanetChunckGroup) {
+                level = this.level;
+            }
+            for (let i = 0; i < siblings.length; i++) {
+                let sib = siblings[i];
+                if (sib.lod - 1 <= level) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 }
 var BlockTypeNames = [
@@ -2202,7 +2220,7 @@ class PlanetChunck extends AbstractPlanetChunck {
         this.adjacentsAsArray.forEach(adj => {
             if (adj.syncWithAdjacents()) {
                 if (adj.lod <= 1) {
-                    adj.chunckManager.requestDraw(adj, adj.lod);
+                    adj.chunckManager.requestDraw(adj, adj.lod, "PlanetChunck.doDataSafety");
                 }
             }
         });
@@ -2252,8 +2270,10 @@ class PlanetChunck extends AbstractPlanetChunck {
         }
     }
     collapse() {
-        if (this.parentGroup) {
-            this.parentGroup.collapse();
+        if (this.canCollapse()) {
+            if (this.parentGroup) {
+                this.parentGroup.collapseChildren();
+            }
         }
     }
     syncWithAdjacents() {
@@ -2467,21 +2487,23 @@ class PlanetChunckGroup extends AbstractPlanetChunck {
         let levelCoef = Math.pow(2, level);
         this._barycenter = PlanetTools.EvaluateVertex(this.size, PlanetTools.CHUNCKSIZE * (this.iPos + 0.5) * levelCoef, PlanetTools.CHUNCKSIZE * (this.jPos + 0.5) * levelCoef).scale(PlanetTools.KGlobalToAltitude((this.kOffset + (this.kPos + 0.5) * levelCoef) * PlanetTools.CHUNCKSIZE));
         this._barycenter = BABYLON.Vector3.TransformCoordinates(this._barycenter, planetSide.computeWorldMatrix(true));
+        /*
         if (this.degree === 4) {
             this.mesh = BABYLON.MeshBuilder.CreateBox(this.name);
         }
-        else if (this.degree === 5) {
+        else  if (this.degree === 5) {
             this.mesh = BABYLON.MeshBuilder.CreateSphere(this.name);
         }
         else if (this.degree === 6) {
             this.mesh = BABYLON.MeshBuilder.CreateBox(this.name, { width: 0.5, height: 2, depth: 0.5 });
         }
-        else if (this.degree === 7) {
+        else  if (this.degree === 7) {
             this.mesh = BABYLON.MeshBuilder.CreateSphere(this.name, { diameterY: 0.5, diameterX: 2, diameterZ: 0.2 });
         }
         else {
             this.mesh = BABYLON.MeshBuilder.CreateBox(this.name);
         }
+
         if (level === 1) {
             let material = new BABYLON.StandardMaterial("red");
             material.diffuseColor.copyFromFloats(1, 0, 0);
@@ -2499,6 +2521,7 @@ class PlanetChunckGroup extends AbstractPlanetChunck {
         }
         this.mesh.position = this._barycenter;
         this.mesh.freezeWorldMatrix();
+        */
     }
     get subdivided() {
         return this._subdivided;
@@ -2531,8 +2554,8 @@ class PlanetChunckGroup extends AbstractPlanetChunck {
                         if (childKPos * levelCoef < this.kOffsetNext - this.kOffset) {
                             let chunck = new PlanetChunckGroup(this.iPos * 2 + i, this.jPos * 2 + j, childKPos, this.planetSide, this, this.degree, this.level - 1);
                             this.children.push(chunck);
-                            let line = BABYLON.MeshBuilder.CreateLines("line", { points: [this.barycenter, chunck.barycenter] });
-                            chunck.lines.push(line);
+                            //let line = BABYLON.MeshBuilder.CreateLines("line", { points: [this.barycenter, chunck.barycenter]});
+                            //chunck.lines.push(line);
                             chunck.register();
                         }
                     }
@@ -2541,8 +2564,10 @@ class PlanetChunckGroup extends AbstractPlanetChunck {
         }
     }
     collapse() {
-        if (this.parentGroup) {
-            this.parentGroup.collapseChildren();
+        if (this.canCollapse()) {
+            if (this.parentGroup) {
+                this.parentGroup.collapseChildren();
+            }
         }
     }
     collapseChildren() {
@@ -2558,7 +2583,9 @@ class PlanetChunckGroup extends AbstractPlanetChunck {
                 if (child.subdivided) {
                     child.collapseChildren();
                 }
-                child.mesh.dispose();
+                if (child.mesh) {
+                    child.mesh.dispose();
+                }
                 child.lines.forEach(l => { l.dispose(); });
                 child.unregister();
             }
@@ -2569,9 +2596,10 @@ class PlanetChunckGroup extends AbstractPlanetChunck {
     }
 }
 class PlanetChunckRedrawRequest {
-    constructor(chunck, callback) {
+    constructor(chunck, callback, info = "") {
         this.chunck = chunck;
         this.callback = callback;
+        this.info = info;
     }
 }
 class PlanetChunckManager {
@@ -2609,76 +2637,7 @@ class PlanetChunckManager {
                             this._lodLayers[prevLayerIndex].splice(cursor, 1);
                             this._lodLayers[newLayerIndex].splice(adequateLayerCursor, 0, chunck);
                             chunck.lod = newLayerIndex;
-                            if (newLayerIndex === 0) {
-                                if (chunck instanceof PlanetChunck) {
-                                    this.requestDraw(chunck, 0);
-                                }
-                                else if (chunck instanceof PlanetChunckGroup) {
-                                    chunck.subdivide();
-                                }
-                            }
-                            else if (newLayerIndex === 1) {
-                                if (chunck instanceof PlanetChunck) {
-                                    chunck.disposeMesh();
-                                    this.cancelDraw(chunck);
-                                }
-                                else if (chunck instanceof PlanetChunckGroup) {
-                                    chunck.subdivide();
-                                }
-                            }
-                            else if (newLayerIndex === 2) {
-                                if (chunck instanceof PlanetChunck) {
-                                    chunck.disposeMesh();
-                                    this.cancelDraw(chunck);
-                                }
-                                else if (chunck instanceof PlanetChunckGroup) {
-                                    if (chunck.level > 1) {
-                                        chunck.subdivide();
-                                    }
-                                }
-                            }
-                            else if (newLayerIndex === 3) {
-                                if (chunck instanceof PlanetChunck) {
-                                    chunck.disposeMesh();
-                                    this.cancelDraw(chunck);
-                                    chunck.collapse();
-                                }
-                                else if (chunck instanceof PlanetChunckGroup) {
-                                    if (chunck.level > 2) {
-                                        chunck.subdivide();
-                                    }
-                                }
-                            }
-                            else if (newLayerIndex === 4) {
-                                if (chunck instanceof PlanetChunck) {
-                                    chunck.disposeMesh();
-                                    this.cancelDraw(chunck);
-                                    chunck.collapse();
-                                }
-                                else if (chunck instanceof PlanetChunckGroup) {
-                                    if (chunck.level < 2) {
-                                        chunck.collapse();
-                                    }
-                                    if (chunck.level > 3) {
-                                        chunck.subdivide();
-                                    }
-                                }
-                            }
-                            else if (newLayerIndex === 5) {
-                                if (chunck instanceof PlanetChunck) {
-                                    chunck.disposeMesh();
-                                    this.cancelDraw(chunck);
-                                    chunck.collapse();
-                                }
-                                else if (chunck instanceof PlanetChunckGroup) {
-                                    if (chunck.level < 3) {
-                                        chunck.collapse();
-                                    }
-                                    if (chunck.level > 4) {
-                                        chunck.subdivide();
-                                    }
-                                }
-                            }
+                            this.onChunckMovedToLayer(chunck, newLayerIndex);
                             this._lodLayersCursors[newLayerIndex]++;
                             if (this._lodLayersCursors[newLayerIndex] >= this._lodLayers[newLayerIndex].length) {
                                 this._lodLayersCursors[newLayerIndex] = 0;
@@ -2695,6 +2654,9 @@ class PlanetChunckManager {
                     }
                     else {
                         this._lodLayersCursors[prevLayerIndex] = 0;
+                        if (prevLayerIndex === this._lodLayersCount) {
+                            break;
+                        }
                     }
                 }
                 t = performance.now();
@@ -2726,6 +2688,9 @@ class PlanetChunckManager {
                 t = performance.now();
             }
             this.chunckSortedRatio = (this.chunckSortedRatio + sortedCount / (sortedCount + unsortedCount)) * 0.5;
+            if (isNaN(this.chunckSortedRatio)) {
+                this.chunckSortedRatio = 1;
+            }
         };
     }
     get needRedrawCount() {
@@ -2744,11 +2709,11 @@ class PlanetChunckManager {
         this._lodLayers = [];
         this._lodLayersCursors = [];
         this._lodLayersSqrDistances = [];
+        let distances = [50, 70, 90, 110, 130];
         for (let i = 0; i < this._lodLayersCount - 1; i++) {
-            let d = (i + 1) * 80;
             this._lodLayers[i] = [];
             this._lodLayersCursors[i] = 0;
-            this._lodLayersSqrDistances[i] = d * d;
+            this._lodLayersSqrDistances[i] = distances[i] * distances[i];
         }
         this._lodLayers[this._lodLayersCount - 1] = [];
         this._lodLayersCursors[this._lodLayersCount - 1] = 0;
@@ -2777,14 +2742,15 @@ class PlanetChunckManager {
         }
         return false;
     }
-    async requestDraw(chunck, prio) {
+    async requestDraw(chunck, prio, info) {
+        prio = 0;
         return new Promise(resolve => {
             if (!this._needRedraw.find(request => { return request.chunck === chunck; })) {
                 if (prio === 0) {
-                    this._needRedraw.push(new PlanetChunckRedrawRequest(chunck, resolve));
+                    this._needRedraw.push(new PlanetChunckRedrawRequest(chunck, resolve, info));
                 }
                 else {
-                    this._needRedraw.splice(0, 0, new PlanetChunckRedrawRequest(chunck, resolve));
+                    this._needRedraw.splice(0, 0, new PlanetChunckRedrawRequest(chunck, resolve, info));
                 }
             }
         });
@@ -2802,6 +2768,84 @@ class PlanetChunckManager {
             }
         }
         return this._lodLayersCount - 1;
+    }
+    onChunckMovedToLayer(chunck, layerIndex) {
+        if (layerIndex === 0) {
+            if (chunck instanceof PlanetChunck) {
+                this.requestDraw(chunck, 0, "ChunckManager.update");
+            }
+            else if (chunck instanceof PlanetChunckGroup) {
+                chunck.subdivide();
+            }
+        }
+        else if (layerIndex === 1) {
+            if (chunck instanceof PlanetChunck) {
+                chunck.disposeMesh();
+                this.cancelDraw(chunck);
+            }
+            else if (chunck instanceof PlanetChunckGroup) {
+                chunck.subdivide();
+            }
+        }
+        else if (layerIndex === 2) {
+            if (chunck instanceof PlanetChunck) {
+                chunck.disposeMesh();
+                this.cancelDraw(chunck);
+            }
+            else if (chunck instanceof PlanetChunckGroup) {
+                if (chunck.level > 1) {
+                    chunck.subdivide();
+                }
+            }
+        }
+        else if (layerIndex === 3) {
+            if (chunck instanceof PlanetChunck) {
+                chunck.disposeMesh();
+                this.cancelDraw(chunck);
+                chunck.collapse();
+            }
+            else if (chunck instanceof PlanetChunckGroup) {
+                if (chunck.level < 2) {
+                    chunck.collapse();
+                }
+                else if (chunck.level > 2) {
+                    chunck.subdivide();
+                }
+            }
+        }
+        else if (layerIndex === 4) {
+            if (chunck instanceof PlanetChunck) {
+                chunck.disposeMesh();
+                this.cancelDraw(chunck);
+                chunck.collapse();
+            }
+            else if (chunck instanceof PlanetChunckGroup) {
+                if (chunck.level < 3) {
+                    chunck.collapse();
+                }
+                else if (chunck.level > 3) {
+                    chunck.subdivide();
+                }
+            }
+        }
+        else if (layerIndex === 5) {
+            if (chunck instanceof PlanetChunck) {
+                chunck.disposeMesh();
+                this.cancelDraw(chunck);
+                chunck.collapse();
+            }
+            else if (chunck instanceof PlanetChunckGroup) {
+                if (chunck.level < 4) {
+                    chunck.collapse();
+                }
+                else if (chunck.level > 4) {
+                    chunck.subdivide();
+                }
+            }
+        }
+        else {
+            debugger;
+        }
     }
     isActive() {
         return this._activity > 1;
@@ -2949,6 +2993,7 @@ class PlanetChunckMeshBuilder {
     }
     static BuildVertexData(chunck, iPos, jPos, kPos) {
         let lod = chunck.lod;
+        lod = 0;
         let size = chunck.size;
         let vertexData = new BABYLON.VertexData();
         if (!PCMB.tmpVertices || PCMB.tmpVertices.length < 15) {
@@ -5258,7 +5303,7 @@ class ProceduralTree {
         for (let i = 0; i < chuncks.length; i++) {
             chuncks[i].doDataSafety();
             if (chuncks[i].lod <= 1) {
-                this.chunckManager.requestDraw(chuncks[i], chuncks[i].lod);
+                this.chunckManager.requestDraw(chuncks[i], chuncks[i].lod, "ProceduralTree.generateData");
             }
         }
     }
@@ -5816,7 +5861,7 @@ class PlayerActionTemplate {
                 let localIJK = PlanetTools.WorldPositionToLocalIJK(player.planet, hit[0].pickedPoint.add(n));
                 if (localIJK) {
                     localIJK.planetChunck.SetData(localIJK.i, localIJK.j, localIJK.k, blockType);
-                    Game.Instance.chunckManager.requestDraw(localIJK.planetChunck, localIJK.planetChunck.lod);
+                    Game.Instance.chunckManager.requestDraw(localIJK.planetChunck, localIJK.planetChunck.lod, "PlayerAction.onClick");
                 }
             }
         };

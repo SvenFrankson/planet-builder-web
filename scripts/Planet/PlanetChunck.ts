@@ -124,7 +124,7 @@ class PlanetChunck extends AbstractPlanetChunck {
         this.adjacentsAsArray.forEach(adj => {
             if (adj.syncWithAdjacents()) {
                 if (adj.lod <= 1) {
-                    adj.chunckManager.requestDraw(adj, adj.lod);
+                    adj.chunckManager.requestDraw(adj, adj.lod, "PlanetChunck.doDataSafety");
                 }
             }
         })
@@ -264,8 +264,10 @@ class PlanetChunck extends AbstractPlanetChunck {
     }
 
     public collapse(): void {
-        if (this.parentGroup) {
-            this.parentGroup.collapse();
+        if (this.canCollapse()) {
+            if (this.parentGroup) {
+                this.parentGroup.collapseChildren();
+            }
         }
     }
     

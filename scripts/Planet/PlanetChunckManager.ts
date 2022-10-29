@@ -2,7 +2,8 @@ class PlanetChunckRedrawRequest {
 
     constructor(
         public chunck: PlanetChunck,
-        public callback?: () => void
+        public callback?: () => void,
+        public info: string = ""
     ) {
 
     }
@@ -48,11 +49,11 @@ class PlanetChunckManager {
         this._lodLayers = [];
         this._lodLayersCursors = [];
         this._lodLayersSqrDistances = [];
+        let distances = [50, 70, 90, 110, 130];
         for (let i = 0; i < this._lodLayersCount - 1; i++) {
-            let d = (i + 1) * 80;
             this._lodLayers[i] = [];
             this._lodLayersCursors[i] = 0;
-            this._lodLayersSqrDistances[i] = d * d;
+            this._lodLayersSqrDistances[i] = distances[i] * distances[i];
         }
         this._lodLayers[this._lodLayersCount - 1] = [];
         this._lodLayersCursors[this._lodLayersCount - 1] = 0;
@@ -87,14 +88,15 @@ class PlanetChunckManager {
         return false;
     }
 
-    public async requestDraw(chunck: PlanetChunck, prio: number): Promise<void> {
+    public async requestDraw(chunck: PlanetChunck, prio: number, info: string): Promise<void> {
+        prio = 0;
         return new Promise<void>(resolve => {
             if (!this._needRedraw.find(request => { return request.chunck === chunck; })) {
                 if (prio === 0) {
-                    this._needRedraw.push(new PlanetChunckRedrawRequest(chunck, resolve));
+                    this._needRedraw.push(new PlanetChunckRedrawRequest(chunck, resolve, info));
                 }
                 else {
-                    this._needRedraw.splice(0, 0, new PlanetChunckRedrawRequest(chunck, resolve));
+                    this._needRedraw.splice(0, 0, new PlanetChunckRedrawRequest(chunck, resolve, info));
                 }
             }
         });
@@ -114,6 +116,85 @@ class PlanetChunckManager {
             }
         }
         return this._lodLayersCount - 1;
+    }
+
+    private onChunckMovedToLayer(chunck: AbstractPlanetChunck, layerIndex: number): void {
+        if (layerIndex === 0) {
+            if (chunck instanceof PlanetChunck) {
+                this.requestDraw(chunck, 0, "ChunckManager.update");
+            }
+            else if (chunck instanceof PlanetChunckGroup) {
+                chunck.subdivide();
+            }
+        }
+        else if (layerIndex === 1) {
+            if (chunck instanceof PlanetChunck) {
+                chunck.disposeMesh();
+                this.cancelDraw(chunck);
+            }
+            else if (chunck instanceof PlanetChunckGroup) {
+                chunck.subdivide();
+            }
+        }
+        else if (layerIndex === 2) {
+            if (chunck instanceof PlanetChunck) {
+                chunck.disposeMesh();
+                this.cancelDraw(chunck);
+            }
+            else if (chunck instanceof PlanetChunckGroup) {
+                if (chunck.level > 1) {
+                    chunck.subdivide();
+                }
+            }
+        }
+        else if (layerIndex === 3) {
+            if (chunck instanceof PlanetChunck) {
+                chunck.disposeMesh();
+                this.cancelDraw(chunck);
+                chunck.collapse();
+            }
+            else if (chunck instanceof PlanetChunckGroup) {
+                if (chunck.level < 2) {
+                    chunck.collapse();
+                }
+                else if (chunck.level > 2) {
+                    chunck.subdivide();
+                }
+            }
+        }
+        else if (layerIndex === 4) {
+            if (chunck instanceof PlanetChunck) {
+                chunck.disposeMesh();
+                this.cancelDraw(chunck);
+                chunck.collapse();
+            }
+            else if (chunck instanceof PlanetChunckGroup) {
+                if (chunck.level < 3) {
+                    chunck.collapse();
+                }
+                else if (chunck.level > 3) {
+                    chunck.subdivide();
+                }
+            }
+        }
+        else if (layerIndex === 5) {
+            if (chunck instanceof PlanetChunck) {
+                chunck.disposeMesh();
+                this.cancelDraw(chunck);
+                chunck.collapse();
+            }
+            else if (chunck instanceof PlanetChunckGroup) {
+                if (chunck.level < 4) {
+                    chunck.collapse();
+                }
+                else if (chunck.level > 4) {
+                    chunck.subdivide();
+                }
+            }
+        }
+        else {
+            debugger;
+        }
     }
 
     private _update = () => {
@@ -145,76 +226,7 @@ class PlanetChunckManager {
                         this._lodLayers[newLayerIndex].splice(adequateLayerCursor, 0, chunck);
                         chunck.lod = newLayerIndex;
                         
-                        if (newLayerIndex === 0) {
-                            if (chunck instanceof PlanetChunck) {
-                                this.requestDraw(chunck, 0);
-                            }
-                            else if (chunck instanceof PlanetChunckGroup) {
-                                chunck.subdivide();
-                            }
-                        }
-                        else if (newLayerIndex === 1) {
-                            if (chunck instanceof PlanetChunck) {
-                                chunck.disposeMesh();
-                                this.cancelDraw(chunck);
-                            }
-                            else if (chunck instanceof PlanetChunckGroup) {
-                                chunck.subdivide();
-                            }
-                        }
-                        else if (newLayerIndex === 2) {
-                            if (chunck instanceof PlanetChunck) {
-                                chunck.disposeMesh();
-                                this.cancelDraw(chunck);
-                            }
-                            else if (chunck instanceof PlanetChunckGroup) {
-                                if (chunck.level > 1) {
-                                    chunck.subdivide();
-                                }
-                            }
-                        }
-                        else if (newLayerIndex === 3) {
-                            if (chunck instanceof PlanetChunck) {
-                                chunck.disposeMesh();
-                                this.cancelDraw(chunck);
-                                chunck.collapse();
-                            }
-                            else if (chunck instanceof PlanetChunckGroup) {
-                                if (chunck.level > 2) {
-                                    chunck.subdivide();
-                                }
-                            }
-                        }
-                        else if (newLayerIndex === 4) {
-                            if (chunck instanceof PlanetChunck) {
-                                chunck.disposeMesh();
-                                this.cancelDraw(chunck);
-                                chunck.collapse();
-                            }
-                            else if (chunck instanceof PlanetChunckGroup) {
-                                if (chunck.level < 2) {
-                                    chunck.collapse();
-                                }
-                                if (chunck.level > 3) {
-                                    chunck.subdivide();
-                                }
-                            }
-                        }
-                        else if (newLayerIndex === 5) {
-                            if (chunck instanceof PlanetChunck) {
-                                chunck.disposeMesh();
-                                this.cancelDraw(chunck);
-                                chunck.collapse();
-                            }
-                            else if (chunck instanceof PlanetChunckGroup) {
-                                if (chunck.level < 3) {
-                                    chunck.collapse();
-                                }
-                                if (chunck.level > 4) {
-                                    chunck.subdivide();
-                                }
-                            }
-                        }
+                        this.onChunckMovedToLayer(chunck, newLayerIndex);
 
                         this._lodLayersCursors[newLayerIndex]++;
                         if (this._lodLayersCursors[newLayerIndex] >= this._lodLayers[newLayerIndex].length) {
@@ -232,6 +244,9 @@ class PlanetChunckManager {
                 }
                 else {
                     this._lodLayersCursors[prevLayerIndex] = 0;
+                    if (prevLayerIndex === this._lodLayersCount) {
+                        break;
+                    }
                 }
             }
             t = performance.now();
@@ -266,6 +281,9 @@ class PlanetChunckManager {
         }
 
         this.chunckSortedRatio = (this.chunckSortedRatio + sortedCount / (sortedCount + unsortedCount))* 0.5;
+        if (isNaN(this.chunckSortedRatio)) {
+            this.chunckSortedRatio = 1;
+        }
     }
 
     public isActive(): boolean {

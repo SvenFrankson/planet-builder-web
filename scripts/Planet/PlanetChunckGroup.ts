@@ -40,6 +40,7 @@ class PlanetChunckGroup extends AbstractPlanetChunck {
             planetSide.computeWorldMatrix(true)
         );
 
+        /*
         if (this.degree === 4) {
             this.mesh = BABYLON.MeshBuilder.CreateBox(this.name);
         }
@@ -73,6 +74,7 @@ class PlanetChunckGroup extends AbstractPlanetChunck {
         }
         this.mesh.position = this._barycenter;
         this.mesh.freezeWorldMatrix();
+        */
     }
 
     private _count: number = 0;
@@ -108,8 +110,8 @@ class PlanetChunckGroup extends AbstractPlanetChunck {
                             if (childKPos * levelCoef < this.kOffsetNext - this.kOffset) {
                                 let chunck = new PlanetChunckGroup(this.iPos * 2 + i, this.jPos * 2 + j, childKPos, this.planetSide, this, this.degree, this.level - 1);
                                 this.children.push(chunck);
-                                let line = BABYLON.MeshBuilder.CreateLines("line", { points: [this.barycenter, chunck.barycenter]});
-                                chunck.lines.push(line);
+                                //let line = BABYLON.MeshBuilder.CreateLines("line", { points: [this.barycenter, chunck.barycenter]});
+                                //chunck.lines.push(line);
                                 chunck.register();
                             }
                         }
@@ -120,8 +122,10 @@ class PlanetChunckGroup extends AbstractPlanetChunck {
     }
 
     public collapse(): void {
-        if (this.parentGroup) {
-            this.parentGroup.collapseChildren();
+        if (this.canCollapse()) {
+            if (this.parentGroup) {
+                this.parentGroup.collapseChildren();
+            }
         }
     }
 
@@ -138,7 +142,9 @@ class PlanetChunckGroup extends AbstractPlanetChunck {
                 if (child.subdivided) {
                     child.collapseChildren();
                 }
-                child.mesh.dispose();
+                if (child.mesh) {
+                    child.mesh.dispose();
+                }
                 child.lines.forEach(l => { l.dispose() });
                 child.unregister();
             }

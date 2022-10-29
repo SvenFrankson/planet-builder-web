@@ -36,7 +36,7 @@ abstract class AbstractPlanetChunck {
         return this._registered;
     }
     public sqrDistanceToViewpoint: number;
-    public lod: number = 2;
+    public lod: number = NaN;
 
     protected _barycenter: BABYLON.Vector3;
     public get barycenter(): BABYLON.Vector3 {
@@ -68,6 +68,23 @@ abstract class AbstractPlanetChunck {
             this.chunckManager.unregister(this);
             this._registered = false;
         }   
+    }
+
+    public canCollapse(): boolean {
+        if (this.parentGroup) {
+            let siblings = this.parentGroup.children;
+            let level = 0;
+            if (this instanceof PlanetChunckGroup) {
+                level = this.level;
+            }
+            for (let i = 0; i < siblings.length; i++) {
+                let sib = siblings[i];
+                if (sib.lod - 1 <= level) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
     public abstract collapse(): void;

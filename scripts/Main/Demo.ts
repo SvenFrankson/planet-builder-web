@@ -25,7 +25,7 @@ class Demo extends Main {
 		this.light.groundColor = new BABYLON.Color3(0.5, 0.5, 0.5);
 
         this.camera = new BABYLON.ArcRotateCamera("camera", 0, Math.PI / 4, 10, BABYLON.Vector3.Zero());
-        this.camera.radius = 500;
+        this.camera.radius = 400;
         this.camera.speed *= 0.2;
         this.camera.attachControl(this.canvas);
 	}
@@ -34,7 +34,7 @@ class Demo extends Main {
 		return new Promise<void>(resolve => {
 			this.chunckManager = new PlanetChunckManager(this.scene);
 
-			let kPosMax = 5;
+			let kPosMax = 15;
 			let planetTest: Planet = new Planet("Paulita", kPosMax, this.chunckManager);
 			window["PlanetTest"] = planetTest;
 
@@ -50,7 +50,9 @@ class Demo extends Main {
 			PlanetChunckVertexData.InitializeData().then(
 				() => {
 					this.chunckManager.initialize();
-					planetTest.register();
+					setTimeout(() => {
+						planetTest.register();
+					}, 1000);
 
 					resolve();
 				}
