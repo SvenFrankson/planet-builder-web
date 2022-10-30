@@ -155,10 +155,7 @@ class PlanetChunckGroup extends AbstractPlanetChunck {
             }
         }
         this._subdivisionsCount++;
-        if (this._subdivisionsCount > 100) {
-            debugger;
-        }
-        console.log(this.name + " " + this._subdivisionsCount + " (" + this._subdivisionsSkipedCount + ")");
+        //console.log(this.name + " " + this._subdivisionsCount + " (" + this._subdivisionsSkipedCount + ")");
     }
 
     public collapse(): void {

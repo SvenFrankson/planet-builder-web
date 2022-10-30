@@ -271,6 +271,15 @@ class PlanetChunck extends AbstractPlanetChunck {
         }
     }
     
+    private _syncStep(i: number, j: number, k: number): boolean {
+        let r = false;
+        let d = this.GetDataGlobal(this.iPos * PlanetTools.CHUNCKSIZE + i, this.jPos * PlanetTools.CHUNCKSIZE + j, this.kPos * PlanetTools.CHUNCKSIZE + k);
+        if (this.data[i - this.firstI][j - this.firstJ][k - this.firstK] != d) {
+            r =  true;
+        }
+        this.data[i - this.firstI][j - this.firstJ][k - this.firstK] = d;
+        return r;
+    }
     public syncWithAdjacents(): boolean {
         let hasUpdated = false;
         if (!this.dataInitialized) {
@@ -279,67 +288,88 @@ class PlanetChunck extends AbstractPlanetChunck {
         this._adjacentsDataSynced = true;
         this.findAdjacents();
         
-        for (let i: number = this.firstI; i <= PlanetTools.CHUNCKSIZE; i++) {
-            for (let j: number = this.firstJ; j <= this.lastJ; j++) {
-                for (let k: number = this.firstK; k <= PlanetTools.CHUNCKSIZE; k++) {
-                    if (this.side <= Side.Left && this.isCorner) {
-                        if (this.jPos === 0) {
-                            if (this.iPos === 0) {
-                                if (j === 0) {
-                                    if (i === 0) {
-                                        let d = this.GetDataGlobal(0, - 1, this.kPos * PlanetTools.CHUNCKSIZE + k);
-                                        if (this.data[i - this.firstI][j - this.firstJ][k - this.firstK] != d) {
-                                            hasUpdated = true;
-                                        }
-                                        this.data[i - this.firstI][j - this.firstJ][k - this.firstK] = d;
-                                    }
-                                }
-                            }
-                            if (this.iPos === this.chunckCount - 1) {
-                                if (j === 0) {
-                                    if (i === PlanetTools.CHUNCKSIZE - 1) {
-                                        let d = this.GetDataGlobal(this.iPos * PlanetTools.CHUNCKSIZE + i, - 1, this.kPos * PlanetTools.CHUNCKSIZE + k);
-                                        if (this.data[i - this.firstI][j - this.firstJ][k - this.firstK] != d) {
-                                            hasUpdated = true;
-                                        }
-                                        this.data[i - this.firstI][j - this.firstJ][k - this.firstK] = d;
-                                    }
-                                }
-                            }
-                        }
+        let i: number = 0;
+        let j: number = 0;
+        let k: number = 0;
+        for (i = this.firstI; i < 0; i++) {
+            for (j = this.firstJ; j <= this.lastJ; j++) {
+                for (k = this.firstK; k <= PlanetTools.CHUNCKSIZE; k++) {
+                    hasUpdated = this._syncStep(i, j, k) || hasUpdated;
+                }
+            }
+        }
+        for (j = this.firstJ; j <= this.lastJ; j++) {
+            for (k = this.firstK; k <= PlanetTools.CHUNCKSIZE; k++) {
+                hasUpdated = this._syncStep(PlanetTools.CHUNCKSIZE, j, k) || hasUpdated;
+            }
+        }
+        
+        for (j = this.firstJ; j < 0; j++) {
+            for (i = this.firstI; i <= PlanetTools.CHUNCKSIZE; i++) {
+                for (k = this.firstK; k <= PlanetTools.CHUNCKSIZE; k++) {
+                    hasUpdated = this._syncStep(i, j, k) || hasUpdated;
+                }
+            }
+        }
+        if (this._lastJ === PlanetTools.CHUNCKSIZE) {
+            for (i = this.firstI; i <= PlanetTools.CHUNCKSIZE; i++) {
+                for (k = this.firstK; k <= PlanetTools.CHUNCKSIZE; k++) {
+                    hasUpdated = this._syncStep(i, PlanetTools.CHUNCKSIZE, k) || hasUpdated;
+                }
+            }
+        }
+        
+        for (k = this.firstK; k < 0; k++) {
+            for (i = this.firstI; i <= PlanetTools.CHUNCKSIZE; i++) {
+                for (j = this.firstJ; j <= this.lastJ; j++) {
+                    hasUpdated = this._syncStep(i, j, k) || hasUpdated;
+                }
+            }
+        }
+        for (i = this.firstI; i <= PlanetTools.CHUNCKSIZE; i++) {
+            for (j = this.firstJ; j <= this.lastJ; j++) {
+                hasUpdated = this._syncStep(i, j, PlanetTools.CHUNCKSIZE) || hasUpdated;
+            }
+        }
 
-                        if (this.jPos === this.chunckCount - 1) {
-                            if (this.iPos === 0) {
-                                if (i === 0) {
-                                    if (j === PlanetTools.CHUNCKSIZE - 1) {
-                                        let d = this.GetDataGlobal(0, (this.jPos + 1) * PlanetTools.CHUNCKSIZE, this.kPos * PlanetTools.CHUNCKSIZE + k);
-                                        if (this.data[i - this.firstI][j - this.firstJ][k - this.firstK] != d) {
-                                            hasUpdated = true;
-                                        }
-                                        this.data[i - this.firstI][j - this.firstJ][k - this.firstK] = d;
-                                    }
-                                }
-                            }
-                            if (this.iPos === this.chunckCount - 1) {
-                                if (j === PlanetTools.CHUNCKSIZE - 1) {
-                                    if (i === PlanetTools.CHUNCKSIZE - 1) {
-                                        let d = this.GetDataGlobal(this.iPos * PlanetTools.CHUNCKSIZE + i, (this.jPos + 1) * PlanetTools.CHUNCKSIZE, this.kPos * PlanetTools.CHUNCKSIZE + k);
-                                        if (this.data[i - this.firstI][j - this.firstJ][k - this.firstK] != d) {
-                                            hasUpdated = true;
-                                        }
-                                        this.data[i - this.firstI][j - this.firstJ][k - this.firstK] = d;
-                                    }
-                                }
-                            }
-                        }
+        if (this.side <= Side.Left && this.isCorner) {
+            if (this.jPos === 0) {
+                j = 0;
+                if (this.iPos === 0) {
+                    i = 0;
+                    let d = this.GetDataGlobal(0, - 1, this.kPos * PlanetTools.CHUNCKSIZE + k);
+                    if (this.data[i - this.firstI][j - this.firstJ][k - this.firstK] != d) {
+                        hasUpdated = true;
                     }
-                    if (i < 0 || i >= PlanetTools.CHUNCKSIZE || j < 0 || j >= PlanetTools.CHUNCKSIZE || k < 0 || k >= PlanetTools.CHUNCKSIZE) {
-                        let d = this.GetDataGlobal(this.iPos * PlanetTools.CHUNCKSIZE + i, this.jPos * PlanetTools.CHUNCKSIZE + j, this.kPos * PlanetTools.CHUNCKSIZE + k);
-                        if (this.data[i - this.firstI][j - this.firstJ][k - this.firstK] != d) {
-                            hasUpdated = true;
-                        }
-                        this.data[i - this.firstI][j - this.firstJ][k - this.firstK] = d;
+                    this.data[i - this.firstI][j - this.firstJ][k - this.firstK] = d;
+                }
+                if (this.iPos === this.chunckCount - 1) {
+                    i = PlanetTools.CHUNCKSIZE - 1;
+                    let d = this.GetDataGlobal(this.iPos * PlanetTools.CHUNCKSIZE + i, - 1, this.kPos * PlanetTools.CHUNCKSIZE + k);
+                    if (this.data[i - this.firstI][j - this.firstJ][k - this.firstK] != d) {
+                        hasUpdated = true;
                     }
+                    this.data[i - this.firstI][j - this.firstJ][k - this.firstK] = d;
+                }
+            }
+
+            if (this.jPos === this.chunckCount - 1) {
+                j = PlanetTools.CHUNCKSIZE - 1;
+                if (this.iPos === 0) {
+                    i = 0;
+                    let d = this.GetDataGlobal(0, (this.jPos + 1) * PlanetTools.CHUNCKSIZE, this.kPos * PlanetTools.CHUNCKSIZE + k);
+                    if (this.data[i - this.firstI][j - this.firstJ][k - this.firstK] != d) {
+                        hasUpdated = true;
+                    }
+                    this.data[i - this.firstI][j - this.firstJ][k - this.firstK] = d;
+                }
+                if (this.iPos === this.chunckCount - 1) {
+                    i = PlanetTools.CHUNCKSIZE - 1;
+                    let d = this.GetDataGlobal(this.iPos * PlanetTools.CHUNCKSIZE + i, (this.jPos + 1) * PlanetTools.CHUNCKSIZE, this.kPos * PlanetTools.CHUNCKSIZE + k);
+                    if (this.data[i - this.firstI][j - this.firstJ][k - this.firstK] != d) {
+                        hasUpdated = true;
+                    }
+                    this.data[i - this.firstI][j - this.firstJ][k - this.firstK] = d;
                 }
             }
         }

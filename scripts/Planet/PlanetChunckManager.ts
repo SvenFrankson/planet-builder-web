@@ -29,7 +29,7 @@ class PlanetChunckManager {
     public chunckSortedRatio: number = 0;
 
     // activity increase while manager is redrawing Chuncks.
-    private _maxActivity: number = 10;
+    private _maxActivity: number = 20;
     private _activity: number = this._maxActivity;
 
     constructor(

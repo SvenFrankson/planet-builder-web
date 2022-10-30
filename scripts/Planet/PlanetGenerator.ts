@@ -55,6 +55,7 @@ class PlanetGeneratorEarth extends PlanetGenerator {
                 let altitude = Math.floor((this._seaLevel + v * this._mountainHeight) * this.planet.kPosMax * PlanetTools.CHUNCKSIZE);
                 let rockAltitude = altitude + Math.round((rock - 0.4) * this._mountainHeight * this.planet.kPosMax * PlanetTools.CHUNCKSIZE);
 
+                /*
                 if (tree > 0.6 && treeCount < maxTree) {
                     let localK = altitude + 1 - chunck.kPos * PlanetTools.CHUNCKSIZE;
                     if (localK >= 0 && localK < PlanetTools.CHUNCKSIZE) {
@@ -67,6 +68,7 @@ class PlanetGeneratorEarth extends PlanetGenerator {
                         treeCount++;
                     }
                 }
+                */
 
                 for (let k: number = 0; k < PlanetTools.CHUNCKSIZE; k++) {
                     let globalK = k + chunck.kPos * PlanetTools.CHUNCKSIZE;
