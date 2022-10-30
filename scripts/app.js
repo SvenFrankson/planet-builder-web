@@ -1423,7 +1423,7 @@ class Game extends Main {
     async initialize() {
         return new Promise(resolve => {
             this.chunckManager = new PlanetChunckManager(this.scene);
-            let kPosMax = 8;
+            let kPosMax = 10;
             let planetTest = new Planet("Paulita", kPosMax, this.chunckManager);
             window["PlanetTest"] = planetTest;
             planetTest.generator = new PlanetGeneratorEarth(planetTest, 0.60, 0.1);
@@ -2071,6 +2071,7 @@ class PlanetChunck extends AbstractPlanetChunck {
         this._isFull = false;
         this._isDirty = false;
         this._setMeshHistory = [];
+        this._debugSyncCount = 0;
         this._degree = PlanetTools.KPosToDegree(this.kPos);
         this._size = PlanetTools.DegreeToSize(this.degree);
         this._chunckCount = PlanetTools.DegreeToChuncksCount(this.degree);
@@ -2200,6 +2201,19 @@ class PlanetChunck extends AbstractPlanetChunck {
         }
         return this.GetDataGlobal(this.iPos * PlanetTools.CHUNCKSIZE + i, this.jPos * PlanetTools.CHUNCKSIZE + j, this.kPos * PlanetTools.CHUNCKSIZE + k);
     }
+    GetDataNice(i, j, k) {
+        if (!this.dataInitialized) {
+            this.initializeData();
+        }
+        if (i >= 0 && i < PlanetTools.CHUNCKSIZE) {
+            if (j >= 0 && j < PlanetTools.CHUNCKSIZE) {
+                if (k >= 0 && k < PlanetTools.CHUNCKSIZE) {
+                    return this.data[i - this.firstI][j - this.firstJ][k - this.firstK];
+                }
+            }
+        }
+        return BlockType.None;
+    }
     GetDataGlobal(iGlobal, jGlobal, kGlobal) {
         return this.planetSide.GetData(iGlobal, jGlobal, kGlobal, this.degree);
     }
@@ -2241,6 +2255,26 @@ class PlanetChunck extends AbstractPlanetChunck {
     }
     isMeshDisposed() {
         return !this.mesh || this.mesh.isDisposed();
+    }
+    static CreateChunck(iPos, jPos, kPos, planetSide, parentGroup) {
+        if (kPos < planetSide.kPosMax - 1) {
+            let degree = PlanetTools.KPosToDegree(kPos);
+            let chunckCount = PlanetTools.DegreeToChuncksCount(degree);
+            if (iPos > 0 && iPos < chunckCount - 1) {
+                if (jPos > 0 && jPos < chunckCount - 1) {
+                    let degreeBellow = PlanetTools.KPosToDegree(kPos - 1);
+                    if (degreeBellow === degree) {
+                        let degreeAbove = PlanetTools.KPosToDegree(kPos + 1);
+                        if (degreeAbove === degree) {
+                            PlanetChunck._DEBUG_NICE_CHUNCK_COUNT++;
+                            return new PlanetChunckNice(iPos, jPos, kPos, planetSide, parentGroup);
+                        }
+                    }
+                }
+            }
+        }
+        PlanetChunck._DEBUG_CHUNCK_COUNT++;
+        return new PlanetChunck(iPos, jPos, kPos, planetSide, parentGroup);
     }
     initialize() {
         this.initializeData();
@@ -2289,10 +2323,14 @@ class PlanetChunck extends AbstractPlanetChunck {
     syncWithAdjacents() {
         let hasUpdated = false;
         if (!this.dataInitialized) {
+            console.log("cancel sync");
             return hasUpdated;
         }
         this._adjacentsDataSynced = true;
         this.findAdjacents();
+        this._debugSyncCount++;
+        PlanetChunck._GLOBAL_DEBUG_SYNC_COUNT++;
+        //console.log(this._debugSyncCount + " " + PlanetChunck._GLOBAL_DEBUG_SYNC_COUNT);
         let i = 0;
         let j = 0;
         let k = 0;
@@ -2412,7 +2450,7 @@ class PlanetChunck extends AbstractPlanetChunck {
         if (this.isEmptyOrHidden()) {
             return;
         }
-        if (!this.syncWithAdjacents) {
+        if (!this._adjacentsDataSynced) {
             this.syncWithAdjacents();
         }
         if (!this.proceduralItemsGenerated) {
@@ -2498,6 +2536,9 @@ class PlanetChunck extends AbstractPlanetChunck {
         return textInfo;
     }
 }
+PlanetChunck._DEBUG_NICE_CHUNCK_COUNT = 0;
+PlanetChunck._DEBUG_CHUNCK_COUNT = 0;
+PlanetChunck._GLOBAL_DEBUG_SYNC_COUNT = 0;
 class PlanetChunckGroup extends AbstractPlanetChunck {
     constructor(iPos, jPos, kPos, planetSide, parentGroup, degree, level) {
         super(iPos, jPos, kPos, planetSide, parentGroup);
@@ -2604,7 +2645,8 @@ class PlanetChunckGroup extends AbstractPlanetChunck {
                         if (childKPos < this.kOffsetNext) {
                             let chunck = this.children[j + 2 * i + 4 * k];
                             if (!chunck) {
-                                chunck = new PlanetChunck(this.iPos * 2 + i, this.jPos * 2 + j, childKPos, this.planetSide, this);
+                                chunck = PlanetChunck.CreateChunck(this.iPos * 2 + i, this.jPos * 2 + j, childKPos, this.planetSide, this);
+                                console.log(PlanetChunck._DEBUG_NICE_CHUNCK_COUNT + " " + PlanetChunck._DEBUG_CHUNCK_COUNT);
                                 this.children[j + 2 * i + 4 * k] = chunck;
                             }
                             chunck.register();
@@ -2773,7 +2815,7 @@ class PlanetChunckManager {
         this._lodLayers = [];
         this._lodLayersCursors = [];
         this._lodLayersSqrDistances = [];
-        let distances = [50, 90, 130, 170, 210];
+        let distances = [80, 100, 120, 140, 160];
         for (let i = 0; i < this._lodLayersCount - 1; i++) {
             this._lodLayers[i] = [];
             this._lodLayersCursors[i] = 0;
@@ -3478,6 +3520,65 @@ PlanetChunckMeshBuilder.Corners = [
 ];
 PlanetChunckMeshBuilder._tmpBlockCenter = BABYLON.Vector3.Zero();
 var PCMB = PlanetChunckMeshBuilder;
+class PlanetChunckNice extends PlanetChunck {
+    findAdjacents() {
+        this._adjacents = [];
+        this.adjacentsAsArray = [];
+        for (let di = -1; di <= 1; di++) {
+            for (let dj = -1; dj <= 1; dj++) {
+                for (let dk = -1; dk <= 1; dk++) {
+                    if (di != 0 || dj != 0 || dk != 0) {
+                        if (!this._adjacents[1 + di]) {
+                            this._adjacents[1 + di] = [];
+                        }
+                        if (!this._adjacents[1 + di][1 + dj]) {
+                            this._adjacents[1 + di][1 + dj] = [];
+                        }
+                        if (!this._adjacents[1 + di][1 + dj][1 + dk]) {
+                            let n = this.planetSide.getChunck(this.iPos + di, this.jPos + dj, this.kPos + dk, this.degree);
+                            if (n instanceof PlanetChunck) {
+                                this._adjacents[1 + di][1 + dj][1 + dk] = [n];
+                                this.adjacentsAsArray.push(n);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    syncWithAdjacents() {
+        let hasUpdated = false;
+        if (!this.dataInitialized) {
+            console.log("cancel sync");
+            return hasUpdated;
+        }
+        this._adjacentsDataSynced = true;
+        this.findAdjacents();
+        let above = this._adjacents[1][1][2][0];
+        for (let i = 0; i <= PlanetTools.CHUNCKSIZE; i++) {
+            for (let j = 0; j <= PlanetTools.CHUNCKSIZE; j++) {
+                this.data[i][j][PlanetTools.CHUNCKSIZE] = above.GetDataNice(i, j, 0);
+            }
+        }
+        let right = this._adjacents[2][1][1][0];
+        for (let j = 0; j <= PlanetTools.CHUNCKSIZE; j++) {
+            for (let k = 0; k <= PlanetTools.CHUNCKSIZE; k++) {
+                this.data[PlanetTools.CHUNCKSIZE][j][k] = right.GetDataNice(0, j, k);
+            }
+        }
+        let front = this._adjacents[2][1][1][0];
+        for (let i = 0; i <= PlanetTools.CHUNCKSIZE; i++) {
+            for (let j = 0; j <= PlanetTools.CHUNCKSIZE; j++) {
+                this.data[i][j][PlanetTools.CHUNCKSIZE] = front.GetDataNice(i, j, 0);
+            }
+        }
+        this.updateIsEmptyIsFull();
+        this.register();
+        return hasUpdated;
+    }
+}
+class PlanetChunckSemiNice extends PlanetChunck {
+}
 class ExtendedVertexData {
     constructor(ref, vertexData) {
         this.vertexData = vertexData;

@@ -20,7 +20,7 @@ class PlanetChunck extends AbstractPlanetChunck {
             k: this.kPos,
         };
     }
-    private _adjacents: PlanetChunck[][][][];
+    protected _adjacents: PlanetChunck[][][][];
     public adjacentsAsArray: PlanetChunck[];
     public findAdjacents(): void {
         this._adjacents = [];
@@ -56,7 +56,7 @@ class PlanetChunck extends AbstractPlanetChunck {
     public get dataInitialized(): boolean {
         return this._dataInitialized;
     }
-    private _adjacentsDataSynced: boolean = false;
+    protected _adjacentsDataSynced: boolean = false;
     public get dataNeighbourSynced(): boolean {
         return this._adjacentsDataSynced;
     }
@@ -76,7 +76,7 @@ class PlanetChunck extends AbstractPlanetChunck {
     public get firstK(): number {
         return this._firstK;
     }
-    private data: number[][][];
+    protected data: number[][][];
     private proceduralItems: ProceduralTree[];
     private _proceduralItemsGenerated: boolean = false;
     public get proceduralItemsGenerated(): boolean {
@@ -98,6 +98,20 @@ class PlanetChunck extends AbstractPlanetChunck {
             }
         }
         return this.GetDataGlobal(this.iPos * PlanetTools.CHUNCKSIZE + i, this.jPos * PlanetTools.CHUNCKSIZE + j, this.kPos * PlanetTools.CHUNCKSIZE + k);
+    }
+    public GetDataNice(i: number, j: number, k: number): number {
+        if (!this.dataInitialized) {
+            this.initializeData();
+        }
+
+        if (i >= 0 && i < PlanetTools.CHUNCKSIZE) {
+            if (j >= 0 && j < PlanetTools.CHUNCKSIZE) {
+                if (k >= 0 && k < PlanetTools.CHUNCKSIZE) {
+                    return this.data[i - this.firstI][j - this.firstJ][k - this.firstK];
+                }
+            }
+        }
+        return BlockType.None;
     }
     public GetDataGlobal(
         iGlobal: number,
@@ -153,6 +167,35 @@ class PlanetChunck extends AbstractPlanetChunck {
     }
     public isMeshDisposed(): boolean {
         return !this.mesh || this.mesh.isDisposed();
+    }
+
+    public static _DEBUG_NICE_CHUNCK_COUNT: number = 0;
+    public static _DEBUG_CHUNCK_COUNT: number = 0;
+    public static CreateChunck(
+        iPos: number,
+        jPos: number,
+        kPos: number,
+        planetSide: PlanetSide,
+        parentGroup: PlanetChunckGroup
+    ): PlanetChunck {
+        if (kPos < planetSide.kPosMax - 1) {
+            let degree = PlanetTools.KPosToDegree(kPos);
+            let chunckCount = PlanetTools.DegreeToChuncksCount(degree);
+            if (iPos > 0 && iPos < chunckCount - 1) {
+                if (jPos > 0 && jPos < chunckCount - 1) {
+                    let degreeBellow = PlanetTools.KPosToDegree(kPos - 1);
+                    if (degreeBellow === degree) {
+                        let degreeAbove = PlanetTools.KPosToDegree(kPos + 1);
+                        if (degreeAbove === degree) {
+                            PlanetChunck._DEBUG_NICE_CHUNCK_COUNT++;
+                            return new PlanetChunckNice(iPos, jPos, kPos, planetSide, parentGroup);
+                        }
+                    }
+                }
+            }
+        }
+        PlanetChunck._DEBUG_CHUNCK_COUNT++;
+        return new PlanetChunck(iPos, jPos, kPos, planetSide, parentGroup);
     }
 
     constructor(
@@ -271,6 +314,8 @@ class PlanetChunck extends AbstractPlanetChunck {
         }
     }
     
+    private static _GLOBAL_DEBUG_SYNC_COUNT: number = 0;
+    private _debugSyncCount: number = 0;
     private _syncStep(i: number, j: number, k: number): boolean {
         let r = false;
         let d = this.GetDataGlobal(this.iPos * PlanetTools.CHUNCKSIZE + i, this.jPos * PlanetTools.CHUNCKSIZE + j, this.kPos * PlanetTools.CHUNCKSIZE + k);
@@ -283,11 +328,15 @@ class PlanetChunck extends AbstractPlanetChunck {
     public syncWithAdjacents(): boolean {
         let hasUpdated = false;
         if (!this.dataInitialized) {
+            console.log("cancel sync");
             return hasUpdated;
         }
         this._adjacentsDataSynced = true;
         this.findAdjacents();
         
+        this._debugSyncCount++;
+        PlanetChunck._GLOBAL_DEBUG_SYNC_COUNT++;
+        //console.log(this._debugSyncCount + " " + PlanetChunck._GLOBAL_DEBUG_SYNC_COUNT);
         let i: number = 0;
         let j: number = 0;
         let k: number = 0;
@@ -415,7 +464,7 @@ class PlanetChunck extends AbstractPlanetChunck {
         if (this.isEmptyOrHidden()) {
             return;
         }
-        if (!this.syncWithAdjacents) {
+        if (!this._adjacentsDataSynced) {
             this.syncWithAdjacents();
         }
         if (!this.proceduralItemsGenerated) {
