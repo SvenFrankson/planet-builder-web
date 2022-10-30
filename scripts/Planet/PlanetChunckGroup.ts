@@ -83,7 +83,6 @@ class PlanetChunckGroup extends AbstractPlanetChunck {
         return this._subdivided;
     }
     public subdivide(): void {
-        console.log("subdivide " + this.name);
         this.unregister();
         if (this._subdivided) {
             console.log("no need...");
@@ -130,7 +129,6 @@ class PlanetChunckGroup extends AbstractPlanetChunck {
     }
 
     public collapseChildren(): void {
-        console.log("collapse " + this.name);
         for (let i = 0; i < this.children.length; i++) {
             let child = this.children[i];
             if (child instanceof PlanetChunck) {

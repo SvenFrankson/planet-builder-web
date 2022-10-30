@@ -270,8 +270,8 @@ class PlanetSide extends BABYLON.Mesh {
 
         this.chuncks = [];
         this.chunckGroups = [];
-        for (let degree = 4; degree <= PlanetTools.KPosToDegree(this.kPosMax); degree++) {
-            this.chunckGroups[degree] = new PlanetChunckGroup(0, 0, 0, this, undefined, degree, degree - 3);
+        for (let degree = PlanetTools.DEGREEMIN; degree <= PlanetTools.KPosToDegree(this.kPosMax); degree++) {
+            this.chunckGroups[degree] = new PlanetChunckGroup(0, 0, 0, this, undefined, degree, degree - (PlanetTools.DEGREEMIN - 1));
         }
     }
 
@@ -300,7 +300,7 @@ class PlanetSide extends BABYLON.Mesh {
 
     public register(): number {
         let chunckCount: number = 0;
-        for (let degree = 4; degree <= PlanetTools.KPosToDegree(this.kPosMax); degree++) {
+        for (let degree = PlanetTools.DEGREEMIN; degree <= PlanetTools.KPosToDegree(this.kPosMax); degree++) {
             this.chunckGroups[degree].register();
         }
         return chunckCount;

@@ -4,7 +4,8 @@ var PI = Math.PI;
 
 class PlanetTools {
 
-    public static readonly CHUNCKSIZE = 8;
+    public static readonly DEGREEMIN = 5;
+    public static readonly CHUNCKSIZE = 16;
     public static readonly ALPHALIMIT = Math.PI / 4;
     public static readonly DISTANCELIMITSQUARED = 128 * 128;
 
@@ -404,7 +405,7 @@ class PlanetTools {
     }
 
     public static KPosToDegree(kPos: number): number {
-        return PlanetTools.KPosToDegree8(kPos);
+        return PlanetTools.KPosToDegree16(kPos);
     }
 
     public static KPosToSize(kPos: number): number {
@@ -437,9 +438,9 @@ class PlanetTools {
         PlanetTools._BSizes = [];
         PlanetTools._Altitudes = [];
         PlanetTools._SummedBSizesLength = [];
-        let coreRadius = 7.6;
+        let coreRadius = 13.4;
         let radius = coreRadius;
-        let degree = 4;
+        let degree = this.DEGREEMIN;
         let bSizes = [];
         let altitudes = [];
         let summedBSizesLength = 0;
@@ -467,12 +468,31 @@ class PlanetTools {
     }
 
     private static _KPosToDegree: Map<number, number> = new Map<number, number>();
-    public static KPosToDegree8(kPos: number): number {
+    private static KPosToDegree8(kPos: number): number {
         let v = PlanetTools._KPosToDegree.get(kPos);
         if (isFinite(v)) {
             return v;
         }
-        let degree = 4;
+        let degree = this.DEGREEMIN;
+        let tmpKpos = kPos;
+        while (degree < PlanetTools.BSizes.length) {
+            let size = PlanetTools.BSizes[degree].length / PlanetTools.CHUNCKSIZE;
+            if (tmpKpos < size) {
+                PlanetTools._KPosToDegree.set(kPos, degree);
+                return degree;
+            }
+            else {
+                tmpKpos -= size;
+                degree++;
+            }
+        }
+    }
+    private static KPosToDegree16(kPos: number): number {
+        let v = PlanetTools._KPosToDegree.get(kPos);
+        if (isFinite(v)) {
+            return v;
+        }
+        let degree = this.DEGREEMIN;
         let tmpKpos = kPos;
         while (degree < PlanetTools.BSizes.length) {
             let size = PlanetTools.BSizes[degree].length / PlanetTools.CHUNCKSIZE;
@@ -510,7 +530,7 @@ class PlanetTools {
       }
 
     public static AltitudeToKGlobal(altitude: number): number {
-        let degree = 4;
+        let degree = this.DEGREEMIN;
         while (degree < PlanetTools.Altitudes.length - 1) {
             let highest = PlanetTools.Altitudes[degree + 1][0];
             if (altitude < highest) {

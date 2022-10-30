@@ -1375,7 +1375,8 @@ class Demo extends Main {
     async initialize() {
         return new Promise(resolve => {
             this.chunckManager = new PlanetChunckManager(this.scene);
-            let kPosMax = 15;
+            let kPosMax = 6;
+            console.log("degree = " + PlanetTools.KPosToDegree(kPosMax));
             let planetTest = new Planet("Paulita", kPosMax, this.chunckManager);
             window["PlanetTest"] = planetTest;
             planetTest.generator = new PlanetGeneratorEarth(planetTest, 0.60, 0.1);
@@ -1422,7 +1423,7 @@ class Game extends Main {
     async initialize() {
         return new Promise(resolve => {
             this.chunckManager = new PlanetChunckManager(this.scene);
-            let kPosMax = 10;
+            let kPosMax = 8;
             let planetTest = new Planet("Paulita", kPosMax, this.chunckManager);
             window["PlanetTest"] = planetTest;
             planetTest.generator = new PlanetGeneratorEarth(planetTest, 0.60, 0.1);
@@ -2527,7 +2528,6 @@ class PlanetChunckGroup extends AbstractPlanetChunck {
         return this._subdivided;
     }
     subdivide() {
-        console.log("subdivide " + this.name);
         this.unregister();
         if (this._subdivided) {
             console.log("no need...");
@@ -2571,7 +2571,6 @@ class PlanetChunckGroup extends AbstractPlanetChunck {
         }
     }
     collapseChildren() {
-        console.log("collapse " + this.name);
         for (let i = 0; i < this.children.length; i++) {
             let child = this.children[i];
             if (child instanceof PlanetChunck) {
@@ -2709,7 +2708,7 @@ class PlanetChunckManager {
         this._lodLayers = [];
         this._lodLayersCursors = [];
         this._lodLayersSqrDistances = [];
-        let distances = [50, 75, 100, 125, 150];
+        let distances = [80, 110, 140, 170, 200];
         for (let i = 0; i < this._lodLayersCount - 1; i++) {
             this._lodLayers[i] = [];
             this._lodLayersCursors[i] = 0;
@@ -3985,6 +3984,7 @@ class PlanetGeneratorEarth extends PlanetGenerator {
         super(planet);
         this._seaLevel = _seaLevel;
         this._mountainHeight = _mountainHeight;
+        console.log("Generator Degree = " + PlanetTools.KPosToDegree(planet.kPosMax));
         this._mainHeightMap = PlanetHeightMap.CreateMap(PlanetTools.KPosToDegree(planet.kPosMax));
         this._treeMap = PlanetHeightMap.CreateMap(PlanetTools.KPosToDegree(planet.kPosMax), { firstNoiseDegree: PlanetTools.KPosToDegree(planet.kPosMax) - 2 });
         this._rockMap = PlanetHeightMap.CreateMap(PlanetTools.KPosToDegree(planet.kPosMax), { firstNoiseDegree: PlanetTools.KPosToDegree(planet.kPosMax) - 3 });
@@ -4138,6 +4138,7 @@ class PlanetHeightMap {
         this.degree = degree;
         this.map = [];
         this.size = Math.pow(2, this.degree);
+        console.log(this.size);
     }
     static CreateMap(degree, options) {
         let map = new PlanetHeightMap(0);
@@ -4496,8 +4497,8 @@ class PlanetSide extends BABYLON.Mesh {
         this.freezeWorldMatrix();
         this.chuncks = [];
         this.chunckGroups = [];
-        for (let degree = 4; degree <= PlanetTools.KPosToDegree(this.kPosMax); degree++) {
-            this.chunckGroups[degree] = new PlanetChunckGroup(0, 0, 0, this, undefined, degree, degree - 3);
+        for (let degree = PlanetTools.DEGREEMIN; degree <= PlanetTools.KPosToDegree(this.kPosMax); degree++) {
+            this.chunckGroups[degree] = new PlanetChunckGroup(0, 0, 0, this, undefined, degree, degree - (PlanetTools.DEGREEMIN - 1));
         }
     }
     get side() {
@@ -4747,7 +4748,7 @@ class PlanetSide extends BABYLON.Mesh {
     }
     register() {
         let chunckCount = 0;
-        for (let degree = 4; degree <= PlanetTools.KPosToDegree(this.kPosMax); degree++) {
+        for (let degree = PlanetTools.DEGREEMIN; degree <= PlanetTools.KPosToDegree(this.kPosMax); degree++) {
             this.chunckGroups[degree].register();
         }
         return chunckCount;
@@ -5119,7 +5120,7 @@ class PlanetTools {
         return PlanetTools.KPosToDegree(Math.floor(k / PlanetTools.CHUNCKSIZE));
     }
     static KPosToDegree(kPos) {
-        return PlanetTools.KPosToDegree8(kPos);
+        return PlanetTools.KPosToDegree16(kPos);
     }
     static KPosToSize(kPos) {
         return PlanetTools.DegreeToSize(PlanetTools.KPosToDegree(kPos));
@@ -5146,9 +5147,9 @@ class PlanetTools {
         PlanetTools._BSizes = [];
         PlanetTools._Altitudes = [];
         PlanetTools._SummedBSizesLength = [];
-        let coreRadius = 7.6;
+        let coreRadius = 13.4;
         let radius = coreRadius;
-        let degree = 4;
+        let degree = this.DEGREEMIN;
         let bSizes = [];
         let altitudes = [];
         let summedBSizesLength = 0;
@@ -5179,7 +5180,26 @@ class PlanetTools {
         if (isFinite(v)) {
             return v;
         }
-        let degree = 4;
+        let degree = this.DEGREEMIN;
+        let tmpKpos = kPos;
+        while (degree < PlanetTools.BSizes.length) {
+            let size = PlanetTools.BSizes[degree].length / PlanetTools.CHUNCKSIZE;
+            if (tmpKpos < size) {
+                PlanetTools._KPosToDegree.set(kPos, degree);
+                return degree;
+            }
+            else {
+                tmpKpos -= size;
+                degree++;
+            }
+        }
+    }
+    static KPosToDegree16(kPos) {
+        let v = PlanetTools._KPosToDegree.get(kPos);
+        if (isFinite(v)) {
+            return v;
+        }
+        let degree = this.DEGREEMIN;
         let tmpKpos = kPos;
         while (degree < PlanetTools.BSizes.length) {
             let size = PlanetTools.BSizes[degree].length / PlanetTools.CHUNCKSIZE;
@@ -5215,7 +5235,7 @@ class PlanetTools {
         }
     }
     static AltitudeToKGlobal(altitude) {
-        let degree = 4;
+        let degree = this.DEGREEMIN;
         while (degree < PlanetTools.Altitudes.length - 1) {
             let highest = PlanetTools.Altitudes[degree + 1][0];
             if (altitude < highest) {
@@ -5287,7 +5307,8 @@ class PlanetTools {
         return PlanetTools.DegreeToSize(degree) / PlanetTools.CHUNCKSIZE;
     }
 }
-PlanetTools.CHUNCKSIZE = 8;
+PlanetTools.DEGREEMIN = 5;
+PlanetTools.CHUNCKSIZE = 16;
 PlanetTools.ALPHALIMIT = Math.PI / 4;
 PlanetTools.DISTANCELIMITSQUARED = 128 * 128;
 PlanetTools._KPosToDegree = new Map();
