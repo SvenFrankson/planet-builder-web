@@ -1422,7 +1422,7 @@ class Game extends Main {
     async initialize() {
         return new Promise(resolve => {
             this.chunckManager = new PlanetChunckManager(this.scene);
-            let kPosMax = 16;
+            let kPosMax = 10;
             let planetTest = new Planet("Paulita", kPosMax, this.chunckManager);
             window["PlanetTest"] = planetTest;
             planetTest.generator = new PlanetGeneratorEarth(planetTest, 0.60, 0.1);
@@ -2709,7 +2709,7 @@ class PlanetChunckManager {
         this._lodLayers = [];
         this._lodLayersCursors = [];
         this._lodLayersSqrDistances = [];
-        let distances = [50, 70, 90, 110, 130];
+        let distances = [50, 75, 100, 125, 150];
         for (let i = 0; i < this._lodLayersCount - 1; i++) {
             this._lodLayers[i] = [];
             this._lodLayersCursors[i] = 0;
