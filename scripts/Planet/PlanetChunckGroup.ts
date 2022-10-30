@@ -77,7 +77,6 @@ class PlanetChunckGroup extends AbstractPlanetChunck {
         */
     }
 
-    private _count: number = 0;
     private _subdivided: boolean = false;
     public get subdivided(): boolean {
         return this._subdivided;
@@ -85,36 +84,36 @@ class PlanetChunckGroup extends AbstractPlanetChunck {
     public subdivide(): void {
         this.unregister();
         if (this._subdivided) {
-            console.log("no need...");
             return;
         }
         this._subdivided = true;
-        for (let i = 0; i < 2; i++) {
-            for (let j = 0; j < 2; j++) {
-                for (let k = 0; k < 2; k++) {
-                        if (this.level === 1) {
-                            let childKPos: number = this.kOffset + this.kPos * 2 + k;
-                            if (childKPos < this.kOffsetNext) {
-                                let chunck = new PlanetChunck(this.iPos * 2 + i, this.jPos * 2 + j, childKPos, this.planetSide, this);
-                                this.children.push(chunck);
-                                this.planetSide.setChunck(chunck);
-                                this._count++;
-                                //console.log("subdivide into " + chunck.name + " " + this._count);
-                                chunck.register();
+        for (let k = 0; k < 2; k++) {
+            for (let i = 0; i < 2; i++) {
+                for (let j = 0; j < 2; j++) {
+                    if (this.level === 1) {
+                        let childKPos: number = this.kOffset + this.kPos * 2 + k;
+                        if (childKPos < this.kOffsetNext) {
+                            let chunck = this.children[j + 2 * i + 4 * k] as PlanetChunck;
+                            if (!chunck) {
+                                chunck = new PlanetChunck(this.iPos * 2 + i, this.jPos * 2 + j, childKPos, this.planetSide, this);
+                                this.children[j + 2 * i + 4 * k] = chunck;
                             }
+                            this.planetSide.setChunck(chunck);
+                            chunck.register();
                         }
-                        else {
-                            let levelCoef = Math.pow(2, this.level - 1);
-                            let childKPos: number = this.kPos * 2 + k;
-                            if (childKPos * levelCoef < this.kOffsetNext - this.kOffset) {
-                                let chunck = new PlanetChunckGroup(this.iPos * 2 + i, this.jPos * 2 + j, childKPos, this.planetSide, this, this.degree, this.level - 1);
-                                this.children.push(chunck);
-                                //let line = BABYLON.MeshBuilder.CreateLines("line", { points: [this.barycenter, chunck.barycenter]});
-                                //chunck.lines.push(line);
-                                chunck.register();
+                    }
+                    else {
+                        let levelCoef = Math.pow(2, this.level - 1);
+                        let childKPos: number = this.kPos * 2 + k;
+                        if (childKPos * levelCoef < this.kOffsetNext - this.kOffset) {
+                            let chunck = this.children[j + 2 * i + 4 * k] as PlanetChunckGroup;
+                            if (!chunck) {
+                                chunck = new PlanetChunckGroup(this.iPos * 2 + i, this.jPos * 2 + j, childKPos, this.planetSide, this, this.degree, this.level - 1);
+                                this.children[j + 2 * i + 4 * k] = chunck;
                             }
+                            chunck.register();
                         }
-                    
+                    }
                 }
             }
         }
@@ -147,7 +146,6 @@ class PlanetChunckGroup extends AbstractPlanetChunck {
                 child.unregister();
             }
         }
-        this.children = [];
         this._subdivided = false;
         this.register();
     }
