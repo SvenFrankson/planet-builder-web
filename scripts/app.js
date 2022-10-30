@@ -2525,6 +2525,40 @@ class PlanetChunckGroup extends AbstractPlanetChunck {
         this.mesh.freezeWorldMatrix();
         */
     }
+    getPlanetChunck(iPos, jPos, kPos) {
+        if (!this.children || this.children.length === 0) {
+            this.subdivide();
+        }
+        if (this.level === 1) {
+            let i = Math.floor((iPos - 2 * this.iPos));
+            let j = Math.floor((jPos - 2 * this.jPos));
+            let k = Math.floor((kPos - (2 * this.kPos + this.kOffset)));
+            let child = this.children[j + 2 * i + 4 * k];
+            if (child instanceof PlanetChunck) {
+                return child;
+            }
+            else {
+                console.error("PlanetChunckGroup " + this.name + " of level == 1 has a child that is not a PlanetChunck.");
+                debugger;
+            }
+        }
+        else {
+            let levelCoef = Math.pow(2, this.level);
+            let i = Math.floor((iPos - levelCoef * this.iPos) / (levelCoef / 2));
+            let j = Math.floor((jPos - levelCoef * this.jPos) / (levelCoef / 2));
+            let k = Math.floor((kPos - this.kOffset - levelCoef * this.kPos) / (levelCoef / 2));
+            let child = this.children[j + 2 * i + 4 * k];
+            if (child instanceof PlanetChunckGroup) {
+                return child.getPlanetChunck(iPos, jPos, kPos);
+            }
+            else {
+                console.error("PlanetChunckGroup " + this.name + " of level > 1 has a child that is not a PlanetChunckGroup.");
+                debugger;
+            }
+        }
+        console.error("PlanetChunckGroup " + this.name + " does not contain PlanetChunck " + iPos + " " + jPos + " " + kPos);
+        debugger;
+    }
     get subdivided() {
         return this._subdivided;
     }
@@ -2546,7 +2580,6 @@ class PlanetChunckGroup extends AbstractPlanetChunck {
                                 chunck = new PlanetChunck(this.iPos * 2 + i, this.jPos * 2 + j, childKPos, this.planetSide, this);
                                 this.children[j + 2 * i + 4 * k] = chunck;
                             }
-                            this.planetSide.setChunck(chunck);
                             chunck.register();
                         }
                     }
@@ -2583,7 +2616,6 @@ class PlanetChunckGroup extends AbstractPlanetChunck {
             let child = this.children[i];
             if (child instanceof PlanetChunck) {
                 child.disposeMesh();
-                this.planetSide.removeChunck(child);
                 child.unregister();
             }
             else if (child instanceof PlanetChunckGroup) {
@@ -4504,7 +4536,6 @@ class PlanetSide extends BABYLON.Mesh {
         this.rotationQuaternion = PlanetTools.QuaternionForSide(this._side);
         this.computeWorldMatrix();
         this.freezeWorldMatrix();
-        this.chuncks = [];
         this.chunckGroups = [];
         for (let degree = PlanetTools.DEGREEMIN; degree <= PlanetTools.KPosToDegree(this.kPosMax); degree++) {
             this.chunckGroups[degree] = new PlanetChunckGroup(0, 0, 0, this, undefined, degree, degree - (PlanetTools.DEGREEMIN - 1));
@@ -4541,16 +4572,18 @@ class PlanetSide extends BABYLON.Mesh {
         if (PlanetTools.KPosToDegree(kPos) < degree) {
             return this.getChunck(Math.floor(iPos / 2), Math.floor(jPos / 2), kPos, degree - 1);
         }
-        if (this.chuncks[kPos]) {
-            if (this.chuncks[kPos][iPos]) {
-                let chunck = this.chuncks[kPos][iPos][jPos];
-                if (chunck && chunck.degree === degree) {
-                    return chunck;
+        let chunckCount = PlanetTools.DegreeToChuncksCount(PlanetTools.KPosToDegree(kPos));
+        if (iPos >= 0 && iPos < chunckCount) {
+            if (jPos >= 0 && jPos < chunckCount) {
+                if (kPos >= 0 && kPos < this.kPosMax) {
+                    let group = this.chunckGroups[degree];
+                    if (group) {
+                        return group.getPlanetChunck(iPos, jPos, kPos);
+                    }
                 }
             }
         }
         if (kPos >= 0 && kPos < this.kPosMax) {
-            let chunckCount = PlanetTools.DegreeToChuncksCount(PlanetTools.KPosToDegree(kPos));
             if (iPos < 0) {
                 if (this.side <= Side.Left) {
                     let side = this.planet.GetSide((this.side + 1) % 4);
@@ -4722,38 +4755,24 @@ class PlanetSide extends BABYLON.Mesh {
         let iChunck = Math.floor(iGlobal / PlanetTools.CHUNCKSIZE);
         let jChunck = Math.floor(jGlobal / PlanetTools.CHUNCKSIZE);
         let kChunck = Math.floor(kGlobal / PlanetTools.CHUNCKSIZE);
-        if (this.chuncks[kChunck]) {
-            if (this.chuncks[kChunck][iChunck]) {
-                if (this.chuncks[kChunck][iChunck][jChunck]) {
-                    let i = iGlobal - iChunck * PlanetTools.CHUNCKSIZE;
-                    let j = jGlobal - jChunck * PlanetTools.CHUNCKSIZE;
-                    let k = kGlobal - kChunck * PlanetTools.CHUNCKSIZE;
-                    return this.chuncks[kChunck][iChunck][jChunck].GetData(i, j, k);
+        let chunckCount = PlanetTools.DegreeToChuncksCount(PlanetTools.KPosToDegree(kChunck));
+        if (iChunck >= 0 && iChunck < chunckCount) {
+            if (jChunck >= 0 && jChunck < chunckCount) {
+                if (kChunck >= 0 && kChunck < this.kPosMax) {
+                    let group = this.chunckGroups[degree];
+                    if (group) {
+                        let i = iGlobal - iChunck * PlanetTools.CHUNCKSIZE;
+                        let j = jGlobal - jChunck * PlanetTools.CHUNCKSIZE;
+                        let k = kGlobal - kChunck * PlanetTools.CHUNCKSIZE;
+                        let chunck = group.getPlanetChunck(iChunck, jChunck, kChunck);
+                        if (chunck) {
+                            return chunck.GetData(i, j, k);
+                        }
+                    }
                 }
             }
         }
         return 0;
-    }
-    setChunck(chunck) {
-        if (!this.chuncks[chunck.kPos]) {
-            this.chuncks[chunck.kPos] = [];
-        }
-        if (!this.chuncks[chunck.kPos][chunck.iPos]) {
-            this.chuncks[chunck.kPos][chunck.iPos] = [];
-        }
-        if (this.chuncks[chunck.kPos][chunck.iPos][chunck.jPos]) {
-            console.log("collision on " + chunck.name);
-        }
-        this.chuncks[chunck.kPos][chunck.iPos][chunck.jPos] = chunck;
-    }
-    removeChunck(chunck) {
-        if (!this.chuncks[chunck.kPos]) {
-            this.chuncks[chunck.kPos] = [];
-        }
-        if (!this.chuncks[chunck.kPos][chunck.iPos]) {
-            this.chuncks[chunck.kPos][chunck.iPos] = [];
-        }
-        this.chuncks[chunck.kPos][chunck.iPos][chunck.jPos] = undefined;
     }
     register() {
         let chunckCount = 0;

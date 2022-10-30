@@ -34,7 +34,7 @@ class PlanetSide extends BABYLON.Mesh {
         return this.planet.kPosMax;
     }
     private chuncksLength: number;
-    private chuncks: Array<Array<Array<PlanetChunck>>>;
+    //private chuncks: Array<Array<Array<PlanetChunck>>>;
     private chunckGroups: PlanetChunckGroup[];
 
     public getChunck(iPos: number, jPos: number, kPos: number, degree: number): PlanetChunck | PlanetChunck[] {
@@ -56,16 +56,18 @@ class PlanetSide extends BABYLON.Mesh {
         if (PlanetTools.KPosToDegree(kPos) < degree) {
             return this.getChunck(Math.floor(iPos / 2), Math.floor(jPos / 2), kPos, degree - 1);
         }
-        if (this.chuncks[kPos]) {
-            if (this.chuncks[kPos][iPos]) {
-                let chunck = this.chuncks[kPos][iPos][jPos];
-                if (chunck && chunck.degree === degree) {
-                    return chunck;
+        let chunckCount = PlanetTools.DegreeToChuncksCount(PlanetTools.KPosToDegree(kPos));
+        if (iPos >= 0 && iPos < chunckCount) {
+            if (jPos >= 0 && jPos < chunckCount) {
+                if (kPos >= 0 && kPos < this.kPosMax) {
+                    let group = this.chunckGroups[degree];
+                    if (group) {
+                        return group.getPlanetChunck(iPos, jPos, kPos);
+                    }
                 }
             }
         }
         if (kPos >= 0 && kPos < this.kPosMax) {
-            let chunckCount = PlanetTools.DegreeToChuncksCount(PlanetTools.KPosToDegree(kPos));
             if (iPos < 0) {
                 if (this.side <= Side.Left) {
                     let side = this.planet.GetSide((this.side + 1) % 4);
@@ -241,14 +243,21 @@ class PlanetSide extends BABYLON.Mesh {
         let iChunck: number = Math.floor(iGlobal / PlanetTools.CHUNCKSIZE);
         let jChunck: number = Math.floor(jGlobal / PlanetTools.CHUNCKSIZE);
         let kChunck: number = Math.floor(kGlobal / PlanetTools.CHUNCKSIZE);
+        let chunckCount = PlanetTools.DegreeToChuncksCount(PlanetTools.KPosToDegree(kChunck));
 
-        if (this.chuncks[kChunck]) {
-            if (this.chuncks[kChunck][iChunck]) {
-                if (this.chuncks[kChunck][iChunck][jChunck]) {
-                    let i: number = iGlobal - iChunck * PlanetTools.CHUNCKSIZE;
-                    let j: number = jGlobal - jChunck * PlanetTools.CHUNCKSIZE;
-                    let k: number = kGlobal - kChunck * PlanetTools.CHUNCKSIZE;
-                    return this.chuncks[kChunck][iChunck][jChunck].GetData(i, j, k);
+        if (iChunck >= 0 && iChunck < chunckCount) {
+            if (jChunck >= 0 && jChunck < chunckCount) {
+                if (kChunck >= 0 && kChunck < this.kPosMax) {
+                    let group = this.chunckGroups[degree];
+                    if (group) {
+                        let i: number = iGlobal - iChunck * PlanetTools.CHUNCKSIZE;
+                        let j: number = jGlobal - jChunck * PlanetTools.CHUNCKSIZE;
+                        let k: number = kGlobal - kChunck * PlanetTools.CHUNCKSIZE;
+                        let chunck = group.getPlanetChunck(iChunck, jChunck, kChunck);
+                        if (chunck) {
+                            return chunck.GetData(i, j, k);
+                        }
+                    }
                 }
             }
         }
@@ -268,36 +277,12 @@ class PlanetSide extends BABYLON.Mesh {
         this.computeWorldMatrix();
         this.freezeWorldMatrix();
 
-        this.chuncks = [];
         this.chunckGroups = [];
         for (let degree = PlanetTools.DEGREEMIN; degree <= PlanetTools.KPosToDegree(this.kPosMax); degree++) {
             this.chunckGroups[degree] = new PlanetChunckGroup(0, 0, 0, this, undefined, degree, degree - (PlanetTools.DEGREEMIN - 1));
         }
     }
-
-    public setChunck(chunck: PlanetChunck): void {
-        if (!this.chuncks[chunck.kPos]) {
-            this.chuncks[chunck.kPos] = [];
-        }
-        if (!this.chuncks[chunck.kPos][chunck.iPos]) {
-            this.chuncks[chunck.kPos][chunck.iPos] = [];
-        }
-        if (this.chuncks[chunck.kPos][chunck.iPos][chunck.jPos]) {
-            console.log("collision on " + chunck.name);
-        }
-        this.chuncks[chunck.kPos][chunck.iPos][chunck.jPos] = chunck;
-    }
-
-    public removeChunck(chunck: PlanetChunck): void {
-        if (!this.chuncks[chunck.kPos]) {
-            this.chuncks[chunck.kPos] = [];
-        }
-        if (!this.chuncks[chunck.kPos][chunck.iPos]) {
-            this.chuncks[chunck.kPos][chunck.iPos] = [];
-        }
-        this.chuncks[chunck.kPos][chunck.iPos][chunck.jPos] = undefined;
-    }
-
+    
     public register(): number {
         let chunckCount: number = 0;
         for (let degree = PlanetTools.DEGREEMIN; degree <= PlanetTools.KPosToDegree(this.kPosMax); degree++) {

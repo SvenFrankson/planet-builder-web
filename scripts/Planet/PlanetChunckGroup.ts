@@ -77,6 +77,41 @@ class PlanetChunckGroup extends AbstractPlanetChunck {
         */
     }
 
+    public getPlanetChunck(iPos: number, jPos: number, kPos: number): PlanetChunck {
+        if (!this.children || this.children.length === 0) {
+            this.subdivide();
+        }
+        if (this.level === 1) {
+            let i = Math.floor((iPos - 2 * this.iPos));
+            let j = Math.floor((jPos - 2 * this.jPos));
+            let k = Math.floor((kPos - (2 * this.kPos + this.kOffset)));
+            let child = this.children[j + 2 * i + 4 * k];
+            if (child instanceof PlanetChunck) {
+                return child;
+            }
+            else {
+                console.error("PlanetChunckGroup " + this.name + " of level == 1 has a child that is not a PlanetChunck.");
+                debugger;
+            }
+        }
+        else {
+            let levelCoef = Math.pow(2, this.level);
+            let i = Math.floor((iPos - levelCoef * this.iPos) / (levelCoef / 2));
+            let j = Math.floor((jPos - levelCoef * this.jPos) / (levelCoef / 2));
+            let k = Math.floor((kPos - this.kOffset - levelCoef * this.kPos) / (levelCoef / 2));
+            let child = this.children[j + 2 * i + 4 * k];
+            if (child instanceof PlanetChunckGroup) {
+                return child.getPlanetChunck(iPos, jPos, kPos);
+            }
+            else {
+                console.error("PlanetChunckGroup " + this.name + " of level > 1 has a child that is not a PlanetChunckGroup.");
+                debugger;
+            }
+        }
+        console.error("PlanetChunckGroup " + this.name + " does not contain PlanetChunck " + iPos + " " + jPos + " " + kPos);
+        debugger;
+    }
+
     private _subdivisionsCount: number = 0;
     private _subdivisionsSkipedCount: number = 0;
     private _subdivided: boolean = false;
@@ -101,7 +136,6 @@ class PlanetChunckGroup extends AbstractPlanetChunck {
                                 chunck = new PlanetChunck(this.iPos * 2 + i, this.jPos * 2 + j, childKPos, this.planetSide, this);
                                 this.children[j + 2 * i + 4 * k] = chunck;
                             }
-                            this.planetSide.setChunck(chunck);
                             chunck.register();
                         }
                     }
@@ -140,7 +174,6 @@ class PlanetChunckGroup extends AbstractPlanetChunck {
             let child = this.children[i];
             if (child instanceof PlanetChunck) {
                 child.disposeMesh();
-                this.planetSide.removeChunck(child);
                 child.unregister();
             }
             else if (child instanceof PlanetChunckGroup) {
