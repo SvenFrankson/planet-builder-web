@@ -77,11 +77,14 @@ class PlanetChunckGroup extends AbstractPlanetChunck {
         */
     }
 
+    private _subdivisionsCount: number = 0;
+    private _subdivisionsSkipedCount: number = 0;
     private _subdivided: boolean = false;
     public get subdivided(): boolean {
         return this._subdivided;
     }
     public subdivide(): void {
+        this._subdivisionsSkipedCount++;
         this.unregister();
         if (this._subdivided) {
             return;
@@ -117,6 +120,11 @@ class PlanetChunckGroup extends AbstractPlanetChunck {
                 }
             }
         }
+        this._subdivisionsCount++;
+        if (this._subdivisionsCount > 100) {
+            debugger;
+        }
+        console.log(this.name + " " + this._subdivisionsCount + " (" + this._subdivisionsSkipedCount + ")");
     }
 
     public collapse(): void {

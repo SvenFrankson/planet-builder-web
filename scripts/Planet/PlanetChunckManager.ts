@@ -49,7 +49,7 @@ class PlanetChunckManager {
         this._lodLayers = [];
         this._lodLayersCursors = [];
         this._lodLayersSqrDistances = [];
-        let distances = [80, 110, 140, 170, 200];
+        let distances = [50, 90, 130, 170, 210];
         for (let i = 0; i < this._lodLayersCount - 1; i++) {
             this._lodLayers[i] = [];
             this._lodLayersCursors[i] = 0;
@@ -154,7 +154,7 @@ class PlanetChunckManager {
                 chunck.collapse();
             }
             else if (chunck instanceof PlanetChunckGroup) {
-                if (chunck.level < 2) {
+                if (chunck.level < 1) {
                     chunck.collapse();
                 }
                 else if (chunck.level > 2) {
@@ -169,7 +169,7 @@ class PlanetChunckManager {
                 chunck.collapse();
             }
             else if (chunck instanceof PlanetChunckGroup) {
-                if (chunck.level < 3) {
+                if (chunck.level < 2) {
                     chunck.collapse();
                 }
                 else if (chunck.level > 3) {
@@ -184,7 +184,7 @@ class PlanetChunckManager {
                 chunck.collapse();
             }
             else if (chunck instanceof PlanetChunckGroup) {
-                if (chunck.level < 4) {
+                if (chunck.level < 3) {
                     chunck.collapse();
                 }
                 else if (chunck.level > 4) {
@@ -211,9 +211,8 @@ class PlanetChunckManager {
         let sortedCount = 0;
         let unsortedCount = 0;
 
-        let duration = 0.5 + 150 * (1 - this.chunckSortedRatio);
-        duration = Math.min(duration, 1000 / 24);
-        while ((t - t0) < duration) {
+        let todo = [];
+        while ((t - t0) < 1 && todo.length < 50) {
             for (let prevLayerIndex = 0; prevLayerIndex < this._lodLayersCount; prevLayerIndex++) {
                 let cursor = this._lodLayersCursors[prevLayerIndex];
                 let chunck = this._lodLayers[prevLayerIndex][cursor];
@@ -226,7 +225,7 @@ class PlanetChunckManager {
                         this._lodLayers[newLayerIndex].splice(adequateLayerCursor, 0, chunck);
                         chunck.lod = newLayerIndex;
                         
-                        this.onChunckMovedToLayer(chunck, newLayerIndex);
+                        todo.push(chunck);
 
                         this._lodLayersCursors[newLayerIndex]++;
                         if (this._lodLayersCursors[newLayerIndex] >= this._lodLayers[newLayerIndex].length) {
@@ -251,6 +250,10 @@ class PlanetChunckManager {
             }
             t = performance.now();
         }
+
+        for (let i = 0; i < todo.length; i++) {
+            this.onChunckMovedToLayer(todo[i], todo[i].lod);
+        }
         
         if (this._needRedraw.length > 0) {
             this._activity ++;
@@ -269,7 +272,7 @@ class PlanetChunckManager {
 
         // Recalculate chunck meshes.
         t0 = performance.now();
-        while (this._needRedraw.length > 0 && (t - t0) < 1000 / (60 * 1.5)) {
+        while (this._needRedraw.length > 0 && (t - t0) < 1000 / 120) {
             let request = this._needRedraw.pop();
             if (request.chunck.lod <= 1) {
                 request.chunck.initialize();

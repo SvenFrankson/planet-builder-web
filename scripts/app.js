@@ -2477,6 +2477,8 @@ class PlanetChunckGroup extends AbstractPlanetChunck {
         this.level = level;
         this.children = [];
         this.lines = [];
+        this._subdivisionsCount = 0;
+        this._subdivisionsSkipedCount = 0;
         this._subdivided = false;
         this.name = "group:" + this.side + ":" + this.iPos + "-" + this.jPos + "-" + this.kPos + ":" + this.level;
         this._degree = degree;
@@ -2527,6 +2529,7 @@ class PlanetChunckGroup extends AbstractPlanetChunck {
         return this._subdivided;
     }
     subdivide() {
+        this._subdivisionsSkipedCount++;
         this.unregister();
         if (this._subdivided) {
             return;
@@ -2562,6 +2565,11 @@ class PlanetChunckGroup extends AbstractPlanetChunck {
                 }
             }
         }
+        this._subdivisionsCount++;
+        if (this._subdivisionsCount > 100) {
+            debugger;
+        }
+        console.log(this.name + " " + this._subdivisionsCount + " (" + this._subdivisionsSkipedCount + ")");
     }
     collapse() {
         if (this.canCollapse()) {
@@ -2621,9 +2629,8 @@ class PlanetChunckManager {
             let t = t0;
             let sortedCount = 0;
             let unsortedCount = 0;
-            let duration = 0.5 + 150 * (1 - this.chunckSortedRatio);
-            duration = Math.min(duration, 1000 / 24);
-            while ((t - t0) < duration) {
+            let todo = [];
+            while ((t - t0) < 1 && todo.length < 50) {
                 for (let prevLayerIndex = 0; prevLayerIndex < this._lodLayersCount; prevLayerIndex++) {
                     let cursor = this._lodLayersCursors[prevLayerIndex];
                     let chunck = this._lodLayers[prevLayerIndex][cursor];
@@ -2635,7 +2642,7 @@ class PlanetChunckManager {
                             this._lodLayers[prevLayerIndex].splice(cursor, 1);
                             this._lodLayers[newLayerIndex].splice(adequateLayerCursor, 0, chunck);
                             chunck.lod = newLayerIndex;
-                            this.onChunckMovedToLayer(chunck, newLayerIndex);
+                            todo.push(chunck);
                             this._lodLayersCursors[newLayerIndex]++;
                             if (this._lodLayersCursors[newLayerIndex] >= this._lodLayers[newLayerIndex].length) {
                                 this._lodLayersCursors[newLayerIndex] = 0;
@@ -2659,6 +2666,9 @@ class PlanetChunckManager {
                 }
                 t = performance.now();
             }
+            for (let i = 0; i < todo.length; i++) {
+                this.onChunckMovedToLayer(todo[i], todo[i].lod);
+            }
             if (this._needRedraw.length > 0) {
                 this._activity++;
                 this._activity = Math.min(this._activity, this._maxActivity);
@@ -2675,7 +2685,7 @@ class PlanetChunckManager {
             }
             // Recalculate chunck meshes.
             t0 = performance.now();
-            while (this._needRedraw.length > 0 && (t - t0) < 1000 / (60 * 1.5)) {
+            while (this._needRedraw.length > 0 && (t - t0) < 1000 / 120) {
                 let request = this._needRedraw.pop();
                 if (request.chunck.lod <= 1) {
                     request.chunck.initialize();
@@ -2707,7 +2717,7 @@ class PlanetChunckManager {
         this._lodLayers = [];
         this._lodLayersCursors = [];
         this._lodLayersSqrDistances = [];
-        let distances = [80, 110, 140, 170, 200];
+        let distances = [50, 90, 130, 170, 210];
         for (let i = 0; i < this._lodLayersCount - 1; i++) {
             this._lodLayers[i] = [];
             this._lodLayersCursors[i] = 0;
@@ -2803,7 +2813,7 @@ class PlanetChunckManager {
                 chunck.collapse();
             }
             else if (chunck instanceof PlanetChunckGroup) {
-                if (chunck.level < 2) {
+                if (chunck.level < 1) {
                     chunck.collapse();
                 }
                 else if (chunck.level > 2) {
@@ -2818,7 +2828,7 @@ class PlanetChunckManager {
                 chunck.collapse();
             }
             else if (chunck instanceof PlanetChunckGroup) {
-                if (chunck.level < 3) {
+                if (chunck.level < 2) {
                     chunck.collapse();
                 }
                 else if (chunck.level > 3) {
@@ -2833,7 +2843,7 @@ class PlanetChunckManager {
                 chunck.collapse();
             }
             else if (chunck instanceof PlanetChunckGroup) {
-                if (chunck.level < 4) {
+                if (chunck.level < 3) {
                     chunck.collapse();
                 }
                 else if (chunck.level > 4) {
@@ -2991,7 +3001,7 @@ class PlanetChunckMeshBuilder {
     }
     static BuildVertexData(chunck, iPos, jPos, kPos) {
         let lod = chunck.lod;
-        lod = 0;
+        lod = 1;
         let size = chunck.size;
         let vertexData = new BABYLON.VertexData();
         if (!PCMB.tmpVertices || PCMB.tmpVertices.length < 15) {
@@ -5693,29 +5703,31 @@ class Player extends BABYLON.Mesh {
             // Check wall collisions.
             let fLat = 1;
             this._surfaceFactor.copyFromFloats(0, 0, 0);
-            for (let i = 0; i < this._collisionPositions.length; i++) {
-                let pos = this._collisionPositions[i];
-                for (let j = 0; j < this._collisionAxis.length; j++) {
-                    let axis = this._collisionAxis[j];
-                    let ray = new BABYLON.Ray(pos, axis, 0.35);
-                    let hit = ray.intersectsMeshes(this._meshes);
-                    hit = hit.sort((h1, h2) => { return h1.distance - h2.distance; });
-                    if (hit[0] && hit[0].pickedPoint) {
-                        if (!this._debugCollisionWallMesh) {
-                            this._debugCollisionWallMesh = BABYLON.MeshBuilder.CreateSphere("debug-collision-mesh", { diameter: 0.2 }, this.getScene());
-                            let material = new BABYLON.StandardMaterial("material", this.getScene());
-                            material.alpha = 0.5;
-                            this._debugCollisionWallMesh.material = material;
-                        }
-                        this._debugCollisionWallMesh.position.copyFrom(hit[0].pickedPoint);
-                        let d = hit[0].pickedPoint.subtract(pos).length();
-                        if (d > 0.01) {
-                            this._surfaceFactor.addInPlace(axis.scale((((-10 / this.mass) * 0.3) / d) * deltaTime));
-                            fLat = 0.1;
-                        }
-                        else {
-                            // In case where it stuck to the surface, force push.
-                            this.position.addInPlace(hit[0].getNormal(true).scale(0.01));
+            if (!this.godMode) {
+                for (let i = 0; i < this._collisionPositions.length; i++) {
+                    let pos = this._collisionPositions[i];
+                    for (let j = 0; j < this._collisionAxis.length; j++) {
+                        let axis = this._collisionAxis[j];
+                        let ray = new BABYLON.Ray(pos, axis, 0.35);
+                        let hit = ray.intersectsMeshes(this._meshes);
+                        hit = hit.sort((h1, h2) => { return h1.distance - h2.distance; });
+                        if (hit[0] && hit[0].pickedPoint) {
+                            if (!this._debugCollisionWallMesh) {
+                                this._debugCollisionWallMesh = BABYLON.MeshBuilder.CreateSphere("debug-collision-mesh", { diameter: 0.2 }, this.getScene());
+                                let material = new BABYLON.StandardMaterial("material", this.getScene());
+                                material.alpha = 0.5;
+                                this._debugCollisionWallMesh.material = material;
+                            }
+                            this._debugCollisionWallMesh.position.copyFrom(hit[0].pickedPoint);
+                            let d = hit[0].pickedPoint.subtract(pos).length();
+                            if (d > 0.01) {
+                                this._surfaceFactor.addInPlace(axis.scale((((-10 / this.mass) * 0.3) / d) * deltaTime));
+                                fLat = 0.1;
+                            }
+                            else {
+                                // In case where it stuck to the surface, force push.
+                                this.position.addInPlace(hit[0].getNormal(true).scale(0.01));
+                            }
                         }
                     }
                 }

@@ -291,28 +291,30 @@ class Player extends BABYLON.Mesh {
         // Check wall collisions.
         let fLat = 1;
         this._surfaceFactor.copyFromFloats(0, 0, 0);
-        for (let i = 0; i < this._collisionPositions.length; i++) {
-            let pos = this._collisionPositions[i];
-            for (let j = 0; j < this._collisionAxis.length; j++) {
-                let axis = this._collisionAxis[j];
-                let ray: BABYLON.Ray = new BABYLON.Ray(pos, axis, 0.35);
-                let hit: BABYLON.PickingInfo[] = ray.intersectsMeshes(this._meshes);
-                hit = hit.sort((h1, h2) => { return h1.distance - h2.distance; });
-                if (hit[0] && hit[0].pickedPoint) {
-                    if (!this._debugCollisionWallMesh) {
-                        this._debugCollisionWallMesh = BABYLON.MeshBuilder.CreateSphere("debug-collision-mesh", { diameter: 0.2 }, this.getScene());
-                        let material = new BABYLON.StandardMaterial("material", this.getScene());
-                        material.alpha = 0.5;
-                        this._debugCollisionWallMesh.material = material;
-                    }
-                    this._debugCollisionWallMesh.position.copyFrom(hit[0].pickedPoint);
-                    let d: number = hit[0].pickedPoint.subtract(pos).length();
-                    if (d > 0.01) {
-                        this._surfaceFactor.addInPlace(axis.scale((((-10 / this.mass) * 0.3) / d) * deltaTime));
-                        fLat = 0.1;
-                    } else {
-                        // In case where it stuck to the surface, force push.
-                        this.position.addInPlace(hit[0].getNormal(true).scale(0.01));
+        if (!this.godMode) {
+            for (let i = 0; i < this._collisionPositions.length; i++) {
+                let pos = this._collisionPositions[i];
+                for (let j = 0; j < this._collisionAxis.length; j++) {
+                    let axis = this._collisionAxis[j];
+                    let ray: BABYLON.Ray = new BABYLON.Ray(pos, axis, 0.35);
+                    let hit: BABYLON.PickingInfo[] = ray.intersectsMeshes(this._meshes);
+                    hit = hit.sort((h1, h2) => { return h1.distance - h2.distance; });
+                    if (hit[0] && hit[0].pickedPoint) {
+                        if (!this._debugCollisionWallMesh) {
+                            this._debugCollisionWallMesh = BABYLON.MeshBuilder.CreateSphere("debug-collision-mesh", { diameter: 0.2 }, this.getScene());
+                            let material = new BABYLON.StandardMaterial("material", this.getScene());
+                            material.alpha = 0.5;
+                            this._debugCollisionWallMesh.material = material;
+                        }
+                        this._debugCollisionWallMesh.position.copyFrom(hit[0].pickedPoint);
+                        let d: number = hit[0].pickedPoint.subtract(pos).length();
+                        if (d > 0.01) {
+                            this._surfaceFactor.addInPlace(axis.scale((((-10 / this.mass) * 0.3) / d) * deltaTime));
+                            fLat = 0.1;
+                        } else {
+                            // In case where it stuck to the surface, force push.
+                            this.position.addInPlace(hit[0].getNormal(true).scale(0.01));
+                        }
                     }
                 }
             }
