@@ -78,7 +78,7 @@ class Game extends Main {
 			this.actionManager.initialize();
 			let ass = async () => {
 				let slotIndex = 1;
-				for (let i = 1; i < BlockType.Unknown; i++) {
+				for (let i = BlockType.Grass; i < BlockType.Unknown; i++) {
 					this.actionManager.linkAction(await PlayerActionTemplate.CreateBlockAction(this.player, i), slotIndex);
 					slotIndex++;
 				}
@@ -95,7 +95,7 @@ class Game extends Main {
 
 			//Game.CameraManager.plane = Game.Plane;
 			Game.CameraManager.player = this.player;
-			Game.CameraManager.setMode(CameraMode.Sky);
+			Game.CameraManager.setMode(CameraMode.Player);
 
 			//planetTest.AsyncInitialize();
 
