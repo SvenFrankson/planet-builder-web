@@ -134,7 +134,7 @@ class PlanetChunckGroup extends AbstractPlanetChunck {
                             let chunck = this.children[j + 2 * i + 4 * k] as PlanetChunck;
                             if (!chunck) {
                                 chunck = PlanetChunck.CreateChunck(this.iPos * 2 + i, this.jPos * 2 + j, childKPos, this.planetSide, this);
-                                console.log(PlanetChunck._DEBUG_NICE_CHUNCK_COUNT + " " + PlanetChunck._DEBUG_CHUNCK_COUNT);
+                                //console.log(PlanetChunck._DEBUG_NICE_CHUNCK_COUNT + " " + PlanetChunck._DEBUG_CHUNCK_COUNT);
                                 this.children[j + 2 * i + 4 * k] = chunck;
                             }
                             chunck.register();

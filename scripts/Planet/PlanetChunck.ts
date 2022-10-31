@@ -181,7 +181,7 @@ class PlanetChunck extends AbstractPlanetChunck {
         if (kPos < planetSide.kPosMax - 1) {
             let degree = PlanetTools.KPosToDegree(kPos);
             let chunckCount = PlanetTools.DegreeToChuncksCount(degree);
-            if (iPos > 0 && iPos < chunckCount - 1) {
+            if (planetSide.side <= Side.Left || iPos > 0 && iPos < chunckCount - 1) {
                 if (jPos > 0 && jPos < chunckCount - 1) {
                     let degreeBellow = PlanetTools.KPosToDegree(kPos - 1);
                     if (degreeBellow === degree) {

@@ -59,7 +59,7 @@ class Game extends Main {
 			let planetTest: Planet = new Planet("Paulita", kPosMax, this.chunckManager);
 			window["PlanetTest"] = planetTest;
 
-			planetTest.generator = new PlanetGeneratorEarth(planetTest, 0.60, 0.1);
+			planetTest.generator = new PlanetGeneratorEarth(planetTest, 0.60, 0.2);
 			//planetTest.generator = new PlanetGeneratorFlat(planetTest, 0.60, 0.1);
 			//planetTest.generator = new PlanetGeneratorDebug4(planetTest);
 			let r = kPosMax * PlanetTools.CHUNCKSIZE * 0.7;

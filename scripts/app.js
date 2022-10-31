@@ -1426,7 +1426,7 @@ class Game extends Main {
             let kPosMax = 10;
             let planetTest = new Planet("Paulita", kPosMax, this.chunckManager);
             window["PlanetTest"] = planetTest;
-            planetTest.generator = new PlanetGeneratorEarth(planetTest, 0.60, 0.1);
+            planetTest.generator = new PlanetGeneratorEarth(planetTest, 0.60, 0.2);
             //planetTest.generator = new PlanetGeneratorFlat(planetTest, 0.60, 0.1);
             //planetTest.generator = new PlanetGeneratorDebug4(planetTest);
             let r = kPosMax * PlanetTools.CHUNCKSIZE * 0.7;
@@ -2260,16 +2260,19 @@ class PlanetChunck extends AbstractPlanetChunck {
         if (kPos < planetSide.kPosMax - 1) {
             let degree = PlanetTools.KPosToDegree(kPos);
             let chunckCount = PlanetTools.DegreeToChuncksCount(degree);
-            if (iPos > 0 && iPos < chunckCount - 1) {
+            if (planetSide.side <= Side.Left || iPos > 0 && iPos < chunckCount - 1) {
                 if (jPos > 0 && jPos < chunckCount - 1) {
-                    let degreeAbove = PlanetTools.KPosToDegree(kPos + 1);
-                    if (degreeAbove === degree) {
-                        PlanetChunck._DEBUG_NICE_CHUNCK_COUNT++;
-                        return new PlanetChunckNice(iPos, jPos, kPos, planetSide, parentGroup);
-                    }
-                    else {
-                        PlanetChunck._DEBUG_NICE_CHUNCK_COUNT++;
-                        return new PlanetChunckSemiNice(iPos, jPos, kPos, planetSide, parentGroup);
+                    let degreeBellow = PlanetTools.KPosToDegree(kPos - 1);
+                    if (degreeBellow === degree) {
+                        let degreeAbove = PlanetTools.KPosToDegree(kPos + 1);
+                        if (degreeAbove === degree) {
+                            PlanetChunck._DEBUG_NICE_CHUNCK_COUNT++;
+                            return new PlanetChunckNice(iPos, jPos, kPos, planetSide, parentGroup);
+                        }
+                        else {
+                            PlanetChunck._DEBUG_NICE_CHUNCK_COUNT++;
+                            return new PlanetChunckSemiNice(iPos, jPos, kPos, planetSide, parentGroup);
+                        }
                     }
                 }
             }
@@ -2647,7 +2650,7 @@ class PlanetChunckGroup extends AbstractPlanetChunck {
                             let chunck = this.children[j + 2 * i + 4 * k];
                             if (!chunck) {
                                 chunck = PlanetChunck.CreateChunck(this.iPos * 2 + i, this.jPos * 2 + j, childKPos, this.planetSide, this);
-                                console.log(PlanetChunck._DEBUG_NICE_CHUNCK_COUNT + " " + PlanetChunck._DEBUG_CHUNCK_COUNT);
+                                //console.log(PlanetChunck._DEBUG_NICE_CHUNCK_COUNT + " " + PlanetChunck._DEBUG_CHUNCK_COUNT);
                                 this.children[j + 2 * i + 4 * k] = chunck;
                             }
                             chunck.register();
@@ -2782,6 +2785,7 @@ class PlanetChunckManager {
                     }
                 }
             }
+            this._needRedraw = this._needRedraw.sort((r1, r2) => { return r2.chunck.sqrDistanceToViewpoint - r1.chunck.sqrDistanceToViewpoint; });
             // Recalculate chunck meshes.
             t0 = performance.now();
             while (this._needRedraw.length > 0 && (t - t0) < 1000 / 120) {
@@ -2793,6 +2797,9 @@ class PlanetChunckManager {
                     request.chunck.disposeMesh();
                 }
                 t = performance.now();
+            }
+            if ((t - t0) > 100) {
+                console.log(((t - t0)).toFixed(3));
             }
             this.chunckSortedRatio = (this.chunckSortedRatio + sortedCount / (sortedCount + unsortedCount)) * 0.5;
             if (isNaN(this.chunckSortedRatio)) {

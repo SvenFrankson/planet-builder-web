@@ -270,6 +270,7 @@ class PlanetChunckManager {
             }
         }
 
+        this._needRedraw = this._needRedraw.sort((r1, r2) => { return r2.chunck.sqrDistanceToViewpoint - r1.chunck.sqrDistanceToViewpoint; });
         // Recalculate chunck meshes.
         t0 = performance.now();
         while (this._needRedraw.length > 0 && (t - t0) < 1000 / 120) {
@@ -281,6 +282,9 @@ class PlanetChunckManager {
                 request.chunck.disposeMesh();
             }
             t = performance.now();
+        }
+        if ((t - t0) > 100) {
+            console.log(((t - t0)).toFixed(3));
         }
 
         this.chunckSortedRatio = (this.chunckSortedRatio + sortedCount / (sortedCount + unsortedCount))* 0.5;
