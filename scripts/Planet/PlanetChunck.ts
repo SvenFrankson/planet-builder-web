@@ -190,6 +190,10 @@ class PlanetChunck extends AbstractPlanetChunck {
                             PlanetChunck._DEBUG_NICE_CHUNCK_COUNT++;
                             return new PlanetChunckNice(iPos, jPos, kPos, planetSide, parentGroup);
                         }
+                        else {
+                            PlanetChunck._DEBUG_NICE_CHUNCK_COUNT++;
+                            return new PlanetChunckSemiNice(iPos, jPos, kPos, planetSide, parentGroup);
+                        }
                     }
                 }
             }
