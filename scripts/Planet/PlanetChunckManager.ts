@@ -29,8 +29,8 @@ class PlanetChunckManager {
     public chunckSortedRatio: number = 0;
 
     // activity increase while manager is redrawing Chuncks.
-    private _maxActivity: number = 20;
-    private _activity: number = this._maxActivity;
+    //private _maxActivity: number = 20;
+    //private _activity: number = this._maxActivity;
 
     constructor(
         public scene: BABYLON.Scene
@@ -49,7 +49,7 @@ class PlanetChunckManager {
         this._lodLayers = [];
         this._lodLayersCursors = [];
         this._lodLayersSqrDistances = [];
-        let distances = [80, 100, 120, 140, 160];
+        let distances = [120, 160, 200, 240, 280];
         for (let i = 0; i < this._lodLayersCount - 1; i++) {
             this._lodLayers[i] = [];
             this._lodLayersCursors[i] = 0;
@@ -255,6 +255,7 @@ class PlanetChunckManager {
             this.onChunckMovedToLayer(todo[i], todo[i].lod);
         }
         
+        /*
         if (this._needRedraw.length > 0) {
             this._activity ++;
             this._activity = Math.min(this._activity, this._maxActivity);
@@ -269,6 +270,7 @@ class PlanetChunckManager {
                 }
             }
         }
+        */
 
         this._needRedraw = this._needRedraw.sort((r1, r2) => { return r2.chunck.sqrDistanceToViewpoint - r1.chunck.sqrDistanceToViewpoint; });
         // Recalculate chunck meshes.
@@ -293,6 +295,7 @@ class PlanetChunckManager {
         }
     }
 
+    /*
     public isActive(): boolean {
         return this._activity > 1;
     }
@@ -307,4 +310,5 @@ class PlanetChunckManager {
             this._onNextInactiveCallback = callback;
         }
     }
+    */
 }

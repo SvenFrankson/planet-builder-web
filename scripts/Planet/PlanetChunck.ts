@@ -86,9 +86,6 @@ class PlanetChunck extends AbstractPlanetChunck {
         if (!this.dataInitialized) {
             this.initializeData();
         }
-        if (!this.dataNeighbourSynced) {
-            this.syncWithAdjacents();
-        }
 
         if (i >= this.firstI && i <= PlanetTools.CHUNCKSIZE) {
             if (j >= this.firstJ && j <= this.lastJ) {

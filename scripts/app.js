@@ -1375,7 +1375,7 @@ class Demo extends Main {
     async initialize() {
         return new Promise(resolve => {
             this.chunckManager = new PlanetChunckManager(this.scene);
-            let kPosMax = 6;
+            let kPosMax = 10;
             console.log("degree = " + PlanetTools.KPosToDegree(kPosMax));
             let planetTest = new Planet("Paulita", kPosMax, this.chunckManager);
             window["PlanetTest"] = planetTest;
@@ -1423,7 +1423,7 @@ class Game extends Main {
     async initialize() {
         return new Promise(resolve => {
             this.chunckManager = new PlanetChunckManager(this.scene);
-            let kPosMax = 10;
+            let kPosMax = 12;
             let planetTest = new Planet("Paulita", kPosMax, this.chunckManager);
             window["PlanetTest"] = planetTest;
             planetTest.generator = new PlanetGeneratorEarth(planetTest, 0.60, 0.2);
@@ -1447,9 +1447,6 @@ class Game extends Main {
             };
             ass();
             this.player.registerControl();
-            this.chunckManager.onNextInactive(() => {
-                this.player.initialize();
-            });
             Game.PlanetEditor = new PlanetEditor(planetTest);
             //Game.PlanetEditor.initialize();
             //Game.Plane = new Plane(new BABYLON.Vector3(0, 80, 0), planetTest);
@@ -1464,6 +1461,7 @@ class Game extends Main {
             PlanetChunckVertexData.InitializeData().then(() => {
                 this.chunckManager.initialize();
                 planetTest.register();
+                this.player.initialize();
                 let debugPlanetPerf = new DebugPlanetPerf(this);
                 debugPlanetPerf.show();
                 //let debugPlanetSkyColor = new DebugPlanetSkyColor(this);
@@ -2189,9 +2187,6 @@ class PlanetChunck extends AbstractPlanetChunck {
         if (!this.dataInitialized) {
             this.initializeData();
         }
-        if (!this.dataNeighbourSynced) {
-            this.syncWithAdjacents();
-        }
         if (i >= this.firstI && i <= PlanetTools.CHUNCKSIZE) {
             if (j >= this.firstJ && j <= this.lastJ) {
                 if (k >= this.firstK && k <= PlanetTools.CHUNCKSIZE) {
@@ -2711,15 +2706,15 @@ class PlanetChunckRedrawRequest {
     }
 }
 class PlanetChunckManager {
+    // activity increase while manager is redrawing Chuncks.
+    //private _maxActivity: number = 20;
+    //private _activity: number = this._maxActivity;
     constructor(scene) {
         this.scene = scene;
         this._needRedraw = [];
         this._lodLayersCount = 6;
         // estimated percentage of chuncks in the adequate layer
         this.chunckSortedRatio = 0;
-        // activity increase while manager is redrawing Chuncks.
-        this._maxActivity = 20;
-        this._activity = this._maxActivity;
         this._update = () => {
             if (this.scene.activeCameras && this.scene.activeCameras.length > 0) {
                 this._viewpoint.copyFrom(this.scene.activeCameras[0].globalPosition);
@@ -2771,8 +2766,9 @@ class PlanetChunckManager {
             for (let i = 0; i < todo.length; i++) {
                 this.onChunckMovedToLayer(todo[i], todo[i].lod);
             }
+            /*
             if (this._needRedraw.length > 0) {
-                this._activity++;
+                this._activity ++;
                 this._activity = Math.min(this._activity, this._maxActivity);
             }
             else {
@@ -2785,6 +2781,7 @@ class PlanetChunckManager {
                     }
                 }
             }
+            */
             this._needRedraw = this._needRedraw.sort((r1, r2) => { return r2.chunck.sqrDistanceToViewpoint - r1.chunck.sqrDistanceToViewpoint; });
             // Recalculate chunck meshes.
             t0 = performance.now();
@@ -2823,7 +2820,7 @@ class PlanetChunckManager {
         this._lodLayers = [];
         this._lodLayersCursors = [];
         this._lodLayersSqrDistances = [];
-        let distances = [80, 100, 120, 140, 160];
+        let distances = [120, 160, 200, 240, 280];
         for (let i = 0; i < this._lodLayersCount - 1; i++) {
             this._lodLayers[i] = [];
             this._lodLayersCursors[i] = 0;
@@ -2959,18 +2956,6 @@ class PlanetChunckManager {
         }
         else {
             debugger;
-        }
-    }
-    isActive() {
-        return this._activity > 1;
-    }
-    onNextInactive(callback) {
-        if (!this.isActive()) {
-            console.log("direct onNextInactive");
-            callback();
-        }
-        else {
-            this._onNextInactiveCallback = callback;
         }
     }
 }
@@ -3585,7 +3570,7 @@ class PlanetChunckNice extends PlanetChunck {
             this.data[PlanetTools.CHUNCKSIZE][n][PlanetTools.CHUNCKSIZE] = this._adjacents[2][1][2][0].GetDataNice(0, n, 0);
             this.data[PlanetTools.CHUNCKSIZE][PlanetTools.CHUNCKSIZE][n] = this._adjacents[2][2][1][0].GetDataNice(0, 0, n);
         }
-        this.data[PlanetTools.CHUNCKSIZE][PlanetTools.CHUNCKSIZE][PlanetTools.CHUNCKSIZE] = this._adjacents[2][2][2][0].GetData(0, 0, 0);
+        this.data[PlanetTools.CHUNCKSIZE][PlanetTools.CHUNCKSIZE][PlanetTools.CHUNCKSIZE] = this._adjacents[2][2][2][0].GetDataNice(0, 0, 0);
         this.updateIsEmptyIsFull();
         this.register();
         return hasUpdated;

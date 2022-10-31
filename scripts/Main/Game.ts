@@ -55,7 +55,7 @@ class Game extends Main {
 		return new Promise<void>(resolve => {
 			this.chunckManager = new PlanetChunckManager(this.scene);
 
-			let kPosMax = 10;
+			let kPosMax = 12;
 			let planetTest: Planet = new Planet("Paulita", kPosMax, this.chunckManager);
 			window["PlanetTest"] = planetTest;
 
@@ -84,9 +84,6 @@ class Game extends Main {
 			ass();
 			
 			this.player.registerControl();
-			this.chunckManager.onNextInactive(() => {
-				this.player.initialize();
-			})
 
 			Game.PlanetEditor = new PlanetEditor(planetTest);
 			//Game.PlanetEditor.initialize();
@@ -108,6 +105,8 @@ class Game extends Main {
 				() => {
 					this.chunckManager.initialize();
 					planetTest.register();
+					
+					this.player.initialize();
 
 					let debugPlanetPerf = new DebugPlanetPerf(this);
 					debugPlanetPerf.show();

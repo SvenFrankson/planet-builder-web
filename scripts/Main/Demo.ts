@@ -34,7 +34,7 @@ class Demo extends Main {
 		return new Promise<void>(resolve => {
 			this.chunckManager = new PlanetChunckManager(this.scene);
 
-			let kPosMax = 6;
+			let kPosMax = 10;
 			console.log("degree = " + PlanetTools.KPosToDegree(kPosMax));
 			let planetTest: Planet = new Planet("Paulita", kPosMax, this.chunckManager);
 			window["PlanetTest"] = planetTest;
