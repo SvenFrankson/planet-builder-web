@@ -7,6 +7,7 @@
     "meta-viewport": "off",
     "axe/language": "off",
     "axe/text-alternatives": "off",
-    "meta-charset-utf-8": "off"
+    "meta-charset-utf-8": "off",
+    "no-inline-styles": "off"
   }
 }

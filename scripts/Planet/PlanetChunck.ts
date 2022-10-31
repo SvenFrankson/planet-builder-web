@@ -493,8 +493,10 @@ class PlanetChunck extends AbstractPlanetChunck {
             this.waterMesh.material = SharedMaterials.WaterMaterial();
 
             this.waterMesh.parent = this.planetSide;
-            this.waterMesh.freezeWorldMatrix();
-            this.waterMesh.refreshBoundingInfo();
+            requestAnimationFrame(() => {
+                this.waterMesh.freezeWorldMatrix();
+                this.waterMesh.refreshBoundingInfo();
+            })
         }
     
         if (this.kPos === 0) {
@@ -510,8 +512,10 @@ class PlanetChunck extends AbstractPlanetChunck {
         }
 
         this.mesh.parent = this.planetSide;
-        this.mesh.freezeWorldMatrix();
-        this.mesh.refreshBoundingInfo();
+        requestAnimationFrame(() => {
+            this.mesh.freezeWorldMatrix();
+            this.mesh.refreshBoundingInfo();
+        })
         if (DebugDefine.USE_VERTEX_SET_MESH_HISTORY) {
             this._setMeshHistory.push(performance.now());
         }

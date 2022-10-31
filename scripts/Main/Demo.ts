@@ -34,7 +34,7 @@ class Demo extends Main {
 		this.light.groundColor = new BABYLON.Color3(0.5, 0.5, 0.5);
 		
 		this.cameraManager = new CameraManager(this);
-		this.cameraManager.arcRotateCamera.lowerRadiusLimit = 100;
+		this.cameraManager.arcRotateCamera.lowerRadiusLimit = 90;
 		this.cameraManager.arcRotateCamera.upperRadiusLimit = 140;
 	}
 
@@ -70,12 +70,15 @@ class Demo extends Main {
 					if (eventData.pickInfo.hit) {
 						let p = eventData.pickInfo.pickedPoint;
 						if (isFinite(p.x)) {
+							p = p.add(BABYLON.Vector3.Normalize(p).scale(1));
 							let target: BABYLON.Vector3;
 							if (this.cameraManager.cameraMode === CameraMode.Sky) {
 								this.player.position.copyFrom(this.cameraManager.absolutePosition);
 							}
 							this.player.animatePos(p, 1, target);
 							this.cameraManager.setMode(CameraMode.Player);
+							(document.querySelector("#sky-view") as HTMLDivElement).style.display = "flex";
+							(document.querySelector("#ground-view") as HTMLDivElement).style.display = "none";
 						}
 					}
 				}
@@ -89,7 +92,10 @@ class Demo extends Main {
 
 			document.querySelector("#sky-view").addEventListener("pointerdown", () => {
 				this.cameraManager.setMode(CameraMode.Sky);
-			})
+				(document.querySelector("#sky-view") as HTMLDivElement).style.display = "none";
+				(document.querySelector("#ground-view") as HTMLDivElement).style.display = "flex";
+			});
+			(document.querySelector("#sky-view") as HTMLDivElement).style.display = "none";
 
 			PlanetChunckVertexData.InitializeData().then(
 				() => {

@@ -1359,7 +1359,7 @@ class Demo extends Main {
         this.light.diffuse = new BABYLON.Color3(1, 1, 1);
         this.light.groundColor = new BABYLON.Color3(0.5, 0.5, 0.5);
         this.cameraManager = new CameraManager(this);
-        this.cameraManager.arcRotateCamera.lowerRadiusLimit = 100;
+        this.cameraManager.arcRotateCamera.lowerRadiusLimit = 90;
         this.cameraManager.arcRotateCamera.upperRadiusLimit = 140;
     }
     async initialize() {
@@ -1384,12 +1384,15 @@ class Demo extends Main {
                     if (eventData.pickInfo.hit) {
                         let p = eventData.pickInfo.pickedPoint;
                         if (isFinite(p.x)) {
+                            p = p.add(BABYLON.Vector3.Normalize(p).scale(1));
                             let target;
                             if (this.cameraManager.cameraMode === CameraMode.Sky) {
                                 this.player.position.copyFrom(this.cameraManager.absolutePosition);
                             }
                             this.player.animatePos(p, 1, target);
                             this.cameraManager.setMode(CameraMode.Player);
+                            document.querySelector("#sky-view").style.display = "flex";
+                            document.querySelector("#ground-view").style.display = "none";
                         }
                     }
                 }
@@ -1402,7 +1405,10 @@ class Demo extends Main {
             });
             document.querySelector("#sky-view").addEventListener("pointerdown", () => {
                 this.cameraManager.setMode(CameraMode.Sky);
+                document.querySelector("#sky-view").style.display = "none";
+                document.querySelector("#ground-view").style.display = "flex";
             });
+            document.querySelector("#sky-view").style.display = "none";
             PlanetChunckVertexData.InitializeData().then(() => {
                 this.chunckManager.initialize();
                 this.player.initialize();
@@ -2520,16 +2526,20 @@ class PlanetChunck extends AbstractPlanetChunck {
             waterVertexData.applyToMesh(this.waterMesh);
             this.waterMesh.material = SharedMaterials.WaterMaterial();
             this.waterMesh.parent = this.planetSide;
-            this.waterMesh.freezeWorldMatrix();
-            this.waterMesh.refreshBoundingInfo();
+            requestAnimationFrame(() => {
+                this.waterMesh.freezeWorldMatrix();
+                this.waterMesh.refreshBoundingInfo();
+            });
         }
         if (this.kPos === 0) {
             vertexData = PlanetChunckMeshBuilder.BuildBedrockVertexData(this.size, this.iPos, this.jPos, this.kPos, 8, this.data);
             vertexData.applyToMesh(this.bedrock);
         }
         this.mesh.parent = this.planetSide;
-        this.mesh.freezeWorldMatrix();
-        this.mesh.refreshBoundingInfo();
+        requestAnimationFrame(() => {
+            this.mesh.freezeWorldMatrix();
+            this.mesh.refreshBoundingInfo();
+        });
         if (DebugDefine.USE_VERTEX_SET_MESH_HISTORY) {
             this._setMeshHistory.push(performance.now());
         }
