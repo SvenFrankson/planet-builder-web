@@ -55,11 +55,11 @@ class Game extends Main {
 		return new Promise<void>(resolve => {
 			this.chunckManager = new PlanetChunckManager(this.scene);
 
-			let kPosMax = 12;
+			let kPosMax = 10;
 			let planetTest: Planet = new Planet("Paulita", kPosMax, this.chunckManager);
 			window["PlanetTest"] = planetTest;
 
-			planetTest.generator = new PlanetGeneratorEarth(planetTest, 0.60, 0.2);
+			planetTest.generator = new PlanetGeneratorChaos(planetTest, 0.60, 0.2);
 			//planetTest.generator = new PlanetGeneratorFlat(planetTest, 0.60, 0.1);
 			//planetTest.generator = new PlanetGeneratorDebug4(planetTest);
 			let r = kPosMax * PlanetTools.CHUNCKSIZE * 0.7;

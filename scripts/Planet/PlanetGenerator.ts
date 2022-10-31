@@ -95,6 +95,88 @@ class PlanetGeneratorEarth extends PlanetGenerator {
     }
 }
 
+
+class PlanetGeneratorChaos extends PlanetGenerator {
+
+    private _mainHeightMap: PlanetHeightMap;
+    private _tunnelMap: PlanetHeightMap;
+    private _tunnelAltitudeMap: PlanetHeightMap;
+    private _rockMap: PlanetHeightMap;
+
+    constructor(planet: Planet, private _seaLevel: number, private _mountainHeight: number) {
+        super(planet);
+        console.log("Generator Degree = " + PlanetTools.KPosToDegree(planet.kPosMax));
+        this._mainHeightMap = PlanetHeightMap.CreateMap(PlanetTools.KPosToDegree(planet.kPosMax));
+        this._tunnelMap = PlanetHeightMap.CreateMap(PlanetTools.KPosToDegree(planet.kPosMax), { firstNoiseDegree : PlanetTools.KPosToDegree(planet.kPosMax) - 5 });
+        this._tunnelAltitudeMap = PlanetHeightMap.CreateMap(PlanetTools.KPosToDegree(planet.kPosMax));
+        this._rockMap = PlanetHeightMap.CreateMap(PlanetTools.KPosToDegree(planet.kPosMax), { firstNoiseDegree : PlanetTools.KPosToDegree(planet.kPosMax) - 3});
+        this.heightMaps = [this._tunnelMap, this._tunnelAltitudeMap];
+    }
+
+    public makeData(chunck: PlanetChunck, refData: number[][][], refProcedural: ProceduralTree[]): void {
+        let f = Math.pow(2, this._mainHeightMap.degree - chunck.degree);
+        let maxTree = 1;
+        let treeCount = 0;
+
+        for (let i: number = 0; i < PlanetTools.CHUNCKSIZE; i++) {
+            refData[i - chunck.firstI] = [];
+            for (let j: number = 0; j < PlanetTools.CHUNCKSIZE; j++) {
+                refData[i - chunck.firstI][j - chunck.firstJ] = [];
+
+                let v = this._mainHeightMap.getForSide(chunck.side, (chunck.iPos * PlanetTools.CHUNCKSIZE + i) * f, (chunck.jPos * PlanetTools.CHUNCKSIZE + j) * f);
+                let altitude = Math.floor((this._seaLevel + v * this._mountainHeight) * this.planet.kPosMax * PlanetTools.CHUNCKSIZE);
+                let rock = this._rockMap.getForSide(chunck.side, (chunck.iPos * PlanetTools.CHUNCKSIZE + i) * f, (chunck.jPos * PlanetTools.CHUNCKSIZE + j) * f);
+                let rockAltitude = altitude + Math.round((rock - 0.4) * this._mountainHeight * this.planet.kPosMax * PlanetTools.CHUNCKSIZE);
+                
+                let tunnel = Math.abs(this._tunnelMap.getForSide(chunck.side, (chunck.iPos * PlanetTools.CHUNCKSIZE + i) * f, (chunck.jPos * PlanetTools.CHUNCKSIZE + j) * f)) < 0.1;
+                let tunnelV = this._tunnelMap.getForSide(chunck.side, (chunck.iPos * PlanetTools.CHUNCKSIZE + i) * f, (chunck.jPos * PlanetTools.CHUNCKSIZE + j) * f);
+                let tunnelAltitude = Math.floor((this._seaLevel + tunnelV * this._mountainHeight) * this.planet.kPosMax * PlanetTools.CHUNCKSIZE);
+
+                /*
+                if (tree > 0.6 && treeCount < maxTree) {
+                    let localK = altitude + 1 - chunck.kPos * PlanetTools.CHUNCKSIZE;
+                    if (localK >= 0 && localK < PlanetTools.CHUNCKSIZE) {
+                        let tree = new ProceduralTree(chunck.chunckManager);
+                        tree.chunck = chunck;
+                        tree.i = i;
+                        tree.j = j;
+                        tree.k = localK;
+                        refProcedural.push(tree);
+                        treeCount++;
+                    }
+                }
+                */
+
+                for (let k: number = 0; k < PlanetTools.CHUNCKSIZE; k++) {
+                    let globalK = k + chunck.kPos * PlanetTools.CHUNCKSIZE;
+
+                    if (globalK <= altitude) {
+                        if (globalK > altitude - 2) {
+                            if (globalK < this._seaLevel * (this.planet.kPosMax * PlanetTools.CHUNCKSIZE)) {
+                                refData[i - chunck.firstI][j - chunck.firstJ][k - chunck.firstK] = BlockType.Sand;
+                            }
+                            else {
+                                refData[i - chunck.firstI][j - chunck.firstJ][k - chunck.firstK] = BlockType.Grass;
+                            }
+                        }
+                        else {
+                            refData[i - chunck.firstI][j - chunck.firstJ][k - chunck.firstK] = BlockType.Rock;
+                        }
+                    }
+                    else if (globalK <= rockAltitude) {
+                        refData[i - chunck.firstI][j - chunck.firstJ][k - chunck.firstK] = BlockType.Rock;
+                    }
+                    if (tunnel) {
+                        if (globalK >= tunnelAltitude - 1 && globalK <= tunnelAltitude + 1) {
+                            refData[i - chunck.firstI][j - chunck.firstJ][k - chunck.firstK] = BlockType.None;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
 class PlanetGeneratorFlat extends PlanetGenerator {
 
     constructor(planet: Planet, private _seaLevel: number, private _mountainHeight: number) {
