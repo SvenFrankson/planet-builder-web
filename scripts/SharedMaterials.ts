@@ -28,31 +28,10 @@ class SharedMaterials {
     public static WaterMaterial(): BABYLON.StandardMaterial {
         if (!SharedMaterials.waterMaterial) {
             SharedMaterials.waterMaterial = new BABYLON.StandardMaterial("waterMaterial", Game.Scene);
-            SharedMaterials.waterMaterial.diffuseTexture = new BABYLON.Texture("./resources/textures/water.png", Game.Scene);
+            SharedMaterials.waterMaterial.diffuseColor = new BABYLON.Color3(0, 0.5, 1);
             SharedMaterials.waterMaterial.specularColor = BABYLON.Color3.Black();
-            SharedMaterials.waterMaterial.alpha = 0.5;
+            SharedMaterials.waterMaterial.alpha = 0.7;
         }
         return SharedMaterials.waterMaterial;
-    }
-
-    private static bedrockMaterial: BABYLON.StandardMaterial;
-    public static BedrockMaterial(): BABYLON.StandardMaterial {
-        if (!SharedMaterials.bedrockMaterial) {
-            SharedMaterials.bedrockMaterial = new BABYLON.StandardMaterial("waterMaterial", Game.Scene);
-            SharedMaterials.bedrockMaterial.diffuseTexture = new BABYLON.Texture("./resources/textures/bedrock.png", Game.Scene);
-            SharedMaterials.bedrockMaterial.specularColor = BABYLON.Color3.Black();
-        }
-        return SharedMaterials.bedrockMaterial;
-    }
-
-    private static skyMaterial: BABYLON.StandardMaterial;
-    public static SkyMaterial(): BABYLON.StandardMaterial {
-        if (!SharedMaterials.skyMaterial) {
-            SharedMaterials.skyMaterial = new BABYLON.StandardMaterial("skyMaterial", Game.Scene);
-            SharedMaterials.skyMaterial.emissiveTexture = new BABYLON.Texture("./resources/textures/sky.png", Game.Scene);
-            SharedMaterials.skyMaterial.diffuseColor = BABYLON.Color3.Black();
-            SharedMaterials.skyMaterial.specularColor = BABYLON.Color3.Black();
-        }
-        return SharedMaterials.skyMaterial;
     }
 }

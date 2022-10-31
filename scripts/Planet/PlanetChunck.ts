@@ -165,6 +165,7 @@ class PlanetChunck extends AbstractPlanetChunck {
     public isMeshDisposed(): boolean {
         return !this.mesh || this.mesh.isDisposed();
     }
+    public waterMesh: BABYLON.Mesh;
 
     public static _DEBUG_NICE_CHUNCK_COUNT: number = 0;
     public static _DEBUG_CHUNCK_COUNT: number = 0;
@@ -440,7 +441,7 @@ class PlanetChunck extends AbstractPlanetChunck {
         for (let i = this.firstI; i <= PlanetTools.CHUNCKSIZE; i++) {
             for (let j = this.firstJ; j <= this.lastJ; j++) {
                 for (let k = this.firstK; k <= PlanetTools.CHUNCKSIZE; k++) {
-                    let block = this.data[i - this.firstI][j - this.firstJ][k - this.firstK] > 0;
+                    let block = this.data[i - this.firstI][j - this.firstJ][k - this.firstK] > BlockType.Water;
                     this._isFull = this._isFull && block;
                     this._isEmpty = this._isEmpty && !block;
                     if (!this._isFull && !this._isEmpty) {
@@ -477,11 +478,24 @@ class PlanetChunck extends AbstractPlanetChunck {
         if (this.isMeshDisposed()) {
             this.mesh = new BABYLON.Mesh("chunck-" + this.iPos + "-" + this.jPos + "-" + this.kPos, this.scene);
         }
-        let vertexData: BABYLON.VertexData;
-        vertexData = PlanetChunckMeshBuilder.BuildVertexData(this, this.iPos, this.jPos, this.kPos);
+        let vertexDatas: BABYLON.VertexData[];
+        vertexDatas = PlanetChunckMeshBuilder.BuildVertexData(this, this.iPos, this.jPos, this.kPos);
+        let vertexData = vertexDatas[0];
         if (vertexData.positions.length > 0) {
             vertexData.applyToMesh(this.mesh);
             this.mesh.material = SharedMaterials.MainMaterial();
+        }
+        let waterVertexData = vertexDatas[1];
+        if (waterVertexData) {
+            if (!this.waterMesh || this.waterMesh.isDisposed()) {
+                this.waterMesh = new BABYLON.Mesh("chunckWater-" + this.iPos + "-" + this.jPos + "-" + this.kPos, this.scene);
+            }
+            waterVertexData.applyToMesh(this.waterMesh);
+            this.waterMesh.material = SharedMaterials.WaterMaterial();
+
+            this.waterMesh.parent = this.planetSide;
+            this.waterMesh.freezeWorldMatrix();
+            this.waterMesh.refreshBoundingInfo();
         }
     
         if (this.kPos === 0) {
@@ -494,7 +508,6 @@ class PlanetChunck extends AbstractPlanetChunck {
                 this.data
             );
             vertexData.applyToMesh(this.bedrock);
-            this.bedrock.material = SharedMaterials.BedrockMaterial();
         }
 
         this.mesh.parent = this.planetSide;
@@ -520,6 +533,9 @@ class PlanetChunck extends AbstractPlanetChunck {
     public disposeMesh(): void {
         if (this.mesh) {
             this.mesh.dispose();
+        }
+        if (this.waterMesh) {
+            this.waterMesh.dispose();
         }
     }
 

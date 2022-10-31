@@ -195,7 +195,7 @@ class PlanetChunckMeshBuilder {
         iPos: number,
         jPos: number,
         kPos: number
-    ): BABYLON.VertexData {
+    ): BABYLON.VertexData[] {
         let lod = chunck.lod;
         lod = 1;
         let size = chunck.size;
@@ -219,6 +219,12 @@ class PlanetChunckMeshBuilder {
         let uvs: number[] = [];
         let normals: number[] = [];
         let colors: number[] = [];
+        
+        let waterPositions: number[] = [];
+        let waterIndices: number[] = [];
+        let waterUvs: number[] = [];
+        let waterNormals: number[] = [];
+        let waterColors: number[] = [];
 
         let v0 = PCMB.tmpVertices[0];
         let v1 = PCMB.tmpVertices[1];
@@ -334,37 +340,65 @@ class PlanetChunckMeshBuilder {
                     else {
                         let ref = 0b0;
                         let d0 = chunck.GetData(i, j, k);
-                        if (d0) {
+                        if (d0 > BlockType.Water) {
                             ref |= 0b1 << 0;
                         }
+                        let d4 = chunck.GetData(i, j, k + 1);
+                        if (d4 > BlockType.Water) {
+                            ref |= 0b1 << 4;
+                        }
+                        // Solid case
                         let d1 = chunck.GetData(i + 1, j, k);
-                        if (d1) {
+                        if (d1 > BlockType.Water) {
                             ref |= 0b1 << 1;
                         }
                         let d2 = chunck.GetData(i + 1, j + 1, k);
-                        if (d2) {
+                        if (d2 > BlockType.Water) {
                             ref |= 0b1 << 2;
                         }
                         let d3 = chunck.GetData(i, j + 1, k);
-                        if (d3) {
+                        if (d3 > BlockType.Water) {
                             ref |= 0b1 << 3;
                         }
-                        let d4 = chunck.GetData(i, j, k + 1);
-                        if (d4) {
-                            ref |= 0b1 << 4;
-                        }
                         let d5 = chunck.GetData(i + 1, j, k + 1);
-                        if (d5) {
+                        if (d5 > BlockType.Water) {
                             ref |= 0b1 << 5;
                         }
                         let d6 = chunck.GetData(i + 1, j + 1, k + 1);
-                        if (d6) {
+                        if (d6 > BlockType.Water) {
                             ref |= 0b1 << 6;
                         }
                         let d7 = chunck.GetData(i, j + 1, k + 1);
-                        if (d7) {
+                        if (d7 > BlockType.Water) {
                             ref |= 0b1 << 7;
                         }
+
+                        // Water case
+                        if (d0 === BlockType.Water && d4 === BlockType.None || d1 === BlockType.Water && d5 === BlockType.None || d2 === BlockType.Water && d6 === BlockType.None || d3 === BlockType.Water && d7 === BlockType.None) {
+                            let iGlobal: number = i + iPos * PlanetTools.CHUNCKSIZE;
+                            let jGlobal: number = j + jPos * PlanetTools.CHUNCKSIZE;
+                            let hGlobal = (k + kPos * PlanetTools.CHUNCKSIZE);
+                            let altitude = PlanetTools.KGlobalToAltitude(hGlobal) * 0.5 + PlanetTools.KGlobalToAltitude(hGlobal + 1) * 0.5;
+
+                            PCMB.GetVertexToRef(2 * size, 2 * (iGlobal) + 1, 2 * (jGlobal) + 1, PCMB.tmpVertices[0]);
+                            PCMB.GetVertexToRef(2 * size, 2 * (iGlobal) + 1, 2 * (jGlobal + 1) + 1, PCMB.tmpVertices[1]);
+                            PCMB.GetVertexToRef(2 * size, 2 * (iGlobal + 1) + 1, 2 * (jGlobal) + 1, PCMB.tmpVertices[2]);
+                            PCMB.GetVertexToRef(2 * size, 2 * (iGlobal + 1) + 1, 2 * (jGlobal + 1) + 1, PCMB.tmpVertices[3]);
+
+                            PCMB.tmpVertices[0].scaleInPlace(altitude);
+                            PCMB.tmpVertices[1].scaleInPlace(altitude);
+                            PCMB.tmpVertices[2].scaleInPlace(altitude);
+                            PCMB.tmpVertices[3].scaleInPlace(altitude);
+
+                            let vertices = [PCMB.tmpVertices[0], PCMB.tmpVertices[1], PCMB.tmpVertices[2], PCMB.tmpVertices[3]]
+
+                            MeshTools.PushQuad(vertices, 0, 1, 3, 2, waterPositions, waterIndices);
+                            MeshTools.PushWaterUvs(waterUvs);
+
+                            MeshTools.PushQuad(vertices, 0, 2, 3, 1, waterPositions, waterIndices);
+                            MeshTools.PushWaterUvs(waterUvs);
+                        }
+
                         let blocks = [d0, d1, d2, d3, d4, d5, d6, d7];
     
                         if (ref === 0b0 || ref === 0b11111111) {
@@ -491,7 +525,17 @@ class PlanetChunckMeshBuilder {
         vertexData.colors = colors;
         vertexData.normals = normals;
 
-        return vertexData;
+        let waterVertexData: BABYLON.VertexData;
+        if (waterPositions.length > 0) {
+            waterVertexData = new BABYLON.VertexData();
+            waterVertexData.positions = waterPositions;
+            waterVertexData.indices = waterIndices;
+            waterVertexData.uvs = waterUvs;
+            BABYLON.VertexData.ComputeNormals(waterPositions, waterIndices, waterNormals);
+            waterVertexData.normals = waterNormals;
+        }
+
+        return [vertexData, waterVertexData];
     }
 
     public static BuildWaterVertexData(

@@ -118,6 +118,8 @@ class PlanetGeneratorChaos extends PlanetGenerator {
         let maxTree = 1;
         let treeCount = 0;
 
+        let seaLevel = Math.floor(this._seaLevel * this.planet.kPosMax * PlanetTools.CHUNCKSIZE);
+
         for (let i: number = 0; i < PlanetTools.CHUNCKSIZE; i++) {
             refData[i - chunck.firstI] = [];
             for (let j: number = 0; j < PlanetTools.CHUNCKSIZE; j++) {
@@ -150,6 +152,10 @@ class PlanetGeneratorChaos extends PlanetGenerator {
                 for (let k: number = 0; k < PlanetTools.CHUNCKSIZE; k++) {
                     let globalK = k + chunck.kPos * PlanetTools.CHUNCKSIZE;
 
+                    if (globalK < seaLevel) {
+                        refData[i - chunck.firstI][j - chunck.firstJ][k - chunck.firstK] = BlockType.Water;
+                    }
+
                     if (globalK <= altitude) {
                         if (globalK > altitude - 2) {
                             if (globalK < this._seaLevel * (this.planet.kPosMax * PlanetTools.CHUNCKSIZE)) {
@@ -170,6 +176,10 @@ class PlanetGeneratorChaos extends PlanetGenerator {
                         if (globalK >= tunnelAltitude - 1 && globalK <= tunnelAltitude + 1) {
                             refData[i - chunck.firstI][j - chunck.firstJ][k - chunck.firstK] = BlockType.None;
                         }
+                    }
+
+                    if (refData[i - chunck.firstI][j - chunck.firstJ][k - chunck.firstK] === BlockType.None && globalK < seaLevel) {
+                        refData[i - chunck.firstI][j - chunck.firstJ][k - chunck.firstK] = BlockType.Water;
                     }
                 }
             }

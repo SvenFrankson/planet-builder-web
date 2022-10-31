@@ -412,28 +412,11 @@ class SharedMaterials {
     static WaterMaterial() {
         if (!SharedMaterials.waterMaterial) {
             SharedMaterials.waterMaterial = new BABYLON.StandardMaterial("waterMaterial", Game.Scene);
-            SharedMaterials.waterMaterial.diffuseTexture = new BABYLON.Texture("./resources/textures/water.png", Game.Scene);
+            SharedMaterials.waterMaterial.diffuseColor = new BABYLON.Color3(0, 0.5, 1);
             SharedMaterials.waterMaterial.specularColor = BABYLON.Color3.Black();
-            SharedMaterials.waterMaterial.alpha = 0.5;
+            SharedMaterials.waterMaterial.alpha = 0.7;
         }
         return SharedMaterials.waterMaterial;
-    }
-    static BedrockMaterial() {
-        if (!SharedMaterials.bedrockMaterial) {
-            SharedMaterials.bedrockMaterial = new BABYLON.StandardMaterial("waterMaterial", Game.Scene);
-            SharedMaterials.bedrockMaterial.diffuseTexture = new BABYLON.Texture("./resources/textures/bedrock.png", Game.Scene);
-            SharedMaterials.bedrockMaterial.specularColor = BABYLON.Color3.Black();
-        }
-        return SharedMaterials.bedrockMaterial;
-    }
-    static SkyMaterial() {
-        if (!SharedMaterials.skyMaterial) {
-            SharedMaterials.skyMaterial = new BABYLON.StandardMaterial("skyMaterial", Game.Scene);
-            SharedMaterials.skyMaterial.emissiveTexture = new BABYLON.Texture("./resources/textures/sky.png", Game.Scene);
-            SharedMaterials.skyMaterial.diffuseColor = BABYLON.Color3.Black();
-            SharedMaterials.skyMaterial.specularColor = BABYLON.Color3.Black();
-        }
-        return SharedMaterials.skyMaterial;
     }
 }
 class Utils {
@@ -1947,6 +1930,7 @@ class AbstractPlanetChunck {
 }
 var BlockTypeNames = [
     "None",
+    "Water",
     "Grass",
     "Dirt",
     "Sand",
@@ -1959,13 +1943,14 @@ var BlockTypeCount = 7;
 var BlockType;
 (function (BlockType) {
     BlockType[BlockType["None"] = 0] = "None";
-    BlockType[BlockType["Grass"] = 1] = "Grass";
-    BlockType[BlockType["Dirt"] = 2] = "Dirt";
-    BlockType[BlockType["Sand"] = 3] = "Sand";
-    BlockType[BlockType["Rock"] = 4] = "Rock";
-    BlockType[BlockType["Wood"] = 5] = "Wood";
-    BlockType[BlockType["Leaf"] = 6] = "Leaf";
-    BlockType[BlockType["Unknown"] = 7] = "Unknown";
+    BlockType[BlockType["Water"] = 1] = "Water";
+    BlockType[BlockType["Grass"] = 2] = "Grass";
+    BlockType[BlockType["Dirt"] = 3] = "Dirt";
+    BlockType[BlockType["Sand"] = 4] = "Sand";
+    BlockType[BlockType["Rock"] = 5] = "Rock";
+    BlockType[BlockType["Wood"] = 6] = "Wood";
+    BlockType[BlockType["Leaf"] = 7] = "Leaf";
+    BlockType[BlockType["Unknown"] = 8] = "Unknown";
 })(BlockType || (BlockType = {}));
 class Planet extends BABYLON.Mesh {
     constructor(name, kPosMax, chunckManager) {
@@ -2426,7 +2411,7 @@ class PlanetChunck extends AbstractPlanetChunck {
         for (let i = this.firstI; i <= PlanetTools.CHUNCKSIZE; i++) {
             for (let j = this.firstJ; j <= this.lastJ; j++) {
                 for (let k = this.firstK; k <= PlanetTools.CHUNCKSIZE; k++) {
-                    let block = this.data[i - this.firstI][j - this.firstJ][k - this.firstK] > 0;
+                    let block = this.data[i - this.firstI][j - this.firstJ][k - this.firstK] > BlockType.Water;
                     this._isFull = this._isFull && block;
                     this._isEmpty = this._isEmpty && !block;
                     if (!this._isFull && !this._isEmpty) {
@@ -2461,16 +2446,27 @@ class PlanetChunck extends AbstractPlanetChunck {
         if (this.isMeshDisposed()) {
             this.mesh = new BABYLON.Mesh("chunck-" + this.iPos + "-" + this.jPos + "-" + this.kPos, this.scene);
         }
-        let vertexData;
-        vertexData = PlanetChunckMeshBuilder.BuildVertexData(this, this.iPos, this.jPos, this.kPos);
+        let vertexDatas;
+        vertexDatas = PlanetChunckMeshBuilder.BuildVertexData(this, this.iPos, this.jPos, this.kPos);
+        let vertexData = vertexDatas[0];
         if (vertexData.positions.length > 0) {
             vertexData.applyToMesh(this.mesh);
             this.mesh.material = SharedMaterials.MainMaterial();
         }
+        let waterVertexData = vertexDatas[1];
+        if (waterVertexData) {
+            if (!this.waterMesh || this.waterMesh.isDisposed()) {
+                this.waterMesh = new BABYLON.Mesh("chunckWater-" + this.iPos + "-" + this.jPos + "-" + this.kPos, this.scene);
+            }
+            waterVertexData.applyToMesh(this.waterMesh);
+            this.waterMesh.material = SharedMaterials.WaterMaterial();
+            this.waterMesh.parent = this.planetSide;
+            this.waterMesh.freezeWorldMatrix();
+            this.waterMesh.refreshBoundingInfo();
+        }
         if (this.kPos === 0) {
             vertexData = PlanetChunckMeshBuilder.BuildBedrockVertexData(this.size, this.iPos, this.jPos, this.kPos, 8, this.data);
             vertexData.applyToMesh(this.bedrock);
-            this.bedrock.material = SharedMaterials.BedrockMaterial();
         }
         this.mesh.parent = this.planetSide;
         this.mesh.freezeWorldMatrix();
@@ -2492,6 +2488,9 @@ class PlanetChunck extends AbstractPlanetChunck {
     disposeMesh() {
         if (this.mesh) {
             this.mesh.dispose();
+        }
+        if (this.waterMesh) {
+            this.waterMesh.dispose();
         }
     }
     serialize() {
@@ -3112,6 +3111,11 @@ class PlanetChunckMeshBuilder {
         let uvs = [];
         let normals = [];
         let colors = [];
+        let waterPositions = [];
+        let waterIndices = [];
+        let waterUvs = [];
+        let waterNormals = [];
+        let waterColors = [];
         let v0 = PCMB.tmpVertices[0];
         let v1 = PCMB.tmpVertices[1];
         let v2 = PCMB.tmpVertices[2];
@@ -3216,36 +3220,57 @@ class PlanetChunckMeshBuilder {
                     else {
                         let ref = 0b0;
                         let d0 = chunck.GetData(i, j, k);
-                        if (d0) {
+                        if (d0 > BlockType.Water) {
                             ref |= 0b1 << 0;
                         }
+                        let d4 = chunck.GetData(i, j, k + 1);
+                        if (d4 > BlockType.Water) {
+                            ref |= 0b1 << 4;
+                        }
+                        // Solid case
                         let d1 = chunck.GetData(i + 1, j, k);
-                        if (d1) {
+                        if (d1 > BlockType.Water) {
                             ref |= 0b1 << 1;
                         }
                         let d2 = chunck.GetData(i + 1, j + 1, k);
-                        if (d2) {
+                        if (d2 > BlockType.Water) {
                             ref |= 0b1 << 2;
                         }
                         let d3 = chunck.GetData(i, j + 1, k);
-                        if (d3) {
+                        if (d3 > BlockType.Water) {
                             ref |= 0b1 << 3;
                         }
-                        let d4 = chunck.GetData(i, j, k + 1);
-                        if (d4) {
-                            ref |= 0b1 << 4;
-                        }
                         let d5 = chunck.GetData(i + 1, j, k + 1);
-                        if (d5) {
+                        if (d5 > BlockType.Water) {
                             ref |= 0b1 << 5;
                         }
                         let d6 = chunck.GetData(i + 1, j + 1, k + 1);
-                        if (d6) {
+                        if (d6 > BlockType.Water) {
                             ref |= 0b1 << 6;
                         }
                         let d7 = chunck.GetData(i, j + 1, k + 1);
-                        if (d7) {
+                        if (d7 > BlockType.Water) {
                             ref |= 0b1 << 7;
+                        }
+                        // Water case
+                        if (d0 === BlockType.Water && d4 === BlockType.None || d1 === BlockType.Water && d5 === BlockType.None || d2 === BlockType.Water && d6 === BlockType.None || d3 === BlockType.Water && d7 === BlockType.None) {
+                            let iGlobal = i + iPos * PlanetTools.CHUNCKSIZE;
+                            let jGlobal = j + jPos * PlanetTools.CHUNCKSIZE;
+                            let hGlobal = (k + kPos * PlanetTools.CHUNCKSIZE);
+                            let altitude = PlanetTools.KGlobalToAltitude(hGlobal) * 0.5 + PlanetTools.KGlobalToAltitude(hGlobal + 1) * 0.5;
+                            PCMB.GetVertexToRef(2 * size, 2 * (iGlobal) + 1, 2 * (jGlobal) + 1, PCMB.tmpVertices[0]);
+                            PCMB.GetVertexToRef(2 * size, 2 * (iGlobal) + 1, 2 * (jGlobal + 1) + 1, PCMB.tmpVertices[1]);
+                            PCMB.GetVertexToRef(2 * size, 2 * (iGlobal + 1) + 1, 2 * (jGlobal) + 1, PCMB.tmpVertices[2]);
+                            PCMB.GetVertexToRef(2 * size, 2 * (iGlobal + 1) + 1, 2 * (jGlobal + 1) + 1, PCMB.tmpVertices[3]);
+                            PCMB.tmpVertices[0].scaleInPlace(altitude);
+                            PCMB.tmpVertices[1].scaleInPlace(altitude);
+                            PCMB.tmpVertices[2].scaleInPlace(altitude);
+                            PCMB.tmpVertices[3].scaleInPlace(altitude);
+                            let vertices = [PCMB.tmpVertices[0], PCMB.tmpVertices[1], PCMB.tmpVertices[2], PCMB.tmpVertices[3]];
+                            MeshTools.PushQuad(vertices, 0, 1, 3, 2, waterPositions, waterIndices);
+                            MeshTools.PushWaterUvs(waterUvs);
+                            MeshTools.PushQuad(vertices, 0, 2, 3, 1, waterPositions, waterIndices);
+                            MeshTools.PushWaterUvs(waterUvs);
                         }
                         let blocks = [d0, d1, d2, d3, d4, d5, d6, d7];
                         if (ref === 0b0 || ref === 0b11111111) {
@@ -3347,7 +3372,16 @@ class PlanetChunckMeshBuilder {
         vertexData.uvs = uvs;
         vertexData.colors = colors;
         vertexData.normals = normals;
-        return vertexData;
+        let waterVertexData;
+        if (waterPositions.length > 0) {
+            waterVertexData = new BABYLON.VertexData();
+            waterVertexData.positions = waterPositions;
+            waterVertexData.indices = waterIndices;
+            waterVertexData.uvs = waterUvs;
+            BABYLON.VertexData.ComputeNormals(waterPositions, waterIndices, waterNormals);
+            waterVertexData.normals = waterNormals;
+        }
+        return [vertexData, waterVertexData];
     }
     static BuildWaterVertexData(size, iPos, jPos, kPos, rWater) {
         let vertexData = new BABYLON.VertexData();
@@ -4248,6 +4282,7 @@ class PlanetGeneratorChaos extends PlanetGenerator {
         let f = Math.pow(2, this._mainHeightMap.degree - chunck.degree);
         let maxTree = 1;
         let treeCount = 0;
+        let seaLevel = Math.floor(this._seaLevel * this.planet.kPosMax * PlanetTools.CHUNCKSIZE);
         for (let i = 0; i < PlanetTools.CHUNCKSIZE; i++) {
             refData[i - chunck.firstI] = [];
             for (let j = 0; j < PlanetTools.CHUNCKSIZE; j++) {
@@ -4275,6 +4310,9 @@ class PlanetGeneratorChaos extends PlanetGenerator {
                 */
                 for (let k = 0; k < PlanetTools.CHUNCKSIZE; k++) {
                     let globalK = k + chunck.kPos * PlanetTools.CHUNCKSIZE;
+                    if (globalK < seaLevel) {
+                        refData[i - chunck.firstI][j - chunck.firstJ][k - chunck.firstK] = BlockType.Water;
+                    }
                     if (globalK <= altitude) {
                         if (globalK > altitude - 2) {
                             if (globalK < this._seaLevel * (this.planet.kPosMax * PlanetTools.CHUNCKSIZE)) {
@@ -4295,6 +4333,9 @@ class PlanetGeneratorChaos extends PlanetGenerator {
                         if (globalK >= tunnelAltitude - 1 && globalK <= tunnelAltitude + 1) {
                             refData[i - chunck.firstI][j - chunck.firstJ][k - chunck.firstK] = BlockType.None;
                         }
+                    }
+                    if (refData[i - chunck.firstI][j - chunck.firstJ][k - chunck.firstK] === BlockType.None && globalK < seaLevel) {
+                        refData[i - chunck.firstI][j - chunck.firstJ][k - chunck.firstK] = BlockType.Water;
                     }
                 }
             }
@@ -4708,6 +4749,7 @@ class TerrainToonMaterial extends BABYLON.ShaderMaterial {
         this.setVector3("lightInvDirW", (new BABYLON.Vector3(0.5, 2.5, 1.5)).normalize());
         this._terrainColors = [];
         this._terrainColors[BlockType.None] = new BABYLON.Color3(0, 0, 0);
+        this._terrainColors[BlockType.Water] = new BABYLON.Color3(0.0, 0.5, 1.0);
         this._terrainColors[BlockType.Grass] = new BABYLON.Color3(0.216, 0.616, 0.165);
         this._terrainColors[BlockType.Dirt] = new BABYLON.Color3(0.451, 0.263, 0.047);
         this._terrainColors[BlockType.Sand] = new BABYLON.Color3(0.761, 0.627, 0.141);

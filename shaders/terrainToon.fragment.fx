@@ -37,20 +37,20 @@ void main() {
 
    vec3 color = vec3(0., 0., 0.);
    if (vColor.r >= vColor.g && vColor.r >= vColor.b) {
-      if (d0 == 1 && flatness < 0.5) {
-         d0 = 2;
+      if (d0 == 2 && flatness < 0.5) {
+         d0 = 3;
       }
       color = terrainColors[d0];
    }
    else if (vColor.g >= vColor.r && vColor.g >= vColor.b) {
-      if (d1 == 1 && flatness < 0.5) {
-         d1 = 2;
+      if (d1 == 2 && flatness < 0.5) {
+         d1 = 3;
       }
       color = terrainColors[d1];
    }
    else if (vColor.b >= vColor.r && vColor.b >= vColor.g) {
-      if (d2 == 1 && flatness < 0.5) {
-         d2 = 2;
+      if (d2 == 2 && flatness < 0.5) {
+         d2 = 3;
       }
       color = terrainColors[d2];
    }
