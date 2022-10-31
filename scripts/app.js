@@ -7,15 +7,15 @@ class CameraManager {
     constructor(game) {
         this.game = game;
         this.cameraMode = CameraMode.Sky;
-        this.arcRotateCamera = new BABYLON.ArcRotateCamera("Camera", 0, Math.PI / 2, 100, BABYLON.Vector3.Zero(), Game.Scene);
+        this.arcRotateCamera = new BABYLON.ArcRotateCamera("Camera", 0, Math.PI / 2, 120, BABYLON.Vector3.Zero(), this.game.scene);
         this.arcRotateCamera.attachControl(this.game.canvas);
-        this.freeCamera = new BABYLON.FreeCamera("Camera", BABYLON.Vector3.Zero(), Game.Scene);
+        this.freeCamera = new BABYLON.FreeCamera("Camera", BABYLON.Vector3.Zero(), this.game.scene);
         this.freeCamera.rotationQuaternion = BABYLON.Quaternion.Identity();
         this.freeCamera.minZ = 0.1;
         const rtt = new BABYLON.RenderTargetTexture('render target', { width: this.game.engine.getRenderWidth(), height: this.game.engine.getRenderHeight() }, this.game.scene);
         rtt.samples = 1;
         this.freeCamera.outputRenderTarget = rtt;
-        this.noOutlineCamera = new BABYLON.FreeCamera("Camera", BABYLON.Vector3.Zero(), game.scene);
+        this.noOutlineCamera = new BABYLON.FreeCamera("Camera", BABYLON.Vector3.Zero(), this.game.scene);
         this.noOutlineCamera.minZ = 0.1;
         this.noOutlineCamera.layerMask = 0x10000000;
         this.noOutlineCamera.parent = this.freeCamera;
@@ -49,10 +49,10 @@ class CameraManager {
                 this.freeCamera.position.copyFromFloats(0, 0, 0);
                 this.freeCamera.rotationQuaternion.copyFrom(BABYLON.Quaternion.Identity());
                 this.freeCamera.computeWorldMatrix();
-                Game.Scene.activeCameras = [this.freeCamera, this.noOutlineCamera];
+                this.game.scene.activeCameras = [this.freeCamera, this.noOutlineCamera];
             }
             if (this.cameraMode === CameraMode.Sky) {
-                Game.Scene.activeCamera = this.arcRotateCamera;
+                this.game.scene.activeCameras = [this.arcRotateCamera];
                 this.arcRotateCamera.attachControl(this.game.canvas);
             }
         }
@@ -1101,15 +1101,18 @@ class DebugDefine {
 }
 DebugDefine.USE_VERTEX_SET_MESH_HISTORY = true;
 class DebugPlanetPerf {
-    constructor(game) {
+    constructor(game, _showLayer = false) {
         this.game = game;
+        this._showLayer = _showLayer;
         this._initialized = false;
         this._update = () => {
             this._frameRate.addValue(Game.Engine.getFps());
             this._chunckSort.addValue(this.game.chunckManager.chunckSortedRatio * 100);
             this._drawRequestCount.addValue(this.game.chunckManager.needRedrawCount);
-            for (let i = 0; i < 6; i++) {
-                this._layerCounts[i].setText(this.game.chunckManager.lodLayerCount(i).toFixed(0));
+            if (this._showLayer) {
+                for (let i = 0; i < 6; i++) {
+                    this._layerCounts[i].setText(this.game.chunckManager.lodLayerCount(i).toFixed(0));
+                }
             }
         };
     }
@@ -1124,9 +1127,11 @@ class DebugPlanetPerf {
         this._frameRate = document.querySelector("#frame-rate");
         this._chunckSort = document.querySelector("#chunck-sort");
         this._drawRequestCount = document.querySelector("#draw-request-count");
-        this._layerCounts = [];
-        for (let i = 0; i < 6; i++) {
-            this._layerCounts[i] = document.querySelector("#layer-" + i + "-count");
+        if (this._showLayer) {
+            this._layerCounts = [];
+            for (let i = 0; i < 6; i++) {
+                this._layerCounts[i] = document.querySelector("#layer-" + i + "-count");
+            }
         }
         this._initialized = true;
     }
@@ -1344,42 +1349,96 @@ window.addEventListener("DOMContentLoaded", () => {
 class Demo extends Main {
     constructor(canvasElement) {
         super(canvasElement);
+        this.inputMode = InputMode.Unknown;
+        this.path = [];
+        Demo.DEBUG_INSTANCE = this;
     }
     createScene() {
         super.createScene();
         this.light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0.6, 1, 0.3), this.scene);
         this.light.diffuse = new BABYLON.Color3(1, 1, 1);
         this.light.groundColor = new BABYLON.Color3(0.5, 0.5, 0.5);
-        this.camera = new BABYLON.ArcRotateCamera("camera", 0, Math.PI / 4, 10, BABYLON.Vector3.Zero());
-        this.camera.radius = 400;
-        this.camera.speed *= 0.2;
-        this.camera.attachControl(this.canvas);
+        this.cameraManager = new CameraManager(this);
+        this.cameraManager.arcRotateCamera.lowerRadiusLimit = 100;
+        this.cameraManager.arcRotateCamera.upperRadiusLimit = 140;
     }
     async initialize() {
         return new Promise(resolve => {
             this.chunckManager = new PlanetChunckManager(this.scene);
-            let kPosMax = 10;
-            console.log("degree = " + PlanetTools.KPosToDegree(kPosMax));
+            let kPosMax = 5;
             let planetTest = new Planet("Paulita", kPosMax, this.chunckManager);
             window["PlanetTest"] = planetTest;
-            planetTest.generator = new PlanetGeneratorEarth(planetTest, 0.60, 0.1);
+            planetTest.generator = new PlanetGeneratorChaos(planetTest, 0.60, 0.1);
             this.planetSky = new PlanetSky();
             this.planetSky.setInvertLightDir((new BABYLON.Vector3(0.5, 2.5, 1.5)).normalize());
             this.planetSky.initialize(this.scene);
+            this.player = new Player(new BABYLON.Vector3(0, (kPosMax + 1) * PlanetTools.CHUNCKSIZE * 0.8, 0), planetTest, this);
+            this.cameraManager.player = this.player;
+            this.player.lockInPlace = true;
+            this.inputManager = new InputManager();
+            this.inputManager.initialize();
             let debugPlanetPerf = new DebugPlanetPerf(this);
             debugPlanetPerf.show();
+            this.scene.onPointerObservable.add((eventData) => {
+                if (eventData.type === BABYLON.PointerEventTypes.POINTERDOUBLETAP) {
+                    if (eventData.pickInfo.hit) {
+                        let p = eventData.pickInfo.pickedPoint;
+                        if (isFinite(p.x)) {
+                            let target;
+                            if (this.cameraManager.cameraMode === CameraMode.Sky) {
+                                this.player.position.copyFrom(this.cameraManager.absolutePosition);
+                            }
+                            this.player.animatePos(p, 1, target);
+                            this.cameraManager.setMode(CameraMode.Player);
+                        }
+                    }
+                }
+                else if (eventData.type === BABYLON.PointerEventTypes.POINTERDOWN) {
+                    Game.LockedMouse = true;
+                }
+                else if (eventData.type === BABYLON.PointerEventTypes.POINTERUP) {
+                    Game.LockedMouse = false;
+                }
+            });
+            document.querySelector("#sky-view").addEventListener("pointerdown", () => {
+                this.cameraManager.setMode(CameraMode.Sky);
+            });
             PlanetChunckVertexData.InitializeData().then(() => {
                 this.chunckManager.initialize();
-                setTimeout(() => {
-                    planetTest.register();
-                }, 1000);
+                this.player.initialize();
+                this.player.registerControl();
+                planetTest.register();
                 resolve();
+            });
+            this.canvas.addEventListener("pointerup", (event) => {
+                if (this.cameraManager.cameraMode === CameraMode.Sky) {
+                    return;
+                }
+                this.setInputMode(InputMode.Mouse);
             });
         });
     }
+    setInputMode(newInputMode) {
+        if (newInputMode != this.inputMode) {
+            this.inputMode = newInputMode;
+            if (this.inputMode === InputMode.Touch) {
+                this.movePad = new PlayerInputMovePad(this.player);
+                this.movePad.connectInput(true);
+                this.headPad = new PlayerInputHeadPad(this.player);
+                this.headPad.connectInput(false);
+            }
+            else {
+                if (this.movePad) {
+                    this.movePad.disconnect();
+                }
+                if (this.headPad) {
+                    this.headPad.disconnect();
+                }
+            }
+            return;
+        }
+    }
     update() {
-        //let dt = this.engine.getDeltaTime() / 1000;
-        //this.camera.alpha += dt * 2 * Math.PI / 120;
     }
 }
 /// <reference path="../../lib/babylon.d.ts"/>
@@ -1402,11 +1461,12 @@ class Game extends Main {
         Game.Light.diffuse = new BABYLON.Color3(1, 1, 1);
         Game.Light.groundColor = new BABYLON.Color3(0.5, 0.5, 0.5);
         Game.CameraManager = new CameraManager(this);
+        this.cameraManager = Game.CameraManager;
     }
     async initialize() {
         return new Promise(resolve => {
             this.chunckManager = new PlanetChunckManager(this.scene);
-            let kPosMax = 10;
+            let kPosMax = 8;
             let planetTest = new Planet("Paulita", kPosMax, this.chunckManager);
             window["PlanetTest"] = planetTest;
             planetTest.generator = new PlanetGeneratorChaos(planetTest, 0.60, 0.2);
@@ -1436,7 +1496,7 @@ class Game extends Main {
             //Game.Plane.instantiate();
             //Game.CameraManager.plane = Game.Plane;
             Game.CameraManager.player = this.player;
-            Game.CameraManager.setMode(CameraMode.Player);
+            Game.CameraManager.setMode(CameraMode.Sky);
             //planetTest.AsyncInitialize();
             this.planetSky = new PlanetSky();
             this.planetSky.setInvertLightDir((new BABYLON.Vector3(0.5, 2.5, 1.5)).normalize());
@@ -1986,9 +2046,9 @@ class Planet extends BABYLON.Mesh {
 class PlanetBlockMaker {
     static AddSphere(planet, world, radius, block) {
         let impactedChunck = [];
-        for (let x = -radius; x < radius + 0.7; x += 0.7) {
-            for (let y = -radius; y < radius + 0.7; y += 0.7) {
-                for (let z = -radius; z < radius + 0.7; z += 0.7) {
+        for (let x = -radius; x < radius + 0.6; x += 0.6) {
+            for (let y = -radius; y < radius + 0.6; y += 0.6) {
+                for (let z = -radius; z < radius + 0.6; z += 0.6) {
                     x = Math.min(x, radius);
                     y = Math.min(y, radius);
                     z = Math.min(z, radius);
@@ -2307,7 +2367,6 @@ class PlanetChunck extends AbstractPlanetChunck {
     syncWithAdjacents() {
         let hasUpdated = false;
         if (!this.dataInitialized) {
-            console.log("cancel sync");
             return hasUpdated;
         }
         this._adjacentsDataSynced = true;
@@ -2819,7 +2878,7 @@ class PlanetChunckManager {
         this._lodLayers = [];
         this._lodLayersCursors = [];
         this._lodLayersSqrDistances = [];
-        let distances = [120, 160, 200, 240, 280];
+        let distances = [120, 150, 180, 210, 240];
         for (let i = 0; i < this._lodLayersCount - 1; i++) {
             this._lodLayers[i] = [];
             this._lodLayersCursors[i] = 0;
@@ -3175,7 +3234,7 @@ class PlanetChunckMeshBuilder {
                     }
                     if (cornerCase) {
                         let d = chunck.GetData(i, j, k);
-                        if (d != BlockType.None) {
+                        if (d > BlockType.Water) {
                             if (chunck.GetData(i, j, k + 1) === BlockType.None) {
                                 let iGlobal = i + iPos * PlanetTools.CHUNCKSIZE;
                                 let jGlobal = j + jPos * PlanetTools.CHUNCKSIZE;
@@ -3183,7 +3242,7 @@ class PlanetChunckMeshBuilder {
                                 PCMB.GetVertexToRef(2 * size, 2 * (iGlobal) + 1, 2 * (jGlobal + 1) + 1, PCMB.tmpVertices[1]);
                                 PCMB.GetVertexToRef(2 * size, 2 * (iGlobal + 1) + 1, 2 * (jGlobal) + 1, PCMB.tmpVertices[2]);
                                 PCMB.GetVertexToRef(2 * size, 2 * (iGlobal + 1) + 1, 2 * (jGlobal + 1) + 1, PCMB.tmpVertices[3]);
-                                let hGlobal = (k + kPos * PlanetTools.CHUNCKSIZE + 1);
+                                let hGlobal = (k + kPos * PlanetTools.CHUNCKSIZE);
                                 let hLow = PlanetTools.KGlobalToAltitude(hGlobal) * 0.5 + PlanetTools.KGlobalToAltitude(hGlobal + 1) * 0.5;
                                 let hHigh = PlanetTools.KGlobalToAltitude(hGlobal + 1) * 0.5 + PlanetTools.KGlobalToAltitude(hGlobal + 2) * 0.5;
                                 let h = hLow * 0.5 + hHigh * 0.5;
@@ -3576,7 +3635,6 @@ class PlanetChunckNice extends PlanetChunck {
     syncWithAdjacents() {
         let hasUpdated = false;
         if (!this.dataInitialized) {
-            console.log("cancel sync");
             return hasUpdated;
         }
         this._adjacentsDataSynced = true;
@@ -3614,7 +3672,6 @@ class PlanetChunckSemiNice extends PlanetChunck {
     syncWithAdjacents() {
         let hasUpdated = false;
         if (!this.dataInitialized) {
-            console.log("cancel sync");
             return hasUpdated;
         }
         this._adjacentsDataSynced = true;
@@ -4273,6 +4330,7 @@ class PlanetGeneratorChaos extends PlanetGenerator {
         this._mountainHeight = _mountainHeight;
         console.log("Generator Degree = " + PlanetTools.KPosToDegree(planet.kPosMax));
         this._mainHeightMap = PlanetHeightMap.CreateMap(PlanetTools.KPosToDegree(planet.kPosMax));
+        this._treeMap = PlanetHeightMap.CreateMap(PlanetTools.KPosToDegree(planet.kPosMax), { firstNoiseDegree: PlanetTools.KPosToDegree(planet.kPosMax) - 2 });
         this._tunnelMap = PlanetHeightMap.CreateMap(PlanetTools.KPosToDegree(planet.kPosMax), { firstNoiseDegree: PlanetTools.KPosToDegree(planet.kPosMax) - 5 });
         this._tunnelAltitudeMap = PlanetHeightMap.CreateMap(PlanetTools.KPosToDegree(planet.kPosMax));
         this._rockMap = PlanetHeightMap.CreateMap(PlanetTools.KPosToDegree(planet.kPosMax), { firstNoiseDegree: PlanetTools.KPosToDegree(planet.kPosMax) - 3 });
@@ -4291,23 +4349,25 @@ class PlanetGeneratorChaos extends PlanetGenerator {
                 let altitude = Math.floor((this._seaLevel + v * this._mountainHeight) * this.planet.kPosMax * PlanetTools.CHUNCKSIZE);
                 let rock = this._rockMap.getForSide(chunck.side, (chunck.iPos * PlanetTools.CHUNCKSIZE + i) * f, (chunck.jPos * PlanetTools.CHUNCKSIZE + j) * f);
                 let rockAltitude = altitude + Math.round((rock - 0.4) * this._mountainHeight * this.planet.kPosMax * PlanetTools.CHUNCKSIZE);
+                let tree = this._treeMap.getForSide(chunck.side, (chunck.iPos * PlanetTools.CHUNCKSIZE + i) * f, (chunck.jPos * PlanetTools.CHUNCKSIZE + j) * f);
                 let tunnel = Math.abs(this._tunnelMap.getForSide(chunck.side, (chunck.iPos * PlanetTools.CHUNCKSIZE + i) * f, (chunck.jPos * PlanetTools.CHUNCKSIZE + j) * f)) < 0.1;
                 let tunnelV = this._tunnelMap.getForSide(chunck.side, (chunck.iPos * PlanetTools.CHUNCKSIZE + i) * f, (chunck.jPos * PlanetTools.CHUNCKSIZE + j) * f);
                 let tunnelAltitude = Math.floor((this._seaLevel + tunnelV * this._mountainHeight) * this.planet.kPosMax * PlanetTools.CHUNCKSIZE);
-                /*
-                if (tree > 0.6 && treeCount < maxTree) {
+                if (tree > 0.7 && treeCount < maxTree) {
                     let localK = altitude + 1 - chunck.kPos * PlanetTools.CHUNCKSIZE;
-                    if (localK >= 0 && localK < PlanetTools.CHUNCKSIZE) {
-                        let tree = new ProceduralTree(chunck.chunckManager);
-                        tree.chunck = chunck;
-                        tree.i = i;
-                        tree.j = j;
-                        tree.k = localK;
-                        refProcedural.push(tree);
-                        treeCount++;
+                    let globalK = localK + chunck.kPos * PlanetTools.CHUNCKSIZE;
+                    if (globalK > seaLevel) {
+                        if (localK >= 0 && localK < PlanetTools.CHUNCKSIZE) {
+                            let tree = new ProceduralTree(chunck.chunckManager);
+                            tree.chunck = chunck;
+                            tree.i = i;
+                            tree.j = j;
+                            tree.k = localK;
+                            refProcedural.push(tree);
+                            treeCount++;
+                        }
                     }
                 }
-                */
                 for (let k = 0; k < PlanetTools.CHUNCKSIZE; k++) {
                     let globalK = k + chunck.kPos * PlanetTools.CHUNCKSIZE;
                     if (globalK < seaLevel) {
@@ -4442,7 +4502,6 @@ class PlanetHeightMap {
         this.degree = degree;
         this.map = [];
         this.size = Math.pow(2, this.degree);
-        console.log(this.size);
     }
     static CreateMap(degree, options) {
         let map = new PlanetHeightMap(0);
@@ -5793,7 +5852,7 @@ class InputManager {
 }
 class Player extends BABYLON.Mesh {
     constructor(position, planet, game) {
-        super("Player", Game.Scene);
+        super("Player", game.scene);
         this.planet = planet;
         this.game = game;
         this.mass = 1;
@@ -5804,6 +5863,7 @@ class Player extends BABYLON.Mesh {
         this.inputRight = 0;
         this.inputHeadUp = 0;
         this.inputHeadRight = 0;
+        this.lockInPlace = false;
         this._initialized = false;
         this._keyUp = (e) => {
             if (e.code === "KeyG") {
@@ -5880,10 +5940,10 @@ class Player extends BABYLON.Mesh {
             }
         };
         this._update = () => {
-            if (Game.CameraManager.cameraMode != CameraMode.Player) {
+            if (this.game.cameraManager.cameraMode != CameraMode.Player) {
                 return;
             }
-            let deltaTime = Game.Engine.getDeltaTime() / 1000;
+            let deltaTime = this.game.engine.getDeltaTime() / 1000;
             this._jumpTimer = Math.max(this._jumpTimer - deltaTime, 0);
             this._keepUp();
             let rotationPower = this.inputHeadRight * 0.05;
@@ -5897,6 +5957,9 @@ class Player extends BABYLON.Mesh {
             if (this.game.inputMode === InputMode.Mouse) {
                 this.inputHeadRight *= 0.8;
                 this.inputHeadUp *= 0.8;
+            }
+            if (this.lockInPlace) {
+                return;
             }
             this._collisionPositions[0] = this._headPosition;
             this._collisionPositions[1] = this._feetPosition;
@@ -6041,10 +6104,10 @@ class Player extends BABYLON.Mesh {
         this.camPos = new BABYLON.Mesh("Dummy", Game.Scene);
         this.camPos.parent = this;
         this.camPos.position = new BABYLON.Vector3(0, 1, 0);
-        BABYLON.VertexData.CreateSphere({ diameterX: 1, diameterY: 2, diameterZ: 1 }).applyToMesh(this);
-        let material = new BABYLON.StandardMaterial("material", this.getScene());
-        material.alpha = 0.5;
-        this.material = material;
+        //BABYLON.VertexData.CreateSphere({ diameterX: 1, diameterY: 2, diameterZ: 1 }).applyToMesh(this);
+        //let material = new BABYLON.StandardMaterial("material", this.getScene());
+        //material.alpha = 0.5;
+        //this.material = material;
         //this.layerMask = 0x10000000;
     }
     initialize() {
@@ -6079,7 +6142,7 @@ class Player extends BABYLON.Mesh {
             this.inputRight = 0;
         });
         this.game.canvas.addEventListener("keyup", this._keyUp);
-        this.game.canvas.addEventListener("mousemove", this._mouseMove);
+        this.game.canvas.addEventListener("pointermove", this._mouseMove);
         this.game.canvas.addEventListener("mouseup", () => {
             if (this.currentAction) {
                 if (this.currentAction.onClick) {
@@ -6095,6 +6158,35 @@ class Player extends BABYLON.Mesh {
     }
     get meshes() {
         return this._meshes;
+    }
+    async animatePos(posTarget, duration, lookingAt) {
+        return new Promise(resolve => {
+            let posZero = this.position.clone();
+            let t = 0;
+            let cb = () => {
+                t += this.game.engine.getDeltaTime() / 1000;
+                if (t < duration) {
+                    let f = Easing.easeInOutSine(t / duration);
+                    this.position.copyFrom(posZero).scaleInPlace(1 - f).addInPlace(posTarget.scale(f));
+                    if (isNaN(this.position.x)) {
+                        debugger;
+                    }
+                    if (lookingAt) {
+                        let forward = lookingAt.subtract(this.position).normalize();
+                        let up = this.position.clone().normalize();
+                        let right = BABYLON.Vector3.Cross(up, forward);
+                        forward = BABYLON.Vector3.Cross(right, up);
+                        BABYLON.Quaternion.RotationQuaternionFromAxisToRef(right, up, forward, this.rotationQuaternion);
+                    }
+                }
+                else {
+                    this.position.copyFrom(posTarget);
+                    this.game.scene.onBeforeRenderObservable.removeCallback(cb);
+                    resolve();
+                }
+            };
+            this.game.scene.onBeforeRenderObservable.add(cb);
+        });
     }
     _keepUp() {
         if (!this) {

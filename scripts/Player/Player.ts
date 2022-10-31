@@ -14,18 +14,20 @@ class Player extends BABYLON.Mesh {
     
     public currentAction: PlayerAction;
 
-    constructor(position: BABYLON.Vector3, public planet: Planet, public game: Game) {
-        super("Player", Game.Scene);
+    public lockInPlace: boolean = false;
+
+    constructor(position: BABYLON.Vector3, public planet: Planet, public game: Game | Demo) {
+        super("Player", game.scene);
         this.planet = planet;
         this.position = position;
         this.rotationQuaternion = BABYLON.Quaternion.Identity();
         this.camPos = new BABYLON.Mesh("Dummy", Game.Scene);
         this.camPos.parent = this;
         this.camPos.position = new BABYLON.Vector3(0, 1, 0);
-        BABYLON.VertexData.CreateSphere({ diameterX: 1, diameterY: 2, diameterZ: 1 }).applyToMesh(this);
-        let material = new BABYLON.StandardMaterial("material", this.getScene());
-        material.alpha = 0.5;
-        this.material = material;
+        //BABYLON.VertexData.CreateSphere({ diameterX: 1, diameterY: 2, diameterZ: 1 }).applyToMesh(this);
+        //let material = new BABYLON.StandardMaterial("material", this.getScene());
+        //material.alpha = 0.5;
+        //this.material = material;
         //this.layerMask = 0x10000000;
     }
 
@@ -64,7 +66,7 @@ class Player extends BABYLON.Mesh {
             this.inputRight = 0;
         });
         this.game.canvas.addEventListener("keyup", this._keyUp);
-        this.game.canvas.addEventListener("mousemove", this._mouseMove);
+        this.game.canvas.addEventListener("pointermove", this._mouseMove);
         this.game.canvas.addEventListener("mouseup", () => {
             if (this.currentAction) {
                 if (this.currentAction.onClick) {
@@ -169,11 +171,41 @@ class Player extends BABYLON.Mesh {
         }
     }
 
+    public async animatePos(posTarget: BABYLON.Vector3, duration: number, lookingAt?: BABYLON.Vector3): Promise<void> {
+        return new Promise<void>(resolve => {
+            let posZero = this.position.clone();
+            let t = 0;
+            let cb = () => {
+                t += this.game.engine.getDeltaTime() / 1000;
+                if (t < duration) {
+                    let f = Easing.easeInOutSine(t / duration);
+                    this.position.copyFrom(posZero).scaleInPlace(1 - f).addInPlace(posTarget.scale(f));
+                    if (isNaN(this.position.x)) {
+                        debugger;
+                    }
+                    if (lookingAt) {
+                        let forward = lookingAt.subtract(this.position).normalize();
+                        let up = this.position.clone().normalize();
+                        let right = BABYLON.Vector3.Cross(up, forward);
+                        forward = BABYLON.Vector3.Cross(right, up);
+                        BABYLON.Quaternion.RotationQuaternionFromAxisToRef(right, up, forward, this.rotationQuaternion);
+                    }
+                }
+                else {
+                    this.position.copyFrom(posTarget);
+                    this.game.scene.onBeforeRenderObservable.removeCallback(cb);
+                    resolve();
+                }
+            }
+            this.game.scene.onBeforeRenderObservable.add(cb);
+        });
+    }
+
     private _update = () => {
-        if (Game.CameraManager.cameraMode != CameraMode.Player) {
+        if (this.game.cameraManager.cameraMode != CameraMode.Player) {
             return;
         }
-        let deltaTime: number = Game.Engine.getDeltaTime() / 1000;
+        let deltaTime: number = this.game.engine.getDeltaTime() / 1000;
 
         this._jumpTimer = Math.max(this._jumpTimer - deltaTime, 0);
 
@@ -191,6 +223,10 @@ class Player extends BABYLON.Mesh {
         if (this.game.inputMode === InputMode.Mouse) {
             this.inputHeadRight *= 0.8;
             this.inputHeadUp *= 0.8;
+        }
+
+        if (this.lockInPlace) {
+            return;
         }
 
         this._collisionPositions[0] = this._headPosition;

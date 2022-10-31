@@ -1,6 +1,6 @@
 class PlayerInput {
 
-    public game: Game;
+    public game: Game | Demo;
 
     constructor(
         public player: Player

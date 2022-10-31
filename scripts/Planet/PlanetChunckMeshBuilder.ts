@@ -288,7 +288,7 @@ class PlanetChunckMeshBuilder {
                     
                     if (cornerCase) { 
                         let d = chunck.GetData(i, j, k);
-                        if (d != BlockType.None) {
+                        if (d > BlockType.Water) {
                             if (chunck.GetData(i, j, k + 1) === BlockType.None) {
                                 let iGlobal: number = i + iPos * PlanetTools.CHUNCKSIZE;
                                 let jGlobal: number = j + jPos * PlanetTools.CHUNCKSIZE;
@@ -297,7 +297,7 @@ class PlanetChunckMeshBuilder {
                                 PCMB.GetVertexToRef(2 * size, 2 * (iGlobal + 1) + 1, 2 * (jGlobal) + 1, PCMB.tmpVertices[2]);
                                 PCMB.GetVertexToRef(2 * size, 2 * (iGlobal + 1) + 1, 2 * (jGlobal + 1) + 1, PCMB.tmpVertices[3]);
             
-                                let hGlobal = (k + kPos * PlanetTools.CHUNCKSIZE + 1);
+                                let hGlobal = (k + kPos * PlanetTools.CHUNCKSIZE);
                                 let hLow = PlanetTools.KGlobalToAltitude(hGlobal) * 0.5 + PlanetTools.KGlobalToAltitude(hGlobal + 1) * 0.5;
                                 let hHigh = PlanetTools.KGlobalToAltitude(hGlobal + 1) * 0.5 + PlanetTools.KGlobalToAltitude(hGlobal + 2) * 0.5;
                                 let h = hLow * 0.5 + hHigh * 0.5;

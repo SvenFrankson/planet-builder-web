@@ -26,7 +26,7 @@ class TextPage {
         );
     }
 
-    constructor(public game: Game) {
+    constructor(public game: Game | Demo) {
 
     }
 

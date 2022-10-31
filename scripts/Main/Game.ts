@@ -16,6 +16,7 @@ class Game extends Main {
 	public static Light: BABYLON.HemisphericLight;
 	public static PlanetEditor: PlanetEditor;
 	public static CameraManager: CameraManager;
+	public cameraManager: CameraManager;
 	public static Player: Player;
 	public player: Player;
 	public actionManager: PlayerActionManager;
@@ -49,13 +50,14 @@ class Game extends Main {
 		Game.Light.groundColor = new BABYLON.Color3(0.5, 0.5, 0.5);
 
 		Game.CameraManager = new CameraManager(this);
+		this.cameraManager = Game.CameraManager;
 	}
 
     public async initialize(): Promise<void> {
 		return new Promise<void>(resolve => {
 			this.chunckManager = new PlanetChunckManager(this.scene);
 
-			let kPosMax = 10;
+			let kPosMax = 8;
 			let planetTest: Planet = new Planet("Paulita", kPosMax, this.chunckManager);
 			window["PlanetTest"] = planetTest;
 
@@ -93,7 +95,7 @@ class Game extends Main {
 
 			//Game.CameraManager.plane = Game.Plane;
 			Game.CameraManager.player = this.player;
-			Game.CameraManager.setMode(CameraMode.Player);
+			Game.CameraManager.setMode(CameraMode.Sky);
 
 			//planetTest.AsyncInitialize();
 

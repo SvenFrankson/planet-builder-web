@@ -12,7 +12,6 @@ class PlanetHeightMap {
         public degree: number
     ) {
         this.size = Math.pow(2, this.degree);
-        console.log(this.size);
     }
 
     public static CreateMap(degree: number, options?: IPlanetHeightMapOptions): PlanetHeightMap {

@@ -102,11 +102,13 @@ class PlanetGeneratorChaos extends PlanetGenerator {
     private _tunnelMap: PlanetHeightMap;
     private _tunnelAltitudeMap: PlanetHeightMap;
     private _rockMap: PlanetHeightMap;
+    private _treeMap: PlanetHeightMap;
 
     constructor(planet: Planet, private _seaLevel: number, private _mountainHeight: number) {
         super(planet);
         console.log("Generator Degree = " + PlanetTools.KPosToDegree(planet.kPosMax));
         this._mainHeightMap = PlanetHeightMap.CreateMap(PlanetTools.KPosToDegree(planet.kPosMax));
+        this._treeMap = PlanetHeightMap.CreateMap(PlanetTools.KPosToDegree(planet.kPosMax), { firstNoiseDegree : PlanetTools.KPosToDegree(planet.kPosMax) - 2 });
         this._tunnelMap = PlanetHeightMap.CreateMap(PlanetTools.KPosToDegree(planet.kPosMax), { firstNoiseDegree : PlanetTools.KPosToDegree(planet.kPosMax) - 5 });
         this._tunnelAltitudeMap = PlanetHeightMap.CreateMap(PlanetTools.KPosToDegree(planet.kPosMax));
         this._rockMap = PlanetHeightMap.CreateMap(PlanetTools.KPosToDegree(planet.kPosMax), { firstNoiseDegree : PlanetTools.KPosToDegree(planet.kPosMax) - 3});
@@ -129,25 +131,27 @@ class PlanetGeneratorChaos extends PlanetGenerator {
                 let altitude = Math.floor((this._seaLevel + v * this._mountainHeight) * this.planet.kPosMax * PlanetTools.CHUNCKSIZE);
                 let rock = this._rockMap.getForSide(chunck.side, (chunck.iPos * PlanetTools.CHUNCKSIZE + i) * f, (chunck.jPos * PlanetTools.CHUNCKSIZE + j) * f);
                 let rockAltitude = altitude + Math.round((rock - 0.4) * this._mountainHeight * this.planet.kPosMax * PlanetTools.CHUNCKSIZE);
+                let tree = this._treeMap.getForSide(chunck.side, (chunck.iPos * PlanetTools.CHUNCKSIZE + i) * f, (chunck.jPos * PlanetTools.CHUNCKSIZE + j) * f);
                 
                 let tunnel = Math.abs(this._tunnelMap.getForSide(chunck.side, (chunck.iPos * PlanetTools.CHUNCKSIZE + i) * f, (chunck.jPos * PlanetTools.CHUNCKSIZE + j) * f)) < 0.1;
                 let tunnelV = this._tunnelMap.getForSide(chunck.side, (chunck.iPos * PlanetTools.CHUNCKSIZE + i) * f, (chunck.jPos * PlanetTools.CHUNCKSIZE + j) * f);
                 let tunnelAltitude = Math.floor((this._seaLevel + tunnelV * this._mountainHeight) * this.planet.kPosMax * PlanetTools.CHUNCKSIZE);
 
-                /*
-                if (tree > 0.6 && treeCount < maxTree) {
+                if (tree > 0.7 && treeCount < maxTree) {
                     let localK = altitude + 1 - chunck.kPos * PlanetTools.CHUNCKSIZE;
-                    if (localK >= 0 && localK < PlanetTools.CHUNCKSIZE) {
-                        let tree = new ProceduralTree(chunck.chunckManager);
-                        tree.chunck = chunck;
-                        tree.i = i;
-                        tree.j = j;
-                        tree.k = localK;
-                        refProcedural.push(tree);
-                        treeCount++;
+                    let globalK = localK + chunck.kPos * PlanetTools.CHUNCKSIZE;
+                    if (globalK > seaLevel) {
+                        if (localK >= 0 && localK < PlanetTools.CHUNCKSIZE) {
+                            let tree = new ProceduralTree(chunck.chunckManager);
+                            tree.chunck = chunck;
+                            tree.i = i;
+                            tree.j = j;
+                            tree.k = localK;
+                            refProcedural.push(tree);
+                            treeCount++;
+                        }
                     }
                 }
-                */
 
                 for (let k: number = 0; k < PlanetTools.CHUNCKSIZE; k++) {
                     let globalK = k + chunck.kPos * PlanetTools.CHUNCKSIZE;

@@ -2,7 +2,7 @@
 precision highp float;
  
 uniform vec3 lightInvDirW;
-uniform vec3 terrainColors[7];
+uniform vec3 terrainColors[8];
 uniform vec3 globalColor;
 
 in vec3 vPositionW;

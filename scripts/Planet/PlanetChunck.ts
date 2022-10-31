@@ -330,7 +330,6 @@ class PlanetChunck extends AbstractPlanetChunck {
     public syncWithAdjacents(): boolean {
         let hasUpdated = false;
         if (!this.dataInitialized) {
-            console.log("cancel sync");
             return hasUpdated;
         }
         this._adjacentsDataSynced = true;

@@ -2,9 +2,9 @@ class PlanetBlockMaker {
 
     public static AddSphere(planet: Planet, world: BABYLON.Vector3, radius: number, block: BlockType): PlanetChunck[] {
         let impactedChunck: PlanetChunck[] = [];
-        for (let x = - radius; x < radius + 0.7; x += 0.7) {
-            for (let y = - radius; y < radius + 0.7; y += 0.7) {
-                for (let z = - radius; z < radius + 0.7; z += 0.7) {
+        for (let x = - radius; x < radius + 0.6; x += 0.6) {
+            for (let y = - radius; y < radius + 0.6; y += 0.6) {
+                for (let z = - radius; z < radius + 0.6; z += 0.6) {
                     x = Math.min(x, radius);
                     y = Math.min(y, radius);
                     z = Math.min(z, radius);

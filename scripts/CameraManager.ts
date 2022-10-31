@@ -22,21 +22,21 @@ class CameraManager {
         }
     }
 
-    constructor(public game: Game) {
+    constructor(public game: Game | Demo) {
         this.arcRotateCamera = new BABYLON.ArcRotateCamera(
             "Camera",
             0,
             Math.PI / 2,
-            100,
+            120,
             BABYLON.Vector3.Zero(),
-            Game.Scene
+            this.game.scene
         );
         this.arcRotateCamera.attachControl(this.game.canvas);
         
         this.freeCamera = new BABYLON.FreeCamera(
             "Camera",
             BABYLON.Vector3.Zero(),
-            Game.Scene
+            this.game.scene
         );
         this.freeCamera.rotationQuaternion = BABYLON.Quaternion.Identity();
         this.freeCamera.minZ = 0.1;
@@ -47,7 +47,7 @@ class CameraManager {
         this.noOutlineCamera = new BABYLON.FreeCamera(
             "Camera",
             BABYLON.Vector3.Zero(),
-            game.scene
+            this.game.scene
         );
         this.noOutlineCamera.minZ = 0.1;
         this.noOutlineCamera.layerMask = 0x10000000;
@@ -79,10 +79,10 @@ class CameraManager {
                 this.freeCamera.position.copyFromFloats(0, 0, 0);
                 this.freeCamera.rotationQuaternion.copyFrom(BABYLON.Quaternion.Identity());
                 this.freeCamera.computeWorldMatrix();
-                Game.Scene.activeCameras = [this.freeCamera, this.noOutlineCamera];
+                this.game.scene.activeCameras = [this.freeCamera, this.noOutlineCamera];
             }
             if (this.cameraMode === CameraMode.Sky) {
-                Game.Scene.activeCamera = this.arcRotateCamera;
+                this.game.scene.activeCameras = [this.arcRotateCamera];
                 this.arcRotateCamera.attachControl(this.game.canvas);
             }
         }
