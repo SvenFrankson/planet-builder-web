@@ -1394,6 +1394,9 @@ class Demo extends Main {
                             document.querySelector("#sky-view").style.display = "flex";
                             document.querySelector("#ground-view").style.display = "none";
                         }
+                        else {
+                            debugger;
+                        }
                     }
                 }
                 else if (eventData.type === BABYLON.PointerEventTypes.POINTERDOWN) {
