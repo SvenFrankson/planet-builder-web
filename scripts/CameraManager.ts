@@ -31,6 +31,8 @@ class CameraManager {
             BABYLON.Vector3.Zero(),
             this.game.scene
         );
+        this.arcRotateCamera.angularSensibilityX *= 5;
+        this.arcRotateCamera.angularSensibilityY *= 5;
         this.arcRotateCamera.attachControl(this.game.canvas);
         
         this.freeCamera = new BABYLON.FreeCamera(

@@ -8,6 +8,8 @@ class CameraManager {
         this.game = game;
         this.cameraMode = CameraMode.Sky;
         this.arcRotateCamera = new BABYLON.ArcRotateCamera("Camera", 0, Math.PI / 2, 120, BABYLON.Vector3.Zero(), this.game.scene);
+        this.arcRotateCamera.angularSensibilityX *= 5;
+        this.arcRotateCamera.angularSensibilityY *= 5;
         this.arcRotateCamera.attachControl(this.game.canvas);
         this.freeCamera = new BABYLON.FreeCamera("Camera", BABYLON.Vector3.Zero(), this.game.scene);
         this.freeCamera.rotationQuaternion = BABYLON.Quaternion.Identity();
@@ -1360,7 +1362,7 @@ class Demo extends Main {
         this.light.groundColor = new BABYLON.Color3(0.5, 0.5, 0.5);
         this.cameraManager = new CameraManager(this);
         this.cameraManager.arcRotateCamera.lowerRadiusLimit = 90;
-        this.cameraManager.arcRotateCamera.upperRadiusLimit = 140;
+        this.cameraManager.arcRotateCamera.upperRadiusLimit = 180;
     }
     async initialize() {
         return new Promise(resolve => {
@@ -1368,7 +1370,9 @@ class Demo extends Main {
             let kPosMax = 5;
             let planetTest = new Planet("Paulita", kPosMax, this.chunckManager);
             window["PlanetTest"] = planetTest;
-            planetTest.generator = new PlanetGeneratorChaos(planetTest, 0.60, 0.1);
+            //planetTest.generator = new PlanetGeneratorChaos(planetTest, 0.60, 0.15);
+            let p = new BABYLON.Vector3(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5).normalize().scaleInPlace((kPosMax + 1) * PlanetTools.CHUNCKSIZE * 0.75);
+            planetTest.generator = new PlanetGeneratorHole(planetTest, 0.60, 0.15, p, 40);
             this.planetSky = new PlanetSky();
             this.planetSky.setInvertLightDir((new BABYLON.Vector3(0.5, 2.5, 1.5)).normalize());
             this.planetSky.initialize(this.scene);
@@ -2881,7 +2885,7 @@ class PlanetChunckManager {
         this._lodLayers = [];
         this._lodLayersCursors = [];
         this._lodLayersSqrDistances = [];
-        let distances = [120, 150, 180, 210, 240];
+        let distances = [150, 180, 210, 240, 270];
         for (let i = 0; i < this._lodLayersCount - 1; i++) {
             this._lodLayers[i] = [];
             this._lodLayersCursors[i] = 0;
@@ -4400,6 +4404,57 @@ class PlanetGeneratorChaos extends PlanetGenerator {
                         }
                     }
                     if (refData[i - chunck.firstI][j - chunck.firstJ][k - chunck.firstK] === BlockType.None && globalK < seaLevel) {
+                        refData[i - chunck.firstI][j - chunck.firstJ][k - chunck.firstK] = BlockType.Water;
+                    }
+                }
+            }
+        }
+    }
+}
+class PlanetGeneratorHole extends PlanetGenerator {
+    constructor(planet, _seaLevel, _mountainHeight, _holeWorldPosition, _holeRadius) {
+        super(planet);
+        this._seaLevel = _seaLevel;
+        this._mountainHeight = _mountainHeight;
+        this._holeWorldPosition = _holeWorldPosition;
+        this._holeRadius = _holeRadius;
+        this._sqrRadius = 0;
+        console.log("Generator Degree = " + PlanetTools.KPosToDegree(planet.kPosMax));
+        this._mainHeightMap = PlanetHeightMap.CreateMap(PlanetTools.KPosToDegree(planet.kPosMax));
+        this._sqrRadius = this._holeRadius * this._holeRadius;
+    }
+    makeData(chunck, refData) {
+        let f = Math.pow(2, this._mainHeightMap.degree - chunck.degree);
+        let seaLevel = Math.floor(this._seaLevel * this.planet.kPosMax * PlanetTools.CHUNCKSIZE);
+        for (let i = 0; i < PlanetTools.CHUNCKSIZE; i++) {
+            refData[i - chunck.firstI] = [];
+            for (let j = 0; j < PlanetTools.CHUNCKSIZE; j++) {
+                refData[i - chunck.firstI][j - chunck.firstJ] = [];
+                let v = this._mainHeightMap.getForSide(chunck.side, (chunck.iPos * PlanetTools.CHUNCKSIZE + i) * f, (chunck.jPos * PlanetTools.CHUNCKSIZE + j) * f);
+                let altitude = Math.floor((this._seaLevel + v * this._mountainHeight) * this.planet.kPosMax * PlanetTools.CHUNCKSIZE);
+                for (let k = 0; k < PlanetTools.CHUNCKSIZE; k++) {
+                    let globalK = k + chunck.kPos * PlanetTools.CHUNCKSIZE;
+                    let worldPos = PlanetTools.LocalIJKToWorldPosition(chunck, i, j, k, true);
+                    let sqrDist = BABYLON.Vector3.DistanceSquared(this._holeWorldPosition, worldPos);
+                    if (sqrDist < this._sqrRadius) {
+                        refData[i - chunck.firstI][j - chunck.firstJ][k - chunck.firstK] = BlockType.None;
+                    }
+                    else {
+                        if (globalK <= altitude) {
+                            if (globalK > altitude - 2) {
+                                if (globalK < this._seaLevel * (this.planet.kPosMax * PlanetTools.CHUNCKSIZE)) {
+                                    refData[i - chunck.firstI][j - chunck.firstJ][k - chunck.firstK] = BlockType.Sand;
+                                }
+                                else {
+                                    refData[i - chunck.firstI][j - chunck.firstJ][k - chunck.firstK] = BlockType.Grass;
+                                }
+                            }
+                            else {
+                                refData[i - chunck.firstI][j - chunck.firstJ][k - chunck.firstK] = BlockType.Rock;
+                            }
+                        }
+                    }
+                    if (refData[i - chunck.firstI][j - chunck.firstJ][k - chunck.firstK] === BlockType.None && globalK < seaLevel * 0.5) {
                         refData[i - chunck.firstI][j - chunck.firstJ][k - chunck.firstK] = BlockType.Water;
                     }
                 }
