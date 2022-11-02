@@ -1,17 +1,20 @@
 class Utils {
 
-    public static showDebugPlanetHeightMap(heightMap: PlanetHeightMap, x: number, y: number, maxValue?: number): void {
+    public static showDebugPlanetHeightMap(heightMap: PlanetHeightMap, x: number, y: number, maxValue?: number, scene?: BABYLON.Scene): void {
         let debugPlanet = new BABYLON.Mesh("debug-planet");
+        if (!scene) {
+            scene = BABYLON.Engine.Instances[0].scenes[0];
+        }
 		for (let i = 0; i < 6; i++) {
 			BABYLON.SceneLoader.ImportMesh(
 				"",
 				"./resources/models/planet-side.babylon",
 				"",
-				Game.Scene,
+				scene,
 				(meshes) => {
 					let debugPlanetSide = meshes[0];
 					if (debugPlanetSide instanceof(BABYLON.Mesh)) {
-						let debugPlanetSideMaterial = new BABYLON.StandardMaterial("debub-planet-side-material", Game.Scene);
+						let debugPlanetSideMaterial = new BABYLON.StandardMaterial("debub-planet-side-material", scene);
 						debugPlanetSideMaterial.diffuseTexture = heightMap.getTexture(i, maxValue);
 						debugPlanetSideMaterial.emissiveColor = BABYLON.Color3.White();
 						debugPlanetSideMaterial.specularColor = BABYLON.Color3.Black();
@@ -22,13 +25,13 @@ class Utils {
 				}
 			)
 		}
-		Game.Scene.onBeforeRenderObservable.add(
+		scene.onBeforeRenderObservable.add(
 			() => {
-                Game.Scene.activeCamera.computeWorldMatrix();
-				debugPlanet.position.copyFrom(Game.CameraManager.absolutePosition);
-				debugPlanet.position.addInPlace(Game.Scene.activeCamera.getDirection(BABYLON.Axis.Z).scale(7));
-				debugPlanet.position.addInPlace(Game.Scene.activeCamera.getDirection(BABYLON.Axis.X).scale(x));
-				debugPlanet.position.addInPlace(Game.Scene.activeCamera.getDirection(BABYLON.Axis.Y).scale(y));
+                scene.activeCamera.computeWorldMatrix();
+				debugPlanet.position.copyFrom(scene.activeCamera.position);
+				debugPlanet.position.addInPlace(scene.activeCamera.getDirection(BABYLON.Axis.Z).scale(7));
+				debugPlanet.position.addInPlace(scene.activeCamera.getDirection(BABYLON.Axis.X).scale(x));
+				debugPlanet.position.addInPlace(scene.activeCamera.getDirection(BABYLON.Axis.Y).scale(y));
 			}
 		)
     }

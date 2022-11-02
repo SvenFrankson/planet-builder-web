@@ -49,9 +49,10 @@ class Demo extends Main {
 			let planetTest: Planet = new Planet("Paulita", kPosMax, this.chunckManager);
 			window["PlanetTest"] = planetTest;
 
-			//planetTest.generator = new PlanetGeneratorChaos(planetTest, 0.60, 0.15);
-			let p = new BABYLON.Vector3(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5).normalize().scaleInPlace((kPosMax + 1) * PlanetTools.CHUNCKSIZE * 0.75);
-			planetTest.generator = new PlanetGeneratorHole(planetTest, 0.60, 0.15, p, 40);
+			planetTest.generator = new PlanetGeneratorChaos(planetTest, 0.60, 0.15);
+			//let p = new BABYLON.Vector3(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5).normalize().scaleInPlace((kPosMax + 1) * PlanetTools.CHUNCKSIZE * 0.75);
+			//planetTest.generator = new PlanetGeneratorHole(planetTest, 0.60, 0.15, p, 40);
+			planetTest.generator.showDebug();
 
 			this.planetSky = new PlanetSky();
 			this.planetSky.setInvertLightDir((new BABYLON.Vector3(0.5, 2.5, 1.5)).normalize());

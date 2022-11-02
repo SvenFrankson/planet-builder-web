@@ -1,4 +1,4 @@
-Exporter version: 6.4.5, Blender version: 2.90.1
+Exporter version: 6.4.3, Blender version: 2.82 (sub 7)
 ========= Conversion from Blender to Babylon.js =========
 	Scene settings used :
 		Inline textures     :  false
@@ -9,7 +9,7 @@ Exporter version: 6.4.5, Blender version: 2.90.1
 		Vert Color Precision:  3
 		Mat Weight Precision:  2
 		Keep Z-up r-handed  :  no
-		Texture directory   :  C:\Users\svent\Documents\Sven Frankson\planet-builder-web\resources\models\
+		Texture directory   :  C:\Users\staton\Documents\GitHub\planet-builder-web\resources\models\
 	Python World class constructor completed
 	WARNING: No active camera has been assigned, or is not in a currently selected Blender layer
 	processing begun of mesh:  side
@@ -25,4 +25,4 @@ Exporter version: 6.4.5, Blender version: 2.90.1
 	writing mesh:  side
 ========= Writing of JSON file completed =========
 ========= end of processing =========
-elapsed time:  0 min, 0.0064 secs
+elapsed time:  0 min, 0.044 secs

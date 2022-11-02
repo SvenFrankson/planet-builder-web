@@ -109,10 +109,21 @@ class PlanetGeneratorChaos extends PlanetGenerator {
         console.log("Generator Degree = " + PlanetTools.KPosToDegree(planet.kPosMax));
         this._mainHeightMap = PlanetHeightMap.CreateMap(PlanetTools.KPosToDegree(planet.kPosMax));
         this._treeMap = PlanetHeightMap.CreateMap(PlanetTools.KPosToDegree(planet.kPosMax), { firstNoiseDegree : PlanetTools.KPosToDegree(planet.kPosMax) - 2 });
-        this._tunnelMap = PlanetHeightMap.CreateMap(PlanetTools.KPosToDegree(planet.kPosMax), { firstNoiseDegree : PlanetTools.KPosToDegree(planet.kPosMax) - 5 });
+        this._tunnelMap = PlanetHeightMap.CreateMap(
+            PlanetTools.KPosToDegree(planet.kPosMax),
+            {
+                firstNoiseDegree : PlanetTools.KPosToDegree(planet.kPosMax) - 5,
+                postComputation: (v) => {
+                    if (Math.abs(v) < 0.1) {
+                        return 1;
+                    }
+                    return 0;
+                }
+            }
+        );
         this._tunnelAltitudeMap = PlanetHeightMap.CreateMap(PlanetTools.KPosToDegree(planet.kPosMax));
         this._rockMap = PlanetHeightMap.CreateMap(PlanetTools.KPosToDegree(planet.kPosMax), { firstNoiseDegree : PlanetTools.KPosToDegree(planet.kPosMax) - 3});
-        this.heightMaps = [this._tunnelMap, this._tunnelAltitudeMap];
+        this.heightMaps = [this._mainHeightMap, this._tunnelMap, this._tunnelAltitudeMap];
     }
 
     public makeData(chunck: PlanetChunck, refData: number[][][], refProcedural: ProceduralTree[]): void {

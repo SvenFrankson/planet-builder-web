@@ -329,7 +329,12 @@ class PlanetHeightMap {
             for (let j = 0; j < this.size; j++) {
                 let v = this.getForSide(side, i, j);
                 let c = (v + 1) * 0.5 / maxValue * 256;
-                context.fillStyle = "rgb(" + c.toFixed(0) + ", " + c.toFixed(0) + ", " + c.toFixed(0) + ")" 
+                if (Math.round(c) === 128) {
+                    context.fillStyle = "rgb(255 0 0)"; 
+                }
+                else {
+                    context.fillStyle = "rgb(" + c.toFixed(0) + ", " + c.toFixed(0) + ", " + c.toFixed(0) + ")";
+                }
                 context.fillRect(i, j, 1, 1);
             }
         }
