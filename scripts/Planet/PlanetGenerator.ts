@@ -113,14 +113,17 @@ class PlanetGeneratorChaos extends PlanetGenerator {
             PlanetTools.KPosToDegree(planet.kPosMax),
             {
                 firstNoiseDegree : PlanetTools.KPosToDegree(planet.kPosMax) - 5,
+                lastNoiseDegree: PlanetTools.KPosToDegree(planet.kPosMax) - 1,
                 postComputation: (v) => {
-                    if (Math.abs(v) < 0.1) {
+                    if (Math.abs(v) < 0.08) {
                         return 1;
                     }
-                    return 0;
+                    return -1;
                 }
             }
         );
+        this._tunnelMap.smooth();
+        this._tunnelMap.smooth();
         this._tunnelAltitudeMap = PlanetHeightMap.CreateMap(PlanetTools.KPosToDegree(planet.kPosMax));
         this._rockMap = PlanetHeightMap.CreateMap(PlanetTools.KPosToDegree(planet.kPosMax), { firstNoiseDegree : PlanetTools.KPosToDegree(planet.kPosMax) - 3});
         this.heightMaps = [this._mainHeightMap, this._tunnelMap, this._tunnelAltitudeMap];
@@ -144,9 +147,9 @@ class PlanetGeneratorChaos extends PlanetGenerator {
                 let rockAltitude = altitude + Math.round((rock - 0.4) * this._mountainHeight * this.planet.kPosMax * PlanetTools.CHUNCKSIZE);
                 let tree = this._treeMap.getForSide(chunck.side, (chunck.iPos * PlanetTools.CHUNCKSIZE + i) * f, (chunck.jPos * PlanetTools.CHUNCKSIZE + j) * f);
                 
-                let tunnel = Math.abs(this._tunnelMap.getForSide(chunck.side, (chunck.iPos * PlanetTools.CHUNCKSIZE + i) * f, (chunck.jPos * PlanetTools.CHUNCKSIZE + j) * f)) < 0.1;
-                let tunnelV = this._tunnelMap.getForSide(chunck.side, (chunck.iPos * PlanetTools.CHUNCKSIZE + i) * f, (chunck.jPos * PlanetTools.CHUNCKSIZE + j) * f);
-                let tunnelAltitude = Math.floor((this._seaLevel + tunnelV * this._mountainHeight) * this.planet.kPosMax * PlanetTools.CHUNCKSIZE);
+                let tunnel = Math.floor(this._tunnelMap.getForSide(chunck.side, (chunck.iPos * PlanetTools.CHUNCKSIZE + i) * f, (chunck.jPos * PlanetTools.CHUNCKSIZE + j) * f) * 5);
+                let tunnelV = this._tunnelAltitudeMap.getForSide(chunck.side, (chunck.iPos * PlanetTools.CHUNCKSIZE + i) * f, (chunck.jPos * PlanetTools.CHUNCKSIZE + j) * f);
+                let tunnelAltitude = Math.floor((this._seaLevel + 2 * tunnelV * this._mountainHeight) * this.planet.kPosMax * PlanetTools.CHUNCKSIZE);
 
                 /*
                 if (tree > 0.7 && treeCount < maxTree) {
@@ -189,9 +192,9 @@ class PlanetGeneratorChaos extends PlanetGenerator {
                     else if (globalK <= rockAltitude) {
                         refData[i - chunck.firstI][j - chunck.firstJ][k - chunck.firstK] = BlockType.Rock;
                     }
-                    if (tunnel) {
-                        if (globalK >= tunnelAltitude - 1 && globalK <= tunnelAltitude + 1) {
-                            refData[i - chunck.firstI][j - chunck.firstJ][k - chunck.firstK] = BlockType.None;
+                    if (tunnel > 0) {
+                        if (globalK >= tunnelAltitude - tunnel && globalK <= tunnelAltitude + tunnel) {
+                            refData[i - chunck.firstI][j - chunck.firstJ][k - chunck.firstK] = BlockType.Rock;
                         }
                     }
 

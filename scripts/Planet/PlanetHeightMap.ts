@@ -1,5 +1,6 @@
 interface IPlanetHeightMapOptions {
     firstNoiseDegree?: number;
+    lastNoiseDegree?: number;
     postComputation?: (v: number) => number;
 }
 
@@ -21,6 +22,10 @@ class PlanetHeightMap {
         if (options && isFinite(options.firstNoiseDegree)) {
             firstNoiseDegree = options.firstNoiseDegree;
         }
+        let lastNoiseDegree: number = degree;
+        if (options && isFinite(options.lastNoiseDegree)) {
+            lastNoiseDegree = options.lastNoiseDegree;
+        }
 
         for (let i = 0; i <= map.size; i++) {
             for (let j = 0; j <= map.size; j++) {
@@ -34,7 +39,7 @@ class PlanetHeightMap {
         let noise = 1;
         while (map.degree < degree) {
             map = map.scale2();
-            if (map.degree >= firstNoiseDegree) {
+            if (map.degree >= firstNoiseDegree && map.degree < lastNoiseDegree) {
                 noise = noise * 0.5;
                 map.noise(noise);
             }
@@ -65,6 +70,33 @@ class PlanetHeightMap {
                         let v = this.getValue(i, j, k);
                         v += (Math.random() * 2 - 1) * range;
                         this.setValue(v, i, j, k);
+                    }
+                }
+            }
+        }
+    }
+
+    public smooth(): void {
+        for (let i = 0; i <= this.size; i++) {
+            for (let j = 0; j <= this.size; j++) {
+                for (let k = 0; k <= this.size; k++) {
+                    if (this.isValid(i, j, k)) {
+                        let value = 0;
+                        let count = 0;
+                        for (let ii = -1; ii <= 1; ii++) {
+                            for (let jj = -1; jj <= 1; jj++) {
+                                for (let kk = -1; kk <= 1; kk++) {
+                                    let I = i + ii;
+                                    let J = j + jj;
+                                    let K = k + kk;
+                                    if (this.isValid(I, J, K)) {
+                                        value += this.getValue(I, J, K);
+                                        count++;
+                                    }
+                                }
+                            }
+                        }
+                        this.setValue(value / count, i, j, k);
                     }
                 }
             }
