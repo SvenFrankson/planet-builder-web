@@ -272,10 +272,11 @@ class PlanetSide extends BABYLON.Mesh {
         super(name, Game.Scene);
 
         this.planet = planet;
+        this.parent = planet;
         this._side = side;
         this.rotationQuaternion = PlanetTools.QuaternionForSide(this._side);
-        this.computeWorldMatrix();
-        this.freezeWorldMatrix();
+        //this.computeWorldMatrix();
+        //this.freezeWorldMatrix();
 
         this.chunckGroups = [];
         for (let degree = PlanetTools.DEGREEMIN; degree <= PlanetTools.KPosToDegree(this.kPosMax); degree++) {

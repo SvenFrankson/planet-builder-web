@@ -1112,11 +1112,24 @@ class DebugPlanetPerf {
         this._initialized = false;
         this._update = () => {
             this._frameRate.addValue(Game.Engine.getFps());
-            this._chunckSort.addValue(this.game.chunckManager.chunckSortedRatio * 100);
-            this._drawRequestCount.addValue(this.game.chunckManager.needRedrawCount);
+            let sortRatio = 0;
+            for (let i = 0; i < this.game.planets.length; i++) {
+                sortRatio += this.game.planets[i].chunckManager.chunckSortedRatio * 100;
+            }
+            sortRatio /= this.game.planets.length;
+            this._chunckSort.addValue(sortRatio);
+            let needRedrawCount = 0;
+            for (let i = 0; i < this.game.planets.length; i++) {
+                needRedrawCount += this.game.planets[i].chunckManager.needRedrawCount;
+            }
+            this._drawRequestCount.addValue(needRedrawCount);
             if (this._showLayer) {
                 for (let i = 0; i < 6; i++) {
-                    this._layerCounts[i].setText(this.game.chunckManager.lodLayerCount(i).toFixed(0));
+                    let lodLayerCount = 0;
+                    for (let j = 0; j < this.game.planets.length; j++) {
+                        lodLayerCount += this.game.planets[j].chunckManager.lodLayerCount(i);
+                    }
+                    this._layerCounts[i].setText(lodLayerCount.toFixed(0));
                 }
             }
         };
@@ -1354,6 +1367,7 @@ window.addEventListener("DOMContentLoaded", () => {
 class Demo extends Main {
     constructor(canvasElement) {
         super(canvasElement);
+        this.planets = [];
         this.inputMode = InputMode.Unknown;
         this.path = [];
         Demo.DEBUG_INSTANCE = this;
@@ -1365,18 +1379,23 @@ class Demo extends Main {
         this.light.groundColor = new BABYLON.Color3(0.5, 0.5, 0.5);
         this.cameraManager = new CameraManager(this);
         this.cameraManager.arcRotateCamera.lowerRadiusLimit = 90;
-        this.cameraManager.arcRotateCamera.upperRadiusLimit = 180;
+        this.cameraManager.arcRotateCamera.upperRadiusLimit = 350;
     }
     async initialize() {
         return new Promise(resolve => {
-            this.chunckManager = new PlanetChunckManager(this.scene);
             let kPosMax = 5;
-            let planetTest = new Planet("Paulita", kPosMax, this.chunckManager);
-            window["PlanetTest"] = planetTest;
+            let planetTest = new Planet("Paulita", kPosMax, this.scene);
             planetTest.generator = new PlanetGeneratorChaos(planetTest, 0.60, 0.15);
+            planetTest.initialize();
+            let moon = new Planet("Moon", 2, this.scene);
+            moon.generator = new PlanetGeneratorChaos(moon, 0.60, 0.15);
+            moon.position.x = 120;
+            moon.initialize();
+            this.planets = [planetTest, moon];
+            window["PlanetTest"] = planetTest;
             //let p = new BABYLON.Vector3(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5).normalize().scaleInPlace((kPosMax + 1) * PlanetTools.CHUNCKSIZE * 0.75);
             //planetTest.generator = new PlanetGeneratorHole(planetTest, 0.60, 0.15, p, 40);
-            planetTest.generator.showDebug();
+            //planetTest.generator.showDebug();
             this.planetSky = new PlanetSky();
             this.planetSky.setInvertLightDir((new BABYLON.Vector3(0.5, 2.5, 1.5)).normalize());
             this.planetSky.initialize(this.scene);
@@ -1421,39 +1440,19 @@ class Demo extends Main {
             });
             document.querySelector("#sky-view").style.display = "none";
             PlanetChunckVertexData.InitializeData().then(() => {
-                this.chunckManager.initialize();
                 this.player.initialize();
                 this.player.registerControl();
                 planetTest.register();
+                moon.register();
                 resolve();
             });
             this.canvas.addEventListener("pointerup", (event) => {
                 if (this.cameraManager.cameraMode === CameraMode.Sky) {
                     return;
                 }
-                this.setInputMode(InputMode.Mouse);
+                this.inputMode = InputMode.Mouse;
             });
         });
-    }
-    setInputMode(newInputMode) {
-        if (newInputMode != this.inputMode) {
-            this.inputMode = newInputMode;
-            if (this.inputMode === InputMode.Touch) {
-                this.movePad = new PlayerInputMovePad(this.player);
-                this.movePad.connectInput(true);
-                this.headPad = new PlayerInputHeadPad(this.player);
-                this.headPad.connectInput(false);
-            }
-            else {
-                if (this.movePad) {
-                    this.movePad.disconnect();
-                }
-                if (this.headPad) {
-                    this.headPad.disconnect();
-                }
-            }
-            return;
-        }
     }
     update() {
     }
@@ -1469,6 +1468,7 @@ var InputMode;
 class Game extends Main {
     constructor(canvasElement) {
         super(canvasElement);
+        this.planets = [];
         this.inputMode = InputMode.Unknown;
         Game.Instance = this;
     }
@@ -1482,9 +1482,8 @@ class Game extends Main {
     }
     async initialize() {
         return new Promise(resolve => {
-            this.chunckManager = new PlanetChunckManager(this.scene);
             let kPosMax = 8;
-            let planetTest = new Planet("Paulita", kPosMax, this.chunckManager);
+            let planetTest = new Planet("Paulita", kPosMax, this.scene);
             window["PlanetTest"] = planetTest;
             planetTest.generator = new PlanetGeneratorChaos(planetTest, 0.60, 0.2);
             //planetTest.generator = new PlanetGeneratorFlat(planetTest, 0.60, 0.1);
@@ -1519,7 +1518,6 @@ class Game extends Main {
             this.planetSky.setInvertLightDir((new BABYLON.Vector3(0.5, 2.5, 1.5)).normalize());
             this.planetSky.initialize(this.scene);
             PlanetChunckVertexData.InitializeData().then(() => {
-                this.chunckManager.initialize();
                 planetTest.register();
                 this.player.initialize();
                 let debugPlanetPerf = new DebugPlanetPerf(this);
@@ -2030,9 +2028,11 @@ var BlockType;
     BlockType[BlockType["Unknown"] = 8] = "Unknown";
 })(BlockType || (BlockType = {}));
 class Planet extends BABYLON.Mesh {
-    constructor(name, kPosMax, chunckManager) {
-        super(name, Game.Scene);
-        this.chunckManager = chunckManager;
+    constructor(name, kPosMax, scene) {
+        if (!scene) {
+            scene = BABYLON.Engine.Instances[0].scenes[0];
+        }
+        super(name, scene);
         Planet.DEBUG_INSTANCE = this;
         this.kPosMax = kPosMax;
         this.sides = [];
@@ -2042,12 +2042,16 @@ class Planet extends BABYLON.Mesh {
         this.sides[Side.Left] = new PlanetSide(Side.Left, this);
         this.sides[Side.Top] = new PlanetSide(Side.Top, this);
         this.sides[Side.Bottom] = new PlanetSide(Side.Bottom, this);
+        this.chunckManager = new PlanetChunckManager(scene);
     }
     GetSide(side) {
         return this.sides[side];
     }
     GetPlanetName() {
         return this.name;
+    }
+    initialize() {
+        this.chunckManager.initialize();
     }
     register() {
         let chunckCount = 0;
@@ -4978,10 +4982,11 @@ class PlanetSide extends BABYLON.Mesh {
         let name = "side-" + side;
         super(name, Game.Scene);
         this.planet = planet;
+        this.parent = planet;
         this._side = side;
         this.rotationQuaternion = PlanetTools.QuaternionForSide(this._side);
-        this.computeWorldMatrix();
-        this.freezeWorldMatrix();
+        //this.computeWorldMatrix();
+        //this.freezeWorldMatrix();
         this.chunckGroups = [];
         for (let degree = PlanetTools.DEGREEMIN; degree <= PlanetTools.KPosToDegree(this.kPosMax); degree++) {
             this.chunckGroups[degree] = new PlanetChunckGroup(0, 0, 0, this, undefined, degree, degree - (PlanetTools.DEGREEMIN - 1));
@@ -6391,7 +6396,7 @@ class PlayerActionTemplate {
                 let localIJK = PlanetTools.WorldPositionToLocalIJK(player.planet, hit[0].pickedPoint.add(n));
                 if (localIJK) {
                     localIJK.planetChunck.SetData(localIJK.i, localIJK.j, localIJK.k, blockType);
-                    Game.Instance.chunckManager.requestDraw(localIJK.planetChunck, localIJK.planetChunck.lod, "PlayerAction.onClick");
+                    localIJK.planetChunck.planetSide.planet.chunckManager.requestDraw(localIJK.planetChunck, localIJK.planetChunck.lod, "PlayerAction.onClick");
                 }
             }
         };

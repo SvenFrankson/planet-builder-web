@@ -6,15 +6,14 @@ class Demo extends Main {
 	public static DEBUG_INSTANCE: Demo;
 
 	public light: BABYLON.HemisphericLight;
-	public chunckManager: PlanetChunckManager;
 	public planetSky: PlanetSky;
 	public player: Player;
 	public inputManager: InputManager;
 	public cameraManager: CameraManager;
 
+	public planets: Planet[] = [];
+
 	public inputMode: InputMode = InputMode.Unknown;
-	public headPad: PlayerInputHeadPad;
-	public movePad: PlayerInputMovePad;
 
 	constructor(canvasElement: string) {
 		super(canvasElement);
@@ -35,7 +34,7 @@ class Demo extends Main {
 		
 		this.cameraManager = new CameraManager(this);
 		this.cameraManager.arcRotateCamera.lowerRadiusLimit = 90;
-		this.cameraManager.arcRotateCamera.upperRadiusLimit = 180;
+		this.cameraManager.arcRotateCamera.upperRadiusLimit = 350;
 	}
 
 	public path: BABYLON.Vector3[] = [];
@@ -43,16 +42,22 @@ class Demo extends Main {
     public async initialize(): Promise<void> {
 		return new Promise<void>(resolve => {
 
-			this.chunckManager = new PlanetChunckManager(this.scene);
-
 			let kPosMax = 5;
-			let planetTest: Planet = new Planet("Paulita", kPosMax, this.chunckManager);
+			let planetTest: Planet = new Planet("Paulita", kPosMax, this.scene);
+			planetTest.generator = new PlanetGeneratorChaos(planetTest, 0.60, 0.15);
+			planetTest.initialize();
+			let moon: Planet = new Planet("Moon", 2, this.scene);
+			moon.generator = new PlanetGeneratorChaos(moon, 0.60, 0.15);
+			moon.position.x = 120;
+			moon.initialize();
+
+			this.planets = [planetTest, moon];
+
 			window["PlanetTest"] = planetTest;
 
-			planetTest.generator = new PlanetGeneratorChaos(planetTest, 0.60, 0.15);
 			//let p = new BABYLON.Vector3(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5).normalize().scaleInPlace((kPosMax + 1) * PlanetTools.CHUNCKSIZE * 0.75);
 			//planetTest.generator = new PlanetGeneratorHole(planetTest, 0.60, 0.15, p, 40);
-			planetTest.generator.showDebug();
+			//planetTest.generator.showDebug();
 
 			this.planetSky = new PlanetSky();
 			this.planetSky.setInvertLightDir((new BABYLON.Vector3(0.5, 2.5, 1.5)).normalize());
@@ -105,10 +110,10 @@ class Demo extends Main {
 
 			PlanetChunckVertexData.InitializeData().then(
 				() => {
-					this.chunckManager.initialize();
 					this.player.initialize();
 					this.player.registerControl();
 					planetTest.register();
+					moon.register();
 
 					resolve();
 				}
@@ -118,31 +123,9 @@ class Demo extends Main {
 				if (this.cameraManager.cameraMode === CameraMode.Sky) {
 					return;
 				}
-				this.setInputMode(InputMode.Mouse);
+				this.inputMode = InputMode.Mouse;
 			});
 		})
-	}
-
-	public setInputMode(newInputMode: InputMode): void {
-		if (newInputMode != this.inputMode) {
-			this.inputMode = newInputMode;
-			if (this.inputMode === InputMode.Touch) {
-				this.movePad = new PlayerInputMovePad(this.player);
-				this.movePad.connectInput(true);
-
-				this.headPad = new PlayerInputHeadPad(this.player);
-				this.headPad.connectInput(false);
-			}
-			else {
-				if (this.movePad) {
-					this.movePad.disconnect();
-				}
-				if (this.headPad) {
-					this.headPad.disconnect();
-				}
-			}
-			return;
-		}
 	}
 
 	public update(): void {

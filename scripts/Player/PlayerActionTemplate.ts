@@ -71,7 +71,7 @@ class PlayerActionTemplate {
                 let localIJK = PlanetTools.WorldPositionToLocalIJK(player.planet, hit[0].pickedPoint.add(n));
                 if (localIJK) {
                     localIJK.planetChunck.SetData(localIJK.i, localIJK.j, localIJK.k, blockType);
-                    Game.Instance.chunckManager.requestDraw(localIJK.planetChunck, localIJK.planetChunck.lod, "PlayerAction.onClick");
+                    localIJK.planetChunck.planetSide.planet.chunckManager.requestDraw(localIJK.planetChunck, localIJK.planetChunck.lod, "PlayerAction.onClick");
                 }
             }
         }

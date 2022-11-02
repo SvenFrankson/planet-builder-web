@@ -14,13 +14,17 @@ class Planet extends BABYLON.Mesh {
     }
 
     public generator: PlanetGenerator;
+    public chunckManager: PlanetChunckManager;
 
     constructor(
         name: string,
         kPosMax: number,
-        public chunckManager: PlanetChunckManager
+        scene?: BABYLON.Scene
     ) {
-        super(name, Game.Scene);
+        if (!scene) {
+            scene = BABYLON.Engine.Instances[0].scenes[0];
+        }
+        super(name, scene);
         Planet.DEBUG_INSTANCE = this;
         
         this.kPosMax = kPosMax;
@@ -32,6 +36,12 @@ class Planet extends BABYLON.Mesh {
         this.sides[Side.Left] = new PlanetSide(Side.Left, this);
         this.sides[Side.Top] = new PlanetSide(Side.Top, this);
         this.sides[Side.Bottom] = new PlanetSide(Side.Bottom, this);
+
+        this.chunckManager = new PlanetChunckManager(scene)
+    }
+
+    public initialize(): void {
+        this.chunckManager.initialize();
     }
 
     public register(): void {

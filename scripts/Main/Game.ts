@@ -20,9 +20,10 @@ class Game extends Main {
 	public static Player: Player;
 	public player: Player;
 	public actionManager: PlayerActionManager;
-	public chunckManager: PlanetChunckManager;
 	public planetSky: PlanetSky;
 	public inputManager: InputManager;
+
+	public planets: Planet[] = [];
 
 	public inputMode: InputMode = InputMode.Unknown;
 	public headPad: PlayerInputHeadPad;
@@ -55,10 +56,8 @@ class Game extends Main {
 
     public async initialize(): Promise<void> {
 		return new Promise<void>(resolve => {
-			this.chunckManager = new PlanetChunckManager(this.scene);
-
 			let kPosMax = 8;
-			let planetTest: Planet = new Planet("Paulita", kPosMax, this.chunckManager);
+			let planetTest: Planet = new Planet("Paulita", kPosMax, this.scene);
 			window["PlanetTest"] = planetTest;
 
 			planetTest.generator = new PlanetGeneratorChaos(planetTest, 0.60, 0.2);
@@ -105,7 +104,6 @@ class Game extends Main {
 
 			PlanetChunckVertexData.InitializeData().then(
 				() => {
-					this.chunckManager.initialize();
 					planetTest.register();
 					
 					this.player.initialize();
