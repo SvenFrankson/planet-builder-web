@@ -6,13 +6,28 @@ interface IPlanetHeightMapOptions {
 
 class PlanetHeightMap {
 
-    public map: number[][][] = [];
+    public i0s: number[][] = [];
+    public iNs: number[][] = [];
+    public j0s: number[][] = [];
+    public jNs: number[][] = [];
+    public k0s: number[][] = [];
+    public kNs: number[][] = [];
+
+    public values: number[][][] = [this.i0s, this.iNs, this.j0s, this.jNs, this.k0s, this.kNs];
+
     public size: number;
 
     constructor(
         public degree: number
     ) {
         this.size = Math.pow(2, this.degree);
+
+        for (let n = 0; n < 6; n++) {
+            let face = this.values[n];
+            for (let i = 0; i <= this.size; i++) {
+                face[i] = [];
+            }
+        }
     }
 
     public static CreateMap(degree: number, options?: IPlanetHeightMapOptions): PlanetHeightMap {
@@ -27,15 +42,10 @@ class PlanetHeightMap {
             lastNoiseDegree = options.lastNoiseDegree;
         }
 
-        for (let i = 0; i <= map.size; i++) {
-            for (let j = 0; j <= map.size; j++) {
-                for (let k = 0; k <= map.size; k++) {
-                    if (map.isValid(i, j, k)) {
-                        map.setValue(0, i, j, k);
-                    }
-                }
-            }
-        }
+        map.enumerate((i, j, k) => {
+            map.setValue(0, i, j, k);
+        });
+        
         let noise = 1;
         while (map.degree < degree) {
             map = map.scale2();
@@ -47,33 +57,21 @@ class PlanetHeightMap {
 
         
         if (options && options.postComputation) {
-            for (let i = 0; i <= map.size; i++) {
-                for (let j = 0; j <= map.size; j++) {
-                    for (let k = 0; k <= map.size; k++) {
-                        if (map.isValid(i, j, k)) {
-                            let v = map.getValue(i, j, k);
-                            map.setValue(options.postComputation(v), i, j, k);
-                        }
-                    }
-                }
-            }
+            map.enumerate((i, j, k) => {
+                let v = map.getValue(i, j, k);
+                map.setValue(options.postComputation(v), i, j, k);
+            });
         }
 
         return map;
     }
 
     public noise(range: number): void {
-        for (let i = 0; i <= this.size; i++) {
-            for (let j = 0; j <= this.size; j++) {
-                for (let k = 0; k <= this.size; k++) {
-                    if (this.isValid(i, j, k)) {
-                        let v = this.getValue(i, j, k);
-                        v += (Math.random() * 2 - 1) * range;
-                        this.setValue(v, i, j, k);
-                    }
-                }
-            }
-        }
+        this.enumerate((i, j, k) => {
+            let v = this.getValue(i, j, k);
+            v += (Math.random() * 2 - 1) * range;
+            this.setValue(v, i, j, k);
+        });
     }
 
     public smooth(): void {
@@ -105,180 +103,156 @@ class PlanetHeightMap {
 
     public addInPlace(other: PlanetHeightMap): void {
         if (other.degree = this.degree) {
-            for (let i = 0; i <= this.size; i++) {
-                for (let j = 0; j <= this.size; j++) {
-                    for (let k = 0; k <= this.size; k++) {
-                        if (this.isValid(i, j, k)) {
-                            let v = this.getValue(i, j, k);
-                            v += other.getValue(i, j, k);
-                            this.setValue(v, i, j, k);
-                        }
-                    }
-                }
-            }
+            this.enumerate((i, j, k) => {
+                let v = this.getValue(i, j, k);
+                v += other.getValue(i, j, k);
+                this.setValue(v, i, j, k);
+            });
         }
     }
 
     public substractInPlace(other: PlanetHeightMap): void {
         if (other.degree = this.degree) {
-            for (let i = 0; i <= this.size; i++) {
-                for (let j = 0; j <= this.size; j++) {
-                    for (let k = 0; k <= this.size; k++) {
-                        if (this.isValid(i, j, k)) {
-                            let v = this.getValue(i, j, k);
-                            v -= other.getValue(i, j, k);
-                            this.setValue(v, i, j, k);
-                        }
-                    }
-                }
-            }
+            this.enumerate((i, j, k) => {
+                let v = this.getValue(i, j, k);
+                v -= other.getValue(i, j, k);
+                this.setValue(v, i, j, k);
+            });
         }
     }
 
     public scale2(): PlanetHeightMap {
         let scaledMap = new PlanetHeightMap(this.degree + 1);
 
-        for (let I = 0; I <= this.size; I++) {
-            for (let J = 0; J <= this.size; J++) {
-                for (let K = 0; K <= this.size; K++) {
-                    if (this.isValid(I, J, K)) {
-                        let v = this.getValue(I, J, K);
-                        scaledMap.setValue(v, 2 * I, 2 * J, 2 * K);
-                    }
+        this.enumerate((i, j, k) => {
+            if (this.isValid(i, j, k)) {
+                let v = this.getValue(i, j, k);
+                scaledMap.setValue(v, 2 * i, 2 * j, 2 * k);
+            }
+        });
+
+        this.enumerate((i, j, k) => {
+            if (scaledMap.isValid(2 * i + 1, 2 * j, 2 * k)) {
+                let v1 = scaledMap.getValue(2 * i, 2 * j, 2 * k);
+                let v2 = scaledMap.getValue(2 * i + 2, 2 * j, 2 * k);
+                if (isFinite(v1) && isFinite(v2)) {
+                    scaledMap.setValue((v1 + v2) * 0.5, 2 * i + 1, 2 * j, 2 * k);
                 }
             }
-        }
-
-        for (let i = 0; i <= this.size; i++) {
-            for (let j = 0; j <= this.size; j++) {
-                for (let k = 0; k <= this.size; k++) {
-                    if (scaledMap.isValid(2 * i + 1, 2 * j, 2 * k)) {
-                        let v1 = scaledMap.getValue(2 * i, 2 * j, 2 * k);
-                        let v2 = scaledMap.getValue(2 * i + 2, 2 * j, 2 * k);
-                        if (isFinite(v1) && isFinite(v2)) {
-                            scaledMap.setValue((v1 + v2) * 0.5, 2 * i + 1, 2 * j, 2 * k);
-                        }
-                    }
-                    if (scaledMap.isValid(2 * i, 2 * j + 1, 2 * k)) {
-                        let v1 = scaledMap.getValue(2 * i, 2 * j, 2 * k);
-                        let v2 = scaledMap.getValue(2 * i, 2 * j + 2, 2 * k);
-                        if (isFinite(v1) && isFinite(v2)) {
-                            scaledMap.setValue((v1 + v2) * 0.5, 2 * i, 2 * j + 1, 2 * k);
-                        }
-                    }
-                    if (scaledMap.isValid(2 * i, 2 * j, 2 * k + 1)) {
-                        let v1 = scaledMap.getValue(2 * i, 2 * j, 2 * k);
-                        let v2 = scaledMap.getValue(2 * i, 2 * j, 2 * k + 2);
-                        if (isFinite(v1) && isFinite(v2)) {
-                            scaledMap.setValue((v1 + v2) * 0.5, 2 * i, 2 * j, 2 * k + 1);
-                        }
-                    }
+            if (scaledMap.isValid(2 * i, 2 * j + 1, 2 * k)) {
+                let v1 = scaledMap.getValue(2 * i, 2 * j, 2 * k);
+                let v2 = scaledMap.getValue(2 * i, 2 * j + 2, 2 * k);
+                if (isFinite(v1) && isFinite(v2)) {
+                    scaledMap.setValue((v1 + v2) * 0.5, 2 * i, 2 * j + 1, 2 * k);
                 }
             }
-        }
-
-        for (let i = 0; i <= this.size; i++) {
-            for (let j = 0; j <= this.size; j++) {
-                for (let k = 0; k <= this.size; k++) {
-                    if (scaledMap.isValid(2 * i + 1, 2 * j + 1, 2 * k)) {
-                        let v1 = scaledMap.getValue(2 * i, 2 * j + 1, 2 * k);
-                        let v2 = scaledMap.getValue(2 * i + 2, 2 * j + 1, 2 * k);
-                        let v3 = scaledMap.getValue(2 * i + 1, 2 * j + 2, 2 * k);
-                        let v4 = scaledMap.getValue(2 * i + 1, 2 * j, 2 * k);
-
-                        let c = 0;
-                        let v = 0;
-                        if (isFinite(v1)) {
-                            c++;
-                            v += v1;
-                        }
-                        if (isFinite(v2)) {
-                            c++;
-                            v += v2;
-                        }
-                        if (isFinite(v3)) {
-                            c++;
-                            v += v3;
-                        }
-                        if (isFinite(v4)) {
-                            c++;
-                            v += v4;
-                        }
-                        v /= c;
-
-                        if (isNaN(v)) {
-                            debugger;
-                        }
-
-                        scaledMap.setValue(v, 2 * i + 1, 2 * j + 1, 2 * k);
-                    }
-                    if (scaledMap.isValid(2 * i + 1, 2 * j, 2 * k + 1)) {
-                        let v1 = scaledMap.getValue(2 * i,       2 * j,      2 * k + 1);
-                        let v2 = scaledMap.getValue(2 * i + 2,   2 * j,      2 * k + 1);
-                        let v3 = scaledMap.getValue(2 * i + 1,   2 * j,      2 * k);
-                        let v4 = scaledMap.getValue(2 * i + 1,   2 * j,      2 * k + 2);
-
-                        let c = 0;
-                        let v = 0;
-                        if (isFinite(v1)) {
-                            c++;
-                            v += v1;
-                        }
-                        if (isFinite(v2)) {
-                            c++;
-                            v += v2;
-                        }
-                        if (isFinite(v3)) {
-                            c++;
-                            v += v3;
-                        }
-                        if (isFinite(v4)) {
-                            c++;
-                            v += v4;
-                        }
-                        v /= c;
-
-                        if (isNaN(v)) {
-                            debugger;
-                        }
-                        
-                        scaledMap.setValue(v, 2 * i + 1, 2 * j, 2 * k + 1);                        
-                    }
-                    if (scaledMap.isValid(2 * i, 2 * j + 1, 2 * k + 1)) {
-                        let v1 = scaledMap.getValue(2 * i,      2 * j,          2 * k + 1);
-                        let v2 = scaledMap.getValue(2 * i,      2 * j + 2,      2 * k + 1);
-                        let v3 = scaledMap.getValue(2 * i,      2 * j + 1,      2 * k);
-                        let v4 = scaledMap.getValue(2 * i,      2 * j + 1,      2 * k + 2);
-
-                        let c = 0;
-                        let v = 0;
-                        if (isFinite(v1)) {
-                            c++;
-                            v += v1;
-                        }
-                        if (isFinite(v2)) {
-                            c++;
-                            v += v2;
-                        }
-                        if (isFinite(v3)) {
-                            c++;
-                            v += v3;
-                        }
-                        if (isFinite(v4)) {
-                            c++;
-                            v += v4;
-                        }
-                        v /= c;
-
-                        if (isNaN(v)) {
-                            debugger;
-                        }
-
-                        scaledMap.setValue(v, 2 * i, 2 * j + 1, 2 * k + 1);                        
-                    }
+            if (scaledMap.isValid(2 * i, 2 * j, 2 * k + 1)) {
+                let v1 = scaledMap.getValue(2 * i, 2 * j, 2 * k);
+                let v2 = scaledMap.getValue(2 * i, 2 * j, 2 * k + 2);
+                if (isFinite(v1) && isFinite(v2)) {
+                    scaledMap.setValue((v1 + v2) * 0.5, 2 * i, 2 * j, 2 * k + 1);
                 }
             }
-        }
+        });
+        
+        this.enumerate((i, j, k) => {
+            if (scaledMap.isValid(2 * i + 1, 2 * j + 1, 2 * k)) {
+                let v1 = scaledMap.getValue(2 * i, 2 * j + 1, 2 * k);
+                let v2 = scaledMap.getValue(2 * i + 2, 2 * j + 1, 2 * k);
+                let v3 = scaledMap.getValue(2 * i + 1, 2 * j + 2, 2 * k);
+                let v4 = scaledMap.getValue(2 * i + 1, 2 * j, 2 * k);
+
+                let c = 0;
+                let v = 0;
+                if (isFinite(v1)) {
+                    c++;
+                    v += v1;
+                }
+                if (isFinite(v2)) {
+                    c++;
+                    v += v2;
+                }
+                if (isFinite(v3)) {
+                    c++;
+                    v += v3;
+                }
+                if (isFinite(v4)) {
+                    c++;
+                    v += v4;
+                }
+                v /= c;
+
+                if (isNaN(v)) {
+                    debugger;
+                }
+
+                scaledMap.setValue(v, 2 * i + 1, 2 * j + 1, 2 * k);
+            }
+            if (scaledMap.isValid(2 * i + 1, 2 * j, 2 * k + 1)) {
+                let v1 = scaledMap.getValue(2 * i,       2 * j,      2 * k + 1);
+                let v2 = scaledMap.getValue(2 * i + 2,   2 * j,      2 * k + 1);
+                let v3 = scaledMap.getValue(2 * i + 1,   2 * j,      2 * k);
+                let v4 = scaledMap.getValue(2 * i + 1,   2 * j,      2 * k + 2);
+
+                let c = 0;
+                let v = 0;
+                if (isFinite(v1)) {
+                    c++;
+                    v += v1;
+                }
+                if (isFinite(v2)) {
+                    c++;
+                    v += v2;
+                }
+                if (isFinite(v3)) {
+                    c++;
+                    v += v3;
+                }
+                if (isFinite(v4)) {
+                    c++;
+                    v += v4;
+                }
+                v /= c;
+
+                if (isNaN(v)) {
+                    debugger;
+                }
+                
+                scaledMap.setValue(v, 2 * i + 1, 2 * j, 2 * k + 1);                        
+            }
+            if (scaledMap.isValid(2 * i, 2 * j + 1, 2 * k + 1)) {
+                let v1 = scaledMap.getValue(2 * i,      2 * j,          2 * k + 1);
+                let v2 = scaledMap.getValue(2 * i,      2 * j + 2,      2 * k + 1);
+                let v3 = scaledMap.getValue(2 * i,      2 * j + 1,      2 * k);
+                let v4 = scaledMap.getValue(2 * i,      2 * j + 1,      2 * k + 2);
+
+                let c = 0;
+                let v = 0;
+                if (isFinite(v1)) {
+                    c++;
+                    v += v1;
+                }
+                if (isFinite(v2)) {
+                    c++;
+                    v += v2;
+                }
+                if (isFinite(v3)) {
+                    c++;
+                    v += v3;
+                }
+                if (isFinite(v4)) {
+                    c++;
+                    v += v4;
+                }
+                v /= c;
+
+                if (isNaN(v)) {
+                    debugger;
+                }
+
+                scaledMap.setValue(v, 2 * i, 2 * j + 1, 2 * k + 1);                        
+            }
+        });
 
         if (!scaledMap.sanityCheck()) {
             debugger;
@@ -330,23 +304,69 @@ class PlanetHeightMap {
         }
     }
 
-    public getValue(i: number, j: number, k: number): number {
-        if (this.map[i]) {
-            if (this.map[i][j]) {
-                return this.map[i][j][k];
+    public enumerate(callback: (i: number, j: number, k: number) => void): void {
+        for (let jj = 0; jj <= this.size; jj++) {
+            for (let kk = 0; kk <= this.size; kk++) {
+                callback(0, jj, kk);
+                callback(this.size, jj, kk);
             }
         }
-        debugger;
+
+        for (let ii = 1; ii <= this.size - 1; ii++) {
+            for (let kk = 0; kk <= this.size; kk++) {
+                callback(ii, 0, kk);
+                callback(ii, this.size, kk);
+            }
+        }
+
+        for (let ii = 1; ii <= this.size - 1; ii++) {
+            for (let jj = 1; jj <= this.size - 1; jj++) {
+                callback(ii, jj, 0);
+                callback(ii, jj, this.size);
+            }
+        }
+    }
+
+    public getValue(i: number, j: number, k: number): number {
+        if (i === 0) {
+            return this.i0s[j][k];
+        }
+        else if (i === this.size) {
+            return this.iNs[j][k];
+        }
+        else if (j === 0) {
+            return this.j0s[i][k];
+        }
+        else if (j === this.size) {
+            return this.jNs[i][k];
+        }
+        else if (k === 0) {
+            return this.k0s[i][j];
+        }
+        else if (k === this.size) {
+            return this.kNs[i][j];
+        }
     }
 
     public setValue(v: number, i: number, j: number, k: number): void {
-        if (!this.map[i]) {
-            this.map[i] = [];
+        if (i === 0) {
+            this.i0s[j][k] = v;
         }
-        if (!this.map[i][j]) {
-            this.map[i][j] = [];
+        else if (i === this.size) {
+            this.iNs[j][k] = v;
         }
-        this.map[i][j][k] = v;
+        else if (j === 0) {
+            this.j0s[i][k] = v;
+        }
+        else if (j === this.size) {
+            this.jNs[i][k] = v;
+        }
+        else if (k === 0) {
+            this.k0s[i][j] = v;
+        }
+        else if (k === this.size) {
+            this.kNs[i][j] = v;
+        }
     }
 
     public getTexture(side: Side, maxValue?: number): BABYLON.Texture {
