@@ -2131,16 +2131,9 @@ class PlanetChunck extends AbstractPlanetChunck {
         this._barycenter = PlanetTools.EvaluateVertex(this.size, PlanetTools.CHUNCKSIZE * (this.iPos + 0.5), PlanetTools.CHUNCKSIZE * (this.jPos + 0.5)).scale(PlanetTools.KGlobalToAltitude((this.kPos + 0.5) * PlanetTools.CHUNCKSIZE));
         this._barycenter = BABYLON.Vector3.TransformCoordinates(this._barycenter, planetSide.computeWorldMatrix(true));
         this._normal = BABYLON.Vector3.Normalize(this.barycenter);
-        if (this.kPos === 0) {
-            this.bedrock = new BABYLON.Mesh(this.name + "-bedrock", this.scene);
-            this.bedrock.parent = this.planetSide;
+        let degreeBellow = PlanetTools.KPosToDegree(this.kPos - 1);
+        if (degreeBellow != this.degree) {
             this.isDegreeLayerBottom = true;
-        }
-        else {
-            let degreeBellow = PlanetTools.KPosToDegree(this.kPos - 1);
-            if (degreeBellow != this.degree) {
-                this.isDegreeLayerBottom = true;
-            }
         }
         this.isCorner = false;
         if (this.iPos === 0) {
@@ -2534,10 +2527,6 @@ class PlanetChunck extends AbstractPlanetChunck {
                 this.waterMesh.refreshBoundingInfo();
             });
         }
-        if (this.kPos === 0) {
-            vertexData = PlanetChunckMeshBuilder.BuildBedrockVertexData(this.size, this.iPos, this.jPos, this.kPos, 8, this.data);
-            vertexData.applyToMesh(this.bedrock);
-        }
         this.mesh.parent = this.planetSide;
         requestAnimationFrame(() => {
             this.mesh.freezeWorldMatrix();
@@ -2765,6 +2754,7 @@ class PlanetChunckGroup extends AbstractPlanetChunck {
                 child.unregister();
             }
         }
+        this.children = [];
         this._subdivided = false;
         this.register();
     }
@@ -4366,6 +4356,7 @@ class PlanetGeneratorChaos extends PlanetGenerator {
                 let tunnel = Math.abs(this._tunnelMap.getForSide(chunck.side, (chunck.iPos * PlanetTools.CHUNCKSIZE + i) * f, (chunck.jPos * PlanetTools.CHUNCKSIZE + j) * f)) < 0.1;
                 let tunnelV = this._tunnelMap.getForSide(chunck.side, (chunck.iPos * PlanetTools.CHUNCKSIZE + i) * f, (chunck.jPos * PlanetTools.CHUNCKSIZE + j) * f);
                 let tunnelAltitude = Math.floor((this._seaLevel + tunnelV * this._mountainHeight) * this.planet.kPosMax * PlanetTools.CHUNCKSIZE);
+                /*
                 if (tree > 0.7 && treeCount < maxTree) {
                     let localK = altitude + 1 - chunck.kPos * PlanetTools.CHUNCKSIZE;
                     let globalK = localK + chunck.kPos * PlanetTools.CHUNCKSIZE;
@@ -4381,6 +4372,7 @@ class PlanetGeneratorChaos extends PlanetGenerator {
                         }
                     }
                 }
+                */
                 for (let k = 0; k < PlanetTools.CHUNCKSIZE; k++) {
                     let globalK = k + chunck.kPos * PlanetTools.CHUNCKSIZE;
                     if (globalK < seaLevel) {

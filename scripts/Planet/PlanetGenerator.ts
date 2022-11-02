@@ -137,6 +137,7 @@ class PlanetGeneratorChaos extends PlanetGenerator {
                 let tunnelV = this._tunnelMap.getForSide(chunck.side, (chunck.iPos * PlanetTools.CHUNCKSIZE + i) * f, (chunck.jPos * PlanetTools.CHUNCKSIZE + j) * f);
                 let tunnelAltitude = Math.floor((this._seaLevel + tunnelV * this._mountainHeight) * this.planet.kPosMax * PlanetTools.CHUNCKSIZE);
 
+                /*
                 if (tree > 0.7 && treeCount < maxTree) {
                     let localK = altitude + 1 - chunck.kPos * PlanetTools.CHUNCKSIZE;
                     let globalK = localK + chunck.kPos * PlanetTools.CHUNCKSIZE;
@@ -152,6 +153,7 @@ class PlanetGeneratorChaos extends PlanetGenerator {
                         }
                     }
                 }
+                */
 
                 for (let k: number = 0; k < PlanetTools.CHUNCKSIZE; k++) {
                     let globalK = k + chunck.kPos * PlanetTools.CHUNCKSIZE;

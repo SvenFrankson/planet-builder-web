@@ -156,8 +156,6 @@ class PlanetChunck extends AbstractPlanetChunck {
     }
     private _setMeshHistory: number[] = [];
 
-    private bedrock: BABYLON.Mesh;
-
     public mesh: BABYLON.Mesh;
     public isMeshDrawn(): boolean {
         return this.mesh && !this.mesh.isDisposed();
@@ -226,16 +224,9 @@ class PlanetChunck extends AbstractPlanetChunck {
         );
         this._normal = BABYLON.Vector3.Normalize(this.barycenter);
         
-        if (this.kPos === 0) {
-            this.bedrock = new BABYLON.Mesh(this.name + "-bedrock", this.scene);
-            this.bedrock.parent = this.planetSide;
+        let degreeBellow = PlanetTools.KPosToDegree(this.kPos - 1);
+        if (degreeBellow != this.degree) {
             this.isDegreeLayerBottom = true;
-        }
-        else {
-            let degreeBellow = PlanetTools.KPosToDegree(this.kPos - 1);
-            if (degreeBellow != this.degree) {
-                this.isDegreeLayerBottom = true;
-            }
         }
 
         this.isCorner = false;
@@ -497,18 +488,6 @@ class PlanetChunck extends AbstractPlanetChunck {
                 this.waterMesh.freezeWorldMatrix();
                 this.waterMesh.refreshBoundingInfo();
             })
-        }
-    
-        if (this.kPos === 0) {
-            vertexData = PlanetChunckMeshBuilder.BuildBedrockVertexData(
-                this.size,
-                this.iPos,
-                this.jPos,
-                this.kPos,
-                8,
-                this.data
-            );
-            vertexData.applyToMesh(this.bedrock);
         }
 
         this.mesh.parent = this.planetSide;

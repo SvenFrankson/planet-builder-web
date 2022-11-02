@@ -185,6 +185,7 @@ class PlanetChunckGroup extends AbstractPlanetChunck {
                 child.unregister();
             }
         }
+        this.children = [];
         this._subdivided = false;
         this.register();
     }
