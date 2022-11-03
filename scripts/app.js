@@ -1383,7 +1383,7 @@ class Demo extends Main {
     }
     async initialize() {
         return new Promise(resolve => {
-            let kPosMax = 5;
+            let kPosMax = 8;
             let planetTest = new Planet("Paulita", kPosMax, 0.65, this.scene);
             planetTest.initialize();
             //let moon: Planet = new Planet("Moon", 2, 0.60, this.scene);
@@ -2029,6 +2029,7 @@ class Planet extends BABYLON.Mesh {
         this.seaLevelRatio = seaLevelRatio;
         Planet.DEBUG_INSTANCE = this;
         this.kPosMax = kPosMax;
+        this.degree = PlanetTools.KPosToDegree(this.kPosMax);
         this.seaLevel = Math.round(this.kPosMax * this.seaLevelRatio * PlanetTools.CHUNCKSIZE);
         this.generator = new PlanetGeneratorChaos(this, 0.15);
         if (name === "Paulita") {
@@ -2148,37 +2149,7 @@ class PlanetChunck extends AbstractPlanetChunck {
             }
         }
         if (this.isSeaLevel) {
-            if (this.isMeshDisposed()) {
-                this.mesh = new BABYLON.Mesh("chunck-" + this.iPos + "-" + this.jPos + "-" + this.kPos, this.scene);
-            }
-            let i0 = PlanetTools.CHUNCKSIZE * this.iPos;
-            let i1 = PlanetTools.CHUNCKSIZE * (this.iPos + 1);
-            let j0 = PlanetTools.CHUNCKSIZE * this.jPos;
-            let j1 = PlanetTools.CHUNCKSIZE * (this.jPos + 1);
-            let h00 = Math.floor(this.planet.generator.altitudeMap.getForSide(this.side, i0, j0) * this.kPosMax * PlanetTools.CHUNCKSIZE);
-            let p00 = PlanetTools.EvaluateVertex(this.size, i0, j0).scaleInPlace(PlanetTools.KGlobalToAltitude(h00));
-            let h10 = Math.floor(this.planet.generator.altitudeMap.getForSide(this.side, i1, j0) * this.kPosMax * PlanetTools.CHUNCKSIZE);
-            let p10 = PlanetTools.EvaluateVertex(this.size, i1, j0).scaleInPlace(PlanetTools.KGlobalToAltitude(h10));
-            let h11 = Math.floor(this.planet.generator.altitudeMap.getForSide(this.side, i1, j1) * this.kPosMax * PlanetTools.CHUNCKSIZE);
-            let p11 = PlanetTools.EvaluateVertex(this.size, i1, j1).scaleInPlace(PlanetTools.KGlobalToAltitude(h11));
-            let h01 = Math.floor(this.planet.generator.altitudeMap.getForSide(this.side, i0, j1) * this.kPosMax * PlanetTools.CHUNCKSIZE);
-            let p01 = PlanetTools.EvaluateVertex(this.size, i0, j1).scaleInPlace(PlanetTools.KGlobalToAltitude(h01));
-            let vertexData = new BABYLON.VertexData();
-            let positions = [];
-            let indices = [];
-            let normals = [];
-            MeshTools.PushQuad([p00, p10, p11, p01], 3, 2, 1, 0, positions, indices);
-            //MeshTools.PushQuad([p00, p01, p11, p10], 3, 2, 1, 0, positions, indices);
-            BABYLON.VertexData.ComputeNormals(positions, indices, normals);
-            vertexData.positions = positions;
-            vertexData.indices = indices;
-            vertexData.normals = normals;
-            vertexData.applyToMesh(this.mesh);
-            this.mesh.parent = this.planetSide;
-            requestAnimationFrame(() => {
-                this.mesh.freezeWorldMatrix();
-                this.mesh.refreshBoundingInfo();
-            });
+            this.redrawSeaLevelMesh();
         }
         let degreeBellow = PlanetTools.KPosToDegree(this.kPos - 1);
         if (degreeBellow != this.degree) {
@@ -2590,6 +2561,49 @@ class PlanetChunck extends AbstractPlanetChunck {
             }
         }
     }
+    redrawSeaLevelMesh() {
+        if (this.isMeshDisposed()) {
+            this.mesh = new BABYLON.Mesh("chunck-" + this.iPos + "-" + this.jPos + "-" + this.kPos, this.scene);
+        }
+        let f = Math.pow(2, this.planet.degree - this.degree);
+        let vertexData = new BABYLON.VertexData();
+        let positions = [];
+        let indices = [];
+        let normals = [];
+        let colors = [];
+        for (let i = 0; i < 8; i++) {
+            for (let j = 0; j < 8; j++) {
+                let i0 = PlanetTools.CHUNCKSIZE * (this.iPos + i / 8);
+                let i1 = PlanetTools.CHUNCKSIZE * (this.iPos + (i + 1) / 8);
+                let j0 = PlanetTools.CHUNCKSIZE * (this.jPos + j / 8);
+                let j1 = PlanetTools.CHUNCKSIZE * (this.jPos + (j + 1) / 8);
+                let h00 = Math.floor(this.planet.generator.altitudeMap.getForSide(this.side, i0 * f, j0 * f) * this.kPosMax * PlanetTools.CHUNCKSIZE);
+                let p00 = PlanetTools.EvaluateVertex(this.size, i0, j0).scaleInPlace(PlanetTools.KGlobalToAltitude(h00));
+                let h10 = Math.floor(this.planet.generator.altitudeMap.getForSide(this.side, i1 * f, j0 * f) * this.kPosMax * PlanetTools.CHUNCKSIZE);
+                let p10 = PlanetTools.EvaluateVertex(this.size, i1, j0).scaleInPlace(PlanetTools.KGlobalToAltitude(h10));
+                let h11 = Math.floor(this.planet.generator.altitudeMap.getForSide(this.side, i1 * f, j1 * f) * this.kPosMax * PlanetTools.CHUNCKSIZE);
+                let p11 = PlanetTools.EvaluateVertex(this.size, i1, j1).scaleInPlace(PlanetTools.KGlobalToAltitude(h11));
+                let h01 = Math.floor(this.planet.generator.altitudeMap.getForSide(this.side, i0 * f, j1 * f) * this.kPosMax * PlanetTools.CHUNCKSIZE);
+                let p01 = PlanetTools.EvaluateVertex(this.size, i0, j1).scaleInPlace(PlanetTools.KGlobalToAltitude(h01));
+                MeshTools.PushQuad([p00, p10, p11, p01], 3, 2, 1, 0, positions, indices);
+            }
+        }
+        //MeshTools.PushQuad([p00, p01, p11, p10], 3, 2, 1, 0, positions, indices);
+        BABYLON.VertexData.ComputeNormals(positions, indices, normals);
+        for (let i = 0; i < positions.length / 3; i++) {
+            colors.push(1, 0, 0, 1);
+        }
+        vertexData.positions = positions;
+        vertexData.indices = indices;
+        vertexData.normals = normals;
+        vertexData.colors = colors;
+        vertexData.applyToMesh(this.mesh);
+        this.mesh.parent = this.planetSide;
+        requestAnimationFrame(() => {
+            this.mesh.freezeWorldMatrix();
+            this.mesh.refreshBoundingInfo();
+        });
+    }
     highlight() {
         if (this.mesh) {
             this.mesh.material = SharedMaterials.HighlightChunckMaterial();
@@ -2719,23 +2733,28 @@ class PlanetChunckGroup extends AbstractPlanetChunck {
             this.mesh.dispose();
         }
         let levelCoef = Math.pow(2, this.level);
-        let i0 = PlanetTools.CHUNCKSIZE * this.iPos * levelCoef;
-        let i1 = PlanetTools.CHUNCKSIZE * (this.iPos + 1) * levelCoef;
-        let j0 = PlanetTools.CHUNCKSIZE * this.jPos * levelCoef;
-        let j1 = PlanetTools.CHUNCKSIZE * (this.jPos + 1) * levelCoef;
-        let h00 = Math.floor(this.planet.generator.altitudeMap.getForSide(this.side, i0, j0) * this.kPosMax * PlanetTools.CHUNCKSIZE);
-        let p00 = PlanetTools.EvaluateVertex(this.size, i0, j0).scaleInPlace(PlanetTools.KGlobalToAltitude(h00));
-        let h10 = Math.floor(this.planet.generator.altitudeMap.getForSide(this.side, i1, j0) * this.kPosMax * PlanetTools.CHUNCKSIZE);
-        let p10 = PlanetTools.EvaluateVertex(this.size, i1, j0).scaleInPlace(PlanetTools.KGlobalToAltitude(h10));
-        let h11 = Math.floor(this.planet.generator.altitudeMap.getForSide(this.side, i1, j1) * this.kPosMax * PlanetTools.CHUNCKSIZE);
-        let p11 = PlanetTools.EvaluateVertex(this.size, i1, j1).scaleInPlace(PlanetTools.KGlobalToAltitude(h11));
-        let h01 = Math.floor(this.planet.generator.altitudeMap.getForSide(this.side, i0, j1) * this.kPosMax * PlanetTools.CHUNCKSIZE);
-        let p01 = PlanetTools.EvaluateVertex(this.size, i0, j1).scaleInPlace(PlanetTools.KGlobalToAltitude(h01));
         let vertexData = new BABYLON.VertexData();
         let positions = [];
         let indices = [];
         let normals = [];
-        MeshTools.PushQuad([p00, p10, p11, p01], 3, 2, 1, 0, positions, indices);
+        let f = Math.pow(2, this.planet.degree - this.degree);
+        for (let i = 0; i < 8; i++) {
+            for (let j = 0; j < 8; j++) {
+                let i0 = PlanetTools.CHUNCKSIZE * (this.iPos + i / 8) * levelCoef;
+                let i1 = PlanetTools.CHUNCKSIZE * (this.iPos + (i + 1) / 8) * levelCoef;
+                let j0 = PlanetTools.CHUNCKSIZE * (this.jPos + j / 8) * levelCoef;
+                let j1 = PlanetTools.CHUNCKSIZE * (this.jPos + (j + 1) / 8) * levelCoef;
+                let h00 = Math.floor(this.planet.generator.altitudeMap.getForSide(this.side, i0 * f, j0 * f) * this.kPosMax * PlanetTools.CHUNCKSIZE);
+                let p00 = PlanetTools.EvaluateVertex(this.size, i0, j0).scaleInPlace(PlanetTools.KGlobalToAltitude(h00));
+                let h10 = Math.floor(this.planet.generator.altitudeMap.getForSide(this.side, i1 * f, j0 * f) * this.kPosMax * PlanetTools.CHUNCKSIZE);
+                let p10 = PlanetTools.EvaluateVertex(this.size, i1, j0).scaleInPlace(PlanetTools.KGlobalToAltitude(h10));
+                let h11 = Math.floor(this.planet.generator.altitudeMap.getForSide(this.side, i1 * f, j1 * f) * this.kPosMax * PlanetTools.CHUNCKSIZE);
+                let p11 = PlanetTools.EvaluateVertex(this.size, i1, j1).scaleInPlace(PlanetTools.KGlobalToAltitude(h11));
+                let h01 = Math.floor(this.planet.generator.altitudeMap.getForSide(this.side, i0 * f, j1 * f) * this.kPosMax * PlanetTools.CHUNCKSIZE);
+                let p01 = PlanetTools.EvaluateVertex(this.size, i0, j1).scaleInPlace(PlanetTools.KGlobalToAltitude(h01));
+                MeshTools.PushQuad([p00, p10, p11, p01], 3, 2, 1, 0, positions, indices);
+            }
+        }
         //MeshTools.PushQuad([p00, p01, p11, p10], 3, 2, 1, 0, positions, indices);
         BABYLON.VertexData.ComputeNormals(positions, indices, normals);
         vertexData.positions = positions;
@@ -4315,10 +4334,10 @@ class PlanetGeneratorEarth extends PlanetGenerator {
     constructor(planet, _mountainHeight) {
         super(planet);
         this._mountainHeight = _mountainHeight;
-        console.log("Generator Degree = " + PlanetTools.KPosToDegree(planet.kPosMax));
-        this._mainHeightMap = PlanetHeightMap.CreateMap(PlanetTools.KPosToDegree(planet.kPosMax));
-        this._treeMap = PlanetHeightMap.CreateMap(PlanetTools.KPosToDegree(planet.kPosMax), { firstNoiseDegree: PlanetTools.KPosToDegree(planet.kPosMax) - 2 });
-        this._rockMap = PlanetHeightMap.CreateMap(PlanetTools.KPosToDegree(planet.kPosMax), { firstNoiseDegree: PlanetTools.KPosToDegree(planet.kPosMax) - 3 });
+        console.log("Generator Degree = " + planet.degree);
+        this._mainHeightMap = PlanetHeightMap.CreateMap(planet.degree);
+        this._treeMap = PlanetHeightMap.CreateMap(planet.degree, { firstNoiseDegree: planet.degree - 2 });
+        this._rockMap = PlanetHeightMap.CreateMap(planet.degree, { firstNoiseDegree: planet.degree - 3 });
         this.heightMaps = [this._mainHeightMap];
     }
     makeData(chunck, refData, refProcedural) {
@@ -4375,12 +4394,12 @@ class PlanetGeneratorChaos extends PlanetGenerator {
     constructor(planet, _mountainHeight) {
         super(planet);
         this._mountainHeight = _mountainHeight;
-        console.log("Generator Degree = " + PlanetTools.KPosToDegree(planet.kPosMax));
-        this._mainHeightMap = PlanetHeightMap.CreateMap(PlanetTools.KPosToDegree(planet.kPosMax));
-        this._treeMap = PlanetHeightMap.CreateMap(PlanetTools.KPosToDegree(planet.kPosMax), { firstNoiseDegree: PlanetTools.KPosToDegree(planet.kPosMax) - 2 });
-        this._tunnelMap = PlanetHeightMap.CreateMap(PlanetTools.KPosToDegree(planet.kPosMax), {
-            firstNoiseDegree: PlanetTools.KPosToDegree(planet.kPosMax) - 5,
-            lastNoiseDegree: PlanetTools.KPosToDegree(planet.kPosMax) - 1,
+        console.log("Generator Degree = " + planet.degree);
+        this._mainHeightMap = PlanetHeightMap.CreateMap(planet.degree);
+        this._treeMap = PlanetHeightMap.CreateMap(planet.degree, { firstNoiseDegree: planet.degree - 2 });
+        this._tunnelMap = PlanetHeightMap.CreateMap(planet.degree, {
+            firstNoiseDegree: planet.degree - 5,
+            lastNoiseDegree: planet.degree - 1,
             postComputation: (v) => {
                 if (Math.abs(v) < 0.08) {
                     return 1;
@@ -4390,9 +4409,10 @@ class PlanetGeneratorChaos extends PlanetGenerator {
         });
         this._tunnelMap.smooth();
         this._tunnelMap.smooth();
-        this._tunnelAltitudeMap = PlanetHeightMap.CreateMap(PlanetTools.KPosToDegree(planet.kPosMax));
-        this._rockMap = PlanetHeightMap.CreateMap(PlanetTools.KPosToDegree(planet.kPosMax), { firstNoiseDegree: PlanetTools.KPosToDegree(planet.kPosMax) - 3 });
-        this.altitudeMap = PlanetHeightMap.CreateConstantMap(PlanetTools.KPosToDegree(planet.kPosMax), 0).addInPlace(this._mainHeightMap).multiplyInPlace(_mountainHeight).addInPlace(PlanetHeightMap.CreateConstantMap(PlanetTools.KPosToDegree(planet.kPosMax), this.planet.seaLevelRatio));
+        this._tunnelAltitudeMap = PlanetHeightMap.CreateMap(planet.degree);
+        this._rockMap = PlanetHeightMap.CreateMap(planet.degree, { firstNoiseDegree: planet.degree - 3 });
+        this.altitudeMap = PlanetHeightMap.CreateConstantMap(planet.degree, 0).addInPlace(this._mainHeightMap).multiplyInPlace(_mountainHeight).addInPlace(PlanetHeightMap.CreateConstantMap(planet.degree, this.planet.seaLevelRatio));
+        //this.altitudeMap.maxInPlace(PlanetHeightMap.CreateConstantMap(planet.degree, this.planet.seaLevelRatio));
         this.heightMaps = [this.altitudeMap];
     }
     makeData(chunck, refData, refProcedural) {
@@ -4469,8 +4489,8 @@ class PlanetGeneratorHole extends PlanetGenerator {
         this._holeWorldPosition = _holeWorldPosition;
         this._holeRadius = _holeRadius;
         this._sqrRadius = 0;
-        console.log("Generator Degree = " + PlanetTools.KPosToDegree(planet.kPosMax));
-        this._mainHeightMap = PlanetHeightMap.CreateMap(PlanetTools.KPosToDegree(planet.kPosMax));
+        console.log("Generator Degree = " + planet.degree);
+        this._mainHeightMap = PlanetHeightMap.CreateMap(planet.degree);
         this._sqrRadius = this._holeRadius * this._holeRadius;
     }
     makeData(chunck, refData) {

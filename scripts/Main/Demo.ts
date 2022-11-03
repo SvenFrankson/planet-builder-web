@@ -42,7 +42,7 @@ class Demo extends Main {
     public async initialize(): Promise<void> {
 		return new Promise<void>(resolve => {
 
-			let kPosMax = 5;
+			let kPosMax = 8;
 			let planetTest: Planet = new Planet("Paulita", kPosMax, 0.65, this.scene);
 			planetTest.initialize();
 			//let moon: Planet = new Planet("Moon", 2, 0.60, this.scene);

@@ -33,10 +33,10 @@ class PlanetGeneratorEarth extends PlanetGenerator {
 
     constructor(planet: Planet, private _mountainHeight: number) {
         super(planet);
-        console.log("Generator Degree = " + PlanetTools.KPosToDegree(planet.kPosMax));
-        this._mainHeightMap = PlanetHeightMap.CreateMap(PlanetTools.KPosToDegree(planet.kPosMax));
-        this._treeMap = PlanetHeightMap.CreateMap(PlanetTools.KPosToDegree(planet.kPosMax), { firstNoiseDegree : PlanetTools.KPosToDegree(planet.kPosMax) - 2 });
-        this._rockMap = PlanetHeightMap.CreateMap(PlanetTools.KPosToDegree(planet.kPosMax), { firstNoiseDegree : PlanetTools.KPosToDegree(planet.kPosMax) - 3});
+        console.log("Generator Degree = " + planet.degree);
+        this._mainHeightMap = PlanetHeightMap.CreateMap(planet.degree);
+        this._treeMap = PlanetHeightMap.CreateMap(planet.degree, { firstNoiseDegree : planet.degree - 2 });
+        this._rockMap = PlanetHeightMap.CreateMap(planet.degree, { firstNoiseDegree : planet.degree - 3});
         this.heightMaps = [this._mainHeightMap];
     }
 
@@ -107,14 +107,14 @@ class PlanetGeneratorChaos extends PlanetGenerator {
 
     constructor(planet: Planet, private _mountainHeight: number) {
         super(planet);
-        console.log("Generator Degree = " + PlanetTools.KPosToDegree(planet.kPosMax));
-        this._mainHeightMap = PlanetHeightMap.CreateMap(PlanetTools.KPosToDegree(planet.kPosMax));
-        this._treeMap = PlanetHeightMap.CreateMap(PlanetTools.KPosToDegree(planet.kPosMax), { firstNoiseDegree : PlanetTools.KPosToDegree(planet.kPosMax) - 2 });
+        console.log("Generator Degree = " + planet.degree);
+        this._mainHeightMap = PlanetHeightMap.CreateMap(planet.degree);
+        this._treeMap = PlanetHeightMap.CreateMap(planet.degree, { firstNoiseDegree : planet.degree - 2 });
         this._tunnelMap = PlanetHeightMap.CreateMap(
-            PlanetTools.KPosToDegree(planet.kPosMax),
+            planet.degree,
             {
-                firstNoiseDegree : PlanetTools.KPosToDegree(planet.kPosMax) - 5,
-                lastNoiseDegree: PlanetTools.KPosToDegree(planet.kPosMax) - 1,
+                firstNoiseDegree : planet.degree - 5,
+                lastNoiseDegree: planet.degree - 1,
                 postComputation: (v) => {
                     if (Math.abs(v) < 0.08) {
                         return 1;
@@ -125,10 +125,11 @@ class PlanetGeneratorChaos extends PlanetGenerator {
         );
         this._tunnelMap.smooth();
         this._tunnelMap.smooth();
-        this._tunnelAltitudeMap = PlanetHeightMap.CreateMap(PlanetTools.KPosToDegree(planet.kPosMax));
-        this._rockMap = PlanetHeightMap.CreateMap(PlanetTools.KPosToDegree(planet.kPosMax), { firstNoiseDegree : PlanetTools.KPosToDegree(planet.kPosMax) - 3});
+        this._tunnelAltitudeMap = PlanetHeightMap.CreateMap(planet.degree);
+        this._rockMap = PlanetHeightMap.CreateMap(planet.degree, { firstNoiseDegree : planet.degree - 3});
 
-        this.altitudeMap = PlanetHeightMap.CreateConstantMap(PlanetTools.KPosToDegree(planet.kPosMax), 0).addInPlace(this._mainHeightMap).multiplyInPlace(_mountainHeight).addInPlace(PlanetHeightMap.CreateConstantMap(PlanetTools.KPosToDegree(planet.kPosMax), this.planet.seaLevelRatio));
+        this.altitudeMap = PlanetHeightMap.CreateConstantMap(planet.degree, 0).addInPlace(this._mainHeightMap).multiplyInPlace(_mountainHeight).addInPlace(PlanetHeightMap.CreateConstantMap(planet.degree, this.planet.seaLevelRatio));
+        //this.altitudeMap.maxInPlace(PlanetHeightMap.CreateConstantMap(planet.degree, this.planet.seaLevelRatio));
         this.heightMaps = [this.altitudeMap];
     }
 
@@ -215,8 +216,8 @@ class PlanetGeneratorHole extends PlanetGenerator {
 
     constructor(planet: Planet, number, private _mountainHeight: number, private _holeWorldPosition: BABYLON.Vector3, private _holeRadius: number) {
         super(planet);
-        console.log("Generator Degree = " + PlanetTools.KPosToDegree(planet.kPosMax));
-        this._mainHeightMap = PlanetHeightMap.CreateMap(PlanetTools.KPosToDegree(planet.kPosMax));
+        console.log("Generator Degree = " + planet.degree);
+        this._mainHeightMap = PlanetHeightMap.CreateMap(planet.degree);
         this._sqrRadius = this._holeRadius * this._holeRadius;
     }
 
