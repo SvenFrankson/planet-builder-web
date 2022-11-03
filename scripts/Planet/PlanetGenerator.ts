@@ -1,6 +1,7 @@
 abstract class PlanetGenerator {
 
     public heightMaps: PlanetHeightMap[];
+    public altitudeMap: PlanetHeightMap;
 
     constructor(
         public planet: Planet
@@ -30,7 +31,7 @@ class PlanetGeneratorEarth extends PlanetGenerator {
     private _treeMap: PlanetHeightMap;
     private _rockMap: PlanetHeightMap;
 
-    constructor(planet: Planet, private _seaLevel: number, private _mountainHeight: number) {
+    constructor(planet: Planet, private _mountainHeight: number) {
         super(planet);
         console.log("Generator Degree = " + PlanetTools.KPosToDegree(planet.kPosMax));
         this._mainHeightMap = PlanetHeightMap.CreateMap(PlanetTools.KPosToDegree(planet.kPosMax));
@@ -52,7 +53,7 @@ class PlanetGeneratorEarth extends PlanetGenerator {
                 let v = this._mainHeightMap.getForSide(chunck.side, (chunck.iPos * PlanetTools.CHUNCKSIZE + i) * f, (chunck.jPos * PlanetTools.CHUNCKSIZE + j) * f);
                 let tree = this._treeMap.getForSide(chunck.side, (chunck.iPos * PlanetTools.CHUNCKSIZE + i) * f, (chunck.jPos * PlanetTools.CHUNCKSIZE + j) * f);
                 let rock = this._rockMap.getForSide(chunck.side, (chunck.iPos * PlanetTools.CHUNCKSIZE + i) * f, (chunck.jPos * PlanetTools.CHUNCKSIZE + j) * f);
-                let altitude = Math.floor((this._seaLevel + v * this._mountainHeight) * this.planet.kPosMax * PlanetTools.CHUNCKSIZE);
+                let altitude = Math.floor((this.planet.seaLevel + v * this._mountainHeight) * this.planet.kPosMax * PlanetTools.CHUNCKSIZE);
                 let rockAltitude = altitude + Math.round((rock - 0.4) * this._mountainHeight * this.planet.kPosMax * PlanetTools.CHUNCKSIZE);
 
                 /*
@@ -75,7 +76,7 @@ class PlanetGeneratorEarth extends PlanetGenerator {
 
                     if (globalK <= altitude) {
                         if (globalK > altitude - 2) {
-                            if (globalK < this._seaLevel * (this.planet.kPosMax * PlanetTools.CHUNCKSIZE)) {
+                            if (globalK < this.planet.seaLevel * (this.planet.kPosMax * PlanetTools.CHUNCKSIZE)) {
                                 refData[i - chunck.firstI][j - chunck.firstJ][k - chunck.firstK] = BlockType.Sand;
                             }
                             else {
@@ -104,7 +105,7 @@ class PlanetGeneratorChaos extends PlanetGenerator {
     private _rockMap: PlanetHeightMap;
     private _treeMap: PlanetHeightMap;
 
-    constructor(planet: Planet, private _seaLevel: number, private _mountainHeight: number) {
+    constructor(planet: Planet, private _mountainHeight: number) {
         super(planet);
         console.log("Generator Degree = " + PlanetTools.KPosToDegree(planet.kPosMax));
         this._mainHeightMap = PlanetHeightMap.CreateMap(PlanetTools.KPosToDegree(planet.kPosMax));
@@ -126,7 +127,9 @@ class PlanetGeneratorChaos extends PlanetGenerator {
         this._tunnelMap.smooth();
         this._tunnelAltitudeMap = PlanetHeightMap.CreateMap(PlanetTools.KPosToDegree(planet.kPosMax));
         this._rockMap = PlanetHeightMap.CreateMap(PlanetTools.KPosToDegree(planet.kPosMax), { firstNoiseDegree : PlanetTools.KPosToDegree(planet.kPosMax) - 3});
-        this.heightMaps = [this._mainHeightMap, this._tunnelMap, this._tunnelAltitudeMap];
+
+        this.altitudeMap = PlanetHeightMap.CreateConstantMap(PlanetTools.KPosToDegree(planet.kPosMax), 0).addInPlace(this._mainHeightMap).multiplyInPlace(_mountainHeight).addInPlace(PlanetHeightMap.CreateConstantMap(PlanetTools.KPosToDegree(planet.kPosMax), this.planet.seaLevelRatio));
+        this.heightMaps = [this.altitudeMap];
     }
 
     public makeData(chunck: PlanetChunck, refData: number[][][], refProcedural: ProceduralTree[]): void {
@@ -134,22 +137,20 @@ class PlanetGeneratorChaos extends PlanetGenerator {
         let maxTree = 1;
         let treeCount = 0;
 
-        let seaLevel = Math.floor(this._seaLevel * this.planet.kPosMax * PlanetTools.CHUNCKSIZE);
-
         for (let i: number = 0; i < PlanetTools.CHUNCKSIZE; i++) {
             refData[i - chunck.firstI] = [];
             for (let j: number = 0; j < PlanetTools.CHUNCKSIZE; j++) {
                 refData[i - chunck.firstI][j - chunck.firstJ] = [];
 
                 let v = this._mainHeightMap.getForSide(chunck.side, (chunck.iPos * PlanetTools.CHUNCKSIZE + i) * f, (chunck.jPos * PlanetTools.CHUNCKSIZE + j) * f);
-                let altitude = Math.floor((this._seaLevel + v * this._mountainHeight) * this.planet.kPosMax * PlanetTools.CHUNCKSIZE);
+                let altitude = this.planet.seaLevel + Math.floor((v * this._mountainHeight) * this.planet.kPosMax * PlanetTools.CHUNCKSIZE);
                 let rock = this._rockMap.getForSide(chunck.side, (chunck.iPos * PlanetTools.CHUNCKSIZE + i) * f, (chunck.jPos * PlanetTools.CHUNCKSIZE + j) * f);
                 let rockAltitude = altitude + Math.round((rock - 0.4) * this._mountainHeight * this.planet.kPosMax * PlanetTools.CHUNCKSIZE);
                 let tree = this._treeMap.getForSide(chunck.side, (chunck.iPos * PlanetTools.CHUNCKSIZE + i) * f, (chunck.jPos * PlanetTools.CHUNCKSIZE + j) * f);
                 
                 let tunnel = Math.floor(this._tunnelMap.getForSide(chunck.side, (chunck.iPos * PlanetTools.CHUNCKSIZE + i) * f, (chunck.jPos * PlanetTools.CHUNCKSIZE + j) * f) * 5);
                 let tunnelV = this._tunnelAltitudeMap.getForSide(chunck.side, (chunck.iPos * PlanetTools.CHUNCKSIZE + i) * f, (chunck.jPos * PlanetTools.CHUNCKSIZE + j) * f);
-                let tunnelAltitude = Math.floor((this._seaLevel + 2 * tunnelV * this._mountainHeight) * this.planet.kPosMax * PlanetTools.CHUNCKSIZE);
+                let tunnelAltitude = this.planet.seaLevel + Math.floor((2 * tunnelV * this._mountainHeight) * this.planet.kPosMax * PlanetTools.CHUNCKSIZE);
 
                 /*
                 if (tree > 0.7 && treeCount < maxTree) {
@@ -172,13 +173,13 @@ class PlanetGeneratorChaos extends PlanetGenerator {
                 for (let k: number = 0; k < PlanetTools.CHUNCKSIZE; k++) {
                     let globalK = k + chunck.kPos * PlanetTools.CHUNCKSIZE;
 
-                    if (globalK < seaLevel) {
+                    if (globalK < this.planet.seaLevel) {
                         refData[i - chunck.firstI][j - chunck.firstJ][k - chunck.firstK] = BlockType.Water;
                     }
 
                     if (globalK <= altitude) {
                         if (globalK > altitude - 2) {
-                            if (globalK < this._seaLevel * (this.planet.kPosMax * PlanetTools.CHUNCKSIZE)) {
+                            if (globalK < this.planet.seaLevel) {
                                 refData[i - chunck.firstI][j - chunck.firstJ][k - chunck.firstK] = BlockType.Sand;
                             }
                             else {
@@ -198,7 +199,7 @@ class PlanetGeneratorChaos extends PlanetGenerator {
                         }
                     }
 
-                    if (refData[i - chunck.firstI][j - chunck.firstJ][k - chunck.firstK] === BlockType.None && globalK < seaLevel) {
+                    if (refData[i - chunck.firstI][j - chunck.firstJ][k - chunck.firstK] === BlockType.None && globalK < this.planet.seaLevel) {
                         refData[i - chunck.firstI][j - chunck.firstJ][k - chunck.firstK] = BlockType.Water;
                     }
                 }
@@ -212,7 +213,7 @@ class PlanetGeneratorHole extends PlanetGenerator {
     private _mainHeightMap: PlanetHeightMap;
     private _sqrRadius: number = 0;
 
-    constructor(planet: Planet, private _seaLevel: number, private _mountainHeight: number, private _holeWorldPosition: BABYLON.Vector3, private _holeRadius: number) {
+    constructor(planet: Planet, number, private _mountainHeight: number, private _holeWorldPosition: BABYLON.Vector3, private _holeRadius: number) {
         super(planet);
         console.log("Generator Degree = " + PlanetTools.KPosToDegree(planet.kPosMax));
         this._mainHeightMap = PlanetHeightMap.CreateMap(PlanetTools.KPosToDegree(planet.kPosMax));
@@ -221,7 +222,7 @@ class PlanetGeneratorHole extends PlanetGenerator {
 
     public makeData(chunck: PlanetChunck, refData: number[][][]): void {
         let f = Math.pow(2, this._mainHeightMap.degree - chunck.degree);
-        let seaLevel = Math.floor(this._seaLevel * this.planet.kPosMax * PlanetTools.CHUNCKSIZE);
+        let seaLevel = Math.floor(this.planet.seaLevel * this.planet.kPosMax * PlanetTools.CHUNCKSIZE);
 
         for (let i: number = 0; i < PlanetTools.CHUNCKSIZE; i++) {
             refData[i - chunck.firstI] = [];
@@ -229,7 +230,7 @@ class PlanetGeneratorHole extends PlanetGenerator {
                 refData[i - chunck.firstI][j - chunck.firstJ] = [];
 
                 let v = this._mainHeightMap.getForSide(chunck.side, (chunck.iPos * PlanetTools.CHUNCKSIZE + i) * f, (chunck.jPos * PlanetTools.CHUNCKSIZE + j) * f);
-                let altitude = Math.floor((this._seaLevel + v * this._mountainHeight) * this.planet.kPosMax * PlanetTools.CHUNCKSIZE);
+                let altitude = Math.floor((this.planet.seaLevel + v * this._mountainHeight) * this.planet.kPosMax * PlanetTools.CHUNCKSIZE);
 
                 for (let k: number = 0; k < PlanetTools.CHUNCKSIZE; k++) {
                     let globalK = k + chunck.kPos * PlanetTools.CHUNCKSIZE;
@@ -241,7 +242,7 @@ class PlanetGeneratorHole extends PlanetGenerator {
                     else {
                         if (globalK <= altitude) {
                             if (globalK > altitude - 2) {
-                                if (globalK < this._seaLevel * (this.planet.kPosMax * PlanetTools.CHUNCKSIZE)) {
+                                if (globalK < this.planet.seaLevel * (this.planet.kPosMax * PlanetTools.CHUNCKSIZE)) {
                                     refData[i - chunck.firstI][j - chunck.firstJ][k - chunck.firstK] = BlockType.Sand;
                                 }
                                 else {
@@ -265,7 +266,7 @@ class PlanetGeneratorHole extends PlanetGenerator {
 
 class PlanetGeneratorFlat extends PlanetGenerator {
 
-    constructor(planet: Planet, private _seaLevel: number, private _mountainHeight: number) {
+    constructor(planet: Planet, private _mountainHeight: number) {
         super(planet);
     }
 
@@ -276,7 +277,7 @@ class PlanetGeneratorFlat extends PlanetGenerator {
             for (let j: number = 0; j < PlanetTools.CHUNCKSIZE; j++) {
                 refData[i - chunck.firstI][j - chunck.firstJ] = [];
 
-                let altitude = Math.floor(this._seaLevel * this.planet.kPosMax * PlanetTools.CHUNCKSIZE);
+                let altitude = Math.floor(this.planet.seaLevel * this.planet.kPosMax * PlanetTools.CHUNCKSIZE);
 
                 for (let k: number = 0; k < PlanetTools.CHUNCKSIZE; k++) {
                     let globalK = k + chunck.kPos * PlanetTools.CHUNCKSIZE;

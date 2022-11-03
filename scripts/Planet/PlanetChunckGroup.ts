@@ -40,6 +40,16 @@ class PlanetChunckGroup extends AbstractPlanetChunck {
             planetSide.computeWorldMatrix(true)
         );
 
+        if ((this.kPos * levelCoef + this.kOffset) * PlanetTools.CHUNCKSIZE <= this.planetSide.planet.seaLevel) {
+            if (((this.kPos + 1) * levelCoef + this.kOffset) * PlanetTools.CHUNCKSIZE > this.planetSide.planet.seaLevel) {
+                this.isSeaLevel = true;
+            }
+        }
+
+        if (this.isSeaLevel) {
+            this.drawMesh();
+        }
+
         /*
         if (this.degree === 4) {
             this.mesh = BABYLON.MeshBuilder.CreateBox(this.name);
@@ -75,6 +85,48 @@ class PlanetChunckGroup extends AbstractPlanetChunck {
         this.mesh.position = this._barycenter;
         this.mesh.freezeWorldMatrix();
         */
+    }
+
+    public drawMesh(): void {
+        if (this.mesh) {
+            this.mesh.dispose();
+        }
+        let levelCoef = Math.pow(2, this.level);
+
+        let i0 = PlanetTools.CHUNCKSIZE * this.iPos * levelCoef;
+        let i1 = PlanetTools.CHUNCKSIZE * (this.iPos + 1) * levelCoef;
+        let j0 = PlanetTools.CHUNCKSIZE * this.jPos * levelCoef;
+        let j1 = PlanetTools.CHUNCKSIZE * (this.jPos + 1) * levelCoef;
+
+        let h00 = Math.floor(this.planet.generator.altitudeMap.getForSide(this.side, i0, j0) * this.kPosMax * PlanetTools.CHUNCKSIZE);
+        let p00 = PlanetTools.EvaluateVertex(this.size, i0, j0).scaleInPlace(PlanetTools.KGlobalToAltitude(h00));
+
+        let h10 = Math.floor(this.planet.generator.altitudeMap.getForSide(this.side, i1, j0) * this.kPosMax * PlanetTools.CHUNCKSIZE);
+        let p10 = PlanetTools.EvaluateVertex(this.size, i1, j0).scaleInPlace(PlanetTools.KGlobalToAltitude(h10));
+
+        let h11 = Math.floor(this.planet.generator.altitudeMap.getForSide(this.side, i1, j1) * this.kPosMax * PlanetTools.CHUNCKSIZE);
+        let p11 = PlanetTools.EvaluateVertex(this.size, i1, j1).scaleInPlace(PlanetTools.KGlobalToAltitude(h11));
+
+        let h01 = Math.floor(this.planet.generator.altitudeMap.getForSide(this.side, i0, j1) * this.kPosMax * PlanetTools.CHUNCKSIZE);
+        let p01 = PlanetTools.EvaluateVertex(this.size, i0, j1).scaleInPlace(PlanetTools.KGlobalToAltitude(h01));
+
+        let vertexData = new BABYLON.VertexData();
+        let positions: number[] = [];
+        let indices: number[] = [];
+        let normals: number[] = [];
+        
+        MeshTools.PushQuad([p00, p10, p11, p01], 3, 2, 1, 0, positions, indices);
+        //MeshTools.PushQuad([p00, p01, p11, p10], 3, 2, 1, 0, positions, indices);
+        BABYLON.VertexData.ComputeNormals(positions, indices, normals);
+
+        vertexData.positions = positions;
+        vertexData.indices = indices;
+        vertexData.normals = normals;
+
+        this.mesh = BABYLON.MeshBuilder.CreateBox(this.name);
+        //this.mesh.position = this.barycenter;
+        this.mesh.parent = this.planetSide;
+        vertexData.applyToMesh(this.mesh);
     }
 
     public getPlanetChunck(iPos: number, jPos: number, kPos: number): PlanetChunck {
@@ -148,12 +200,18 @@ class PlanetChunckGroup extends AbstractPlanetChunck {
                             if (!chunck) {
                                 chunck = new PlanetChunckGroup(this.iPos * 2 + i, this.jPos * 2 + j, childKPos, this.planetSide, this, this.degree, this.level - 1);
                                 this.children[j + 2 * i + 4 * k] = chunck;
+                                if (chunck.isSeaLevel) {
+                                    chunck.drawMesh();
+                                }
                             }
                             chunck.register();
                         }
                     }
                 }
             }
+        }
+        if (this.mesh) {
+            this.mesh.dispose();
         }
         this._subdivisionsCount++;
         //console.log(this.name + " " + this._subdivisionsCount + " (" + this._subdivisionsSkipedCount + ")");
@@ -186,6 +244,9 @@ class PlanetChunckGroup extends AbstractPlanetChunck {
             }
         }
         this.children = [];
+        if (this.isSeaLevel) {
+            this.drawMesh();
+        }
         this._subdivided = false;
         this.register();
     }

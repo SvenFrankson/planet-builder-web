@@ -57,15 +57,8 @@ class Game extends Main {
     public async initialize(): Promise<void> {
 		return new Promise<void>(resolve => {
 			let kPosMax = 8;
-			let planetTest: Planet = new Planet("Paulita", kPosMax, this.scene);
+			let planetTest: Planet = new Planet("Paulita", kPosMax, 0.60, this.scene);
 			window["PlanetTest"] = planetTest;
-
-			planetTest.generator = new PlanetGeneratorChaos(planetTest, 0.60, 0.2);
-			//planetTest.generator = new PlanetGeneratorFlat(planetTest, 0.60, 0.1);
-			//planetTest.generator = new PlanetGeneratorDebug4(planetTest);
-			let r = kPosMax * PlanetTools.CHUNCKSIZE * 0.7;
-			//document.querySelector("#planet-surface").textContent = (4 * Math.PI * r * r / 1000 / 1000).toFixed(2) + " km²"
-			//planetTest.generator.showDebug();
 
 			Game.Player = new Player(new BABYLON.Vector3(0, (kPosMax + 1) * PlanetTools.CHUNCKSIZE * 0.8, 0), planetTest, this);
 			this.player = Game.Player;

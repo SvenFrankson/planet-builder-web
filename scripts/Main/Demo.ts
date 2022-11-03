@@ -33,7 +33,7 @@ class Demo extends Main {
 		this.light.groundColor = new BABYLON.Color3(0.5, 0.5, 0.5);
 		
 		this.cameraManager = new CameraManager(this);
-		this.cameraManager.arcRotateCamera.lowerRadiusLimit = 90;
+		this.cameraManager.arcRotateCamera.lowerRadiusLimit = 130;
 		this.cameraManager.arcRotateCamera.upperRadiusLimit = 350;
 	}
 
@@ -43,15 +43,13 @@ class Demo extends Main {
 		return new Promise<void>(resolve => {
 
 			let kPosMax = 5;
-			let planetTest: Planet = new Planet("Paulita", kPosMax, this.scene);
-			planetTest.generator = new PlanetGeneratorChaos(planetTest, 0.60, 0.15);
+			let planetTest: Planet = new Planet("Paulita", kPosMax, 0.65, this.scene);
 			planetTest.initialize();
-			let moon: Planet = new Planet("Moon", 2, this.scene);
-			moon.generator = new PlanetGeneratorChaos(moon, 0.60, 0.15);
-			moon.position.x = 120;
-			moon.initialize();
+			//let moon: Planet = new Planet("Moon", 2, 0.60, this.scene);
+			//moon.position.x = 160;
+			//moon.initialize();
 
-			this.planets = [planetTest, moon];
+			this.planets = [planetTest];
 
 			window["PlanetTest"] = planetTest;
 
@@ -112,7 +110,7 @@ class Demo extends Main {
 					this.player.initialize();
 					this.player.registerControl();
 					planetTest.register();
-					moon.register();
+					//moon.register();
 
 					resolve();
 				}

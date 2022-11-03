@@ -7,28 +7,33 @@ class Planet extends BABYLON.Mesh {
         return this.sides[side];
     }
 
-    public kPosMax: number;
+    public seaLevel: number;
 	
     public GetPlanetName(): string {
         return this.name;
     }
 
-    public generator: PlanetGenerator;
     public chunckManager: PlanetChunckManager;
+    public generator: PlanetGenerator;
 
     constructor(
         name: string,
-        kPosMax: number,
+        public kPosMax: number,
+        public seaLevelRatio: number,
         scene?: BABYLON.Scene
     ) {
-        if (!scene) {
-            scene = BABYLON.Engine.Instances[0].scenes[0];
-        }
         super(name, scene);
         Planet.DEBUG_INSTANCE = this;
         
         this.kPosMax = kPosMax;
+
+        this.seaLevel = Math.round(this.kPosMax * this.seaLevelRatio * PlanetTools.CHUNCKSIZE);
 		
+        this.generator =  new PlanetGeneratorChaos(this, 0.15);
+        if (name === "Paulita") {
+            this.generator.showDebug();
+        }
+
         this.sides = [];
         this.sides[Side.Front] = new PlanetSide(Side.Front, this);
         this.sides[Side.Right] = new PlanetSide(Side.Right, this);
@@ -37,7 +42,7 @@ class Planet extends BABYLON.Mesh {
         this.sides[Side.Top] = new PlanetSide(Side.Top, this);
         this.sides[Side.Bottom] = new PlanetSide(Side.Bottom, this);
 
-        this.chunckManager = new PlanetChunckManager(scene)
+        this.chunckManager = new PlanetChunckManager(this._scene)
     }
 
     public initialize(): void {

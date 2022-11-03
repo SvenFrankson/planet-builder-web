@@ -30,6 +30,14 @@ class PlanetHeightMap {
         }
     }
 
+    public static CreateConstantMap(degree: number, value: number): PlanetHeightMap {
+        let constantMap = new PlanetHeightMap(degree);
+        constantMap.enumerate((i, j, k) => {
+            constantMap.setValue(value, i, j, k);
+        });
+        return constantMap;
+    }
+
     public static CreateMap(degree: number, options?: IPlanetHeightMapOptions): PlanetHeightMap {
         let map = new PlanetHeightMap(0);
 
@@ -101,7 +109,7 @@ class PlanetHeightMap {
         }
     }
 
-    public addInPlace(other: PlanetHeightMap): void {
+    public addInPlace(other: PlanetHeightMap): PlanetHeightMap {
         if (other.degree = this.degree) {
             this.enumerate((i, j, k) => {
                 let v = this.getValue(i, j, k);
@@ -109,9 +117,10 @@ class PlanetHeightMap {
                 this.setValue(v, i, j, k);
             });
         }
+        return this;
     }
 
-    public substractInPlace(other: PlanetHeightMap): void {
+    public substractInPlace(other: PlanetHeightMap): PlanetHeightMap {
         if (other.degree = this.degree) {
             this.enumerate((i, j, k) => {
                 let v = this.getValue(i, j, k);
@@ -119,6 +128,36 @@ class PlanetHeightMap {
                 this.setValue(v, i, j, k);
             });
         }
+        return this;
+    }
+
+    public multiplyInPlace(value: number): PlanetHeightMap {
+        this.enumerate((i, j, k) => {
+            let v = this.getValue(i, j, k);
+            v *= value;
+            this.setValue(v, i, j, k);
+        });
+        return this;
+    }
+
+    public minInPlace(other: PlanetHeightMap): PlanetHeightMap {
+        if (other.degree = this.degree) {
+            this.enumerate((i, j, k) => {
+                let v = Math.min(this.getValue(i, j, k), other.getValue(i, j, k));
+                this.setValue(v, i, j, k);
+            });
+        }
+        return this;
+    }
+
+    public maxInPlace(other: PlanetHeightMap): PlanetHeightMap {
+        if (other.degree = this.degree) {
+            this.enumerate((i, j, k) => {
+                let v = Math.max(this.getValue(i, j, k), other.getValue(i, j, k));
+                this.setValue(v, i, j, k);
+            });
+        }
+        return this;
     }
 
     public scale2(): PlanetHeightMap {

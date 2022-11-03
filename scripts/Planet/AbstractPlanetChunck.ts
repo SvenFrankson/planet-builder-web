@@ -9,6 +9,11 @@ abstract class AbstractPlanetChunck {
     public get side(): Side {
         return this.planetSide.side;
     }
+
+    public get planet(): Planet {
+        return this.planetSide.planet;
+    }
+    
     public get chunckManager(): PlanetChunckManager {
         return this.planetSide.chunckManager;
     }
@@ -30,6 +35,8 @@ abstract class AbstractPlanetChunck {
     public get kPosMax(): number {
         return this.planetSide.kPosMax;
     }
+
+    public isSeaLevel: boolean = false;
 
     private _registered: boolean = false;
     public get registered(): boolean {

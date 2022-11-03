@@ -223,6 +223,53 @@ class PlanetChunck extends AbstractPlanetChunck {
             planetSide.computeWorldMatrix(true)
         );
         this._normal = BABYLON.Vector3.Normalize(this.barycenter);
+
+        if (this.kPos * PlanetTools.CHUNCKSIZE <= this.planetSide.planet.seaLevel) {
+            if ((this.kPos + 1) * PlanetTools.CHUNCKSIZE > this.planetSide.planet.seaLevel) {
+                this.isSeaLevel = true;
+            }
+        }
+        if (this.isSeaLevel) {
+            if (this.isMeshDisposed()) {
+                this.mesh = new BABYLON.Mesh("chunck-" + this.iPos + "-" + this.jPos + "-" + this.kPos, this.scene);
+            }
+            let i0 = PlanetTools.CHUNCKSIZE * this.iPos;
+            let i1 = PlanetTools.CHUNCKSIZE * (this.iPos + 1);
+            let j0 = PlanetTools.CHUNCKSIZE * this.jPos;
+            let j1 = PlanetTools.CHUNCKSIZE * (this.jPos + 1);
+
+            let h00 = Math.floor(this.planet.generator.altitudeMap.getForSide(this.side, i0, j0) * this.kPosMax * PlanetTools.CHUNCKSIZE);
+            let p00 = PlanetTools.EvaluateVertex(this.size, i0, j0).scaleInPlace(PlanetTools.KGlobalToAltitude(h00));
+
+            let h10 = Math.floor(this.planet.generator.altitudeMap.getForSide(this.side, i1, j0) * this.kPosMax * PlanetTools.CHUNCKSIZE);
+            let p10 = PlanetTools.EvaluateVertex(this.size, i1, j0).scaleInPlace(PlanetTools.KGlobalToAltitude(h10));
+
+            let h11 = Math.floor(this.planet.generator.altitudeMap.getForSide(this.side, i1, j1) * this.kPosMax * PlanetTools.CHUNCKSIZE);
+            let p11 = PlanetTools.EvaluateVertex(this.size, i1, j1).scaleInPlace(PlanetTools.KGlobalToAltitude(h11));
+
+            let h01 = Math.floor(this.planet.generator.altitudeMap.getForSide(this.side, i0, j1) * this.kPosMax * PlanetTools.CHUNCKSIZE);
+            let p01 = PlanetTools.EvaluateVertex(this.size, i0, j1).scaleInPlace(PlanetTools.KGlobalToAltitude(h01));
+
+            let vertexData = new BABYLON.VertexData();
+            let positions: number[] = [];
+            let indices: number[] = [];
+            let normals: number[] = [];
+            
+            MeshTools.PushQuad([p00, p10, p11, p01], 3, 2, 1, 0, positions, indices);
+            //MeshTools.PushQuad([p00, p01, p11, p10], 3, 2, 1, 0, positions, indices);
+            BABYLON.VertexData.ComputeNormals(positions, indices, normals);
+
+            vertexData.positions = positions;
+            vertexData.indices = indices;
+            vertexData.normals = normals;
+            vertexData.applyToMesh(this.mesh);
+
+            this.mesh.parent = this.planetSide;
+            requestAnimationFrame(() => {
+                this.mesh.freezeWorldMatrix();
+                this.mesh.refreshBoundingInfo();
+            })
+        }
         
         let degreeBellow = PlanetTools.KPosToDegree(this.kPos - 1);
         if (degreeBellow != this.degree) {
@@ -299,12 +346,14 @@ class PlanetChunck extends AbstractPlanetChunck {
         }
     }
 
-    public collapse(): void {
+    public collapse(): boolean {
         if (this.canCollapse()) {
             if (this.parentGroup) {
                 this.parentGroup.collapseChildren();
             }
+            return true;
         }
+        return false;
     }
     
     private static _GLOBAL_DEBUG_SYNC_COUNT: number = 0;
@@ -421,7 +470,7 @@ class PlanetChunck extends AbstractPlanetChunck {
 
     public initializeMesh(): void {
         if (this.dataInitialized) {
-            this.SetMesh();
+            this.redrawMesh();
         }
     }
 
@@ -452,51 +501,54 @@ class PlanetChunck extends AbstractPlanetChunck {
         return this.isEmpty || this.isFull;
     }
 
-    public SetMesh(): void {
-        if (this.isEmptyOrHidden()) {
-            return;
-        }
-        if (!this._adjacentsDataSynced) {
-            this.syncWithAdjacents();
-        }
-        if (!this.proceduralItemsGenerated) {
-            this._proceduralItemsGenerated = true;
-            for (let i = 0; i < this.proceduralItems.length; i++) {
-                this.proceduralItems[i].generateData();
+    public redrawMesh(): void {
+        if (this.lod === 0) {
+            if (this.isEmptyOrHidden()) {
+                this.disposeMesh();
+                return;
             }
-        }
-        if (this.isMeshDisposed()) {
-            this.mesh = new BABYLON.Mesh("chunck-" + this.iPos + "-" + this.jPos + "-" + this.kPos, this.scene);
-        }
-        let vertexDatas: BABYLON.VertexData[];
-        vertexDatas = PlanetChunckMeshBuilder.BuildVertexData(this, this.iPos, this.jPos, this.kPos);
-        let vertexData = vertexDatas[0];
-        if (vertexData.positions.length > 0) {
-            vertexData.applyToMesh(this.mesh);
-            this.mesh.material = SharedMaterials.MainMaterial();
-        }
-        let waterVertexData = vertexDatas[1];
-        if (waterVertexData) {
-            if (!this.waterMesh || this.waterMesh.isDisposed()) {
-                this.waterMesh = new BABYLON.Mesh("chunckWater-" + this.iPos + "-" + this.jPos + "-" + this.kPos, this.scene);
+            if (!this._adjacentsDataSynced) {
+                this.syncWithAdjacents();
             }
-            waterVertexData.applyToMesh(this.waterMesh);
-            this.waterMesh.material = SharedMaterials.WaterMaterial();
-
-            this.waterMesh.parent = this.planetSide;
+            if (!this.proceduralItemsGenerated) {
+                this._proceduralItemsGenerated = true;
+                for (let i = 0; i < this.proceduralItems.length; i++) {
+                    this.proceduralItems[i].generateData();
+                }
+            }
+            if (this.isMeshDisposed()) {
+                this.mesh = new BABYLON.Mesh("chunck-" + this.iPos + "-" + this.jPos + "-" + this.kPos, this.scene);
+            }
+            let vertexDatas: BABYLON.VertexData[];
+            vertexDatas = PlanetChunckMeshBuilder.BuildVertexData(this, this.iPos, this.jPos, this.kPos);
+            let vertexData = vertexDatas[0];
+            if (vertexData.positions.length > 0) {
+                vertexData.applyToMesh(this.mesh);
+                this.mesh.material = SharedMaterials.MainMaterial();
+            }
+            let waterVertexData = vertexDatas[1];
+            if (waterVertexData) {
+                if (!this.waterMesh || this.waterMesh.isDisposed()) {
+                    this.waterMesh = new BABYLON.Mesh("chunckWater-" + this.iPos + "-" + this.jPos + "-" + this.kPos, this.scene);
+                }
+                waterVertexData.applyToMesh(this.waterMesh);
+                this.waterMesh.material = SharedMaterials.WaterMaterial();
+    
+                this.waterMesh.parent = this.planetSide;
+                requestAnimationFrame(() => {
+                    this.waterMesh.freezeWorldMatrix();
+                    this.waterMesh.refreshBoundingInfo();
+                })
+            }
+    
+            this.mesh.parent = this.planetSide;
             requestAnimationFrame(() => {
-                this.waterMesh.freezeWorldMatrix();
-                this.waterMesh.refreshBoundingInfo();
+                this.mesh.freezeWorldMatrix();
+                this.mesh.refreshBoundingInfo();
             })
-        }
-
-        this.mesh.parent = this.planetSide;
-        requestAnimationFrame(() => {
-            this.mesh.freezeWorldMatrix();
-            this.mesh.refreshBoundingInfo();
-        })
-        if (DebugDefine.USE_VERTEX_SET_MESH_HISTORY) {
-            this._setMeshHistory.push(performance.now());
+            if (DebugDefine.USE_VERTEX_SET_MESH_HISTORY) {
+                this._setMeshHistory.push(performance.now());
+            }
         }
     }
 
