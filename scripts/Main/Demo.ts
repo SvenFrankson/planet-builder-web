@@ -79,11 +79,10 @@ class Demo extends Main {
 						let p = eventData.pickInfo.pickedPoint;
 						if (isFinite(p.x)) {
 							p = p.add(BABYLON.Vector3.Normalize(p).scale(1));
-							let target: BABYLON.Vector3;
 							if (this.cameraManager.cameraMode === CameraMode.Sky) {
 								this.player.position.copyFrom(this.cameraManager.absolutePosition);
 							}
-							this.player.animatePos(p, 1, target);
+							this.player.animatePos(p, 1, true);
 							this.cameraManager.setMode(CameraMode.Player);
 							(document.querySelector("#sky-view") as HTMLDivElement).style.display = "flex";
 							(document.querySelector("#ground-view") as HTMLDivElement).style.display = "none";

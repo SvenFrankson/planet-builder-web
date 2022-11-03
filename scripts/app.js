@@ -1412,11 +1412,10 @@ class Demo extends Main {
                         let p = eventData.pickInfo.pickedPoint;
                         if (isFinite(p.x)) {
                             p = p.add(BABYLON.Vector3.Normalize(p).scale(1));
-                            let target;
                             if (this.cameraManager.cameraMode === CameraMode.Sky) {
                                 this.player.position.copyFrom(this.cameraManager.absolutePosition);
                             }
-                            this.player.animatePos(p, 1, target);
+                            this.player.animatePos(p, 1, true);
                             this.cameraManager.setMode(CameraMode.Player);
                             document.querySelector("#sky-view").style.display = "flex";
                             document.querySelector("#ground-view").style.display = "none";
@@ -6290,21 +6289,24 @@ class Player extends BABYLON.Mesh {
     async animatePos(posTarget, duration, lookingAt) {
         return new Promise(resolve => {
             let posZero = this.position.clone();
+            let quaternionZero;
+            let quaternionTarget;
+            if (lookingAt) {
+                quaternionZero = this.rotationQuaternion.clone();
+                let targetZ = posTarget.subtract(posZero).normalize();
+                let targetY = posTarget.clone().normalize();
+                let targetX = BABYLON.Vector3.Cross(targetY, targetZ);
+                targetZ = BABYLON.Vector3.Cross(targetX, targetY);
+                quaternionTarget = BABYLON.Quaternion.RotationQuaternionFromAxis(targetX, targetY, targetZ);
+            }
             let t = 0;
             let cb = () => {
                 t += this.game.engine.getDeltaTime() / 1000;
                 if (t < duration) {
                     let f = Easing.easeInOutSine(t / duration);
                     this.position.copyFrom(posZero).scaleInPlace(1 - f).addInPlace(posTarget.scale(f));
-                    if (isNaN(this.position.x)) {
-                        debugger;
-                    }
                     if (lookingAt) {
-                        let forward = lookingAt.subtract(this.position).normalize();
-                        let up = this.position.clone().normalize();
-                        let right = BABYLON.Vector3.Cross(up, forward);
-                        forward = BABYLON.Vector3.Cross(right, up);
-                        BABYLON.Quaternion.RotationQuaternionFromAxisToRef(right, up, forward, this.rotationQuaternion);
+                        BABYLON.Quaternion.SlerpToRef(quaternionZero, quaternionTarget, f, this.rotationQuaternion);
                     }
                 }
                 else {

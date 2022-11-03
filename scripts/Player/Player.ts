@@ -171,24 +171,27 @@ class Player extends BABYLON.Mesh {
         }
     }
 
-    public async animatePos(posTarget: BABYLON.Vector3, duration: number, lookingAt?: BABYLON.Vector3): Promise<void> {
+    public async animatePos(posTarget: BABYLON.Vector3, duration: number, lookingAt?: boolean): Promise<void> {
         return new Promise<void>(resolve => {
             let posZero = this.position.clone();
+            let quaternionZero: BABYLON.Quaternion;
+            let quaternionTarget: BABYLON.Quaternion;
+            if (lookingAt) {
+                quaternionZero = this.rotationQuaternion.clone();
+                let targetZ = posTarget.subtract(posZero).normalize();
+                let targetY = posTarget.clone().normalize();
+                let targetX = BABYLON.Vector3.Cross(targetY, targetZ);
+                targetZ = BABYLON.Vector3.Cross(targetX, targetY);
+                quaternionTarget = BABYLON.Quaternion.RotationQuaternionFromAxis(targetX, targetY, targetZ);
+            }
             let t = 0;
             let cb = () => {
                 t += this.game.engine.getDeltaTime() / 1000;
                 if (t < duration) {
                     let f = Easing.easeInOutSine(t / duration);
                     this.position.copyFrom(posZero).scaleInPlace(1 - f).addInPlace(posTarget.scale(f));
-                    if (isNaN(this.position.x)) {
-                        debugger;
-                    }
                     if (lookingAt) {
-                        let forward = lookingAt.subtract(this.position).normalize();
-                        let up = this.position.clone().normalize();
-                        let right = BABYLON.Vector3.Cross(up, forward);
-                        forward = BABYLON.Vector3.Cross(right, up);
-                        BABYLON.Quaternion.RotationQuaternionFromAxisToRef(right, up, forward, this.rotationQuaternion);
+                        BABYLON.Quaternion.SlerpToRef(quaternionZero, quaternionTarget, f, this.rotationQuaternion);
                     }
                 }
                 else {
