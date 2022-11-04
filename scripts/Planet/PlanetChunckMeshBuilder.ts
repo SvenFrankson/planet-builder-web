@@ -404,6 +404,9 @@ class PlanetChunckMeshBuilder {
                         if (ref === 0b0 || ref === 0b11111111) {
                             continue;
                         }
+                        //if (d4 > BlockType.Water && d5 > BlockType.Water && d6 > BlockType.Water && d7 > BlockType.Water) {
+                        //    continue;
+                        //}
                         
                         let extendedpartVertexData = PlanetChunckVertexData.Get(lod, ref);
                         let partVertexData = extendedpartVertexData.vertexData;

@@ -97,28 +97,25 @@ class PlanetChunckGroup extends AbstractPlanetChunck {
         let positions: number[] = [];
         let indices: number[] = [];
         let normals: number[] = [];
+        let uvs: number[] = [];
         
         let f = Math.pow(2, this.planet.degree - this.degree);
-        for (let i = 0; i < 8; i++) {
-            for (let j = 0; j < 8; j++) {
+        for (let i = 0; i <= 8; i++) {
+            for (let j = 0; j <= 8; j++) {
+                let l = positions.length / 3;
                 let i0 = PlanetTools.CHUNCKSIZE * (this.iPos + i / 8) * levelCoef;
-                let i1 = PlanetTools.CHUNCKSIZE * (this.iPos + (i + 1) / 8) * levelCoef;
                 let j0 = PlanetTools.CHUNCKSIZE * (this.jPos + j / 8) * levelCoef;
-                let j1 = PlanetTools.CHUNCKSIZE * (this.jPos + (j + 1) / 8) * levelCoef;
                 
                 let h00 = Math.floor(this.planet.generator.altitudeMap.getForSide(this.side, i0 * f, j0 * f) * this.kPosMax * PlanetTools.CHUNCKSIZE);
                 let p00 = PlanetTools.EvaluateVertex(this.size, i0, j0).scaleInPlace(PlanetTools.KGlobalToAltitude(h00));
-        
-                let h10 = Math.floor(this.planet.generator.altitudeMap.getForSide(this.side, i1 * f, j0 * f) * this.kPosMax * PlanetTools.CHUNCKSIZE);
-                let p10 = PlanetTools.EvaluateVertex(this.size, i1, j0).scaleInPlace(PlanetTools.KGlobalToAltitude(h10));
-        
-                let h11 = Math.floor(this.planet.generator.altitudeMap.getForSide(this.side, i1 * f, j1 * f) * this.kPosMax * PlanetTools.CHUNCKSIZE);
-                let p11 = PlanetTools.EvaluateVertex(this.size, i1, j1).scaleInPlace(PlanetTools.KGlobalToAltitude(h11));
-        
-                let h01 = Math.floor(this.planet.generator.altitudeMap.getForSide(this.side, i0 * f, j1 * f) * this.kPosMax * PlanetTools.CHUNCKSIZE);
-                let p01 = PlanetTools.EvaluateVertex(this.size, i0, j1).scaleInPlace(PlanetTools.KGlobalToAltitude(h01));
-                
-                MeshTools.PushQuad([p00, p10, p11, p01], 3, 2, 1, 0, positions, indices);
+                positions.push(p00.x, p00.y, p00.z);
+                uvs.push(i0 / this.size);
+                uvs.push(j0 / this.size);
+
+                if (i < 8 && j < 8) {
+                    indices.push(l, l + 1 + 9, l + 1);
+                    indices.push(l, l + 9, l + 1 + 9);
+                }
             }
         }
 
@@ -128,8 +125,10 @@ class PlanetChunckGroup extends AbstractPlanetChunck {
         vertexData.positions = positions;
         vertexData.indices = indices;
         vertexData.normals = normals;
+        vertexData.uvs = uvs;
 
         this.mesh = BABYLON.MeshBuilder.CreateBox(this.name);
+        this.mesh.material = this.planetSide.seaLevelMaterial;
         //this.mesh.position = this.barycenter;
         this.mesh.parent = this.planetSide;
         vertexData.applyToMesh(this.mesh);

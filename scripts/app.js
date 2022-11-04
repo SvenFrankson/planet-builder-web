@@ -449,6 +449,33 @@ class Utils {
             debugPlanet.position.addInPlace(scene.activeCamera.getDirection(BABYLON.Axis.Y).scale(y));
         });
     }
+    static showDebugPlanetMap(generator, x, y, maxValue, scene) {
+        let debugPlanet = new BABYLON.Mesh("debug-planet");
+        if (!scene) {
+            scene = BABYLON.Engine.Instances[0].scenes[0];
+        }
+        for (let i = 0; i < 6; i++) {
+            BABYLON.SceneLoader.ImportMesh("", "./resources/models/planet-side.babylon", "", scene, (meshes) => {
+                let debugPlanetSide = meshes[0];
+                if (debugPlanetSide instanceof (BABYLON.Mesh)) {
+                    let debugPlanetSideMaterial = new BABYLON.StandardMaterial("debub-planet-side-material", scene);
+                    debugPlanetSideMaterial.diffuseTexture = generator.getTexture(i);
+                    debugPlanetSideMaterial.emissiveColor = BABYLON.Color3.White();
+                    debugPlanetSideMaterial.specularColor = BABYLON.Color3.Black();
+                    debugPlanetSide.material = debugPlanetSideMaterial;
+                    debugPlanetSide.rotationQuaternion = PlanetTools.QuaternionForSide(i);
+                    debugPlanetSide.parent = debugPlanet;
+                }
+            });
+        }
+        scene.onBeforeRenderObservable.add(() => {
+            scene.activeCamera.computeWorldMatrix();
+            debugPlanet.position.copyFrom(scene.activeCamera.position);
+            debugPlanet.position.addInPlace(scene.activeCamera.getDirection(BABYLON.Axis.Z).scale(7));
+            debugPlanet.position.addInPlace(scene.activeCamera.getDirection(BABYLON.Axis.X).scale(x));
+            debugPlanet.position.addInPlace(scene.activeCamera.getDirection(BABYLON.Axis.Y).scale(y));
+        });
+    }
     static compress(input) {
         let output = "";
         let i = 0;
@@ -2565,39 +2592,36 @@ class PlanetChunck extends AbstractPlanetChunck {
         if (this.isMeshDisposed()) {
             this.mesh = new BABYLON.Mesh("chunck-" + this.iPos + "-" + this.jPos + "-" + this.kPos, this.scene);
         }
-        let f = Math.pow(2, this.planet.degree - this.degree);
         let vertexData = new BABYLON.VertexData();
         let positions = [];
         let indices = [];
         let normals = [];
-        let colors = [];
-        for (let i = 0; i < 8; i++) {
-            for (let j = 0; j < 8; j++) {
+        let uvs = [];
+        let f = Math.pow(2, this.planet.degree - this.degree);
+        for (let i = 0; i <= 8; i++) {
+            for (let j = 0; j <= 8; j++) {
+                let l = positions.length / 3;
                 let i0 = PlanetTools.CHUNCKSIZE * (this.iPos + i / 8);
-                let i1 = PlanetTools.CHUNCKSIZE * (this.iPos + (i + 1) / 8);
                 let j0 = PlanetTools.CHUNCKSIZE * (this.jPos + j / 8);
-                let j1 = PlanetTools.CHUNCKSIZE * (this.jPos + (j + 1) / 8);
                 let h00 = Math.floor(this.planet.generator.altitudeMap.getForSide(this.side, i0 * f, j0 * f) * this.kPosMax * PlanetTools.CHUNCKSIZE);
                 let p00 = PlanetTools.EvaluateVertex(this.size, i0, j0).scaleInPlace(PlanetTools.KGlobalToAltitude(h00));
-                let h10 = Math.floor(this.planet.generator.altitudeMap.getForSide(this.side, i1 * f, j0 * f) * this.kPosMax * PlanetTools.CHUNCKSIZE);
-                let p10 = PlanetTools.EvaluateVertex(this.size, i1, j0).scaleInPlace(PlanetTools.KGlobalToAltitude(h10));
-                let h11 = Math.floor(this.planet.generator.altitudeMap.getForSide(this.side, i1 * f, j1 * f) * this.kPosMax * PlanetTools.CHUNCKSIZE);
-                let p11 = PlanetTools.EvaluateVertex(this.size, i1, j1).scaleInPlace(PlanetTools.KGlobalToAltitude(h11));
-                let h01 = Math.floor(this.planet.generator.altitudeMap.getForSide(this.side, i0 * f, j1 * f) * this.kPosMax * PlanetTools.CHUNCKSIZE);
-                let p01 = PlanetTools.EvaluateVertex(this.size, i0, j1).scaleInPlace(PlanetTools.KGlobalToAltitude(h01));
-                MeshTools.PushQuad([p00, p10, p11, p01], 3, 2, 1, 0, positions, indices);
+                positions.push(p00.x, p00.y, p00.z);
+                uvs.push(i0 / this.size);
+                uvs.push(j0 / this.size);
+                if (i < 8 && j < 8) {
+                    indices.push(l, l + 1 + 9, l + 1);
+                    indices.push(l, l + 9, l + 1 + 9);
+                }
             }
         }
         //MeshTools.PushQuad([p00, p01, p11, p10], 3, 2, 1, 0, positions, indices);
         BABYLON.VertexData.ComputeNormals(positions, indices, normals);
-        for (let i = 0; i < positions.length / 3; i++) {
-            colors.push(1, 0, 0, 1);
-        }
         vertexData.positions = positions;
         vertexData.indices = indices;
         vertexData.normals = normals;
-        vertexData.colors = colors;
+        vertexData.uvs = uvs;
         vertexData.applyToMesh(this.mesh);
+        this.mesh.material = this.planetSide.seaLevelMaterial;
         this.mesh.parent = this.planetSide;
         requestAnimationFrame(() => {
             this.mesh.freezeWorldMatrix();
@@ -2737,22 +2761,22 @@ class PlanetChunckGroup extends AbstractPlanetChunck {
         let positions = [];
         let indices = [];
         let normals = [];
+        let uvs = [];
         let f = Math.pow(2, this.planet.degree - this.degree);
-        for (let i = 0; i < 8; i++) {
-            for (let j = 0; j < 8; j++) {
+        for (let i = 0; i <= 8; i++) {
+            for (let j = 0; j <= 8; j++) {
+                let l = positions.length / 3;
                 let i0 = PlanetTools.CHUNCKSIZE * (this.iPos + i / 8) * levelCoef;
-                let i1 = PlanetTools.CHUNCKSIZE * (this.iPos + (i + 1) / 8) * levelCoef;
                 let j0 = PlanetTools.CHUNCKSIZE * (this.jPos + j / 8) * levelCoef;
-                let j1 = PlanetTools.CHUNCKSIZE * (this.jPos + (j + 1) / 8) * levelCoef;
                 let h00 = Math.floor(this.planet.generator.altitudeMap.getForSide(this.side, i0 * f, j0 * f) * this.kPosMax * PlanetTools.CHUNCKSIZE);
                 let p00 = PlanetTools.EvaluateVertex(this.size, i0, j0).scaleInPlace(PlanetTools.KGlobalToAltitude(h00));
-                let h10 = Math.floor(this.planet.generator.altitudeMap.getForSide(this.side, i1 * f, j0 * f) * this.kPosMax * PlanetTools.CHUNCKSIZE);
-                let p10 = PlanetTools.EvaluateVertex(this.size, i1, j0).scaleInPlace(PlanetTools.KGlobalToAltitude(h10));
-                let h11 = Math.floor(this.planet.generator.altitudeMap.getForSide(this.side, i1 * f, j1 * f) * this.kPosMax * PlanetTools.CHUNCKSIZE);
-                let p11 = PlanetTools.EvaluateVertex(this.size, i1, j1).scaleInPlace(PlanetTools.KGlobalToAltitude(h11));
-                let h01 = Math.floor(this.planet.generator.altitudeMap.getForSide(this.side, i0 * f, j1 * f) * this.kPosMax * PlanetTools.CHUNCKSIZE);
-                let p01 = PlanetTools.EvaluateVertex(this.size, i0, j1).scaleInPlace(PlanetTools.KGlobalToAltitude(h01));
-                MeshTools.PushQuad([p00, p10, p11, p01], 3, 2, 1, 0, positions, indices);
+                positions.push(p00.x, p00.y, p00.z);
+                uvs.push(i0 / this.size);
+                uvs.push(j0 / this.size);
+                if (i < 8 && j < 8) {
+                    indices.push(l, l + 1 + 9, l + 1);
+                    indices.push(l, l + 9, l + 1 + 9);
+                }
             }
         }
         //MeshTools.PushQuad([p00, p01, p11, p10], 3, 2, 1, 0, positions, indices);
@@ -2760,7 +2784,9 @@ class PlanetChunckGroup extends AbstractPlanetChunck {
         vertexData.positions = positions;
         vertexData.indices = indices;
         vertexData.normals = normals;
+        vertexData.uvs = uvs;
         this.mesh = BABYLON.MeshBuilder.CreateBox(this.name);
+        this.mesh.material = this.planetSide.seaLevelMaterial;
         //this.mesh.position = this.barycenter;
         this.mesh.parent = this.planetSide;
         vertexData.applyToMesh(this.mesh);
@@ -3403,6 +3429,9 @@ class PlanetChunckMeshBuilder {
                         if (ref === 0b0 || ref === 0b11111111) {
                             continue;
                         }
+                        //if (d4 > BlockType.Water && d5 > BlockType.Water && d6 > BlockType.Water && d7 > BlockType.Water) {
+                        //    continue;
+                        //}
                         let extendedpartVertexData = PlanetChunckVertexData.Get(lod, ref);
                         let partVertexData = extendedpartVertexData.vertexData;
                         let iGlobal = i + iPos * PlanetTools.CHUNCKSIZE;
@@ -4338,7 +4367,6 @@ class PlanetGeneratorEarth extends PlanetGenerator {
         this._mainHeightMap = PlanetHeightMap.CreateMap(planet.degree);
         this._treeMap = PlanetHeightMap.CreateMap(planet.degree, { firstNoiseDegree: planet.degree - 2 });
         this._rockMap = PlanetHeightMap.CreateMap(planet.degree, { firstNoiseDegree: planet.degree - 3 });
-        this.heightMaps = [this._mainHeightMap];
     }
     makeData(chunck, refData, refProcedural) {
         let f = Math.pow(2, this._mainHeightMap.degree - chunck.degree);
@@ -4412,8 +4440,39 @@ class PlanetGeneratorChaos extends PlanetGenerator {
         this._tunnelAltitudeMap = PlanetHeightMap.CreateMap(planet.degree);
         this._rockMap = PlanetHeightMap.CreateMap(planet.degree, { firstNoiseDegree: planet.degree - 3 });
         this.altitudeMap = PlanetHeightMap.CreateConstantMap(planet.degree, 0).addInPlace(this._mainHeightMap).multiplyInPlace(_mountainHeight).addInPlace(PlanetHeightMap.CreateConstantMap(planet.degree, this.planet.seaLevelRatio));
-        //this.altitudeMap.maxInPlace(PlanetHeightMap.CreateConstantMap(planet.degree, this.planet.seaLevelRatio));
-        this.heightMaps = [this.altitudeMap];
+        this.altitudeMap.maxInPlace(PlanetHeightMap.CreateConstantMap(planet.degree, this.planet.seaLevelRatio - 0.01));
+    }
+    getTexture(side, size = 128) {
+        let texture = new BABYLON.DynamicTexture("texture-" + side, size);
+        let context = texture.getContext();
+        let f = Math.pow(2, this._mainHeightMap.degree) / 128;
+        for (let i = 0; i < size; i++) {
+            for (let j = 0; j < size; j++) {
+                let v = Math.floor(this.altitudeMap.getForSide(side, Math.floor(i * f), Math.floor(j * f)) * PlanetTools.CHUNCKSIZE * this.planet.kPosMax);
+                let r = 255;
+                let g = 0;
+                let b = 255;
+                if (v < this.planet.seaLevel) {
+                    r = 0;
+                    g = 0;
+                    b = 255;
+                }
+                else if (v < this.planet.seaLevel + 1) {
+                    r = 255;
+                    g = 255;
+                    b = 0;
+                }
+                else {
+                    r = 0;
+                    g = 255;
+                    b = 0;
+                }
+                context.fillStyle = "rgb(" + r.toFixed(0) + ", " + g.toFixed(0) + ", " + b.toFixed(0) + ")";
+                context.fillRect(i, j, 1, 1);
+            }
+        }
+        texture.update(false);
+        return texture;
     }
     makeData(chunck, refData, refProcedural) {
         let f = Math.pow(2, this._mainHeightMap.degree - chunck.degree);
@@ -4480,6 +4539,9 @@ class PlanetGeneratorChaos extends PlanetGenerator {
                 }
             }
         }
+    }
+    showDebug() {
+        Utils.showDebugPlanetMap(this, -3.5, 1.5);
     }
 }
 class PlanetGeneratorHole extends PlanetGenerator {
@@ -5076,6 +5138,10 @@ class PlanetSide extends BABYLON.Mesh {
         for (let degree = PlanetTools.DEGREEMIN; degree <= PlanetTools.KPosToDegree(this.kPosMax); degree++) {
             this.chunckGroups[degree] = new PlanetChunckGroup(0, 0, 0, this, undefined, degree, degree - (PlanetTools.DEGREEMIN - 1));
         }
+        let material = new BABYLON.StandardMaterial(this.name);
+        material.specularColor.copyFromFloats(0, 0, 0);
+        material.diffuseTexture = this.planet.generator.getTexture(this.side);
+        this.seaLevelMaterial = material;
     }
     get side() {
         return this._side;

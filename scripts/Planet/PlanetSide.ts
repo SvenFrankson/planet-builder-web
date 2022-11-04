@@ -33,9 +33,10 @@ class PlanetSide extends BABYLON.Mesh {
     public get kPosMax(): number {
         return this.planet.kPosMax;
     }
-    private chuncksLength: number;
-    //private chuncks: Array<Array<Array<PlanetChunck>>>;
+    
     private chunckGroups: PlanetChunckGroup[];
+
+    public seaLevelMaterial: BABYLON.Material;
 
     public getChunck(iPos: number, jPos: number, kPos: number, degree: number): PlanetChunck | PlanetChunck[] {
         if (PlanetTools.KPosToDegree(kPos) === degree + 1) {
@@ -282,6 +283,11 @@ class PlanetSide extends BABYLON.Mesh {
         for (let degree = PlanetTools.DEGREEMIN; degree <= PlanetTools.KPosToDegree(this.kPosMax); degree++) {
             this.chunckGroups[degree] = new PlanetChunckGroup(0, 0, 0, this, undefined, degree, degree - (PlanetTools.DEGREEMIN - 1));
         }
+
+        let material = new BABYLON.StandardMaterial(this.name);
+        material.specularColor.copyFromFloats(0, 0, 0);
+        material.diffuseTexture = (this.planet.generator as PlanetGeneratorChaos).getTexture(this.side);
+        this.seaLevelMaterial = material;
     }
     
     public register(): number {

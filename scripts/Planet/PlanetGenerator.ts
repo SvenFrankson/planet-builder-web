@@ -37,7 +37,6 @@ class PlanetGeneratorEarth extends PlanetGenerator {
         this._mainHeightMap = PlanetHeightMap.CreateMap(planet.degree);
         this._treeMap = PlanetHeightMap.CreateMap(planet.degree, { firstNoiseDegree : planet.degree - 2 });
         this._rockMap = PlanetHeightMap.CreateMap(planet.degree, { firstNoiseDegree : planet.degree - 3});
-        this.heightMaps = [this._mainHeightMap];
     }
 
     public makeData(chunck: PlanetChunck, refData: number[][][], refProcedural: ProceduralTree[]): void {
@@ -129,8 +128,45 @@ class PlanetGeneratorChaos extends PlanetGenerator {
         this._rockMap = PlanetHeightMap.CreateMap(planet.degree, { firstNoiseDegree : planet.degree - 3});
 
         this.altitudeMap = PlanetHeightMap.CreateConstantMap(planet.degree, 0).addInPlace(this._mainHeightMap).multiplyInPlace(_mountainHeight).addInPlace(PlanetHeightMap.CreateConstantMap(planet.degree, this.planet.seaLevelRatio));
-        //this.altitudeMap.maxInPlace(PlanetHeightMap.CreateConstantMap(planet.degree, this.planet.seaLevelRatio));
-        this.heightMaps = [this.altitudeMap];
+        this.altitudeMap.maxInPlace(PlanetHeightMap.CreateConstantMap(planet.degree, this.planet.seaLevelRatio - 0.01));
+    }
+
+    public getTexture(side: Side, size: number = 128): BABYLON.Texture {
+        let texture = new BABYLON.DynamicTexture("texture-" + side, size);
+        let context = texture.getContext();
+
+        let f = Math.pow(2, this._mainHeightMap.degree) / 128;
+
+        for (let i = 0; i < size; i++) {
+            for (let j = 0; j < size; j++) {
+                let v = Math.floor(this.altitudeMap.getForSide(side, Math.floor(i * f), Math.floor(j * f)) * PlanetTools.CHUNCKSIZE * this.planet.kPosMax);
+                let r = 255;
+                let g = 0;
+                let b = 255;
+                if (v < this.planet.seaLevel) {
+                    r = 0;
+                    g = 0;
+                    b = 255;
+                }
+                else if (v < this.planet.seaLevel + 1) {
+                    r = 255;
+                    g = 255;
+                    b = 0;
+                }
+                else {
+                    r = 0;
+                    g = 255;
+                    b = 0;
+                }
+
+                context.fillStyle = "rgb(" + r.toFixed(0) + ", " + g.toFixed(0) + ", " + b.toFixed(0) + ")";
+                context.fillRect(i, j, 1, 1);
+            }
+        }
+
+        texture.update(false);
+
+        return texture;
     }
 
     public makeData(chunck: PlanetChunck, refData: number[][][], refProcedural: ProceduralTree[]): void {
@@ -206,6 +242,10 @@ class PlanetGeneratorChaos extends PlanetGenerator {
                 }
             }
         }
+    }
+
+    public showDebug(): void {
+        Utils.showDebugPlanetMap(this, - 3.5, 1.5);
     }
 }
 
