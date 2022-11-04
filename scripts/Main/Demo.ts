@@ -25,12 +25,12 @@ class Demo extends Main {
 
 		this.light = new BABYLON.HemisphericLight(
 			"light",
-			new BABYLON.Vector3(0.6, 1, 0.3),
+			(new BABYLON.Vector3(0.5, 2.5, 1.5)).normalize(),
 			this.scene
 		);
 
 		this.light.diffuse = new BABYLON.Color3(1, 1, 1);
-		this.light.groundColor = new BABYLON.Color3(0.5, 0.5, 0.5);
+		this.light.groundColor = new BABYLON.Color3(0.1, 0.1, 0.1);
 		
 		this.cameraManager = new CameraManager(this);
 		this.cameraManager.arcRotateCamera.lowerRadiusLimit = 130;

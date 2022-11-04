@@ -109,6 +109,8 @@ class PlanetChunckGroup extends AbstractPlanetChunck {
                 let h00 = Math.floor(this.planet.generator.altitudeMap.getForSide(this.side, i0 * f, j0 * f) * this.kPosMax * PlanetTools.CHUNCKSIZE);
                 let p00 = PlanetTools.EvaluateVertex(this.size, i0, j0).scaleInPlace(PlanetTools.KGlobalToAltitude(h00));
                 positions.push(p00.x, p00.y, p00.z);
+                p00.normalize();
+                normals.push(p00.x, p00.y, p00.z);
                 uvs.push(i0 / this.size);
                 uvs.push(j0 / this.size);
 
@@ -120,7 +122,6 @@ class PlanetChunckGroup extends AbstractPlanetChunck {
         }
 
         //MeshTools.PushQuad([p00, p01, p11, p10], 3, 2, 1, 0, positions, indices);
-        BABYLON.VertexData.ComputeNormals(positions, indices, normals);
 
         vertexData.positions = positions;
         vertexData.indices = indices;

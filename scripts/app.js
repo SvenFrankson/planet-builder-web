@@ -1401,9 +1401,9 @@ class Demo extends Main {
     }
     createScene() {
         super.createScene();
-        this.light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0.6, 1, 0.3), this.scene);
+        this.light = new BABYLON.HemisphericLight("light", (new BABYLON.Vector3(0.5, 2.5, 1.5)).normalize(), this.scene);
         this.light.diffuse = new BABYLON.Color3(1, 1, 1);
-        this.light.groundColor = new BABYLON.Color3(0.5, 0.5, 0.5);
+        this.light.groundColor = new BABYLON.Color3(0.1, 0.1, 0.1);
         this.cameraManager = new CameraManager(this);
         this.cameraManager.arcRotateCamera.lowerRadiusLimit = 130;
         this.cameraManager.arcRotateCamera.upperRadiusLimit = 350;
@@ -2606,6 +2606,8 @@ class PlanetChunck extends AbstractPlanetChunck {
                 let h00 = Math.floor(this.planet.generator.altitudeMap.getForSide(this.side, i0 * f, j0 * f) * this.kPosMax * PlanetTools.CHUNCKSIZE);
                 let p00 = PlanetTools.EvaluateVertex(this.size, i0, j0).scaleInPlace(PlanetTools.KGlobalToAltitude(h00));
                 positions.push(p00.x, p00.y, p00.z);
+                p00.normalize();
+                normals.push(p00.x, p00.y, p00.z);
                 uvs.push(i0 / this.size);
                 uvs.push(j0 / this.size);
                 if (i < 8 && j < 8) {
@@ -2615,7 +2617,6 @@ class PlanetChunck extends AbstractPlanetChunck {
             }
         }
         //MeshTools.PushQuad([p00, p01, p11, p10], 3, 2, 1, 0, positions, indices);
-        BABYLON.VertexData.ComputeNormals(positions, indices, normals);
         vertexData.positions = positions;
         vertexData.indices = indices;
         vertexData.normals = normals;
@@ -2771,6 +2772,8 @@ class PlanetChunckGroup extends AbstractPlanetChunck {
                 let h00 = Math.floor(this.planet.generator.altitudeMap.getForSide(this.side, i0 * f, j0 * f) * this.kPosMax * PlanetTools.CHUNCKSIZE);
                 let p00 = PlanetTools.EvaluateVertex(this.size, i0, j0).scaleInPlace(PlanetTools.KGlobalToAltitude(h00));
                 positions.push(p00.x, p00.y, p00.z);
+                p00.normalize();
+                normals.push(p00.x, p00.y, p00.z);
                 uvs.push(i0 / this.size);
                 uvs.push(j0 / this.size);
                 if (i < 8 && j < 8) {
@@ -2780,7 +2783,6 @@ class PlanetChunckGroup extends AbstractPlanetChunck {
             }
         }
         //MeshTools.PushQuad([p00, p01, p11, p10], 3, 2, 1, 0, positions, indices);
-        BABYLON.VertexData.ComputeNormals(positions, indices, normals);
         vertexData.positions = positions;
         vertexData.indices = indices;
         vertexData.normals = normals;
@@ -4442,32 +4444,24 @@ class PlanetGeneratorChaos extends PlanetGenerator {
         this.altitudeMap = PlanetHeightMap.CreateConstantMap(planet.degree, 0).addInPlace(this._mainHeightMap).multiplyInPlace(_mountainHeight).addInPlace(PlanetHeightMap.CreateConstantMap(planet.degree, this.planet.seaLevelRatio));
         this.altitudeMap.maxInPlace(PlanetHeightMap.CreateConstantMap(planet.degree, this.planet.seaLevelRatio - 0.01));
     }
-    getTexture(side, size = 128) {
+    getTexture(side, size = 256) {
         let texture = new BABYLON.DynamicTexture("texture-" + side, size);
         let context = texture.getContext();
-        let f = Math.pow(2, this._mainHeightMap.degree) / 128;
+        let f = Math.pow(2, this._mainHeightMap.degree) / size;
         for (let i = 0; i < size; i++) {
             for (let j = 0; j < size; j++) {
                 let v = Math.floor(this.altitudeMap.getForSide(side, Math.floor(i * f), Math.floor(j * f)) * PlanetTools.CHUNCKSIZE * this.planet.kPosMax);
-                let r = 255;
-                let g = 0;
-                let b = 255;
+                let color;
                 if (v < this.planet.seaLevel) {
-                    r = 0;
-                    g = 0;
-                    b = 255;
+                    color = SharedMaterials.MainMaterial().getColor(BlockType.Water);
                 }
                 else if (v < this.planet.seaLevel + 1) {
-                    r = 255;
-                    g = 255;
-                    b = 0;
+                    color = SharedMaterials.MainMaterial().getColor(BlockType.Sand);
                 }
                 else {
-                    r = 0;
-                    g = 255;
-                    b = 0;
+                    color = SharedMaterials.MainMaterial().getColor(BlockType.Grass);
                 }
-                context.fillStyle = "rgb(" + r.toFixed(0) + ", " + g.toFixed(0) + ", " + b.toFixed(0) + ")";
+                context.fillStyle = "rgb(" + (color.r * 255).toFixed(0) + ", " + (color.g * 255).toFixed(0) + ", " + (color.b * 255).toFixed(0) + ")";
                 context.fillRect(i, j, 1, 1);
             }
         }
