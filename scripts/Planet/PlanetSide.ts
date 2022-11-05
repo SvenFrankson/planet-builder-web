@@ -284,9 +284,8 @@ class PlanetSide extends BABYLON.Mesh {
             this.chunckGroups[degree] = new PlanetChunckGroup(0, 0, 0, this, undefined, degree, degree - (PlanetTools.DEGREEMIN - 1));
         }
 
-        let material = new BABYLON.StandardMaterial(this.name);
-        material.specularColor.copyFromFloats(0, 0, 0);
-        material.diffuseTexture = (this.planet.generator as PlanetGeneratorChaos).getTexture(this.side);
+        let material = new PlanetMaterial(this.name, this.getScene());
+        material.setSeaLevelTexture((this.planet.generator as PlanetGeneratorChaos).getTexture(this.side));
         this.seaLevelMaterial = material;
     }
     

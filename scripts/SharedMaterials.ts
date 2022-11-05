@@ -1,16 +1,16 @@
 class SharedMaterials {
-    private static mainMaterial: TerrainToonMaterial;
-    public static MainMaterial(): TerrainToonMaterial {
+    private static mainMaterial: PlanetMaterial;
+    public static MainMaterial(): PlanetMaterial {
         if (!SharedMaterials.mainMaterial) {
-            SharedMaterials.mainMaterial = new TerrainToonMaterial("mainMaterial", Game.Scene);
+            SharedMaterials.mainMaterial = new PlanetMaterial("mainMaterial", Game.Scene);
         }
         return SharedMaterials.mainMaterial;
     }
     
-    private static highlightChunckMaterial: TerrainToonMaterial;
-    public static HighlightChunckMaterial(): TerrainToonMaterial {
+    private static highlightChunckMaterial: PlanetMaterial;
+    public static HighlightChunckMaterial(): PlanetMaterial {
         if (!SharedMaterials.highlightChunckMaterial) {
-            SharedMaterials.highlightChunckMaterial = new TerrainToonMaterial("highlightChunckMaterial", Game.Scene);
+            SharedMaterials.highlightChunckMaterial = new PlanetMaterial("highlightChunckMaterial", Game.Scene);
             SharedMaterials.highlightChunckMaterial.setGlobalColor(new BABYLON.Color3(0, 1, 1));
         }
         return SharedMaterials.highlightChunckMaterial;
@@ -28,7 +28,7 @@ class SharedMaterials {
     public static WaterMaterial(): BABYLON.StandardMaterial {
         if (!SharedMaterials.waterMaterial) {
             SharedMaterials.waterMaterial = new BABYLON.StandardMaterial("waterMaterial", Game.Scene);
-            SharedMaterials.waterMaterial.diffuseColor = new BABYLON.Color3(0, 0.5, 1);
+            SharedMaterials.waterMaterial.diffuseColor = SharedMaterials.MainMaterial().getColor(BlockType.Water);
             SharedMaterials.waterMaterial.specularColor = BABYLON.Color3.Black();
             SharedMaterials.waterMaterial.alpha = 0.7;
         }

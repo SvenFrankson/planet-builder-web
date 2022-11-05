@@ -519,49 +519,14 @@ class PlanetChunck extends AbstractPlanetChunck {
             this.mesh = new BABYLON.Mesh("chunck-" + this.iPos + "-" + this.jPos + "-" + this.kPos, this.scene);
         }
 
-
-        let vertexData = new BABYLON.VertexData();
-        let positions: number[] = [];
-        let indices: number[] = [];
-        let normals: number[] = [];
-        let uvs: number[] = [];
-
-        let f = Math.pow(2, this.planet.degree - this.degree);
-        for (let i = 0; i <= 8; i++) {
-            for (let j = 0; j <= 8; j++) {
-                let l = positions.length / 3;
-                let i0 = PlanetTools.CHUNCKSIZE * (this.iPos + i / 8);
-                let j0 = PlanetTools.CHUNCKSIZE * (this.jPos + j / 8);
-                
-                let h00 = Math.floor(this.planet.generator.altitudeMap.getForSide(this.side, i0 * f, j0 * f) * this.kPosMax * PlanetTools.CHUNCKSIZE);
-                let p00 = PlanetTools.EvaluateVertex(this.size, i0, j0).scaleInPlace(PlanetTools.KGlobalToAltitude(h00));
-                positions.push(p00.x, p00.y, p00.z);
-                p00.normalize();
-                normals.push(p00.x, p00.y, p00.z);
-                uvs.push(i0 / this.size);
-                uvs.push(j0 / this.size);
-
-                if (i < 8 && j < 8) {
-                    indices.push(l, l + 1 + 9, l + 1);
-                    indices.push(l, l + 9, l + 1 + 9);
-                }
-            }
-        }
-
-        //MeshTools.PushQuad([p00, p01, p11, p10], 3, 2, 1, 0, positions, indices);
-
-        vertexData.positions = positions;
-        vertexData.indices = indices;
-        vertexData.normals = normals;
-        vertexData.uvs = uvs;
-        vertexData.applyToMesh(this.mesh);
+        PlanetChunckMeshBuilder.BuildSeaLevelVertexData(this).applyToMesh(this.mesh);
         this.mesh.material = this.planetSide.seaLevelMaterial;
 
         this.mesh.parent = this.planetSide;
         requestAnimationFrame(() => {
             this.mesh.freezeWorldMatrix();
             this.mesh.refreshBoundingInfo();
-        })
+        });
     }
 
     public highlight(): void {

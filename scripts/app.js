@@ -394,13 +394,13 @@ window.addEventListener("DOMContentLoaded", () => {
 class SharedMaterials {
     static MainMaterial() {
         if (!SharedMaterials.mainMaterial) {
-            SharedMaterials.mainMaterial = new TerrainToonMaterial("mainMaterial", Game.Scene);
+            SharedMaterials.mainMaterial = new PlanetMaterial("mainMaterial", Game.Scene);
         }
         return SharedMaterials.mainMaterial;
     }
     static HighlightChunckMaterial() {
         if (!SharedMaterials.highlightChunckMaterial) {
-            SharedMaterials.highlightChunckMaterial = new TerrainToonMaterial("highlightChunckMaterial", Game.Scene);
+            SharedMaterials.highlightChunckMaterial = new PlanetMaterial("highlightChunckMaterial", Game.Scene);
             SharedMaterials.highlightChunckMaterial.setGlobalColor(new BABYLON.Color3(0, 1, 1));
         }
         return SharedMaterials.highlightChunckMaterial;
@@ -414,7 +414,7 @@ class SharedMaterials {
     static WaterMaterial() {
         if (!SharedMaterials.waterMaterial) {
             SharedMaterials.waterMaterial = new BABYLON.StandardMaterial("waterMaterial", Game.Scene);
-            SharedMaterials.waterMaterial.diffuseColor = new BABYLON.Color3(0, 0.5, 1);
+            SharedMaterials.waterMaterial.diffuseColor = SharedMaterials.MainMaterial().getColor(BlockType.Water);
             SharedMaterials.waterMaterial.specularColor = BABYLON.Color3.Black();
             SharedMaterials.waterMaterial.alpha = 0.7;
         }
@@ -1410,7 +1410,7 @@ class Demo extends Main {
     }
     async initialize() {
         return new Promise(resolve => {
-            let kPosMax = 8;
+            let kPosMax = 10;
             let planetTest = new Planet("Paulita", kPosMax, 0.65, this.scene);
             planetTest.initialize();
             //let moon: Planet = new Planet("Moon", 2, 0.60, this.scene);
@@ -2592,36 +2592,7 @@ class PlanetChunck extends AbstractPlanetChunck {
         if (this.isMeshDisposed()) {
             this.mesh = new BABYLON.Mesh("chunck-" + this.iPos + "-" + this.jPos + "-" + this.kPos, this.scene);
         }
-        let vertexData = new BABYLON.VertexData();
-        let positions = [];
-        let indices = [];
-        let normals = [];
-        let uvs = [];
-        let f = Math.pow(2, this.planet.degree - this.degree);
-        for (let i = 0; i <= 8; i++) {
-            for (let j = 0; j <= 8; j++) {
-                let l = positions.length / 3;
-                let i0 = PlanetTools.CHUNCKSIZE * (this.iPos + i / 8);
-                let j0 = PlanetTools.CHUNCKSIZE * (this.jPos + j / 8);
-                let h00 = Math.floor(this.planet.generator.altitudeMap.getForSide(this.side, i0 * f, j0 * f) * this.kPosMax * PlanetTools.CHUNCKSIZE);
-                let p00 = PlanetTools.EvaluateVertex(this.size, i0, j0).scaleInPlace(PlanetTools.KGlobalToAltitude(h00));
-                positions.push(p00.x, p00.y, p00.z);
-                p00.normalize();
-                normals.push(p00.x, p00.y, p00.z);
-                uvs.push(i0 / this.size);
-                uvs.push(j0 / this.size);
-                if (i < 8 && j < 8) {
-                    indices.push(l, l + 1 + 9, l + 1);
-                    indices.push(l, l + 9, l + 1 + 9);
-                }
-            }
-        }
-        //MeshTools.PushQuad([p00, p01, p11, p10], 3, 2, 1, 0, positions, indices);
-        vertexData.positions = positions;
-        vertexData.indices = indices;
-        vertexData.normals = normals;
-        vertexData.uvs = uvs;
-        vertexData.applyToMesh(this.mesh);
+        PlanetChunckMeshBuilder.BuildSeaLevelVertexData(this).applyToMesh(this.mesh);
         this.mesh.material = this.planetSide.seaLevelMaterial;
         this.mesh.parent = this.planetSide;
         requestAnimationFrame(() => {
@@ -2757,41 +2728,11 @@ class PlanetChunckGroup extends AbstractPlanetChunck {
         if (this.mesh) {
             this.mesh.dispose();
         }
-        let levelCoef = Math.pow(2, this.level);
-        let vertexData = new BABYLON.VertexData();
-        let positions = [];
-        let indices = [];
-        let normals = [];
-        let uvs = [];
-        let f = Math.pow(2, this.planet.degree - this.degree);
-        for (let i = 0; i <= 8; i++) {
-            for (let j = 0; j <= 8; j++) {
-                let l = positions.length / 3;
-                let i0 = PlanetTools.CHUNCKSIZE * (this.iPos + i / 8) * levelCoef;
-                let j0 = PlanetTools.CHUNCKSIZE * (this.jPos + j / 8) * levelCoef;
-                let h00 = Math.floor(this.planet.generator.altitudeMap.getForSide(this.side, i0 * f, j0 * f) * this.kPosMax * PlanetTools.CHUNCKSIZE);
-                let p00 = PlanetTools.EvaluateVertex(this.size, i0, j0).scaleInPlace(PlanetTools.KGlobalToAltitude(h00));
-                positions.push(p00.x, p00.y, p00.z);
-                p00.normalize();
-                normals.push(p00.x, p00.y, p00.z);
-                uvs.push(i0 / this.size);
-                uvs.push(j0 / this.size);
-                if (i < 8 && j < 8) {
-                    indices.push(l, l + 1 + 9, l + 1);
-                    indices.push(l, l + 9, l + 1 + 9);
-                }
-            }
-        }
-        //MeshTools.PushQuad([p00, p01, p11, p10], 3, 2, 1, 0, positions, indices);
-        vertexData.positions = positions;
-        vertexData.indices = indices;
-        vertexData.normals = normals;
-        vertexData.uvs = uvs;
-        this.mesh = BABYLON.MeshBuilder.CreateBox(this.name);
+        this.mesh = new BABYLON.Mesh("test");
+        PlanetChunckMeshBuilder.BuildSeaLevelVertexData(this).applyToMesh(this.mesh);
         this.mesh.material = this.planetSide.seaLevelMaterial;
         //this.mesh.position = this.barycenter;
         this.mesh.parent = this.planetSide;
-        vertexData.applyToMesh(this.mesh);
     }
     getPlanetChunck(iPos, jPos, kPos) {
         if (!this.children || this.children.length === 0) {
@@ -3540,6 +3481,44 @@ class PlanetChunckMeshBuilder {
             waterVertexData.normals = waterNormals;
         }
         return [vertexData, waterVertexData];
+    }
+    static BuildSeaLevelVertexData(chunck) {
+        let vertexData = new BABYLON.VertexData();
+        let positions = [];
+        let indices = [];
+        let normals = [];
+        let uvs = [];
+        let levelCoef = 1;
+        if (chunck instanceof PlanetChunckGroup) {
+            levelCoef = Math.pow(2, chunck.level);
+        }
+        let vertexCount = 16;
+        let f = Math.pow(2, chunck.planet.degree - chunck.degree);
+        for (let i = 0; i <= vertexCount; i++) {
+            for (let j = 0; j <= vertexCount; j++) {
+                let l = positions.length / 3;
+                let i0 = PlanetTools.CHUNCKSIZE * (chunck.iPos + i / vertexCount) * levelCoef;
+                let j0 = PlanetTools.CHUNCKSIZE * (chunck.jPos + j / vertexCount) * levelCoef;
+                let h00 = Math.floor(chunck.planet.generator.altitudeMap.getForSide(chunck.side, i0 * f, j0 * f) * chunck.kPosMax * PlanetTools.CHUNCKSIZE);
+                let p00 = PlanetTools.EvaluateVertex(chunck.size, i0, j0).scaleInPlace(PlanetTools.KGlobalToAltitude(h00));
+                positions.push(p00.x, p00.y, p00.z);
+                p00.normalize();
+                normals.push(p00.x, p00.y, p00.z);
+                uvs.push(i0 / chunck.size);
+                uvs.push(j0 / chunck.size);
+                if (i < vertexCount && j < vertexCount) {
+                    indices.push(l, l + 1 + (vertexCount + 1), l + 1);
+                    indices.push(l, l + (vertexCount + 1), l + 1 + (vertexCount + 1));
+                }
+            }
+        }
+        //MeshTools.PushQuad([p00, p01, p11, p10], 3, 2, 1, 0, positions, indices);
+        BABYLON.VertexData.ComputeNormals(positions, indices, normals);
+        vertexData.positions = positions;
+        vertexData.indices = indices;
+        vertexData.normals = normals;
+        vertexData.uvs = uvs;
+        return vertexData;
     }
     static BuildWaterVertexData(size, iPos, jPos, kPos, rWater) {
         let vertexData = new BABYLON.VertexData();
@@ -5063,7 +5042,7 @@ class PlanetHeightMap {
         return texture;
     }
 }
-class TerrainToonMaterial extends BABYLON.ShaderMaterial {
+class PlanetMaterial extends BABYLON.ShaderMaterial {
     constructor(name, scene) {
         super(name, scene, {
             vertex: "terrainToon",
@@ -5085,6 +5064,7 @@ class TerrainToonMaterial extends BABYLON.ShaderMaterial {
         this._terrainColors[BlockType.Leaf] = new BABYLON.Color3(0.431, 0.839, 0.020);
         this.setColor3("globalColor", this._globalColor);
         this.setColor3Array("terrainColors", this._terrainColors);
+        this.setSeaLevelTexture(undefined);
     }
     getGlobalColor() {
         return this._globalColor;
@@ -5099,6 +5079,14 @@ class TerrainToonMaterial extends BABYLON.ShaderMaterial {
     setColor(blockType, color) {
         this._terrainColors[blockType].copyFrom(color);
         this.setColor3Array("terrainColors", this._terrainColors);
+    }
+    setSeaLevelTexture(texture) {
+        this._seaLevelTexture = texture;
+        this._useSeaLevelTexture = this._seaLevelTexture ? 1 : 0;
+        this.setInt("useSeaLevelTexture", this._useSeaLevelTexture);
+        if (this._seaLevelTexture) {
+            this.setTexture("seaLevelTexture", this._seaLevelTexture);
+        }
     }
 }
 var SideNames = [
@@ -5132,9 +5120,8 @@ class PlanetSide extends BABYLON.Mesh {
         for (let degree = PlanetTools.DEGREEMIN; degree <= PlanetTools.KPosToDegree(this.kPosMax); degree++) {
             this.chunckGroups[degree] = new PlanetChunckGroup(0, 0, 0, this, undefined, degree, degree - (PlanetTools.DEGREEMIN - 1));
         }
-        let material = new BABYLON.StandardMaterial(this.name);
-        material.specularColor.copyFromFloats(0, 0, 0);
-        material.diffuseTexture = this.planet.generator.getTexture(this.side);
+        let material = new PlanetMaterial(this.name, this.getScene());
+        material.setSeaLevelTexture(this.planet.generator.getTexture(this.side));
         this.seaLevelMaterial = material;
     }
     get side() {

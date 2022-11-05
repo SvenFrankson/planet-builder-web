@@ -541,6 +541,54 @@ class PlanetChunckMeshBuilder {
         return [vertexData, waterVertexData];
     }
 
+    public static BuildSeaLevelVertexData(
+        chunck: AbstractPlanetChunck
+    ): BABYLON.VertexData {
+        let vertexData = new BABYLON.VertexData();
+        let positions: number[] = [];
+        let indices: number[] = [];
+        let normals: number[] = [];
+        let uvs: number[] = [];
+
+        let levelCoef = 1;
+        if (chunck instanceof PlanetChunckGroup) {
+            levelCoef = Math.pow(2, chunck.level);
+        }
+
+        let vertexCount: number = 16;
+        let f = Math.pow(2, chunck.planet.degree - chunck.degree);
+        for (let i = 0; i <= vertexCount; i++) {
+            for (let j = 0; j <= vertexCount; j++) {
+                let l = positions.length / 3;
+                let i0 = PlanetTools.CHUNCKSIZE * (chunck.iPos + i / vertexCount) * levelCoef;
+                let j0 = PlanetTools.CHUNCKSIZE * (chunck.jPos + j / vertexCount) * levelCoef;
+                
+                let h00 = Math.floor(chunck.planet.generator.altitudeMap.getForSide(chunck.side, i0 * f, j0 * f) * chunck.kPosMax * PlanetTools.CHUNCKSIZE);
+                let p00 = PlanetTools.EvaluateVertex(chunck.size, i0, j0).scaleInPlace(PlanetTools.KGlobalToAltitude(h00));
+                positions.push(p00.x, p00.y, p00.z);
+                p00.normalize();
+                normals.push(p00.x, p00.y, p00.z);
+                uvs.push(i0 / chunck.size);
+                uvs.push(j0 / chunck.size);
+
+                if (i < vertexCount && j < vertexCount) {
+                    indices.push(l, l + 1 + (vertexCount + 1), l + 1);
+                    indices.push(l, l + (vertexCount + 1), l + 1 + (vertexCount + 1));
+                }
+            }
+        }
+
+        //MeshTools.PushQuad([p00, p01, p11, p10], 3, 2, 1, 0, positions, indices);
+
+        BABYLON.VertexData.ComputeNormals(positions, indices, normals);
+        vertexData.positions = positions;
+        vertexData.indices = indices;
+        vertexData.normals = normals;
+        vertexData.uvs = uvs;
+
+        return vertexData;
+    }
+
     public static BuildWaterVertexData(
         size: number,
         iPos: number,

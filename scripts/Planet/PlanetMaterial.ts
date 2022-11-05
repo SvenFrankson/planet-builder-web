@@ -1,7 +1,9 @@
-class TerrainToonMaterial extends BABYLON.ShaderMaterial {
+class PlanetMaterial extends BABYLON.ShaderMaterial {
 
     private _globalColor: BABYLON.Color3 = BABYLON.Color3.Black();
     private _terrainColors: BABYLON.Color3[];
+    private _useSeaLevelTexture: number;
+    private _seaLevelTexture: BABYLON.Texture;
 
     constructor(name: string, scene: BABYLON.Scene) {
         super(
@@ -30,6 +32,7 @@ class TerrainToonMaterial extends BABYLON.ShaderMaterial {
 
         this.setColor3("globalColor", this._globalColor);
         this.setColor3Array("terrainColors", this._terrainColors);
+        this.setSeaLevelTexture(undefined);
     }
 
     public getGlobalColor(): BABYLON.Color3 {
@@ -48,5 +51,14 @@ class TerrainToonMaterial extends BABYLON.ShaderMaterial {
     public setColor(blockType: BlockType, color: BABYLON.Color3): void {
         this._terrainColors[blockType].copyFrom(color);
         this.setColor3Array("terrainColors", this._terrainColors);
+    }
+
+    public setSeaLevelTexture(texture: BABYLON.Texture): void {
+        this._seaLevelTexture = texture;
+        this._useSeaLevelTexture = this._seaLevelTexture ? 1 : 0;
+        this.setInt("useSeaLevelTexture", this._useSeaLevelTexture);
+        if (this._seaLevelTexture) {
+            this.setTexture("seaLevelTexture", this._seaLevelTexture);
+        }
     }
 }

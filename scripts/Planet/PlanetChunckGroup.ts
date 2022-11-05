@@ -91,48 +91,12 @@ class PlanetChunckGroup extends AbstractPlanetChunck {
         if (this.mesh) {
             this.mesh.dispose();
         }
-        let levelCoef = Math.pow(2, this.level);
+        this.mesh = new BABYLON.Mesh("test");
 
-        let vertexData = new BABYLON.VertexData();
-        let positions: number[] = [];
-        let indices: number[] = [];
-        let normals: number[] = [];
-        let uvs: number[] = [];
-        
-        let f = Math.pow(2, this.planet.degree - this.degree);
-        for (let i = 0; i <= 8; i++) {
-            for (let j = 0; j <= 8; j++) {
-                let l = positions.length / 3;
-                let i0 = PlanetTools.CHUNCKSIZE * (this.iPos + i / 8) * levelCoef;
-                let j0 = PlanetTools.CHUNCKSIZE * (this.jPos + j / 8) * levelCoef;
-                
-                let h00 = Math.floor(this.planet.generator.altitudeMap.getForSide(this.side, i0 * f, j0 * f) * this.kPosMax * PlanetTools.CHUNCKSIZE);
-                let p00 = PlanetTools.EvaluateVertex(this.size, i0, j0).scaleInPlace(PlanetTools.KGlobalToAltitude(h00));
-                positions.push(p00.x, p00.y, p00.z);
-                p00.normalize();
-                normals.push(p00.x, p00.y, p00.z);
-                uvs.push(i0 / this.size);
-                uvs.push(j0 / this.size);
-
-                if (i < 8 && j < 8) {
-                    indices.push(l, l + 1 + 9, l + 1);
-                    indices.push(l, l + 9, l + 1 + 9);
-                }
-            }
-        }
-
-        //MeshTools.PushQuad([p00, p01, p11, p10], 3, 2, 1, 0, positions, indices);
-
-        vertexData.positions = positions;
-        vertexData.indices = indices;
-        vertexData.normals = normals;
-        vertexData.uvs = uvs;
-
-        this.mesh = BABYLON.MeshBuilder.CreateBox(this.name);
+        PlanetChunckMeshBuilder.BuildSeaLevelVertexData(this).applyToMesh(this.mesh);
         this.mesh.material = this.planetSide.seaLevelMaterial;
         //this.mesh.position = this.barycenter;
         this.mesh.parent = this.planetSide;
-        vertexData.applyToMesh(this.mesh);
     }
 
     public getPlanetChunck(iPos: number, jPos: number, kPos: number): PlanetChunck {
