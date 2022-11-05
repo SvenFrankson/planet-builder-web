@@ -49,7 +49,7 @@ class PlanetChunckManager {
         this._lodLayers = [];
         this._lodLayersCursors = [];
         this._lodLayersSqrDistances = [];
-        let distances = [150, 180, 210, 240, 270];
+        let distances = [120, 150, 180, 210, 240];
         for (let i = 0; i < this._lodLayersCount - 1; i++) {
             this._lodLayers[i] = [];
             this._lodLayersCursors[i] = 0;
@@ -219,7 +219,7 @@ class PlanetChunckManager {
         this._needRedraw = this._needRedraw.sort((r1, r2) => { return r2.chunck.sqrDistanceToViewpoint - r1.chunck.sqrDistanceToViewpoint; });
         // Recalculate chunck meshes.
         t0 = performance.now();
-        while (this._needRedraw.length > 0 && (t - t0) < 1000 / 120) {
+        while (this._needRedraw.length > 0 && (t - t0) < 1000 / 60) {
             let request = this._needRedraw.pop();
             if (request.chunck.lod <= 1) {
                 request.chunck.initialize();

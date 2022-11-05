@@ -21,7 +21,7 @@ class Planet extends BABYLON.Mesh {
         name: string,
         public kPosMax: number,
         public seaLevelRatio: number,
-        scene?: BABYLON.Scene
+        public scene: BABYLON.Scene
     ) {
         super(name, scene);
         Planet.DEBUG_INSTANCE = this;

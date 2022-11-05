@@ -141,10 +141,10 @@ class PlanetGeneratorChaos extends PlanetGenerator {
             for (let j = 0; j < size; j++) {
                 let v = Math.floor(this.altitudeMap.getForSide(side, Math.floor(i * f), Math.floor(j * f)) * PlanetTools.CHUNCKSIZE * this.planet.kPosMax);
                 let color: BABYLON.Color3;
-                if (v < this.planet.seaLevel) {
+                if (v < this.planet.seaLevel - 1) {
                     color = SharedMaterials.MainMaterial().getColor(BlockType.Water);
                 }
-                else if (v < this.planet.seaLevel + 1) {
+                else if (v < this.planet.seaLevel) {
                     color = SharedMaterials.MainMaterial().getColor(BlockType.Sand);
                 }
                 else {

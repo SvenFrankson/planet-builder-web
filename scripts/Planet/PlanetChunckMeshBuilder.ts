@@ -564,7 +564,7 @@ class PlanetChunckMeshBuilder {
                 let j0 = PlanetTools.CHUNCKSIZE * (chunck.jPos + j / vertexCount) * levelCoef;
                 
                 let h00 = Math.floor(chunck.planet.generator.altitudeMap.getForSide(chunck.side, i0 * f, j0 * f) * chunck.kPosMax * PlanetTools.CHUNCKSIZE);
-                let p00 = PlanetTools.EvaluateVertex(chunck.size, i0, j0).scaleInPlace(PlanetTools.KGlobalToAltitude(h00));
+                let p00 = PlanetTools.EvaluateVertex(chunck.size, i0, j0).scaleInPlace(PlanetTools.KGlobalToAltitude(h00 + 1));
                 positions.push(p00.x, p00.y, p00.z);
                 p00.normalize();
                 normals.push(p00.x, p00.y, p00.z);

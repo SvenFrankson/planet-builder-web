@@ -1330,6 +1330,183 @@ class DebugTerrainColor {
         this.container.classList.add("hidden");
     }
 }
+class Altimeter3D {
+    constructor(planet) {
+        this.planet = planet;
+        this._x = BABYLON.Vector3.Right();
+        this._y = BABYLON.Vector3.Up();
+        this._z = BABYLON.Vector3.Forward();
+        this._update = () => {
+            let camera;
+            if (this.scene.activeCameras && this.scene.activeCameras.length > 0) {
+                camera = this.scene.activeCameras[0];
+            }
+            else {
+                camera = this.scene.activeCamera;
+            }
+            if (camera) {
+                let camDir = camera.getForwardRay().direction;
+                this._y.copyFrom(camDir).scaleInPlace(4).addInPlace(camera.globalPosition).normalize();
+                this._z.copyFrom(camDir);
+                BABYLON.Vector3.CrossToRef(this._y, this._z, this._x);
+                BABYLON.Vector3.CrossToRef(this._x, this._y, this._z);
+                BABYLON.Quaternion.RotationQuaternionFromAxisToRef(this._x, this._y, this._z, this.lineMesh.rotationQuaternion);
+            }
+        };
+    }
+    get scene() {
+        return this.planet._scene;
+    }
+    instantiate() {
+        let lines = [];
+        for (let k = 0; k < this.planet.kPosMax * PlanetTools.CHUNCKSIZE; k++) {
+            let altitude = PlanetTools.KGlobalToAltitude(k);
+            lines.push([new BABYLON.Vector3(0, altitude, 0), new BABYLON.Vector3(1, altitude, 0)]);
+        }
+        let count = lines.length;
+        lines.push([lines[0][0], lines[count - 1][0]]);
+        this.lineMesh = BABYLON.MeshBuilder.CreateLineSystem("altimeter3D", { lines: lines }, this.scene);
+        this.lineMesh.rotationQuaternion = BABYLON.Quaternion.Identity();
+        this.lineMesh.layerMask = 0x1;
+        for (let k = 0; k < this.planet.kPosMax * PlanetTools.CHUNCKSIZE; k++) {
+            let altitude = PlanetTools.KGlobalToAltitude(k);
+            let value = new Number3D("value-" + k, k, 0.5);
+            value.redraw();
+            value.position.x = 1;
+            value.position.y = altitude + 0.1;
+            value.parent = this.lineMesh;
+        }
+        this.scene.onBeforeRenderObservable.add(this._update);
+    }
+}
+class Number3D extends BABYLON.LinesMesh {
+    constructor(name, value, height = 0.5) {
+        super(name);
+        this.value = value;
+        this.height = height;
+    }
+    get digitSize() {
+        return this.height * 0.5;
+    }
+    get halfDigitSize() {
+        return this.digitSize * 0.5;
+    }
+    get quaterDigitSize() {
+        return this.halfDigitSize * 0.5;
+    }
+    _getDigitLine(n) {
+        if (n === 0) {
+            return [
+                new BABYLON.Vector3(0, 0, 0),
+                new BABYLON.Vector3(0, this.digitSize, 0),
+                new BABYLON.Vector3(this.halfDigitSize, this.digitSize, 0),
+                new BABYLON.Vector3(this.halfDigitSize, 0, 0),
+                new BABYLON.Vector3(0, 0, 0)
+            ];
+        }
+        if (n === 1) {
+            return [
+                new BABYLON.Vector3(this.halfDigitSize, 0, 0),
+                new BABYLON.Vector3(this.halfDigitSize, this.digitSize, 0)
+            ];
+        }
+        if (n === 2) {
+            return [
+                new BABYLON.Vector3(0, this.digitSize, 0),
+                new BABYLON.Vector3(this.halfDigitSize, this.digitSize, 0),
+                new BABYLON.Vector3(this.halfDigitSize, this.halfDigitSize, 0),
+                new BABYLON.Vector3(0, this.halfDigitSize, 0),
+                new BABYLON.Vector3(0, 0, 0),
+                new BABYLON.Vector3(this.halfDigitSize, 0, 0)
+            ];
+        }
+        if (n === 3) {
+            return [
+                new BABYLON.Vector3(0, this.digitSize, 0),
+                new BABYLON.Vector3(this.halfDigitSize, this.digitSize, 0),
+                new BABYLON.Vector3(this.halfDigitSize, this.halfDigitSize, 0),
+                new BABYLON.Vector3(0, this.halfDigitSize, 0),
+                new BABYLON.Vector3(this.halfDigitSize, this.halfDigitSize, 0),
+                new BABYLON.Vector3(this.halfDigitSize, 0, 0),
+                new BABYLON.Vector3(0, 0, 0)
+            ];
+        }
+        if (n === 4) {
+            return [
+                new BABYLON.Vector3(0, this.digitSize, 0),
+                new BABYLON.Vector3(0, this.halfDigitSize, 0),
+                new BABYLON.Vector3(this.halfDigitSize, this.halfDigitSize, 0),
+                new BABYLON.Vector3(this.halfDigitSize, this.digitSize, 0),
+                new BABYLON.Vector3(this.halfDigitSize, 0, 0)
+            ];
+        }
+        if (n === 5) {
+            return [
+                new BABYLON.Vector3(this.halfDigitSize, this.digitSize, 0),
+                new BABYLON.Vector3(0, this.digitSize, 0),
+                new BABYLON.Vector3(0, this.halfDigitSize, 0),
+                new BABYLON.Vector3(this.halfDigitSize, this.halfDigitSize, 0),
+                new BABYLON.Vector3(this.halfDigitSize, 0, 0),
+                new BABYLON.Vector3(0, 0, 0)
+            ];
+        }
+        if (n === 6) {
+            return [
+                new BABYLON.Vector3(0, this.halfDigitSize, 0),
+                new BABYLON.Vector3(this.halfDigitSize, this.halfDigitSize, 0),
+                new BABYLON.Vector3(this.halfDigitSize, 0, 0),
+                new BABYLON.Vector3(0, 0, 0),
+                new BABYLON.Vector3(0, this.digitSize, 0),
+                new BABYLON.Vector3(this.halfDigitSize, this.digitSize, 0)
+            ];
+        }
+        if (n === 7) {
+            return [
+                new BABYLON.Vector3(this.halfDigitSize, 0, 0),
+                new BABYLON.Vector3(this.halfDigitSize, this.digitSize, 0),
+                new BABYLON.Vector3(0, this.digitSize, 0)
+            ];
+        }
+        if (n === 8) {
+            return [
+                new BABYLON.Vector3(this.halfDigitSize, this.halfDigitSize, 0),
+                new BABYLON.Vector3(0, this.halfDigitSize, 0),
+                new BABYLON.Vector3(0, 0, 0),
+                new BABYLON.Vector3(this.halfDigitSize, 0, 0),
+                new BABYLON.Vector3(this.halfDigitSize, this.digitSize, 0),
+                new BABYLON.Vector3(0, this.digitSize, 0),
+                new BABYLON.Vector3(0, this.halfDigitSize, 0)
+            ];
+        }
+        if (n === 9) {
+            return [
+                new BABYLON.Vector3(this.halfDigitSize, this.halfDigitSize, 0),
+                new BABYLON.Vector3(0, this.halfDigitSize, 0),
+                new BABYLON.Vector3(0, this.digitSize, 0),
+                new BABYLON.Vector3(this.halfDigitSize, this.digitSize, 0),
+                new BABYLON.Vector3(this.halfDigitSize, 0, 0),
+                new BABYLON.Vector3(0, 0, 0)
+            ];
+        }
+    }
+    redraw() {
+        let stringValue = this.value.toFixed(0);
+        let lines = [];
+        let x = 0;
+        for (let i = 0; i < stringValue.length; i++) {
+            let digit = parseInt(stringValue[i]);
+            let digitLines = this._getDigitLine(digit);
+            if (digitLines) {
+                digitLines.forEach(v => {
+                    v.x += x;
+                });
+                lines.push(digitLines);
+            }
+            x += this.halfDigitSize + this.quaterDigitSize;
+        }
+        BABYLON.CreateLineSystemVertexData({ lines: lines }).applyToMesh(this);
+    }
+}
 class Main {
     constructor(canvasElement) {
         this.canvas = document.getElementById(canvasElement);
@@ -1410,7 +1587,7 @@ class Demo extends Main {
     }
     async initialize() {
         return new Promise(resolve => {
-            let kPosMax = 10;
+            let kPosMax = 8;
             let planetTest = new Planet("Paulita", kPosMax, 0.65, this.scene);
             planetTest.initialize();
             //let moon: Planet = new Planet("Moon", 2, 0.60, this.scene);
@@ -1431,6 +1608,8 @@ class Demo extends Main {
             this.inputManager.initialize();
             let debugPlanetPerf = new DebugPlanetPerf(this);
             debugPlanetPerf.show();
+            let debugAltimeter = new Altimeter3D(planetTest);
+            debugAltimeter.instantiate();
             this.scene.onPointerObservable.add((eventData) => {
                 if (eventData.type === BABYLON.PointerEventTypes.POINTERDOUBLETAP) {
                     if (eventData.pickInfo.hit) {
@@ -2054,6 +2233,7 @@ class Planet extends BABYLON.Mesh {
         super(name, scene);
         this.kPosMax = kPosMax;
         this.seaLevelRatio = seaLevelRatio;
+        this.scene = scene;
         Planet.DEBUG_INSTANCE = this;
         this.kPosMax = kPosMax;
         this.degree = PlanetTools.KPosToDegree(this.kPosMax);
@@ -2937,7 +3117,7 @@ class PlanetChunckManager {
             this._needRedraw = this._needRedraw.sort((r1, r2) => { return r2.chunck.sqrDistanceToViewpoint - r1.chunck.sqrDistanceToViewpoint; });
             // Recalculate chunck meshes.
             t0 = performance.now();
-            while (this._needRedraw.length > 0 && (t - t0) < 1000 / 120) {
+            while (this._needRedraw.length > 0 && (t - t0) < 1000 / 60) {
                 let request = this._needRedraw.pop();
                 if (request.chunck.lod <= 1) {
                     request.chunck.initialize();
@@ -2972,7 +3152,7 @@ class PlanetChunckManager {
         this._lodLayers = [];
         this._lodLayersCursors = [];
         this._lodLayersSqrDistances = [];
-        let distances = [150, 180, 210, 240, 270];
+        let distances = [120, 150, 180, 210, 240];
         for (let i = 0; i < this._lodLayersCount - 1; i++) {
             this._lodLayers[i] = [];
             this._lodLayersCursors[i] = 0;
@@ -3500,7 +3680,7 @@ class PlanetChunckMeshBuilder {
                 let i0 = PlanetTools.CHUNCKSIZE * (chunck.iPos + i / vertexCount) * levelCoef;
                 let j0 = PlanetTools.CHUNCKSIZE * (chunck.jPos + j / vertexCount) * levelCoef;
                 let h00 = Math.floor(chunck.planet.generator.altitudeMap.getForSide(chunck.side, i0 * f, j0 * f) * chunck.kPosMax * PlanetTools.CHUNCKSIZE);
-                let p00 = PlanetTools.EvaluateVertex(chunck.size, i0, j0).scaleInPlace(PlanetTools.KGlobalToAltitude(h00));
+                let p00 = PlanetTools.EvaluateVertex(chunck.size, i0, j0).scaleInPlace(PlanetTools.KGlobalToAltitude(h00 + 1));
                 positions.push(p00.x, p00.y, p00.z);
                 p00.normalize();
                 normals.push(p00.x, p00.y, p00.z);
@@ -4431,10 +4611,10 @@ class PlanetGeneratorChaos extends PlanetGenerator {
             for (let j = 0; j < size; j++) {
                 let v = Math.floor(this.altitudeMap.getForSide(side, Math.floor(i * f), Math.floor(j * f)) * PlanetTools.CHUNCKSIZE * this.planet.kPosMax);
                 let color;
-                if (v < this.planet.seaLevel) {
+                if (v < this.planet.seaLevel - 1) {
                     color = SharedMaterials.MainMaterial().getColor(BlockType.Water);
                 }
-                else if (v < this.planet.seaLevel + 1) {
+                else if (v < this.planet.seaLevel) {
                     color = SharedMaterials.MainMaterial().getColor(BlockType.Sand);
                 }
                 else {
@@ -6214,6 +6394,7 @@ class Player extends BABYLON.Mesh {
             this.camPos.rotation.x += rotationCamPower;
             this.camPos.rotation.x = Math.max(this.camPos.rotation.x, -Math.PI / 2);
             this.camPos.rotation.x = Math.min(this.camPos.rotation.x, Math.PI / 2);
+            /*
             let chunck = PlanetTools.WorldPositionToChunck(this.planet, this.position);
             if (this._currentChunck) {
                 this._currentChunck.unlit();
@@ -6222,6 +6403,7 @@ class Player extends BABYLON.Mesh {
             if (this._currentChunck) {
                 this._currentChunck.highlight();
             }
+            */
             if (this.game.inputMode === InputMode.Mouse) {
                 this.inputHeadRight *= 0.8;
                 this.inputHeadUp *= 0.8;
