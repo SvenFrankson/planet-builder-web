@@ -557,23 +557,39 @@ class PlanetChunckMeshBuilder {
 
         let vertexCount: number = 16;
         let f = Math.pow(2, chunck.planet.degree - chunck.degree);
-        for (let i = 0; i <= vertexCount; i++) {
-            for (let j = 0; j <= vertexCount; j++) {
+        for (let i = - 1; i <= vertexCount + 1; i++) {
+            for (let j = - 1; j <= vertexCount + 1; j++) {
                 let l = positions.length / 3;
                 let i0 = PlanetTools.CHUNCKSIZE * (chunck.iPos + i / vertexCount) * levelCoef;
                 let j0 = PlanetTools.CHUNCKSIZE * (chunck.jPos + j / vertexCount) * levelCoef;
+                let p00 = PlanetTools.EvaluateVertex(chunck.size, i0, j0);
                 
+                let altOffset = 0;
+                if (i < 0) {
+                    i0 = PlanetTools.CHUNCKSIZE * chunck.iPos * levelCoef;
+                    altOffset = - 0.2;
+                }
+                if (j < 0) {
+                    j0 = PlanetTools.CHUNCKSIZE * chunck.jPos * levelCoef;
+                    altOffset = - 0.2;
+                }
+                if (i > vertexCount) {
+                    i0 = PlanetTools.CHUNCKSIZE * (chunck.iPos + 1) * levelCoef;
+                    altOffset = - 0.2;
+                }
+                if (j > vertexCount) {
+                    j0 = PlanetTools.CHUNCKSIZE * (chunck.jPos + 1) * levelCoef;
+                    altOffset = - 0.2;
+                }
                 let h00 = Math.floor(chunck.planet.generator.altitudeMap.getForSide(chunck.side, i0 * f, j0 * f) * chunck.kPosMax * PlanetTools.CHUNCKSIZE);
-                let p00 = PlanetTools.EvaluateVertex(chunck.size, i0, j0).scaleInPlace(PlanetTools.KGlobalToAltitude(h00 + 1));
+                p00.scaleInPlace(PlanetTools.KGlobalToAltitude(h00 + 1) + altOffset);
                 positions.push(p00.x, p00.y, p00.z);
-                p00.normalize();
-                normals.push(p00.x, p00.y, p00.z);
                 uvs.push(i0 / chunck.size);
                 uvs.push(j0 / chunck.size);
 
-                if (i < vertexCount && j < vertexCount) {
-                    indices.push(l, l + 1 + (vertexCount + 1), l + 1);
-                    indices.push(l, l + (vertexCount + 1), l + 1 + (vertexCount + 1));
+                if (i < vertexCount + 1 && j < vertexCount + 1) {
+                    indices.push(l, l + 1 + (vertexCount + 3), l + 1);
+                    indices.push(l, l + (vertexCount + 3), l + 1 + (vertexCount + 3));
                 }
             }
         }

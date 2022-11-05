@@ -156,7 +156,7 @@ class PlanetChunckManager {
         let unsortedCount = 0;
 
         let todo = [];
-        while ((t - t0) < 1 && todo.length < 50) {
+        while ((t - t0) < 1 && todo.length < 100) {
             for (let prevLayerIndex = 0; prevLayerIndex < this._lodLayersCount; prevLayerIndex++) {
                 let cursor = this._lodLayersCursors[prevLayerIndex];
                 let chunck = this._lodLayers[prevLayerIndex][cursor];

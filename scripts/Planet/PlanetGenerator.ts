@@ -224,7 +224,7 @@ class PlanetGeneratorChaos extends PlanetGenerator {
                     }
                     if (tunnel > 0) {
                         if (globalK >= tunnelAltitude - tunnel && globalK <= tunnelAltitude + tunnel) {
-                            refData[i - chunck.firstI][j - chunck.firstJ][k - chunck.firstK] = BlockType.Rock;
+                            refData[i - chunck.firstI][j - chunck.firstJ][k - chunck.firstK] = BlockType.None;
                         }
                     }
 
