@@ -206,6 +206,10 @@ class PlanetChunckVertexData {
         return ref ^ 0b11111111;
     }
 
+    public static AddChunckPartRef(ref1: number, ref2: number): number {
+        return ref1 | ref2;    
+    }
+
     public static MirrorXChunckPartRef(ref: number): number {
         return PlanetChunckVertexData.ReOrder(ref, 1, 0, 3, 2, 5, 4, 7, 6);
     }
@@ -390,7 +394,119 @@ class PlanetChunckVertexData {
         return splitData;
     }
 
-    private static async _LoadChunckVertexDatas(lod: number): Promise<void> {
+    private static _TryAddVariations(lod: number, ref: number, data: BABYLON.VertexData): boolean {
+        let useful = false;
+        useful = PlanetChunckVertexData._TryAddMirrorXChunckPart(lod, ref, data) || useful;
+        useful = PlanetChunckVertexData._TryAddMirrorYChunckPart(lod, ref, data) || useful;
+        useful = PlanetChunckVertexData._TryAddMirrorZChunckPart(lod, ref, data) || useful;
+
+        let rotatedXRef = ref;
+        let rotatedXData = data;
+        for (let j = 0; j < 3; j++) {
+            rotatedXRef = PlanetChunckVertexData.RotateXChunckPartRef(rotatedXRef);
+            rotatedXData = PlanetChunckVertexData.RotateX(rotatedXData);
+            if (!PlanetChunckVertexData._VertexDatas[lod].has(rotatedXRef)) {
+                PlanetChunckVertexData._VertexDatas[lod].set(rotatedXRef, new ExtendedVertexData(rotatedXRef, rotatedXData));
+                useful = true;
+            }
+            useful = PlanetChunckVertexData._TryAddMirrorXChunckPart(lod, rotatedXRef, rotatedXData) || useful;
+            useful = PlanetChunckVertexData._TryAddMirrorYChunckPart(lod, rotatedXRef, rotatedXData) || useful;
+            useful = PlanetChunckVertexData._TryAddMirrorZChunckPart(lod, rotatedXRef, rotatedXData) || useful;
+        }
+
+        let rotatedYRef = ref;
+        let rotatedYData = data;
+        for (let j = 0; j < 3; j++) {
+            rotatedYRef = PlanetChunckVertexData.RotateYChunckPartRef(rotatedYRef);
+            rotatedYData = PlanetChunckVertexData.RotateY(rotatedYData);
+            if (!PlanetChunckVertexData._VertexDatas[lod].has(rotatedYRef)) {
+                PlanetChunckVertexData._VertexDatas[lod].set(rotatedYRef, new ExtendedVertexData(rotatedYRef, rotatedYData));
+                useful = true;
+            }
+            useful = PlanetChunckVertexData._TryAddMirrorXChunckPart(lod, rotatedYRef, rotatedYData) || useful;
+            useful = PlanetChunckVertexData._TryAddMirrorYChunckPart(lod, rotatedYRef, rotatedYData) || useful;
+            useful = PlanetChunckVertexData._TryAddMirrorZChunckPart(lod, rotatedYRef, rotatedYData) || useful;
+        }
+
+        let rotatedZRef = ref;
+        let rotatedZData = data;
+        for (let j = 0; j < 3; j++) {
+            rotatedZRef = PlanetChunckVertexData.RotateZChunckPartRef(rotatedZRef);
+            rotatedZData = PlanetChunckVertexData.RotateZ(rotatedZData);
+            if (!PlanetChunckVertexData._VertexDatas[lod].has(rotatedZRef)) {
+                PlanetChunckVertexData._VertexDatas[lod].set(rotatedZRef, new ExtendedVertexData(rotatedZRef, rotatedZData));
+                useful = true;
+            }
+            useful = PlanetChunckVertexData._TryAddMirrorXChunckPart(lod, rotatedZRef, rotatedZData) || useful;
+            useful = PlanetChunckVertexData._TryAddMirrorYChunckPart(lod, rotatedZRef, rotatedZData) || useful;
+            useful = PlanetChunckVertexData._TryAddMirrorZChunckPart(lod, rotatedZRef, rotatedZData) || useful;
+        }
+
+        return useful;
+    }
+
+    private static _AddChunckPartMesh(mesh: BABYLON.Mesh, lod: number): boolean {
+        let useful = false;
+        let name = mesh.name;
+        let ref = PlanetChunckVertexData.NameToRef(name);
+        if (ref === 0) {
+            return false;
+        }
+        let data = BABYLON.VertexData.ExtractFromMesh(mesh);
+        data = PlanetChunckVertexData.SplitVertexDataTriangles(data);
+
+        let normals = []
+        for (let j = 0; j < data.positions.length / 3; j++) {
+            let x = data.positions[3 * j];
+            let y = data.positions[3 * j + 1];
+            let z = data.positions[3 * j + 2];
+
+            let nx = data.normals[3 * j];
+            let ny = data.normals[3 * j + 1];
+            let nz = data.normals[3 * j + 2];
+            
+            if (x < 0.05 || x > 0.95) {
+                nx = 0;
+            }
+            if (y < 0.05 || y > 0.95) {
+                ny = 0;
+            }
+            if (z < 0.05 || z > 0.95) {
+                nz = 0;
+            }
+
+            let l = Math.sqrt(nx * nx + ny * ny + nz * nz);
+            normals[3 * j] = nx / l;
+            normals[3 * j + 1] = ny / l;
+            normals[3 * j + 2] = nz / l;
+        }
+        data.normals = normals;
+        
+        //data.positions = data.positions.map((n: number) => { return n * 0.98 + 0.01; });
+
+        if (!data.colors || data.colors.length / 4 != data.positions.length / 3) {
+            let colors = [];
+            for (let j = 0; j < data.positions.length / 3; j++) {
+                colors.push(1, 1, 1, 1);
+            }
+            data.colors = colors;
+        }
+        mesh.dispose();
+        if (!PlanetChunckVertexData._VertexDatas[lod].has(ref)) {
+            PlanetChunckVertexData._VertexDatas[lod].set(ref, new ExtendedVertexData(ref, data));
+            useful = true;
+        }
+
+        useful = PlanetChunckVertexData._TryAddVariations(lod, ref, data) || useful;
+
+        if (!useful) {
+            console.warn("Chunck-Part " + name + " is redundant.");
+        }
+
+        return useful;
+    }
+
+    private static async _LoadChunckVertexDatasFromFile(lod: number): Promise<void> {
         return new Promise<void>(
             resolve => {
                 BABYLON.SceneLoader.ImportMesh(
@@ -402,106 +518,7 @@ class PlanetChunckVertexData {
                         for (let i = 0; i < meshes.length; i++) {
                             let mesh = meshes[i];
                             if (mesh instanceof BABYLON.Mesh && mesh.name != "zero") {
-                                let useful = false;
-                                let name = mesh.name;
-                                let ref = PlanetChunckVertexData.NameToRef(name);
-                                if (ref === 0) {
-                                    continue;
-                                }
-                                let data = BABYLON.VertexData.ExtractFromMesh(mesh);
-                                data = PlanetChunckVertexData.SplitVertexDataTriangles(data);
-
-                                let normals = []
-                                for (let j = 0; j < data.positions.length / 3; j++) {
-                                    let x = data.positions[3 * j];
-                                    let y = data.positions[3 * j + 1];
-                                    let z = data.positions[3 * j + 2];
-
-                                    let nx = data.normals[3 * j];
-                                    let ny = data.normals[3 * j + 1];
-                                    let nz = data.normals[3 * j + 2];
-                                    
-                                    if (x < 0.05 || x > 0.95) {
-                                        nx = 0;
-                                    }
-                                    if (y < 0.05 || y > 0.95) {
-                                        ny = 0;
-                                    }
-                                    if (z < 0.05 || z > 0.95) {
-                                        nz = 0;
-                                    }
-
-                                    let l = Math.sqrt(nx * nx + ny * ny + nz * nz);
-                                    normals[3 * j] = nx / l;
-                                    normals[3 * j + 1] = ny / l;
-                                    normals[3 * j + 2] = nz / l;
-                                }
-                                data.normals = normals;
-                                
-                                //data.positions = data.positions.map((n: number) => { return n * 0.98 + 0.01; });
-
-                                if (!data.colors || data.colors.length / 4 != data.positions.length / 3) {
-                                    let colors = [];
-                                    for (let j = 0; j < data.positions.length / 3; j++) {
-                                        colors.push(1, 1, 1, 1);
-                                    }
-                                    data.colors = colors;
-                                }
-                                mesh.dispose();
-                                if (!PlanetChunckVertexData._VertexDatas[lod].has(ref)) {
-                                    PlanetChunckVertexData._VertexDatas[lod].set(ref, new ExtendedVertexData(ref, data));
-                                    useful = true;
-                                }
-
-                                useful = PlanetChunckVertexData._TryAddMirrorXChunckPart(lod, ref, data) || useful;
-                                useful = PlanetChunckVertexData._TryAddMirrorYChunckPart(lod, ref, data) || useful;
-                                useful = PlanetChunckVertexData._TryAddMirrorZChunckPart(lod, ref, data) || useful;
-
-                                let rotatedXRef = ref;
-                                let rotatedXData = data;
-                                for (let j = 0; j < 3; j++) {
-                                    rotatedXRef = PlanetChunckVertexData.RotateXChunckPartRef(rotatedXRef);
-                                    rotatedXData = PlanetChunckVertexData.RotateX(rotatedXData);
-                                    if (!PlanetChunckVertexData._VertexDatas[lod].has(rotatedXRef)) {
-                                        PlanetChunckVertexData._VertexDatas[lod].set(rotatedXRef, new ExtendedVertexData(rotatedXRef, rotatedXData));
-                                        useful = true;
-                                    }
-                                    useful = PlanetChunckVertexData._TryAddMirrorXChunckPart(lod, rotatedXRef, rotatedXData) || useful;
-                                    useful = PlanetChunckVertexData._TryAddMirrorYChunckPart(lod, rotatedXRef, rotatedXData) || useful;
-                                    useful = PlanetChunckVertexData._TryAddMirrorZChunckPart(lod, rotatedXRef, rotatedXData) || useful;
-                                }
-
-                                let rotatedYRef = ref;
-                                let rotatedYData = data;
-                                for (let j = 0; j < 3; j++) {
-                                    rotatedYRef = PlanetChunckVertexData.RotateYChunckPartRef(rotatedYRef);
-                                    rotatedYData = PlanetChunckVertexData.RotateY(rotatedYData);
-                                    if (!PlanetChunckVertexData._VertexDatas[lod].has(rotatedYRef)) {
-                                        PlanetChunckVertexData._VertexDatas[lod].set(rotatedYRef, new ExtendedVertexData(rotatedYRef, rotatedYData));
-                                        useful = true;
-                                    }
-                                    useful = PlanetChunckVertexData._TryAddMirrorXChunckPart(lod, rotatedYRef, rotatedYData) || useful;
-                                    useful = PlanetChunckVertexData._TryAddMirrorYChunckPart(lod, rotatedYRef, rotatedYData) || useful;
-                                    useful = PlanetChunckVertexData._TryAddMirrorZChunckPart(lod, rotatedYRef, rotatedYData) || useful;
-                                }
-
-                                let rotatedZRef = ref;
-                                let rotatedZData = data;
-                                for (let j = 0; j < 3; j++) {
-                                    rotatedZRef = PlanetChunckVertexData.RotateZChunckPartRef(rotatedZRef);
-                                    rotatedZData = PlanetChunckVertexData.RotateZ(rotatedZData);
-                                    if (!PlanetChunckVertexData._VertexDatas[lod].has(rotatedZRef)) {
-                                        PlanetChunckVertexData._VertexDatas[lod].set(rotatedZRef, new ExtendedVertexData(rotatedZRef, rotatedZData));
-                                        useful = true;
-                                    }
-                                    useful = PlanetChunckVertexData._TryAddMirrorXChunckPart(lod, rotatedZRef, rotatedZData) || useful;
-                                    useful = PlanetChunckVertexData._TryAddMirrorYChunckPart(lod, rotatedZRef, rotatedZData) || useful;
-                                    useful = PlanetChunckVertexData._TryAddMirrorZChunckPart(lod, rotatedZRef, rotatedZData) || useful;
-                                }
-
-                                if (!useful) {
-                                    console.warn("Chunck-Part " + name + " is redundant.");
-                                }
+                                PlanetChunckVertexData._AddChunckPartMesh(mesh, lod);
                             }
                         }
                         resolve();
@@ -511,9 +528,100 @@ class PlanetChunckVertexData {
         );
     }
 
+    private static _LoadComposedChunckVertexDatas(lod: number): void {
+        let ref0 = 0b01111111;
+        let baseData0 = PlanetChunckVertexData.Get(lod, 0b10000000);
+        let data0 = PlanetChunckVertexData.Flip(baseData0.vertexData);
+        if (!PlanetChunckVertexData._VertexDatas[lod].has(ref0)) {
+            PlanetChunckVertexData._VertexDatas[lod].set(ref0, new ExtendedVertexData(ref0, data0));
+        }
+        PlanetChunckVertexData._TryAddVariations(lod, ref0, data0);
+
+        let ref1 = 0b00000111;
+        let baseData1 = PlanetChunckVertexData.Get(lod, 0b11111000);
+        let data1 = PlanetChunckVertexData.Flip(baseData1.vertexData);
+        if (!PlanetChunckVertexData._VertexDatas[lod].has(ref1)) {
+            PlanetChunckVertexData._VertexDatas[lod].set(ref1, new ExtendedVertexData(ref1, data1));
+        }
+        PlanetChunckVertexData._TryAddVariations(lod, ref1, data1);
+
+        let ref2 = 0b11110101;
+        let baseData2A = PlanetChunckVertexData.Get(lod, 0b11110111);
+        let baseData2B = PlanetChunckVertexData.Get(lod, 0b11111101);
+        let data2 = PlanetChunckVertexData.Add(baseData2A.vertexData, baseData2B.vertexData);
+        if (!PlanetChunckVertexData._VertexDatas[lod].has(ref2)) {
+            PlanetChunckVertexData._VertexDatas[lod].set(ref2, new ExtendedVertexData(ref2, data2));
+        }
+        PlanetChunckVertexData._TryAddVariations(lod, ref2, data2);
+
+        let ref3 = 0b01011010;
+        let baseData3A = PlanetChunckVertexData.Get(lod, 0b01011111);
+        let baseData3B = PlanetChunckVertexData.Get(lod, 0b11111010);
+        let data3 = PlanetChunckVertexData.Add(baseData3A.vertexData, baseData3B.vertexData);
+        if (!PlanetChunckVertexData._VertexDatas[lod].has(ref3)) {
+            PlanetChunckVertexData._VertexDatas[lod].set(ref3, new ExtendedVertexData(ref3, data3));
+        }
+        PlanetChunckVertexData._TryAddVariations(lod, ref3, data3);
+
+        let ref4 = 0b10100100;
+        let baseData4A = PlanetChunckVertexData.Get(lod, 0b11100100);
+        let baseData4B = PlanetChunckVertexData.Get(lod, 0b10111111);
+        let data4 = PlanetChunckVertexData.Add(baseData4A.vertexData, baseData4B.vertexData);
+        if (!PlanetChunckVertexData._VertexDatas[lod].has(ref4)) {
+            PlanetChunckVertexData._VertexDatas[lod].set(ref4, new ExtendedVertexData(ref4, data4));
+        }
+        PlanetChunckVertexData._TryAddVariations(lod, ref4, data4);
+
+        let ref5 = 0b11000011;
+        let baseData5A = PlanetChunckVertexData.Get(lod, 0b11001111);
+        let baseData5B = PlanetChunckVertexData.Get(lod, 0b11110011);
+        let data5 = PlanetChunckVertexData.Add(baseData5A.vertexData, baseData5B.vertexData);
+        if (!PlanetChunckVertexData._VertexDatas[lod].has(ref5)) {
+            PlanetChunckVertexData._VertexDatas[lod].set(ref5, new ExtendedVertexData(ref5, data5));
+        }
+        PlanetChunckVertexData._TryAddVariations(lod, ref5, data5);
+
+        let ref6 = 0b01110101;
+        let baseData6A = PlanetChunckVertexData.Get(lod, 0b01110111);
+        let baseData6B = PlanetChunckVertexData.Get(lod, 0b11111101);
+        let data6 = PlanetChunckVertexData.Add(baseData6A.vertexData, baseData6B.vertexData);
+        if (!PlanetChunckVertexData._VertexDatas[lod].has(ref6)) {
+            PlanetChunckVertexData._VertexDatas[lod].set(ref6, new ExtendedVertexData(ref6, data6));
+        }
+        PlanetChunckVertexData._TryAddVariations(lod, ref6, data6);
+
+        let ref7 = 0b01111101;
+        let baseData7A = PlanetChunckVertexData.Get(lod, 0b01111111);
+        let baseData7B = PlanetChunckVertexData.Get(lod, 0b11111101);
+        let data7 = PlanetChunckVertexData.Add(baseData7A.vertexData, baseData7B.vertexData);
+        if (!PlanetChunckVertexData._VertexDatas[lod].has(ref7)) {
+            PlanetChunckVertexData._VertexDatas[lod].set(ref7, new ExtendedVertexData(ref7, data7));
+        }
+        PlanetChunckVertexData._TryAddVariations(lod, ref7, data7);
+
+        let ref8 = 0b11100101;
+        let baseData8A = PlanetChunckVertexData.Get(lod, 0b11101111);
+        let baseData8B = PlanetChunckVertexData.Get(lod, 0b11110101);
+        let data8 = PlanetChunckVertexData.Add(baseData8A.vertexData, baseData8B.vertexData);
+        if (!PlanetChunckVertexData._VertexDatas[lod].has(ref8)) {
+            PlanetChunckVertexData._VertexDatas[lod].set(ref8, new ExtendedVertexData(ref8, data8));
+        }
+        PlanetChunckVertexData._TryAddVariations(lod, ref8, data8);
+
+        let ref9 = 0b11100001;
+        let baseData9A = PlanetChunckVertexData.Get(lod, 0b11101111);
+        let baseData9B = PlanetChunckVertexData.Get(lod, 0b11110001);
+        let data9 = PlanetChunckVertexData.Add(baseData9A.vertexData, baseData9B.vertexData);
+        if (!PlanetChunckVertexData._VertexDatas[lod].has(ref9)) {
+            PlanetChunckVertexData._VertexDatas[lod].set(ref9, new ExtendedVertexData(ref9, data9));
+        }
+        PlanetChunckVertexData._TryAddVariations(lod, ref9, data9);
+    }
+
     public static async InitializeData(): Promise<boolean> {
         //await PlanetChunckVertexData._LoadChunckVertexDatas(0);
-        await PlanetChunckVertexData._LoadChunckVertexDatas(1);
+        await PlanetChunckVertexData._LoadChunckVertexDatasFromFile(1);
+        PlanetChunckVertexData._LoadComposedChunckVertexDatas(1);
         return true;
     }
 
@@ -649,6 +757,19 @@ class PlanetChunckVertexData {
 
         if (baseData.colors) {
             data.colors = [...baseData.colors];
+        }
+        
+        return data;
+    }
+
+    public static Add(baseData1: BABYLON.VertexData, baseData2: BABYLON.VertexData): BABYLON.VertexData {
+        let l = baseData1.positions.length / 3;
+        let data = new BABYLON.VertexData();
+        data.positions = [...baseData1.positions, ...baseData2.positions];
+        data.normals = [...baseData1.normals, ...baseData2.normals];
+        data.indices =  [...baseData1.indices, ...baseData2.indices.map((i: number) => { return i + l; })];
+        if (baseData1.colors && baseData2.colors) {
+            data.colors = [...baseData1.colors, ...baseData2.colors];
         }
         
         return data;
