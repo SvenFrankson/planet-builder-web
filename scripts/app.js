@@ -4385,7 +4385,7 @@ class PlanetChunckVertexData {
     }
     static async _LoadChunckVertexDatasFromFile(lod) {
         return new Promise(resolve => {
-            BABYLON.SceneLoader.ImportMesh("", "./datas/meshes/new-chunck-parts-lod-" + lod.toFixed(0) + ".babylon", "", Game.Scene, (meshes) => {
+            BABYLON.SceneLoader.ImportMesh("", "./datas/meshes/chunck-parts-lod-" + lod.toFixed(0) + ".babylon", "", Game.Scene, (meshes) => {
                 for (let i = 0; i < meshes.length; i++) {
                     let mesh = meshes[i];
                     if (mesh instanceof BABYLON.Mesh && mesh.name != "zero") {
@@ -4411,6 +4411,13 @@ class PlanetChunckVertexData {
             PlanetChunckVertexData._VertexDatas[lod].set(ref1, new ExtendedVertexData(ref1, data1));
         }
         PlanetChunckVertexData._TryAddVariations(lod, ref1, data1);
+        let ref10 = 0b00000011;
+        let baseData10 = PlanetChunckVertexData.Get(lod, 0b11111100);
+        let data10 = PlanetChunckVertexData.Flip(baseData10.vertexData);
+        if (!PlanetChunckVertexData._VertexDatas[lod].has(ref10)) {
+            PlanetChunckVertexData._VertexDatas[lod].set(ref10, new ExtendedVertexData(ref10, data10));
+        }
+        PlanetChunckVertexData._TryAddVariations(lod, ref10, data10);
         let ref2 = 0b11110101;
         let baseData2A = PlanetChunckVertexData.Get(lod, 0b11110111);
         let baseData2B = PlanetChunckVertexData.Get(lod, 0b11111101);

@@ -511,7 +511,7 @@ class PlanetChunckVertexData {
             resolve => {
                 BABYLON.SceneLoader.ImportMesh(
                     "",
-                    "./datas/meshes/new-chunck-parts-lod-" + lod.toFixed(0) + ".babylon",
+                    "./datas/meshes/chunck-parts-lod-" + lod.toFixed(0) + ".babylon",
                     "",
                     Game.Scene,
                     (meshes) => {
@@ -544,6 +544,14 @@ class PlanetChunckVertexData {
             PlanetChunckVertexData._VertexDatas[lod].set(ref1, new ExtendedVertexData(ref1, data1));
         }
         PlanetChunckVertexData._TryAddVariations(lod, ref1, data1);
+
+        let ref10 = 0b00000011;
+        let baseData10 = PlanetChunckVertexData.Get(lod, 0b11111100);
+        let data10 = PlanetChunckVertexData.Flip(baseData10.vertexData);
+        if (!PlanetChunckVertexData._VertexDatas[lod].has(ref10)) {
+            PlanetChunckVertexData._VertexDatas[lod].set(ref10, new ExtendedVertexData(ref10, data10));
+        }
+        PlanetChunckVertexData._TryAddVariations(lod, ref10, data10);
 
         let ref2 = 0b11110101;
         let baseData2A = PlanetChunckVertexData.Get(lod, 0b11110111);
