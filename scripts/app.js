@@ -4297,35 +4297,30 @@ class PlanetChunckVertexData {
                         }
                         let data = BABYLON.VertexData.ExtractFromMesh(mesh);
                         data = PlanetChunckVertexData.SplitVertexDataTriangles(data);
-                        //data.positions = data.positions.map((n: number) => { return n * 0.98 + 0.01; });
-                        /*
-                        let normals = []
+                        let normals = [];
                         for (let j = 0; j < data.positions.length / 3; j++) {
                             let x = data.positions[3 * j];
                             let y = data.positions[3 * j + 1];
                             let z = data.positions[3 * j + 2];
-
                             let nx = data.normals[3 * j];
                             let ny = data.normals[3 * j + 1];
                             let nz = data.normals[3 * j + 2];
-                            
-                            if (x === 0 || x === 1) {
+                            if (x < 0.05 || x > 0.95) {
                                 nx = 0;
                             }
-                            if (y === 0 || y === 1) {
+                            if (y < 0.05 || y > 0.95) {
                                 ny = 0;
                             }
-                            if (z === 0 || z === 1) {
+                            if (z < 0.05 || z > 0.95) {
                                 nz = 0;
                             }
-
                             let l = Math.sqrt(nx * nx + ny * ny + nz * nz);
                             normals[3 * j] = nx / l;
                             normals[3 * j + 1] = ny / l;
                             normals[3 * j + 2] = nz / l;
                         }
                         data.normals = normals;
-                        */
+                        //data.positions = data.positions.map((n: number) => { return n * 0.98 + 0.01; });
                         if (!data.colors || data.colors.length / 4 != data.positions.length / 3) {
                             let colors = [];
                             for (let j = 0; j < data.positions.length / 3; j++) {
