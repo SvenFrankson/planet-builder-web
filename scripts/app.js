@@ -1586,7 +1586,7 @@ class Demo extends Main {
     }
     async initialize() {
         return new Promise(resolve => {
-            let kPosMax = 5;
+            let kPosMax = 10;
             let planetTest = new Planet("Paulita", kPosMax, 0.65, this.scene);
             planetTest.initialize();
             //let moon: Planet = new Planet("Moon", 2, 0.60, this.scene);
@@ -1607,8 +1607,8 @@ class Demo extends Main {
             this.inputManager.initialize();
             let debugPlanetPerf = new DebugPlanetPerf(this);
             debugPlanetPerf.show();
-            let debugAltimeter = new Altimeter3D(planetTest);
-            debugAltimeter.instantiate();
+            //let debugAltimeter = new Altimeter3D(planetTest);
+            //debugAltimeter.instantiate();
             this.scene.onPointerObservable.add((eventData) => {
                 if (eventData.type === BABYLON.PointerEventTypes.POINTERDOUBLETAP) {
                     if (eventData.pickInfo.hit) {
@@ -4340,6 +4340,7 @@ class PlanetChunckVertexData {
             return false;
         }
         let data = BABYLON.VertexData.ExtractFromMesh(mesh);
+        data.positions = data.positions.map((p) => { return p + 0.5; });
         data = PlanetChunckVertexData.SplitVertexDataTriangles(data);
         let normals = [];
         for (let j = 0; j < data.positions.length / 3; j++) {
@@ -4404,20 +4405,20 @@ class PlanetChunckVertexData {
             PlanetChunckVertexData._VertexDatas[lod].set(ref0, new ExtendedVertexData(ref0, data0));
         }
         PlanetChunckVertexData._TryAddVariations(lod, ref0, data0);
-        let ref1 = 0b00000111;
-        let baseData1 = PlanetChunckVertexData.Get(lod, 0b11111000);
-        let data1 = PlanetChunckVertexData.Flip(baseData1.vertexData);
-        if (!PlanetChunckVertexData._VertexDatas[lod].has(ref1)) {
-            PlanetChunckVertexData._VertexDatas[lod].set(ref1, new ExtendedVertexData(ref1, data1));
-        }
-        PlanetChunckVertexData._TryAddVariations(lod, ref1, data1);
-        let ref10 = 0b00000011;
-        let baseData10 = PlanetChunckVertexData.Get(lod, 0b11111100);
+        let ref10 = 0b00111111;
+        let baseData10 = PlanetChunckVertexData.Get(lod, 0b11000000);
         let data10 = PlanetChunckVertexData.Flip(baseData10.vertexData);
         if (!PlanetChunckVertexData._VertexDatas[lod].has(ref10)) {
             PlanetChunckVertexData._VertexDatas[lod].set(ref10, new ExtendedVertexData(ref10, data10));
         }
         PlanetChunckVertexData._TryAddVariations(lod, ref10, data10);
+        let ref1 = 0b00011111;
+        let baseData1 = PlanetChunckVertexData.Get(lod, 0b11100000);
+        let data1 = PlanetChunckVertexData.Flip(baseData1.vertexData);
+        if (!PlanetChunckVertexData._VertexDatas[lod].has(ref1)) {
+            PlanetChunckVertexData._VertexDatas[lod].set(ref1, new ExtendedVertexData(ref1, data1));
+        }
+        PlanetChunckVertexData._TryAddVariations(lod, ref1, data1);
         let ref2 = 0b11110101;
         let baseData2A = PlanetChunckVertexData.Get(lod, 0b11110111);
         let baseData2B = PlanetChunckVertexData.Get(lod, 0b11111101);
@@ -4487,6 +4488,8 @@ class PlanetChunckVertexData {
         //await PlanetChunckVertexData._LoadChunckVertexDatas(0);
         await PlanetChunckVertexData._LoadChunckVertexDatasFromFile(1);
         PlanetChunckVertexData._LoadComposedChunckVertexDatas(1);
+        await PlanetChunckVertexData._LoadChunckVertexDatasFromFile(2);
+        PlanetChunckVertexData._LoadComposedChunckVertexDatas(2);
         return true;
     }
     static Clone(data) {
@@ -4697,6 +4700,7 @@ class PlanetChunckVertexData {
     }
 }
 PlanetChunckVertexData._VertexDatas = [
+    new Map(),
     new Map(),
     new Map()
 ];

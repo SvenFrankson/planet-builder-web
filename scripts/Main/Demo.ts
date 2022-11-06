@@ -42,7 +42,7 @@ class Demo extends Main {
     public async initialize(): Promise<void> {
 		return new Promise<void>(resolve => {
 
-			let kPosMax = 5;
+			let kPosMax = 10;
 			let planetTest: Planet = new Planet("Paulita", kPosMax, 0.65, this.scene);
 			planetTest.initialize();
 			//let moon: Planet = new Planet("Moon", 2, 0.60, this.scene);
@@ -71,8 +71,8 @@ class Demo extends Main {
             let debugPlanetPerf = new DebugPlanetPerf(this);
             debugPlanetPerf.show();
 
-			let debugAltimeter = new Altimeter3D(planetTest);
-			debugAltimeter.instantiate();
+			//let debugAltimeter = new Altimeter3D(planetTest);
+			//debugAltimeter.instantiate();
 
 			this.scene.onPointerObservable.add((eventData: BABYLON.PointerInfo) => {
 				if (eventData.type === BABYLON.PointerEventTypes.POINTERDOUBLETAP) {
