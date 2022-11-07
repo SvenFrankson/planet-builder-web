@@ -1599,26 +1599,109 @@ class ChunckTest extends Main {
     }
     createScene() {
         super.createScene();
-        this.scene.clearColor.copyFromFloats(1, 1, 1, 1);
+        this.scene.clearColor = BABYLON.Color4.FromHexString("#218db5ff");
         this.light = new BABYLON.HemisphericLight("light", (new BABYLON.Vector3(0.5, 2.5, 1.5)).normalize(), this.scene);
-        this.light.diffuse = new BABYLON.Color3(1, 1, 1);
-        this.light.groundColor = new BABYLON.Color3(0.1, 0.1, 0.1);
-        this.camera = new BABYLON.ArcRotateCamera("camera", 0, Math.PI / 4, 10, BABYLON.Vector3.Zero());
+        this.light.diffuse = new BABYLON.Color3(0.7, 0.7, 0.7);
+        this.light.groundColor = new BABYLON.Color3(0.3, 0.3, 0.3);
+        this.camera = new BABYLON.ArcRotateCamera("camera", -3 * Math.PI / 4, Math.PI / 4, 50, BABYLON.Vector3.Zero());
         this.camera.attachControl();
     }
     async initialize() {
+        let mainMaterial = new BABYLON.StandardMaterial("main-material");
+        mainMaterial.specularColor.copyFromFloats(0.1, 0.1, 0.1);
+        mainMaterial.diffuseColor.copyFromFloats(181 / 256, 60 / 256, 33 / 256);
+        let sideMaterial = new BABYLON.StandardMaterial("side-material");
+        sideMaterial.specularColor.copyFromFloats(0.1, 0.1, 0.1);
+        sideMaterial.diffuseColor.copyFromFloats(90 / 256, 30 / 256, 16 / 256);
         return new Promise(resolve => {
             PlanetChunckVertexData.InitializeData().then(() => {
                 for (let i = 0; i < 16; i++) {
                     for (let j = 0; j < 16; j++) {
-                        let ref = i + 16 * j;
-                        if (ref != 0b00000000 && ref != 0b11111111) {
-                            let part = PlanetChunckVertexData.Get(1, ref);
-                            let mesh = new BABYLON.Mesh("part-mesh");
-                            part.vertexData.colors = part.vertexData.colors.map((c) => { return 1; });
-                            part.vertexData.applyToMesh(mesh);
-                            mesh.position.x = i * 2 - 15;
-                            mesh.position.z = j * 2 - 15;
+                        let mainRef = i + 16 * j;
+                        if (mainRef != 0b00000000 && mainRef != 0b11111111) {
+                            let grid = [
+                                [
+                                    [0, 0, 0, 0],
+                                    [0, 0, 0, 0],
+                                    [0, 0, 0, 0],
+                                    [0, 0, 0, 0]
+                                ],
+                                [
+                                    [0, 0, 0, 0],
+                                    [0, mainRef & 0b1 << 0, mainRef & 0b1 << 1, 0],
+                                    [0, mainRef & 0b1 << 3, mainRef & 0b1 << 2, 0],
+                                    [0, 0, 0, 0]
+                                ],
+                                [
+                                    [0, 0, 0, 0],
+                                    [0, mainRef & 0b1 << 4, mainRef & 0b1 << 5, 0],
+                                    [0, mainRef & 0b1 << 7, mainRef & 0b1 << 6, 0],
+                                    [0, 0, 0, 0]
+                                ],
+                                [
+                                    [0, 0, 0, 0],
+                                    [0, 0, 0, 0],
+                                    [0, 0, 0, 0],
+                                    [0, 0, 0, 0]
+                                ]
+                            ];
+                            for (let ii = 0; ii < 3; ii++) {
+                                for (let jj = 0; jj < 3; jj++) {
+                                    for (let kk = 0; kk < 3; kk++) {
+                                        let ref = 0b0;
+                                        let d0 = grid[ii][jj][kk];
+                                        if (d0) {
+                                            ref |= 0b1 << 0;
+                                        }
+                                        let d1 = grid[ii + 1][jj][kk];
+                                        if (d1) {
+                                            ref |= 0b1 << 1;
+                                        }
+                                        let d2 = grid[ii + 1][jj + 1][kk];
+                                        if (d2) {
+                                            ref |= 0b1 << 2;
+                                        }
+                                        let d3 = grid[ii][jj + 1][kk];
+                                        if (d3) {
+                                            ref |= 0b1 << 3;
+                                        }
+                                        let d4 = grid[ii][jj][kk + 1];
+                                        if (d4) {
+                                            ref |= 0b1 << 4;
+                                        }
+                                        let d5 = grid[ii + 1][jj][kk + 1];
+                                        if (d5) {
+                                            ref |= 0b1 << 5;
+                                        }
+                                        let d6 = grid[ii + 1][jj + 1][kk + 1];
+                                        if (d6) {
+                                            ref |= 0b1 << 6;
+                                        }
+                                        let d7 = grid[ii][jj + 1][kk + 1];
+                                        if (d7) {
+                                            ref |= 0b1 << 7;
+                                        }
+                                        if (ref != 0b00000000 && ref != 0b11111111) {
+                                            let part = PlanetChunckVertexData.Get(1, ref);
+                                            if (part) {
+                                                let mesh = new BABYLON.Mesh("part-mesh");
+                                                part.vertexData.colors = part.vertexData.colors.map((c) => { return 1; });
+                                                part.vertexData.applyToMesh(mesh);
+                                                if (ii === 1 && jj === 1 && kk === 1) {
+                                                    mesh.material = mainMaterial;
+                                                }
+                                                else {
+                                                    mesh.material = sideMaterial;
+                                                }
+                                                mesh.position.x = i * 3 - 23 - 1 + ii;
+                                                mesh.position.y = -1 + kk;
+                                                mesh.position.z = j * 3 - 23 - 1 + jj;
+                                                mesh.freezeWorldMatrix();
+                                            }
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 }
@@ -1627,6 +1710,7 @@ class ChunckTest extends Main {
         });
     }
     update() {
+        this.camera.target.y = 0;
     }
 }
 /// <reference path="../../lib/babylon.d.ts"/>
@@ -3619,6 +3703,9 @@ class PlanetChunckMeshBuilder {
                         //    continue;
                         //}
                         let extendedpartVertexData = PlanetChunckVertexData.Get(lod, ref);
+                        if (!extendedpartVertexData) {
+                            continue;
+                        }
                         let partVertexData = extendedpartVertexData.vertexData;
                         let iGlobal = i + iPos * PlanetTools.CHUNCKSIZE;
                         let jGlobal = j + jPos * PlanetTools.CHUNCKSIZE;
@@ -4350,7 +4437,7 @@ class PlanetChunckVertexData {
         }
         return splitData;
     }
-    static _TryAddVariations(lod, ref, data, xzAxisSymetry = false) {
+    static _TryAddVariations(lod, ref, data, xzAxisSymetry = true) {
         let useful = false;
         useful = PlanetChunckVertexData._TryAddMirrorXChunckPart(lod, ref, data) || useful;
         useful = PlanetChunckVertexData._TryAddMirrorYChunckPart(lod, ref, data) || useful;
@@ -4446,7 +4533,7 @@ class PlanetChunckVertexData {
             PlanetChunckVertexData._VertexDatas[lod].set(ref, new ExtendedVertexData(ref, data));
             useful = true;
         }
-        useful = PlanetChunckVertexData._TryAddVariations(lod, ref, data) || useful;
+        useful = PlanetChunckVertexData._TryAddVariations(lod, ref, data, true) || useful;
         if (!useful) {
             console.warn("Chunck-Part " + name + " is redundant.");
         }
@@ -4454,7 +4541,7 @@ class PlanetChunckVertexData {
     }
     static async _LoadChunckVertexDatasFromFile(lod) {
         return new Promise(resolve => {
-            BABYLON.SceneLoader.ImportMesh("", "./datas/meshes/round-chunck-parts-lod-" + lod.toFixed(0) + ".babylon", "", Game.Scene, (meshes) => {
+            BABYLON.SceneLoader.ImportMesh("", "./datas/meshes/cube-chunck-parts-lod-" + lod.toFixed(0) + ".babylon", "", Game.Scene, (meshes) => {
                 for (let i = 0; i < meshes.length; i++) {
                     let mesh = meshes[i];
                     if (mesh instanceof BABYLON.Mesh && mesh.name != "zero") {
@@ -4564,14 +4651,8 @@ class PlanetChunckVertexData {
         //PlanetChunckVertexData._LoadComposedChunckVertexDatas(0);
         await PlanetChunckVertexData._LoadChunckVertexDatasFromFile(1);
         PlanetChunckVertexData._LoadComposedChunckVertexDatas(1);
-        //await PlanetChunckVertexData._LoadChunckVertexDatasFromFile(2);
-        //PlanetChunckVertexData._LoadComposedChunckVertexDatas(2);
-        for (let testRef = 0b10000000; testRef < 0b11111111; testRef++) {
-            let existing = PlanetChunckVertexData.Get(1, testRef);
-            if (existing) {
-                PlanetChunckVertexData._TryAddVariations(1, testRef, existing.vertexData, true);
-            }
-        }
+        await PlanetChunckVertexData._LoadChunckVertexDatasFromFile(2);
+        PlanetChunckVertexData._LoadComposedChunckVertexDatas(2);
         return true;
     }
     static Clone(data) {

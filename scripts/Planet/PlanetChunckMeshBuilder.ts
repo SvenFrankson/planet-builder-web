@@ -409,6 +409,9 @@ class PlanetChunckMeshBuilder {
                         //}
                         
                         let extendedpartVertexData = PlanetChunckVertexData.Get(lod, ref);
+                        if (!extendedpartVertexData) {
+                            continue;
+                        }
                         let partVertexData = extendedpartVertexData.vertexData;
     
                         let iGlobal: number = i + iPos * PlanetTools.CHUNCKSIZE;

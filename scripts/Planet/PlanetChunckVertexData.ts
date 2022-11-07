@@ -395,7 +395,7 @@ class PlanetChunckVertexData {
         return splitData;
     }
 
-    private static _TryAddVariations(lod: number, ref: number, data: BABYLON.VertexData, xzAxisSymetry: boolean = false): boolean {
+    private static _TryAddVariations(lod: number, ref: number, data: BABYLON.VertexData, xzAxisSymetry: boolean = true): boolean {
         let useful = false;
         useful = PlanetChunckVertexData._TryAddMirrorXChunckPart(lod, ref, data) || useful;
         useful = PlanetChunckVertexData._TryAddMirrorYChunckPart(lod, ref, data) || useful;
@@ -503,7 +503,7 @@ class PlanetChunckVertexData {
             useful = true;
         }
 
-        useful = PlanetChunckVertexData._TryAddVariations(lod, ref, data) || useful;
+        useful = PlanetChunckVertexData._TryAddVariations(lod, ref, data, true) || useful;
 
         if (!useful) {
             console.warn("Chunck-Part " + name + " is redundant.");
@@ -517,7 +517,7 @@ class PlanetChunckVertexData {
             resolve => {
                 BABYLON.SceneLoader.ImportMesh(
                     "",
-                    "./datas/meshes/round-chunck-parts-lod-" + lod.toFixed(0) + ".babylon",
+                    "./datas/meshes/cube-chunck-parts-lod-" + lod.toFixed(0) + ".babylon",
                     "",
                     Game.Scene,
                     (meshes) => {
@@ -645,15 +645,9 @@ class PlanetChunckVertexData {
         //PlanetChunckVertexData._LoadComposedChunckVertexDatas(0);
         await PlanetChunckVertexData._LoadChunckVertexDatasFromFile(1);
         PlanetChunckVertexData._LoadComposedChunckVertexDatas(1);
-        //await PlanetChunckVertexData._LoadChunckVertexDatasFromFile(2);
-        //PlanetChunckVertexData._LoadComposedChunckVertexDatas(2);
+        await PlanetChunckVertexData._LoadChunckVertexDatasFromFile(2);
+        PlanetChunckVertexData._LoadComposedChunckVertexDatas(2);
 
-        for (let testRef = 0b10000000; testRef < 0b11111111; testRef++) {
-            let existing = PlanetChunckVertexData.Get(1, testRef);
-            if (existing) {
-                PlanetChunckVertexData._TryAddVariations(1, testRef, existing.vertexData, true);
-            }
-        }
         return true;
     }
 
