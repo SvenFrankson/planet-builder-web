@@ -629,7 +629,8 @@ class PlanetChunckVertexData {
     }
 
     public static async InitializeData(): Promise<boolean> {
-        //await PlanetChunckVertexData._LoadChunckVertexDatas(0);
+        await PlanetChunckVertexData._LoadChunckVertexDatasFromFile(0);
+        PlanetChunckVertexData._LoadComposedChunckVertexDatas(0);
         await PlanetChunckVertexData._LoadChunckVertexDatasFromFile(1);
         PlanetChunckVertexData._LoadComposedChunckVertexDatas(1);
         await PlanetChunckVertexData._LoadChunckVertexDatasFromFile(2);

@@ -6,6 +6,7 @@ var CameraMode;
 class CameraManager {
     constructor(game) {
         this.game = game;
+        this.useOutline = false;
         this.cameraMode = CameraMode.Sky;
         this.arcRotateCamera = new BABYLON.ArcRotateCamera("Camera", 0, Math.PI / 2, 120, BABYLON.Vector3.Zero(), this.game.scene);
         this.arcRotateCamera.angularSensibilityX *= 5;
@@ -14,23 +15,25 @@ class CameraManager {
         this.freeCamera = new BABYLON.FreeCamera("Camera", BABYLON.Vector3.Zero(), this.game.scene);
         this.freeCamera.rotationQuaternion = BABYLON.Quaternion.Identity();
         this.freeCamera.minZ = 0.1;
-        const rtt = new BABYLON.RenderTargetTexture('render target', { width: this.game.engine.getRenderWidth(), height: this.game.engine.getRenderHeight() }, this.game.scene);
-        rtt.samples = 1;
-        this.freeCamera.outputRenderTarget = rtt;
-        this.noOutlineCamera = new BABYLON.FreeCamera("Camera", BABYLON.Vector3.Zero(), this.game.scene);
-        this.noOutlineCamera.minZ = 0.1;
-        this.noOutlineCamera.layerMask = 0x10000000;
-        this.noOutlineCamera.parent = this.freeCamera;
-        let postProcess = OutlinePostProcess.AddOutlinePostProcess(this.freeCamera);
-        postProcess.onSizeChangedObservable.add(() => {
-            if (!postProcess.inputTexture.depthStencilTexture) {
-                postProcess.inputTexture.createDepthStencilTexture(0, true, false, 4);
-                postProcess.inputTexture._shareDepth(rtt.renderTarget);
-            }
-        });
-        const pp = new BABYLON.PassPostProcess("pass", 1, this.noOutlineCamera);
-        pp.inputTexture = rtt.renderTarget;
-        pp.autoClear = false;
+        if (this.useOutline) {
+            const rtt = new BABYLON.RenderTargetTexture('render target', { width: this.game.engine.getRenderWidth(), height: this.game.engine.getRenderHeight() }, this.game.scene);
+            rtt.samples = 1;
+            this.freeCamera.outputRenderTarget = rtt;
+            this.noOutlineCamera = new BABYLON.FreeCamera("Camera", BABYLON.Vector3.Zero(), this.game.scene);
+            this.noOutlineCamera.minZ = 0.1;
+            this.noOutlineCamera.layerMask = 0x10000000;
+            this.noOutlineCamera.parent = this.freeCamera;
+            let postProcess = OutlinePostProcess.AddOutlinePostProcess(this.freeCamera);
+            postProcess.onSizeChangedObservable.add(() => {
+                if (!postProcess.inputTexture.depthStencilTexture) {
+                    postProcess.inputTexture.createDepthStencilTexture(0, true, false, 4);
+                    postProcess.inputTexture._shareDepth(rtt.renderTarget);
+                }
+            });
+            const pp = new BABYLON.PassPostProcess("pass", 1, this.noOutlineCamera);
+            pp.inputTexture = rtt.renderTarget;
+            pp.autoClear = false;
+        }
     }
     get absolutePosition() {
         if (this.cameraMode === CameraMode.Sky) {
@@ -51,10 +54,20 @@ class CameraManager {
                 this.freeCamera.position.copyFromFloats(0, 0, 0);
                 this.freeCamera.rotationQuaternion.copyFrom(BABYLON.Quaternion.Identity());
                 this.freeCamera.computeWorldMatrix();
-                this.game.scene.activeCameras = [this.freeCamera, this.noOutlineCamera];
+                if (this.useOutline) {
+                    this.game.scene.activeCameras = [this.freeCamera, this.noOutlineCamera];
+                }
+                else {
+                    this.game.scene.activeCamera = this.freeCamera;
+                }
             }
             if (this.cameraMode === CameraMode.Sky) {
-                this.game.scene.activeCameras = [this.arcRotateCamera];
+                if (this.useOutline) {
+                    this.game.scene.activeCameras = [this.arcRotateCamera];
+                }
+                else {
+                    this.game.scene.activeCamera = this.arcRotateCamera;
+                }
                 this.arcRotateCamera.attachControl(this.game.canvas);
             }
         }
@@ -3366,7 +3379,7 @@ class PlanetChunckMeshBuilder {
     }
     static BuildVertexData(chunck, iPos, jPos, kPos) {
         let lod = chunck.lod;
-        lod = 1;
+        lod = 0;
         let size = chunck.size;
         let vertexData = new BABYLON.VertexData();
         if (!PCMB.tmpVertices || PCMB.tmpVertices.length < 15) {
@@ -4485,7 +4498,8 @@ class PlanetChunckVertexData {
         PlanetChunckVertexData._TryAddVariations(lod, ref9, data9);
     }
     static async InitializeData() {
-        //await PlanetChunckVertexData._LoadChunckVertexDatas(0);
+        await PlanetChunckVertexData._LoadChunckVertexDatasFromFile(0);
+        PlanetChunckVertexData._LoadComposedChunckVertexDatas(0);
         await PlanetChunckVertexData._LoadChunckVertexDatasFromFile(1);
         PlanetChunckVertexData._LoadComposedChunckVertexDatas(1);
         await PlanetChunckVertexData._LoadChunckVertexDatasFromFile(2);
