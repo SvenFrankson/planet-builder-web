@@ -64,6 +64,13 @@ window.addEventListener("DOMContentLoaded", () => {
             demo.animate();
         });
     }
+    else if (window.location.href.indexOf("chunck-test.html") != -1) {
+        let chunckTest: ChunckTest = new ChunckTest("renderCanvas");
+        chunckTest.createScene();
+        chunckTest.initialize().then(() => {
+            chunckTest.animate();
+        });
+    }
     else {
         let game: Game = new Game("renderCanvas");
         game.createScene();

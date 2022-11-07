@@ -5,7 +5,7 @@ enum CameraMode {
 
 class CameraManager {
 
-    public useOutline: boolean = false;
+    public useOutline: boolean = true;
 
     public cameraMode: CameraMode = CameraMode.Sky;
 
@@ -44,6 +44,7 @@ class CameraManager {
         );
         this.freeCamera.rotationQuaternion = BABYLON.Quaternion.Identity();
         this.freeCamera.minZ = 0.1;
+        this.freeCamera.maxZ = 1000;
         if (this.useOutline) {
             const rtt = new BABYLON.RenderTargetTexture('render target', { width: this.game.engine.getRenderWidth(), height: this.game.engine.getRenderHeight() }, this.game.scene);
             rtt.samples = 1;
@@ -55,6 +56,7 @@ class CameraManager {
                 this.game.scene
             );
             this.noOutlineCamera.minZ = 0.1;
+            this.noOutlineCamera.maxZ = 1000;
             this.noOutlineCamera.layerMask = 0x10000000;
             this.noOutlineCamera.parent = this.freeCamera;
     

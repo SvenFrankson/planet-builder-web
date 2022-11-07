@@ -27,6 +27,7 @@ class OutlinePostProcess {
 				n[7] = texture2D(tex, coord + vec2(0.0, h));
 				n[8] = texture2D(tex, coord + vec2(  w, h));
 			}
+			
 			void make_kernel_depth(inout float n[9], sampler2D tex, vec2 coord)
 			{
 				float w = 1.0 / width;
@@ -41,31 +42,32 @@ class OutlinePostProcess {
 				n[7] = texture2D(tex, coord + vec2(0.0, h)).r;
 				n[8] = texture2D(tex, coord + vec2(  w, h)).r;
 			}
+
 			void main(void) 
 			{
 				vec4 d = texture2D(depthSampler, vUV);
-				float depth = d.r * (2000.0 - 0.2) + 0.2;
+				float depth = d.r * (1000.0 - 0.1) + 0.1;
 				
 				float nD[9];
 				make_kernel_depth( nD, depthSampler, vUV );
 				float sobel_depth_edge_h = nD[2] + (2.0*nD[5]) + nD[8] - (nD[0] + (2.0*nD[3]) + nD[6]);
 				float sobel_depth_edge_v = nD[0] + (2.0*nD[1]) + nD[2] - (nD[6] + (2.0*nD[7]) + nD[8]);
 				float sobel_depth = sqrt((sobel_depth_edge_h * sobel_depth_edge_h) + (sobel_depth_edge_v * sobel_depth_edge_v));
-				float thresholdDepth = 0.002;
 
 				vec4 n[9];
 				make_kernel_color( n, textureSampler, vUV );
 				vec4 sobel_edge_h = n[2] + (2.0*n[5]) + n[8] - (n[0] + (2.0*n[3]) + n[6]);
 				vec4 sobel_edge_v = n[0] + (2.0*n[1]) + n[2] - (n[6] + (2.0*n[7]) + n[8]);
 				vec4 sobel = sqrt((sobel_edge_h * sobel_edge_h) + (sobel_edge_v * sobel_edge_v));
-				float threshold = 0.2;
 				
-				gl_FragColor = vec4(n[4]) * 0.5;
-				gl_FragColor.a = 1.0;
-				if (sobel_depth < thresholdDepth || depth > 1000.) {
-					if (max(sobel.r, max(sobel.g, sobel.b)) < threshold) {
-						gl_FragColor = n[4];
-					}
+				gl_FragColor = n[4];
+				if (max(sobel.r, max(sobel.g, sobel.b)) > 0.2) {
+					//gl_FragColor = vec4(0.);
+					//gl_FragColor.a = 1.0;
+				}
+				if (sobel_depth > 0.005) {
+					gl_FragColor = vec4(0.);
+					gl_FragColor.a = 1.0;
 				}
 			}
         `;
