@@ -395,24 +395,26 @@ class PlanetChunckVertexData {
         return splitData;
     }
 
-    private static _TryAddVariations(lod: number, ref: number, data: BABYLON.VertexData): boolean {
+    private static _TryAddVariations(lod: number, ref: number, data: BABYLON.VertexData, xzAxisSymetry: boolean = false): boolean {
         let useful = false;
         useful = PlanetChunckVertexData._TryAddMirrorXChunckPart(lod, ref, data) || useful;
         useful = PlanetChunckVertexData._TryAddMirrorYChunckPart(lod, ref, data) || useful;
         useful = PlanetChunckVertexData._TryAddMirrorZChunckPart(lod, ref, data) || useful;
 
-        let rotatedXRef = ref;
-        let rotatedXData = data;
-        for (let j = 0; j < 3; j++) {
-            rotatedXRef = PlanetChunckVertexData.RotateXChunckPartRef(rotatedXRef);
-            rotatedXData = PlanetChunckVertexData.RotateX(rotatedXData);
-            if (!PlanetChunckVertexData._VertexDatas[lod].has(rotatedXRef)) {
-                PlanetChunckVertexData._VertexDatas[lod].set(rotatedXRef, new ExtendedVertexData(rotatedXRef, rotatedXData));
-                useful = true;
+        if (xzAxisSymetry) {
+            let rotatedXRef = ref;
+            let rotatedXData = data;
+            for (let j = 0; j < 3; j++) {
+                rotatedXRef = PlanetChunckVertexData.RotateXChunckPartRef(rotatedXRef);
+                rotatedXData = PlanetChunckVertexData.RotateX(rotatedXData);
+                if (!PlanetChunckVertexData._VertexDatas[lod].has(rotatedXRef)) {
+                    PlanetChunckVertexData._VertexDatas[lod].set(rotatedXRef, new ExtendedVertexData(rotatedXRef, rotatedXData));
+                    useful = true;
+                }
+                useful = PlanetChunckVertexData._TryAddMirrorXChunckPart(lod, rotatedXRef, rotatedXData) || useful;
+                useful = PlanetChunckVertexData._TryAddMirrorYChunckPart(lod, rotatedXRef, rotatedXData) || useful;
+                useful = PlanetChunckVertexData._TryAddMirrorZChunckPart(lod, rotatedXRef, rotatedXData) || useful;
             }
-            useful = PlanetChunckVertexData._TryAddMirrorXChunckPart(lod, rotatedXRef, rotatedXData) || useful;
-            useful = PlanetChunckVertexData._TryAddMirrorYChunckPart(lod, rotatedXRef, rotatedXData) || useful;
-            useful = PlanetChunckVertexData._TryAddMirrorZChunckPart(lod, rotatedXRef, rotatedXData) || useful;
         }
 
         let rotatedYRef = ref;
@@ -429,18 +431,20 @@ class PlanetChunckVertexData {
             useful = PlanetChunckVertexData._TryAddMirrorZChunckPart(lod, rotatedYRef, rotatedYData) || useful;
         }
 
-        let rotatedZRef = ref;
-        let rotatedZData = data;
-        for (let j = 0; j < 3; j++) {
-            rotatedZRef = PlanetChunckVertexData.RotateZChunckPartRef(rotatedZRef);
-            rotatedZData = PlanetChunckVertexData.RotateZ(rotatedZData);
-            if (!PlanetChunckVertexData._VertexDatas[lod].has(rotatedZRef)) {
-                PlanetChunckVertexData._VertexDatas[lod].set(rotatedZRef, new ExtendedVertexData(rotatedZRef, rotatedZData));
-                useful = true;
+        if (xzAxisSymetry) {
+            let rotatedZRef = ref;
+            let rotatedZData = data;
+            for (let j = 0; j < 3; j++) {
+                rotatedZRef = PlanetChunckVertexData.RotateZChunckPartRef(rotatedZRef);
+                rotatedZData = PlanetChunckVertexData.RotateZ(rotatedZData);
+                if (!PlanetChunckVertexData._VertexDatas[lod].has(rotatedZRef)) {
+                    PlanetChunckVertexData._VertexDatas[lod].set(rotatedZRef, new ExtendedVertexData(rotatedZRef, rotatedZData));
+                    useful = true;
+                }
+                useful = PlanetChunckVertexData._TryAddMirrorXChunckPart(lod, rotatedZRef, rotatedZData) || useful;
+                useful = PlanetChunckVertexData._TryAddMirrorYChunckPart(lod, rotatedZRef, rotatedZData) || useful;
+                useful = PlanetChunckVertexData._TryAddMirrorZChunckPart(lod, rotatedZRef, rotatedZData) || useful;
             }
-            useful = PlanetChunckVertexData._TryAddMirrorXChunckPart(lod, rotatedZRef, rotatedZData) || useful;
-            useful = PlanetChunckVertexData._TryAddMirrorYChunckPart(lod, rotatedZRef, rotatedZData) || useful;
-            useful = PlanetChunckVertexData._TryAddMirrorZChunckPart(lod, rotatedZRef, rotatedZData) || useful;
         }
 
         return useful;
@@ -513,7 +517,7 @@ class PlanetChunckVertexData {
             resolve => {
                 BABYLON.SceneLoader.ImportMesh(
                     "",
-                    "./datas/meshes/chunck-parts-lod-" + lod.toFixed(0) + ".babylon",
+                    "./datas/meshes/round-chunck-parts-lod-" + lod.toFixed(0) + ".babylon",
                     "",
                     Game.Scene,
                     (meshes) => {
@@ -546,6 +550,14 @@ class PlanetChunckVertexData {
             PlanetChunckVertexData._VertexDatas[lod].set(ref10, new ExtendedVertexData(ref10, data10));
         }
         PlanetChunckVertexData._TryAddVariations(lod, ref10, data10);
+
+        let ref11 = 0b01110111;
+        let baseData11 = PlanetChunckVertexData.Get(lod, 0b10001000);
+        let data11 = PlanetChunckVertexData.Flip(baseData11.vertexData);
+        if (!PlanetChunckVertexData._VertexDatas[lod].has(ref11)) {
+            PlanetChunckVertexData._VertexDatas[lod].set(ref11, new ExtendedVertexData(ref11, data11));
+        }
+        PlanetChunckVertexData._TryAddVariations(lod, ref11, data11);
 
         let ref1 = 0b00011111;
         let baseData1 = PlanetChunckVertexData.Get(lod, 0b11100000);
@@ -629,12 +641,19 @@ class PlanetChunckVertexData {
     }
 
     public static async InitializeData(): Promise<boolean> {
-        await PlanetChunckVertexData._LoadChunckVertexDatasFromFile(0);
-        PlanetChunckVertexData._LoadComposedChunckVertexDatas(0);
+        //await PlanetChunckVertexData._LoadChunckVertexDatasFromFile(0);
+        //PlanetChunckVertexData._LoadComposedChunckVertexDatas(0);
         await PlanetChunckVertexData._LoadChunckVertexDatasFromFile(1);
         PlanetChunckVertexData._LoadComposedChunckVertexDatas(1);
-        await PlanetChunckVertexData._LoadChunckVertexDatasFromFile(2);
-        PlanetChunckVertexData._LoadComposedChunckVertexDatas(2);
+        //await PlanetChunckVertexData._LoadChunckVertexDatasFromFile(2);
+        //PlanetChunckVertexData._LoadComposedChunckVertexDatas(2);
+
+        for (let testRef = 0b10000000; testRef < 0b11111111; testRef++) {
+            let existing = PlanetChunckVertexData.Get(1, testRef);
+            if (existing) {
+                PlanetChunckVertexData._TryAddVariations(1, testRef, existing.vertexData, true);
+            }
+        }
         return true;
     }
 

@@ -1,0 +1,139 @@
+Exporter version: 6.4.3, Blender version: 2.82 (sub 7)
+========= Conversion from Blender to Babylon.js =========
+	Scene settings used :
+		Inline textures     :  false
+		Material Type       :  PBR
+		Positions Precision :  4
+		Normals Precision   :  3
+		UVs Precision       :  3
+		Vert Color Precision:  3
+		Mat Weight Precision:  2
+		Keep Z-up r-handed  :  no
+		Texture directory   :  C:\Users\staton\Documents\GitHub\planet-builder-web\datas\meshes\
+	Python World class constructor completed
+	WARNING: No active camera has been assigned, or is not in a currently selected Blender layer
+	processing begun of mesh:  11110000
+		processing begun of material:  Green
+		num positions      :  4
+		num normals        :  4
+		num tangents       :  0
+		num uvs            :  8
+		num uvs2           :  0
+		num colors         :  0
+		num triangles      :  2
+	processing begun of mesh:  10000000
+		processing begun of material:  Green
+		registered as also a user of material:  Green
+		num positions      :  13
+		num normals        :  13
+		num tangents       :  0
+		num uvs            :  26
+		num uvs2           :  0
+		num colors         :  0
+		num triangles      :  15
+	processing begun of mesh:  11000000
+		processing begun of material:  Green
+		registered as also a user of material:  Green
+		num positions      :  8
+		num normals        :  8
+		num tangents       :  0
+		num uvs            :  16
+		num uvs2           :  0
+		num colors         :  0
+		num triangles      :  6
+	processing begun of mesh:  10110010
+		processing begun of material:  Green
+		registered as also a user of material:  Green
+		num positions      :  13
+		num normals        :  13
+		num tangents       :  0
+		num uvs            :  26
+		num uvs2           :  0
+		num colors         :  0
+		num triangles      :  12
+	processing begun of mesh:  10101000
+		processing begun of material:  Green
+		registered as also a user of material:  Green
+		num positions      :  20
+		num normals        :  20
+		num tangents       :  0
+		num uvs            :  40
+		num uvs2           :  0
+		num colors         :  0
+		num triangles      :  18
+	processing begun of mesh:  10000100
+		processing begun of material:  Green
+		registered as also a user of material:  Green
+		num positions      :  16
+		num normals        :  16
+		num tangents       :  0
+		num uvs            :  32
+		num uvs2           :  0
+		num colors         :  0
+		num triangles      :  18
+	processing begun of mesh:  10000010
+		processing begun of material:  Green
+		registered as also a user of material:  Green
+		num positions      :  19
+		num normals        :  19
+		num tangents       :  0
+		num uvs            :  38
+		num uvs2           :  0
+		num colors         :  0
+		num triangles      :  9
+	processing begun of mesh:  10001000
+		processing begun of material:  Green
+		registered as also a user of material:  Green
+		num positions      :  8
+		num normals        :  8
+		num tangents       :  0
+		num uvs            :  16
+		num uvs2           :  0
+		num colors         :  0
+		num triangles      :  6
+	processing begun of mesh:  11100000
+		processing begun of material:  Green
+		registered as also a user of material:  Green
+		num positions      :  15
+		num normals        :  15
+		num tangents       :  0
+		num uvs            :  30
+		num uvs2           :  0
+		num colors         :  0
+		num triangles      :  17
+	processing begun of mesh:  11100100
+		processing begun of material:  Green
+		registered as also a user of material:  Green
+		num positions      :  47
+		num normals        :  47
+		num tangents       :  0
+		num uvs            :  94
+		num uvs2           :  0
+		num colors         :  0
+		num triangles      :  20
+	processing begun of mesh:  11001000
+		processing begun of material:  Green
+		registered as also a user of material:  Green
+		num positions      :  19
+		num normals        :  19
+		num tangents       :  0
+		num uvs            :  38
+		num uvs2           :  0
+		num colors         :  0
+		num triangles      :  22
+		WARNING: # of 0 area faces found:  1
+========= Writing of JSON file started =========
+	writing mesh:  11110000
+	writing mesh:  10000000
+	writing mesh:  11000000
+	writing mesh:  10110010
+	writing mesh:  10101000
+	writing mesh:  10000100
+	writing mesh:  10000010
+	writing mesh:  10001000
+	writing mesh:  11100000
+	writing mesh:  11100100
+	writing mesh:  11001000
+========= Writing of JSON file completed =========
+========= end of processing =========
+elapsed time:  0 min, 0.0565 secs
