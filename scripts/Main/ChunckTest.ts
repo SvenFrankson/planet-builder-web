@@ -33,7 +33,7 @@ class ChunckTest extends Main {
 	public path: BABYLON.Vector3[] = [];
 
     public async initialize(): Promise<void> {
-		Config.chunckPartConfiguration.filename = "round-chunck-parts";
+		Config.chunckPartConfiguration.filename = "chunck-parts-round-sharp-slope";
 		Config.chunckPartConfiguration.lodMin = 1;
 		Config.chunckPartConfiguration.lodMax = 1;
 		Config.chunckPartConfiguration.useXYAxisRotation = false;
@@ -59,7 +59,7 @@ class ChunckTest extends Main {
 							if (mainRef != 0b00000000 && mainRef != 0b11111111) {
 								let mat = sideMaterialOk;
 								if (!PlanetChunckVertexData.Get(1, mainRef)) {
-									console.warn(mainRef.toString(2).padEnd(8, "0").split("").reverse().join("") + " is missing.");
+									console.warn(mainRef.toString(2).padStart(8, "0").split("").reverse().join("") + " is missing.");
 									mat = sideMaterialMiss;
 								}
 								let grid = [

@@ -40,7 +40,7 @@ class Demo extends Main {
 	public path: BABYLON.Vector3[] = [];
 
     public async initialize(): Promise<void> {
-		Config.chunckPartConfiguration.filename = "round-chunck-parts";
+		Config.chunckPartConfiguration.filename = "chunck-parts-round-sharp-slope";
 		Config.chunckPartConfiguration.lodMin = 1;
 		Config.chunckPartConfiguration.lodMax = 1;
 		Config.chunckPartConfiguration.useXYAxisRotation = false;
