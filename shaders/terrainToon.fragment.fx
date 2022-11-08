@@ -28,9 +28,13 @@ void main() {
    //sunLightFactor = round(sunLightFactor * 2.) / 2.;
    //sunLightFactor = 1.;
 
-   float ambiantLightFactor = ((flatness + 1.) * 0.5);
-   ambiantLightFactor = round(ambiantLightFactor * 2.) / 2. * 0.3;
-   ambiantLightFactor = 0.;
+   float ambiantLightFactor = 1.;
+   if (flatness < 0.7) {
+      ambiantLightFactor = 0.7;
+   }
+   if (flatness < -0.3) {
+      ambiantLightFactor = 0.4;
+   }
 
    float lightFactor = sunFactor * sunLightFactor + ambiantLightFactor;
 

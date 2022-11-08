@@ -1627,7 +1627,7 @@ class ChunckTest extends Main {
                         if (mainRef != 0b00000000 && mainRef != 0b11111111) {
                             let mat = sideMaterialOk;
                             if (!PlanetChunckVertexData.Get(1, mainRef)) {
-                                console.warn(mainRef.toString(2) + " is missing.");
+                                console.warn(mainRef.toString(2).padEnd(8, "0").split("").reverse().join("") + " is missing.");
                                 mat = sideMaterialMiss;
                             }
                             let grid = [
@@ -4611,6 +4611,13 @@ class PlanetChunckVertexData {
             PlanetChunckVertexData._VertexDatas[lod].set(ref1, new ExtendedVertexData(ref1, data1));
         }
         PlanetChunckVertexData._TryAddVariations(lod, ref1, data1, useXYAxisRotation);
+        let ref12 = 0b00110111;
+        let baseData12 = PlanetChunckVertexData.Get(lod, 0b11001000);
+        let data12 = PlanetChunckVertexData.Flip(baseData12.vertexData);
+        if (!PlanetChunckVertexData._VertexDatas[lod].has(ref12)) {
+            PlanetChunckVertexData._VertexDatas[lod].set(ref12, new ExtendedVertexData(ref12, data12));
+        }
+        PlanetChunckVertexData._TryAddVariations(lod, ref12, data12, useXYAxisRotation);
         let ref2 = 0b11110101;
         let baseData2A = PlanetChunckVertexData.Get(lod, 0b11110111);
         let baseData2B = PlanetChunckVertexData.Get(lod, 0b11111101);

@@ -59,7 +59,7 @@ class ChunckTest extends Main {
 							if (mainRef != 0b00000000 && mainRef != 0b11111111) {
 								let mat = sideMaterialOk;
 								if (!PlanetChunckVertexData.Get(1, mainRef)) {
-									console.warn(mainRef.toString(2) + " is missing.");
+									console.warn(mainRef.toString(2).padEnd(8, "0").split("").reverse().join("") + " is missing.");
 									mat = sideMaterialMiss;
 								}
 								let grid = [
