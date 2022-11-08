@@ -448,7 +448,7 @@ class PlanetTools {
             let size = PlanetTools.DegreeToSize(degree);
             for (let i = 0; i < PlanetTools.CHUNCKSIZE; i++) {
                 let a = Math.PI / 2 / size;
-                let s = a * radius;
+                let s = a * radius * 0.8;
                 bSizes.push(s);
                 altitudes.push(radius);
                 radius = radius + s;

@@ -4,7 +4,7 @@ class ConfigurationChunckPart {
     public filename: string = "chunck-parts";
     public lodMin: number = 0;
     public lodMax: number = 2;
-    public useXYAxisRotation: boolean = true;
+    public useXZAxisRotation: boolean = true;
 }
 
 class Configuration {

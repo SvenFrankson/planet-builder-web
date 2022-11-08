@@ -24,33 +24,13 @@ Exporter version: 6.4.5, Blender version: 2.90.1
 	processing begun of mesh:  10000000
 		processing begun of material:  Green
 		registered as also a user of material:  Green
-		num positions      :  13
-		num normals        :  13
+		num positions      :  16
+		num normals        :  16
 		num tangents       :  0
-		num uvs            :  26
+		num uvs            :  32
 		num uvs2           :  0
 		num colors         :  0
-		num triangles      :  15
-	processing begun of mesh:  10001000
-		processing begun of material:  Green
-		registered as also a user of material:  Green
-		num positions      :  8
-		num normals        :  8
-		num tangents       :  0
-		num uvs            :  16
-		num uvs2           :  0
-		num colors         :  0
-		num triangles      :  6
-	processing begun of mesh:  11100100
-		processing begun of material:  Green
-		registered as also a user of material:  Green
-		num positions      :  26
-		num normals        :  26
-		num tangents       :  0
-		num uvs            :  52
-		num uvs2           :  0
-		num colors         :  0
-		num triangles      :  32
+		num triangles      :  12
 	processing begun of mesh:  11001100
 		processing begun of material:  Green
 		registered as also a user of material:  Green
@@ -61,6 +41,16 @@ Exporter version: 6.4.5, Blender version: 2.90.1
 		num uvs2           :  0
 		num colors         :  0
 		num triangles      :  2
+	processing begun of mesh:  11111000
+		processing begun of material:  Green
+		registered as also a user of material:  Green
+		num positions      :  18
+		num normals        :  18
+		num tangents       :  0
+		num uvs            :  36
+		num uvs2           :  0
+		num colors         :  0
+		num triangles      :  14
 	processing begun of mesh:  11000000
 		processing begun of material:  Green
 		registered as also a user of material:  Green
@@ -70,78 +60,48 @@ Exporter version: 6.4.5, Blender version: 2.90.1
 		num uvs            :  16
 		num uvs2           :  0
 		num colors         :  0
-		num triangles      :  6
-	processing begun of mesh:  11100000
+		num triangles      :  4
+	processing begun of mesh:  11111100
 		processing begun of material:  Green
 		registered as also a user of material:  Green
-		num positions      :  15
-		num normals        :  15
+		num positions      :  8
+		num normals        :  8
 		num tangents       :  0
-		num uvs            :  30
+		num uvs            :  16
 		num uvs2           :  0
 		num colors         :  0
-		num triangles      :  17
-	processing begun of mesh:  11001000
+		num triangles      :  4
+	processing begun of mesh:  10001000
 		processing begun of material:  Green
 		registered as also a user of material:  Green
-		num positions      :  16
-		num normals        :  16
+		num positions      :  10
+		num normals        :  10
 		num tangents       :  0
-		num uvs            :  32
+		num uvs            :  20
 		num uvs2           :  0
 		num colors         :  0
-		num triangles      :  18
+		num triangles      :  8
 	processing begun of mesh:  10100000
 		processing begun of material:  Green
 		registered as also a user of material:  Green
-		num positions      :  26
-		num normals        :  26
+		num positions      :  32
+		num normals        :  32
 		num tangents       :  0
-		num uvs            :  52
+		num uvs            :  64
 		num uvs2           :  0
 		num colors         :  0
-		num triangles      :  32
-	processing begun of mesh:  10000100
-		processing begun of material:  Green
-		registered as also a user of material:  Green
-		num positions      :  26
-		num normals        :  26
-		num tangents       :  0
-		num uvs            :  52
-		num uvs2           :  0
-		num colors         :  0
-		num triangles      :  32
-	processing begun of mesh:  11000001
-		processing begun of material:  Green
-		registered as also a user of material:  Green
-		num positions      :  24
-		num normals        :  24
-		num tangents       :  0
-		num uvs            :  48
-		num uvs2           :  0
-		num colors         :  0
-		num triangles      :  27
-	processing begun of mesh:  10000010
-		processing begun of material:  Green
-		registered as also a user of material:  Green
-		num positions      :  26
-		num normals        :  26
-		num tangents       :  0
-		num uvs            :  52
-		num uvs2           :  0
-		num colors         :  0
-		num triangles      :  30
+		num triangles      :  26
 	processing begun of mesh:  10101000
 		processing begun of material:  Green
 		registered as also a user of material:  Green
-		num positions      :  27
-		num normals        :  27
+		num positions      :  44
+		num normals        :  44
 		num tangents       :  0
-		num uvs            :  54
+		num uvs            :  88
 		num uvs2           :  0
 		num colors         :  0
-		num triangles      :  33
-	processing begun of mesh:  11010001
+		num triangles      :  36
+	processing begun of mesh:  11001000
 		processing begun of material:  Green
 		registered as also a user of material:  Green
 		num positions      :  21
@@ -150,22 +110,62 @@ Exporter version: 6.4.5, Blender version: 2.90.1
 		num uvs            :  42
 		num uvs2           :  0
 		num colors         :  0
-		num triangles      :  24
+		num triangles      :  15
+	processing begun of mesh:  11011000
+		processing begun of material:  Green
+		registered as also a user of material:  Green
+		num positions      :  32
+		num normals        :  32
+		num tangents       :  0
+		num uvs            :  64
+		num uvs2           :  0
+		num colors         :  0
+		num triangles      :  26
+	processing begun of mesh:  11010001
+		processing begun of material:  Green
+		registered as also a user of material:  Green
+		num positions      :  31
+		num normals        :  31
+		num tangents       :  0
+		num uvs            :  62
+		num uvs2           :  0
+		num colors         :  0
+		num triangles      :  25
+	processing begun of mesh:  11101100
+		processing begun of material:  Green
+		registered as also a user of material:  Green
+		num positions      :  21
+		num normals        :  21
+		num tangents       :  0
+		num uvs            :  42
+		num uvs2           :  0
+		num colors         :  0
+		num triangles      :  15
+	processing begun of mesh:  11000110
+		processing begun of material:  Green
+		registered as also a user of material:  Green
+		num positions      :  26
+		num normals        :  26
+		num tangents       :  0
+		num uvs            :  52
+		num uvs2           :  0
+		num colors         :  0
+		num triangles      :  12
 ========= Writing of JSON file started =========
 	writing mesh:  11110000
 	writing mesh:  10000000
-	writing mesh:  10001000
-	writing mesh:  11100100
 	writing mesh:  11001100
+	writing mesh:  11111000
 	writing mesh:  11000000
-	writing mesh:  11100000
-	writing mesh:  11001000
+	writing mesh:  11111100
+	writing mesh:  10001000
 	writing mesh:  10100000
-	writing mesh:  10000100
-	writing mesh:  11000001
-	writing mesh:  10000010
 	writing mesh:  10101000
+	writing mesh:  11001000
+	writing mesh:  11011000
 	writing mesh:  11010001
+	writing mesh:  11101100
+	writing mesh:  11000110
 ========= Writing of JSON file completed =========
 ========= end of processing =========
-elapsed time:  0 min, 0.0329 secs
+elapsed time:  0 min, 0.0309 secs
