@@ -33,12 +33,22 @@ class ChunckTest extends Main {
 	public path: BABYLON.Vector3[] = [];
 
     public async initialize(): Promise<void> {
+		Config.chunckPartConfiguration.filename = "round-chunck-parts";
+		Config.chunckPartConfiguration.lodMin = 1;
+		Config.chunckPartConfiguration.lodMax = 1;
+		Config.chunckPartConfiguration.useXYAxisRotation = false;
+
 		let mainMaterial = new BABYLON.StandardMaterial("main-material");
 		mainMaterial.specularColor.copyFromFloats(0.1, 0.1, 0.1);
-		mainMaterial.diffuseColor.copyFromFloats(181 / 256, 60 / 256, 33 / 256);
-		let sideMaterial = new BABYLON.StandardMaterial("side-material");
-		sideMaterial.specularColor.copyFromFloats(0.1, 0.1, 0.1);
-		sideMaterial.diffuseColor.copyFromFloats(90 / 256, 30 / 256, 16 / 256);
+		mainMaterial.diffuseColor = BABYLON.Color3.FromHexString("#624dfa");
+		
+		let sideMaterialOk = new BABYLON.StandardMaterial("side-material");
+		sideMaterialOk.specularColor.copyFromFloats(0.1, 0.1, 0.1);
+		sideMaterialOk.diffuseColor = BABYLON.Color3.FromHexString("#4dfa62");
+
+		let sideMaterialMiss = new BABYLON.StandardMaterial("side-material");
+		sideMaterialMiss.specularColor.copyFromFloats(0.1, 0.1, 0.1);
+		sideMaterialMiss.diffuseColor = BABYLON.Color3.FromHexString("#fa624d");
 		
 		return new Promise<void>(resolve => {
 			PlanetChunckVertexData.InitializeData().then(
@@ -47,6 +57,11 @@ class ChunckTest extends Main {
 						for (let j = 0; j < 16; j++) {
 							let mainRef = i + 16 * j;
 							if (mainRef != 0b00000000 && mainRef != 0b11111111) {
+								let mat = sideMaterialOk;
+								if (!PlanetChunckVertexData.Get(1, mainRef)) {
+									console.warn(mainRef.toString(2) + " is missing.");
+									mat = sideMaterialMiss;
+								}
 								let grid = [
 									[
 										[0, 0, 0, 0],
@@ -56,14 +71,14 @@ class ChunckTest extends Main {
 									],
 									[
 										[0, 0, 0, 0],
-										[0, mainRef & 0b1 << 0, mainRef & 0b1 << 1, 0],
-										[0, mainRef & 0b1 << 3, mainRef & 0b1 << 2, 0],
+										[0, mainRef & 0b1 << 0, mainRef & 0b1 << 4, 0],
+										[0, mainRef & 0b1 << 3, mainRef & 0b1 << 7, 0],
 										[0, 0, 0, 0]
 									],
 									[
 										[0, 0, 0, 0],
-										[0, mainRef & 0b1 << 4, mainRef & 0b1 << 5, 0],
-										[0, mainRef & 0b1 << 7, mainRef & 0b1 << 6, 0],
+										[0, mainRef & 0b1 << 1, mainRef & 0b1 << 5, 0],
+										[0, mainRef & 0b1 << 2, mainRef & 0b1 << 6, 0],
 										[0, 0, 0, 0]
 									],
 									[
@@ -120,7 +135,7 @@ class ChunckTest extends Main {
 														mesh.material = mainMaterial;
 													}
 													else {
-														mesh.material = sideMaterial;
+														mesh.material = mat;
 													}
 													mesh.position.x = i * 3 - 23 - 1 + ii;
 													mesh.position.y = - 1 + kk;

@@ -11,7 +11,6 @@ class Main {
 		Main.Engine = new BABYLON.Engine(this.canvas, true);
         this.engine = Main.Engine;
 		BABYLON.Engine.ShadersRepository = "./shaders/";
-		console.log(Main.Engine.webGLVersion);
 	}
 
     public createScene(): void {

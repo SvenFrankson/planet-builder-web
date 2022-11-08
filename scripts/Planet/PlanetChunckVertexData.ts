@@ -461,10 +461,10 @@ class PlanetChunckVertexData {
         data.positions = data.positions.map((p: number) => {
             p += 0.5;
             if (p < 0.01) {
-                p = - 0.01;
+                p = - 0.001;
             }
             if (p > 0.99) {
-                p = 1.01;
+                p = 1.001;
             }
             return p;
         });
