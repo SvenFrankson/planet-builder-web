@@ -33,10 +33,12 @@ class ChunckTest extends Main {
 	public path: BABYLON.Vector3[] = [];
 
     public async initialize(): Promise<void> {
-		Config.chunckPartConfiguration.filename = "round-chunck-parts";
-		Config.chunckPartConfiguration.lodMin = 1;
-		Config.chunckPartConfiguration.lodMax = 1;
+		Config.chunckPartConfiguration.filename = "round-smooth-chunck-parts";
+		Config.chunckPartConfiguration.lodMin = 0;
+		Config.chunckPartConfiguration.lodMax = 0;
 		Config.chunckPartConfiguration.useXZAxisRotation = false;
+
+		let lod = 0;
 
 		let mainMaterial = new BABYLON.StandardMaterial("main-material");
 		mainMaterial.specularColor.copyFromFloats(0.1, 0.1, 0.1);
@@ -58,7 +60,7 @@ class ChunckTest extends Main {
 							let mainRef = i + 16 * j;
 							if (mainRef != 0b00000000 && mainRef != 0b11111111) {
 								let mat = sideMaterialOk;
-								if (!PlanetChunckVertexData.Get(1, mainRef)) {
+								if (!PlanetChunckVertexData.Get(lod, mainRef)) {
 									console.warn(mainRef.toString(2).padStart(8, "0").split("").reverse().join("") + " is missing.");
 									mat = sideMaterialMiss;
 								}
@@ -126,7 +128,7 @@ class ChunckTest extends Main {
 												ref |= 0b1 << 7;
 											}
 											if (ref != 0b00000000 && ref != 0b11111111) {
-												let part = PlanetChunckVertexData.Get(1, ref);
+												let part = PlanetChunckVertexData.Get(lod, ref);
 												if (part) {
 													let mesh = new BABYLON.Mesh("part-mesh");
 													part.vertexData.colors = part.vertexData.colors.map((c: number) => { return 1; });

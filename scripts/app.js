@@ -244,8 +244,8 @@ class OutlinePostProcess {
 				
 				gl_FragColor = n[4];
 				if (max(sobel.r, max(sobel.g, sobel.b)) > 0.2) {
-					//gl_FragColor = vec4(0.);
-					//gl_FragColor.a = 1.0;
+					gl_FragColor = vec4(0.);
+					gl_FragColor.a = 1.0;
 				}
 				if (sobel_depth > 0.005) {
 					gl_FragColor = vec4(0.);
@@ -433,6 +433,7 @@ class SharedMaterials {
             SharedMaterials.waterMaterial = new BABYLON.StandardMaterial("waterMaterial", Game.Scene);
             SharedMaterials.waterMaterial.diffuseColor = SharedMaterials.MainMaterial().getColor(BlockType.Water);
             SharedMaterials.waterMaterial.specularColor = BABYLON.Color3.Black();
+            SharedMaterials.waterMaterial.alpha = 0.8;
         }
         return SharedMaterials.waterMaterial;
     }
@@ -1606,10 +1607,11 @@ class ChunckTest extends Main {
         this.camera.attachControl();
     }
     async initialize() {
-        Config.chunckPartConfiguration.filename = "round-chunck-parts";
-        Config.chunckPartConfiguration.lodMin = 1;
-        Config.chunckPartConfiguration.lodMax = 1;
+        Config.chunckPartConfiguration.filename = "round-smooth-chunck-parts";
+        Config.chunckPartConfiguration.lodMin = 0;
+        Config.chunckPartConfiguration.lodMax = 0;
         Config.chunckPartConfiguration.useXZAxisRotation = false;
+        let lod = 0;
         let mainMaterial = new BABYLON.StandardMaterial("main-material");
         mainMaterial.specularColor.copyFromFloats(0.1, 0.1, 0.1);
         mainMaterial.diffuseColor = BABYLON.Color3.FromHexString("#624dfa");
@@ -1626,7 +1628,7 @@ class ChunckTest extends Main {
                         let mainRef = i + 16 * j;
                         if (mainRef != 0b00000000 && mainRef != 0b11111111) {
                             let mat = sideMaterialOk;
-                            if (!PlanetChunckVertexData.Get(1, mainRef)) {
+                            if (!PlanetChunckVertexData.Get(lod, mainRef)) {
                                 console.warn(mainRef.toString(2).padStart(8, "0").split("").reverse().join("") + " is missing.");
                                 mat = sideMaterialMiss;
                             }
@@ -1693,7 +1695,7 @@ class ChunckTest extends Main {
                                             ref |= 0b1 << 7;
                                         }
                                         if (ref != 0b00000000 && ref != 0b11111111) {
-                                            let part = PlanetChunckVertexData.Get(1, ref);
+                                            let part = PlanetChunckVertexData.Get(lod, ref);
                                             if (part) {
                                                 let mesh = new BABYLON.Mesh("part-mesh");
                                                 part.vertexData.colors = part.vertexData.colors.map((c) => { return 1; });
@@ -1749,7 +1751,7 @@ class Demo extends Main {
         Config.chunckPartConfiguration.lodMax = 1;
         Config.chunckPartConfiguration.useXZAxisRotation = false;
         return new Promise(resolve => {
-            let kPosMax = 5;
+            let kPosMax = 7;
             let planetTest = new Planet("Paulita", kPosMax, 0.65, this.scene);
             planetTest.initialize();
             //let moon: Planet = new Planet("Moon", 2, 0.60, this.scene);
@@ -1846,9 +1848,14 @@ class Game extends Main {
         this.cameraManager = Game.CameraManager;
     }
     async initialize() {
+        Config.chunckPartConfiguration.filename = "round-smooth-chunck-parts";
+        Config.chunckPartConfiguration.lodMin = 0;
+        Config.chunckPartConfiguration.lodMax = 0;
+        Config.chunckPartConfiguration.useXZAxisRotation = false;
         return new Promise(resolve => {
-            let kPosMax = 8;
+            let kPosMax = 7;
             let planetTest = new Planet("Paulita", kPosMax, 0.60, this.scene);
+            planetTest.initialize();
             window["PlanetTest"] = planetTest;
             Game.Player = new Player(new BABYLON.Vector3(0, (kPosMax + 1) * PlanetTools.CHUNCKSIZE * 0.8, 0), planetTest, this);
             this.player = Game.Player;
@@ -4701,9 +4708,9 @@ class PlanetChunckVertexData {
         PlanetChunckVertexData._TryAddFlippedChunckPart(lod, 0b10001000, PlanetChunckVertexData.Get(lod, 0b10001000).vertexData);
         PlanetChunckVertexData._TryAddFlippedChunckPart(lod, 0b11111000, PlanetChunckVertexData.Get(lod, 0b11111000).vertexData);
         PlanetChunckVertexData._TryAddFlippedChunckPart(lod, 0b11001000, PlanetChunckVertexData.Get(lod, 0b11001000).vertexData);
-        let ref1 = 0b10000001;
-        let baseData1A = PlanetChunckVertexData.Get(lod, 0b10000000);
-        let baseData1B = PlanetChunckVertexData.Get(lod, 0b00000001);
+        let ref1 = 0b11110101;
+        let baseData1A = PlanetChunckVertexData.Get(lod, 0b11110111);
+        let baseData1B = PlanetChunckVertexData.Get(lod, 0b11111101);
         let data1 = PlanetChunckVertexData.Add(baseData1A.vertexData, baseData1B.vertexData);
         if (!PlanetChunckVertexData._VertexDatas[lod].has(ref1)) {
             PlanetChunckVertexData._VertexDatas[lod].set(ref1, new ExtendedVertexData(ref1, data1));
@@ -4717,6 +4724,7 @@ class PlanetChunckVertexData {
             PlanetChunckVertexData._VertexDatas[lod].set(ref2, new ExtendedVertexData(ref2, data2));
         }
         PlanetChunckVertexData._TryAddVariations(lod, ref2, data2, useXZAxisRotation);
+        PlanetChunckVertexData._TryAddFlippedChunckPart(lod, 0b10000010, PlanetChunckVertexData.Get(lod, 0b10000010).vertexData);
         let ref3 = 0b01010101;
         let baseData3A = PlanetChunckVertexData.Get(lod, 0b01110111);
         let baseData3B = PlanetChunckVertexData.Get(lod, 0b11011101);
@@ -4725,14 +4733,14 @@ class PlanetChunckVertexData {
             PlanetChunckVertexData._VertexDatas[lod].set(ref3, new ExtendedVertexData(ref3, data3));
         }
         PlanetChunckVertexData._TryAddVariations(lod, ref3, data3, useXZAxisRotation);
-        //let ref4 = 0b11000001;
-        //let baseData4A = PlanetChunckVertexData.Get(lod, 0b11000000);
-        //let baseData4B = PlanetChunckVertexData.Get(lod, 0b00000001);
-        //let data4 = PlanetChunckVertexData.Add(baseData4A.vertexData, baseData4B.vertexData);
-        //if (!PlanetChunckVertexData._VertexDatas[lod].has(ref4)) {
-        //    PlanetChunckVertexData._VertexDatas[lod].set(ref4, new ExtendedVertexData(ref4, data4));
-        //}
-        //PlanetChunckVertexData._TryAddVariations(lod, ref4, data4, useXZAxisRotation);
+        let ref4 = 0b11010101;
+        let baseData4A = PlanetChunckVertexData.Get(lod, 0b11011101);
+        let baseData4B = PlanetChunckVertexData.Get(lod, 0b11110111);
+        let data4 = PlanetChunckVertexData.Add(baseData4A.vertexData, baseData4B.vertexData);
+        if (!PlanetChunckVertexData._VertexDatas[lod].has(ref4)) {
+            PlanetChunckVertexData._VertexDatas[lod].set(ref4, new ExtendedVertexData(ref4, data4));
+        }
+        PlanetChunckVertexData._TryAddVariations(lod, ref4, data4, useXZAxisRotation);
         let ref5 = 0b10100001;
         let baseData5A = PlanetChunckVertexData.Get(lod, 0b10110001);
         let baseData5B = PlanetChunckVertexData.Get(lod, 0b11101111);
@@ -4765,6 +4773,30 @@ class PlanetChunckVertexData {
             PlanetChunckVertexData._VertexDatas[lod].set(ref8, new ExtendedVertexData(ref8, data8));
         }
         PlanetChunckVertexData._TryAddVariations(lod, ref8, data8, useXZAxisRotation);
+        let ref9 = 0b11100101;
+        let baseData9A = PlanetChunckVertexData.Get(lod, 0b11101111);
+        let baseData9B = PlanetChunckVertexData.Get(lod, 0b11110101);
+        let data9 = PlanetChunckVertexData.Add(baseData9A.vertexData, baseData9B.vertexData);
+        if (!PlanetChunckVertexData._VertexDatas[lod].has(ref9)) {
+            PlanetChunckVertexData._VertexDatas[lod].set(ref9, new ExtendedVertexData(ref9, data9));
+        }
+        PlanetChunckVertexData._TryAddVariations(lod, ref9, data9, useXZAxisRotation);
+        let ref10 = 0b10100101;
+        let baseData10A = PlanetChunckVertexData.Get(lod, 0b10101111);
+        let baseData10B = PlanetChunckVertexData.Get(lod, 0b11110101);
+        let data10 = PlanetChunckVertexData.Add(baseData10A.vertexData, baseData10B.vertexData);
+        if (!PlanetChunckVertexData._VertexDatas[lod].has(ref10)) {
+            PlanetChunckVertexData._VertexDatas[lod].set(ref10, new ExtendedVertexData(ref10, data10));
+        }
+        PlanetChunckVertexData._TryAddVariations(lod, ref10, data10, useXZAxisRotation);
+        let ref11 = 0b10110111;
+        let baseData11A = PlanetChunckVertexData.Get(lod, 0b10111111);
+        let baseData11B = PlanetChunckVertexData.Get(lod, 0b11110111);
+        let data11 = PlanetChunckVertexData.Add(baseData11A.vertexData, baseData11B.vertexData);
+        if (!PlanetChunckVertexData._VertexDatas[lod].has(ref11)) {
+            PlanetChunckVertexData._VertexDatas[lod].set(ref11, new ExtendedVertexData(ref11, data11));
+        }
+        PlanetChunckVertexData._TryAddVariations(lod, ref11, data11, useXZAxisRotation);
     }
     static async InitializeData() {
         for (let lod = Config.chunckPartConfiguration.lodMin; lod <= Config.chunckPartConfiguration.lodMax; lod++) {

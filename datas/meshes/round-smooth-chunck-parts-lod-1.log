@@ -24,13 +24,13 @@ Exporter version: 6.4.5, Blender version: 2.90.1
 	processing begun of mesh:  10000000
 		processing begun of material:  Green
 		registered as also a user of material:  Green
-		num positions      :  16
-		num normals        :  16
+		num positions      :  21
+		num normals        :  21
 		num tangents       :  0
-		num uvs            :  32
+		num uvs            :  42
 		num uvs2           :  0
 		num colors         :  0
-		num triangles      :  12
+		num triangles      :  28
 	processing begun of mesh:  11001100
 		processing begun of material:  Green
 		registered as also a user of material:  Green
@@ -44,33 +44,33 @@ Exporter version: 6.4.5, Blender version: 2.90.1
 	processing begun of mesh:  11111000
 		processing begun of material:  Green
 		registered as also a user of material:  Green
-		num positions      :  18
-		num normals        :  18
+		num positions      :  23
+		num normals        :  23
 		num tangents       :  0
-		num uvs            :  36
+		num uvs            :  46
 		num uvs2           :  0
 		num colors         :  0
-		num triangles      :  14
+		num triangles      :  30
 	processing begun of mesh:  11000000
 		processing begun of material:  Green
 		registered as also a user of material:  Green
-		num positions      :  8
-		num normals        :  8
+		num positions      :  10
+		num normals        :  10
 		num tangents       :  0
-		num uvs            :  16
+		num uvs            :  20
 		num uvs2           :  0
 		num colors         :  0
-		num triangles      :  4
+		num triangles      :  8
 	processing begun of mesh:  11111100
 		processing begun of material:  Green
 		registered as also a user of material:  Green
-		num positions      :  8
-		num normals        :  8
+		num positions      :  10
+		num normals        :  10
 		num tangents       :  0
-		num uvs            :  16
+		num uvs            :  20
 		num uvs2           :  0
 		num colors         :  0
-		num triangles      :  4
+		num triangles      :  8
 	processing begun of mesh:  10001000
 		processing begun of material:  Green
 		registered as also a user of material:  Green
@@ -190,4 +190,4 @@ Exporter version: 6.4.5, Blender version: 2.90.1
 	writing mesh:  10000001
 ========= Writing of JSON file completed =========
 ========= end of processing =========
-elapsed time:  0 min, 0.0419 secs
+elapsed time:  0 min, 0.0399 secs

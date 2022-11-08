@@ -55,9 +55,15 @@ class Game extends Main {
 	}
 
     public async initialize(): Promise<void> {
+		Config.chunckPartConfiguration.filename = "round-smooth-chunck-parts";
+		Config.chunckPartConfiguration.lodMin = 0;
+		Config.chunckPartConfiguration.lodMax = 0;
+		Config.chunckPartConfiguration.useXZAxisRotation = false;
+
 		return new Promise<void>(resolve => {
-			let kPosMax = 8;
+			let kPosMax = 7;
 			let planetTest: Planet = new Planet("Paulita", kPosMax, 0.60, this.scene);
+			planetTest.initialize();
 			window["PlanetTest"] = planetTest;
 
 			Game.Player = new Player(new BABYLON.Vector3(0, (kPosMax + 1) * PlanetTools.CHUNCKSIZE * 0.8, 0), planetTest, this);

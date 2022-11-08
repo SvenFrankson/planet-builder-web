@@ -30,6 +30,7 @@ class SharedMaterials {
             SharedMaterials.waterMaterial = new BABYLON.StandardMaterial("waterMaterial", Game.Scene);
             SharedMaterials.waterMaterial.diffuseColor = SharedMaterials.MainMaterial().getColor(BlockType.Water);
             SharedMaterials.waterMaterial.specularColor = BABYLON.Color3.Black();
+            SharedMaterials.waterMaterial.alpha = 0.8;
         }
         return SharedMaterials.waterMaterial;
     }

@@ -62,8 +62,8 @@ class OutlinePostProcess {
 				
 				gl_FragColor = n[4];
 				if (max(sobel.r, max(sobel.g, sobel.b)) > 0.2) {
-					//gl_FragColor = vec4(0.);
-					//gl_FragColor.a = 1.0;
+					gl_FragColor = vec4(0.);
+					gl_FragColor.a = 1.0;
 				}
 				if (sobel_depth > 0.005) {
 					gl_FragColor = vec4(0.);
