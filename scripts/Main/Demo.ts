@@ -41,7 +41,7 @@ class Demo extends Main {
 
     public async initialize(): Promise<void> {
 		Config.chunckPartConfiguration.filename = "round-chunck-parts";
-		Config.chunckPartConfiguration.lodMin = 1;
+		Config.chunckPartConfiguration.lodMin = 0;
 		Config.chunckPartConfiguration.lodMax = 1;
 		Config.chunckPartConfiguration.useXZAxisRotation = false;
 		return new Promise<void>(resolve => {

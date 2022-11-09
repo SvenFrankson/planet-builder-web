@@ -464,7 +464,7 @@ class PlanetChunck extends AbstractPlanetChunck {
     }
 
     public redrawMesh(): void {
-        if (this.lod === 0) {
+        if (this.lod <= Config.performanceConfiguration.lodCount) {
             if (this.isEmptyOrHidden()) {
                 this.disposeMesh();
                 return;
@@ -497,17 +497,13 @@ class PlanetChunck extends AbstractPlanetChunck {
                 this.waterMesh.material = SharedMaterials.WaterMaterial();
     
                 this.waterMesh.parent = this.planetSide;
-                requestAnimationFrame(() => {
-                    this.waterMesh.freezeWorldMatrix();
-                    this.waterMesh.refreshBoundingInfo();
-                })
+                this.waterMesh.freezeWorldMatrix();
+                this.waterMesh.refreshBoundingInfo();
             }
     
             this.mesh.parent = this.planetSide;
-            requestAnimationFrame(() => {
-                this.mesh.freezeWorldMatrix();
-                this.mesh.refreshBoundingInfo();
-            })
+            this.mesh.freezeWorldMatrix();
+            this.mesh.refreshBoundingInfo();
             if (DebugDefine.USE_VERTEX_SET_MESH_HISTORY) {
                 this._setMeshHistory.push(performance.now());
             }

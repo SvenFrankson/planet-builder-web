@@ -17,12 +17,12 @@ class PlanetChunckManager {
         return this._needRedraw.length;
     }
 
-    private _lodLayersCount: number = 6;
-    private _lodLayers: AbstractPlanetChunck[][];
+    private _layersCount: number = 6;
+    private _layers: AbstractPlanetChunck[][];
     public lodLayerCount(layerIndex: number): number {
-        return this._lodLayers[layerIndex].length;
+        return this._layers[layerIndex].length;
     }
-    private _lodLayersCursors: number[];
+    private _layersCursors: number[];
     private _lodLayersSqrDistances: number[];
 
     // estimated percentage of chuncks in the adequate layer
@@ -39,6 +39,7 @@ class PlanetChunckManager {
     }
 
     public initialize(): void {
+        this._layersCount = Config.performanceConfiguration.lodRanges.length;
         if (this.scene.activeCameras && this.scene.activeCameras.length > 0) {
             this._viewpoint = this.scene.activeCameras[0].globalPosition.clone();
         }
@@ -46,18 +47,17 @@ class PlanetChunckManager {
             this._viewpoint = this.scene.activeCamera.globalPosition.clone();
         }
         
-        this._lodLayers = [];
-        this._lodLayersCursors = [];
+        this._layers = [];
+        this._layersCursors = [];
         this._lodLayersSqrDistances = [];
-        let distances = [120, 150, 180, 210, 240];
-        for (let i = 0; i < this._lodLayersCount - 1; i++) {
-            this._lodLayers[i] = [];
-            this._lodLayersCursors[i] = 0;
-            this._lodLayersSqrDistances[i] = distances[i] * distances[i];
+        for (let i = 0; i < this._layersCount - 1; i++) {
+            this._layers[i] = [];
+            this._layersCursors[i] = 0;
+            this._lodLayersSqrDistances[i] = Config.performanceConfiguration.lodRanges[i] * Config.performanceConfiguration.lodRanges[i];
         }
-        this._lodLayers[this._lodLayersCount - 1] = [];
-        this._lodLayersCursors[this._lodLayersCount - 1] = 0;
-        this._lodLayersSqrDistances[this._lodLayersCount - 1] = Infinity;
+        this._layers[this._layersCount - 1] = [];
+        this._layersCursors[this._layersCount - 1] = 0;
+        this._lodLayersSqrDistances[this._layersCount - 1] = Infinity;
 
         this.scene.onBeforeRenderObservable.add(this._update);
     }
@@ -70,18 +70,18 @@ class PlanetChunckManager {
         while (this.unregister(chunck)) {
 
         }
-        if (this._lodLayers[this._lodLayersCount - 1].indexOf(chunck) === -1) {
-            this._lodLayers[this._lodLayersCount - 1].push(chunck);
-            chunck.lod = this._lodLayersCount - 1;
+        if (this._layers[this._layersCount - 1].indexOf(chunck) === -1) {
+            this._layers[this._layersCount - 1].push(chunck);
+            chunck.lod = this._layersCount - 1;
         }
         return true;
     }
 
     public unregister(chunck: AbstractPlanetChunck): boolean {
-        for (let layerIndex = 0; layerIndex < this._lodLayers.length; layerIndex++) {
-            let index = this._lodLayers[layerIndex].indexOf(chunck);
+        for (let layerIndex = 0; layerIndex < this._layers.length; layerIndex++) {
+            let index = this._layers[layerIndex].indexOf(chunck);
             if (index != -1) {
-                this._lodLayers[layerIndex].splice(index, 1);
+                this._layers[layerIndex].splice(index, 1);
                 return true;
             }
         }
@@ -89,7 +89,7 @@ class PlanetChunckManager {
     }
 
     public async requestDraw(chunck: PlanetChunck, prio: number, info: string): Promise<void> {
-        if (chunck.lod === 0) {
+        if (chunck.lod <= Config.performanceConfiguration.lodCount) {
             return new Promise<void>(resolve => {
                 if (!this._needRedraw.find(request => { return request.chunck === chunck; })) {
                     this._needRedraw.push(new PlanetChunckRedrawRequest(chunck, resolve, info));
@@ -109,16 +109,16 @@ class PlanetChunckManager {
     }
 
     private _getLayerIndex(sqrDistance: number): number {
-        for (let i = 0; i < this._lodLayersCount - 1; i++) {
+        for (let i = 0; i < this._layersCount - 1; i++) {
             if (sqrDistance < this._lodLayersSqrDistances[i]) {
                 return i;
             }
         }
-        return this._lodLayersCount - 1;
+        return this._layersCount - 1;
     }
 
     private onChunckMovedToLayer(chunck: AbstractPlanetChunck, layerIndex: number): void {
-        if (layerIndex === 0) {
+        if (layerIndex < Config.performanceConfiguration.lodCount) {
             if (chunck instanceof PlanetChunck) {
                 this.requestDraw(chunck, 0, "ChunckManager.update");
             }
@@ -127,14 +127,18 @@ class PlanetChunckManager {
             }
         }
         else {
-            for (let i = 1; i <= 5; i++) {
+            for (let n = Config.performanceConfiguration.lodCount; n <= this._layersCount; n++) {
                 if (chunck instanceof PlanetChunck) {
                     this.cancelDraw(chunck);
                     chunck.collapse();
                 }
                 else if (chunck instanceof PlanetChunckGroup) {
-                    if (chunck.level > i) {
+                    let expectedLevel = n - (Config.performanceConfiguration.lodCount - 1);
+                    if (chunck.level > expectedLevel) {
                         chunck.subdivide();
+                    }
+                    else if (chunck.level < expectedLevel) {
+                        chunck.collapse();
                     }
                 }
             }
@@ -157,37 +161,37 @@ class PlanetChunckManager {
 
         let todo = [];
         while ((t - t0) < 1 && todo.length < 100) {
-            for (let prevLayerIndex = 0; prevLayerIndex < this._lodLayersCount; prevLayerIndex++) {
-                let cursor = this._lodLayersCursors[prevLayerIndex];
-                let chunck = this._lodLayers[prevLayerIndex][cursor];
+            for (let prevLayerIndex = 0; prevLayerIndex < this._layersCount; prevLayerIndex++) {
+                let cursor = this._layersCursors[prevLayerIndex];
+                let chunck = this._layers[prevLayerIndex][cursor];
                 if (chunck) {
                     chunck.sqrDistanceToViewpoint = BABYLON.Vector3.DistanceSquared(this._viewpoint, chunck.barycenter);
                     let newLayerIndex = this._getLayerIndex(chunck.sqrDistanceToViewpoint);
                     if (newLayerIndex != prevLayerIndex) {
-                        let adequateLayerCursor = this._lodLayersCursors[newLayerIndex];
-                        this._lodLayers[prevLayerIndex].splice(cursor, 1);
-                        this._lodLayers[newLayerIndex].splice(adequateLayerCursor, 0, chunck);
+                        let adequateLayerCursor = this._layersCursors[newLayerIndex];
+                        this._layers[prevLayerIndex].splice(cursor, 1);
+                        this._layers[newLayerIndex].splice(adequateLayerCursor, 0, chunck);
                         chunck.lod = newLayerIndex;
                         
                         todo.push(chunck);
 
-                        this._lodLayersCursors[newLayerIndex]++;
-                        if (this._lodLayersCursors[newLayerIndex] >= this._lodLayers[newLayerIndex].length) {
-                            this._lodLayersCursors[newLayerIndex] = 0;
+                        this._layersCursors[newLayerIndex]++;
+                        if (this._layersCursors[newLayerIndex] >= this._layers[newLayerIndex].length) {
+                            this._layersCursors[newLayerIndex] = 0;
                         }
                         unsortedCount++;
                     }
                     else {
-                        this._lodLayersCursors[prevLayerIndex]++;
-                        if (this._lodLayersCursors[prevLayerIndex] >= this._lodLayers[prevLayerIndex].length) {
-                            this._lodLayersCursors[prevLayerIndex] = 0;
+                        this._layersCursors[prevLayerIndex]++;
+                        if (this._layersCursors[prevLayerIndex] >= this._layers[prevLayerIndex].length) {
+                            this._layersCursors[prevLayerIndex] = 0;
                         }
                         sortedCount++;
                     }
                 }
                 else {
-                    this._lodLayersCursors[prevLayerIndex] = 0;
-                    if (prevLayerIndex === this._lodLayersCount) {
+                    this._layersCursors[prevLayerIndex] = 0;
+                    if (prevLayerIndex === this._layersCount) {
                         break;
                     }
                 }

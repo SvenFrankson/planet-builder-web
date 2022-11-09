@@ -57,7 +57,7 @@ class Game extends Main {
     public async initialize(): Promise<void> {
 		Config.chunckPartConfiguration.filename = "round-smooth-chunck-parts";
 		Config.chunckPartConfiguration.lodMin = 0;
-		Config.chunckPartConfiguration.lodMax = 0;
+		Config.chunckPartConfiguration.lodMax = 1;
 		Config.chunckPartConfiguration.useXZAxisRotation = false;
 
 		return new Promise<void>(resolve => {
