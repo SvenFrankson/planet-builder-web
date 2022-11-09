@@ -113,8 +113,8 @@ class Game extends Main {
 					//let debugPlanetSkyColor = new DebugPlanetSkyColor(this);
 					//debugPlanetSkyColor.show();
 
-					//let debugTerrainColor = new DebugTerrainColor();
-					//debugTerrainColor.show();
+					let debugTerrainColor = new DebugTerrainColor();
+					debugTerrainColor.show();
 
 					let debugPlayerPosition = new DebugPlayerPosition(this);
 					debugPlayerPosition.show();

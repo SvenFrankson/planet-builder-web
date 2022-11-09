@@ -30,6 +30,8 @@ class PlanetMaterial extends BABYLON.ShaderMaterial {
         this._terrainColors[BlockType.Wood] = new BABYLON.Color3(0.600, 0.302, 0.020);
         this._terrainColors[BlockType.Leaf] = new BABYLON.Color3(0.431, 0.839, 0.020);
 
+        //this.setFlatColors();
+
         this.setColor3("globalColor", this._globalColor);
         this.setColor3Array("terrainColors", this._terrainColors);
         this.setSeaLevelTexture(undefined);
@@ -60,5 +62,16 @@ class PlanetMaterial extends BABYLON.ShaderMaterial {
         if (this._seaLevelTexture) {
             this.setTexture("seaLevelTexture", this._seaLevelTexture);
         }
+    }
+
+    private setFlatColors(): void {
+        this._terrainColors[BlockType.None] = new BABYLON.Color3(0, 0, 0);
+        this._terrainColors[BlockType.Water] = new BABYLON.Color3(0.224, 0.451, 0.675);
+        this._terrainColors[BlockType.Grass] = new BABYLON.Color3(0.294, 0.608, 0.255);
+        this._terrainColors[BlockType.Dirt] = new BABYLON.Color3(0.659, 0.463, 0.243);
+        this._terrainColors[BlockType.Sand] = new BABYLON.Color3(0.780, 0.667, 0.263);
+        this._terrainColors[BlockType.Rock] = new BABYLON.Color3(0.420, 0.420, 0.420);
+        
+        this.setColor3Array("terrainColors", this._terrainColors);
     }
 }

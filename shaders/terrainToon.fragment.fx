@@ -36,10 +36,9 @@ void main() {
       ambiantLightFactor = 0.4;
    }
 
-   float lightFactor = sunFactor * sunLightFactor + ambiantLightFactor;
+   float lightFactor = sunFactor * sunLightFactor * 0.5 + ambiantLightFactor * 0.5;
 
    lightFactor = round(lightFactor * 3.) / 3.;
-   lightFactor = lightFactor * 0.8 + 0.2;
 
    vec3 color = vec3(0., 0., 0.);
    if (useSeaLevelTexture == 1) {

@@ -435,15 +435,15 @@ class PlanetChunckMeshBuilder {
                         let hLow = PlanetTools.KGlobalToAltitude(hGlobal - 1) * 0.5 + PlanetTools.KGlobalToAltitude(hGlobal) * 0.5;
                         let hHigh = PlanetTools.KGlobalToAltitude(hGlobal) * 0.5 + PlanetTools.KGlobalToAltitude(hGlobal + 1) * 0.5;
     
-                        PCMB.tmpVertices[0].scaleToRef(hHigh, PCMB.tmpVertices[4]);
-                        PCMB.tmpVertices[1].scaleToRef(hHigh, PCMB.tmpVertices[5]);
-                        PCMB.tmpVertices[2].scaleToRef(hHigh, PCMB.tmpVertices[6]);
-                        PCMB.tmpVertices[3].scaleToRef(hHigh, PCMB.tmpVertices[7]);
+                        PCMB.tmpVertices[0].scaleToRef(hHigh + Math.sin(iGlobal * 10000 + jGlobal * 5000 + (hGlobal + 1) * 20000) * 0.15, PCMB.tmpVertices[4]);
+                        PCMB.tmpVertices[1].scaleToRef(hHigh + Math.sin((iGlobal + 1) * 10000 + jGlobal * 5000 + (hGlobal + 1) * 20000) * 0.15, PCMB.tmpVertices[5]);
+                        PCMB.tmpVertices[2].scaleToRef(hHigh + Math.sin((iGlobal + 1) * 10000 + (jGlobal + 1) * 5000 + (hGlobal + 1) * 20000) * 0.15, PCMB.tmpVertices[6]);
+                        PCMB.tmpVertices[3].scaleToRef(hHigh + Math.sin(iGlobal * 10000 + (jGlobal + 1) * 5000 + (hGlobal + 1) * 20000) * 0.15, PCMB.tmpVertices[7]);
     
-                        PCMB.tmpVertices[0].scaleInPlace(hLow);
-                        PCMB.tmpVertices[1].scaleInPlace(hLow);
-                        PCMB.tmpVertices[2].scaleInPlace(hLow);
-                        PCMB.tmpVertices[3].scaleInPlace(hLow);
+                        PCMB.tmpVertices[0].scaleInPlace(hLow + Math.sin(iGlobal * 10000 + jGlobal * 5000 + hGlobal * 20000) * 0.15);
+                        PCMB.tmpVertices[1].scaleInPlace(hLow + Math.sin((iGlobal + 1) * 10000 + jGlobal * 5000 + hGlobal * 20000) * 0.15);
+                        PCMB.tmpVertices[2].scaleInPlace(hLow + Math.sin((iGlobal + 1) * 10000 + (jGlobal + 1) * 5000 + hGlobal * 20000) * 0.15);
+                        PCMB.tmpVertices[3].scaleInPlace(hLow + Math.sin(iGlobal * 10000 + (jGlobal + 1) * 5000 + hGlobal * 20000) * 0.15);
 
                         /*
                         let center = BABYLON.Vector3.Zero();

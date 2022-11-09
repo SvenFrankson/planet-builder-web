@@ -1327,9 +1327,22 @@ class DebugTerrainColor {
     }
     initialize() {
         this.container = document.querySelector("#debug-terrain-color");
+        if (!this.container) {
+            this.container = document.createElement("div");
+            this.container.id = "debug-terrain-color";
+            this.container.classList.add("debug", "hidden");
+            document.querySelector("#meshes-info").appendChild(this.container);
+        }
         for (let i = 1; i < BlockTypeCount; i++) {
             let blockType = i;
-            let input = document.querySelector("#terrain-" + BlockTypeNames[blockType].toLowerCase() + "-color");
+            let id = "#terrain-" + BlockTypeNames[blockType].toLowerCase() + "-color";
+            let input = document.querySelector(id);
+            if (!input) {
+                input = document.createElement("debug-display-color-input");
+                input.id = id;
+                input.setAttribute("label", BlockTypeNames[blockType]);
+                this.container.appendChild(input);
+            }
             input.setColor(SharedMaterials.MainMaterial().getColor(blockType));
             input.onInput = (color) => {
                 SharedMaterials.MainMaterial().setColor(blockType, color);
@@ -1890,8 +1903,8 @@ class Game extends Main {
                 debugPlanetPerf.show();
                 //let debugPlanetSkyColor = new DebugPlanetSkyColor(this);
                 //debugPlanetSkyColor.show();
-                //let debugTerrainColor = new DebugTerrainColor();
-                //debugTerrainColor.show();
+                let debugTerrainColor = new DebugTerrainColor();
+                debugTerrainColor.show();
                 let debugPlayerPosition = new DebugPlayerPosition(this);
                 debugPlayerPosition.show();
                 resolve();
@@ -3747,14 +3760,14 @@ class PlanetChunckMeshBuilder {
                         let hGlobal = (k + kPos * PlanetTools.CHUNCKSIZE + 1);
                         let hLow = PlanetTools.KGlobalToAltitude(hGlobal - 1) * 0.5 + PlanetTools.KGlobalToAltitude(hGlobal) * 0.5;
                         let hHigh = PlanetTools.KGlobalToAltitude(hGlobal) * 0.5 + PlanetTools.KGlobalToAltitude(hGlobal + 1) * 0.5;
-                        PCMB.tmpVertices[0].scaleToRef(hHigh, PCMB.tmpVertices[4]);
-                        PCMB.tmpVertices[1].scaleToRef(hHigh, PCMB.tmpVertices[5]);
-                        PCMB.tmpVertices[2].scaleToRef(hHigh, PCMB.tmpVertices[6]);
-                        PCMB.tmpVertices[3].scaleToRef(hHigh, PCMB.tmpVertices[7]);
-                        PCMB.tmpVertices[0].scaleInPlace(hLow);
-                        PCMB.tmpVertices[1].scaleInPlace(hLow);
-                        PCMB.tmpVertices[2].scaleInPlace(hLow);
-                        PCMB.tmpVertices[3].scaleInPlace(hLow);
+                        PCMB.tmpVertices[0].scaleToRef(hHigh + Math.sin(iGlobal * 10000 + jGlobal * 5000 + (hGlobal + 1) * 20000) * 0.15, PCMB.tmpVertices[4]);
+                        PCMB.tmpVertices[1].scaleToRef(hHigh + Math.sin((iGlobal + 1) * 10000 + jGlobal * 5000 + (hGlobal + 1) * 20000) * 0.15, PCMB.tmpVertices[5]);
+                        PCMB.tmpVertices[2].scaleToRef(hHigh + Math.sin((iGlobal + 1) * 10000 + (jGlobal + 1) * 5000 + (hGlobal + 1) * 20000) * 0.15, PCMB.tmpVertices[6]);
+                        PCMB.tmpVertices[3].scaleToRef(hHigh + Math.sin(iGlobal * 10000 + (jGlobal + 1) * 5000 + (hGlobal + 1) * 20000) * 0.15, PCMB.tmpVertices[7]);
+                        PCMB.tmpVertices[0].scaleInPlace(hLow + Math.sin(iGlobal * 10000 + jGlobal * 5000 + hGlobal * 20000) * 0.15);
+                        PCMB.tmpVertices[1].scaleInPlace(hLow + Math.sin((iGlobal + 1) * 10000 + jGlobal * 5000 + hGlobal * 20000) * 0.15);
+                        PCMB.tmpVertices[2].scaleInPlace(hLow + Math.sin((iGlobal + 1) * 10000 + (jGlobal + 1) * 5000 + hGlobal * 20000) * 0.15);
+                        PCMB.tmpVertices[3].scaleInPlace(hLow + Math.sin(iGlobal * 10000 + (jGlobal + 1) * 5000 + hGlobal * 20000) * 0.15);
                         /*
                         let center = BABYLON.Vector3.Zero();
                         for (let i = 0; i < 8; i++) {
@@ -5769,6 +5782,7 @@ class PlanetMaterial extends BABYLON.ShaderMaterial {
         this._terrainColors[BlockType.Rock] = new BABYLON.Color3(0.522, 0.522, 0.522);
         this._terrainColors[BlockType.Wood] = new BABYLON.Color3(0.600, 0.302, 0.020);
         this._terrainColors[BlockType.Leaf] = new BABYLON.Color3(0.431, 0.839, 0.020);
+        //this.setFlatColors();
         this.setColor3("globalColor", this._globalColor);
         this.setColor3Array("terrainColors", this._terrainColors);
         this.setSeaLevelTexture(undefined);
@@ -5794,6 +5808,15 @@ class PlanetMaterial extends BABYLON.ShaderMaterial {
         if (this._seaLevelTexture) {
             this.setTexture("seaLevelTexture", this._seaLevelTexture);
         }
+    }
+    setFlatColors() {
+        this._terrainColors[BlockType.None] = new BABYLON.Color3(0, 0, 0);
+        this._terrainColors[BlockType.Water] = new BABYLON.Color3(0.224, 0.451, 0.675);
+        this._terrainColors[BlockType.Grass] = new BABYLON.Color3(0.294, 0.608, 0.255);
+        this._terrainColors[BlockType.Dirt] = new BABYLON.Color3(0.659, 0.463, 0.243);
+        this._terrainColors[BlockType.Sand] = new BABYLON.Color3(0.780, 0.667, 0.263);
+        this._terrainColors[BlockType.Rock] = new BABYLON.Color3(0.420, 0.420, 0.420);
+        this.setColor3Array("terrainColors", this._terrainColors);
     }
 }
 var SideNames = [
