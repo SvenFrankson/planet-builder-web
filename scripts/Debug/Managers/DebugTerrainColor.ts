@@ -16,7 +16,7 @@ class DebugTerrainColor {
             document.querySelector("#meshes-info").appendChild(this.container);
         }
 
-        for (let i = 1; i < BlockTypeCount; i++) {
+        for (let i = BlockType.Water; i < BlockType.Unknown; i++) {
             let blockType: BlockType = i;
             let id = "#terrain-" + BlockTypeNames[blockType].toLowerCase() + "-color"
             let input = document.querySelector(id) as DebugDisplayColorInput;

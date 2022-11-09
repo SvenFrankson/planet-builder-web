@@ -36,7 +36,7 @@ class Utils {
 		)
     }
 
-    public static showDebugPlanetMap(generator: PlanetGeneratorChaos, x: number, y: number, maxValue?: number, scene?: BABYLON.Scene): void {
+    public static showDebugPlanetMap(generator: PlanetGeneratorChaos | PlanetGeneratorMars, x: number, y: number, maxValue?: number, scene?: BABYLON.Scene): void {
         let debugPlanet = new BABYLON.Mesh("debug-planet");
         if (!scene) {
             scene = BABYLON.Engine.Instances[0].scenes[0];

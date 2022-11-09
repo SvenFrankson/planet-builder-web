@@ -7,10 +7,9 @@ var BlockTypeNames: string[] = [
     "Rock",
     "Wood",
     "Leaf",
+    "Laterite",
     "Unknown"
 ];
-
-var BlockTypeCount: number = 7;
 
 enum BlockType {
     None = 0,
@@ -21,5 +20,6 @@ enum BlockType {
     Rock,
     Wood,
     Leaf,
+    Laterite,
     Unknown
 }

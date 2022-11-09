@@ -2,7 +2,7 @@
 precision highp float;
  
 uniform vec3 lightInvDirW;
-uniform vec3 terrainColors[8];
+uniform vec3 terrainColors[9];
 uniform vec3 globalColor;
 uniform int useSeaLevelTexture;
 uniform sampler2D seaLevelTexture;

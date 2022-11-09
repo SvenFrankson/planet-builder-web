@@ -31,7 +31,7 @@ class Planet extends BABYLON.Mesh {
 
         this.seaLevel = Math.round(this.kPosMax * this.seaLevelRatio * PlanetTools.CHUNCKSIZE);
 		
-        this.generator =  new PlanetGeneratorChaos(this, 0.15);
+        this.generator =  new PlanetGeneratorMars(this, 0.1);
         if (name === "Paulita") {
             this.generator.showDebug();
         }
