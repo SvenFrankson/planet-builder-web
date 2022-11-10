@@ -11,6 +11,7 @@ class ConfigurationPerformance {
 
     public lodRanges: number[] = [20, 100, 150, 200, 250, 300, 350, 400];
     public lodCount: number = 2;
+    public seaLevelMeshVertexCount: number = 16;
 }
 
 class Configuration {

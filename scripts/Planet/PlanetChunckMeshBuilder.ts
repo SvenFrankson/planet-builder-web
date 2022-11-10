@@ -563,7 +563,7 @@ class PlanetChunckMeshBuilder {
             levelCoef = Math.pow(2, chunck.level);
         }
 
-        let vertexCount: number = 16;
+        let vertexCount: number = Config.performanceConfiguration.seaLevelMeshVertexCount;
         let f = Math.pow(2, chunck.planet.degree - chunck.degree);
         for (let i = - 1; i <= vertexCount + 1; i++) {
             for (let j = - 1; j <= vertexCount + 1; j++) {
