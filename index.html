@@ -3,96 +3,12 @@
 	<head>
 		<meta http-equiv="Content-Type" content="text/html" charset="utf-8"/>
 		<title>Planet Builder</title>
-		<script src="./lib/jquery-3.1.1.min.js"></script>
 		<script src="https://cdn.babylonjs.com/babylon.max.js"></script>
 		<script src="./scripts/app.js"></script>
 		<script src="https://preview.babylonjs.com/loaders/babylonjs.loaders.js"></script>
 		<link rel="stylesheet" type="text/css" href="./styles/app.css">
-		<link rel="stylesheet" type="text/css" href="./styles/player-action.css">
 	</head>
 	<body>
 		<canvas id="renderCanvas"></canvas>
-		<img id="cursor" src="./img/cursor.png">
 	</body>
-	<div id="player-action">
-		<div id="player-action-1" class="player-action-item">
-			<img class="background" src="/datas/images/inventory-item-background.svg"></img>
-			<img class="icon"></img>
-			<span class="index">1</span>
-		</div>
-		<div id="player-action-2" class="player-action-item">
-			<img class="background" src="/datas/images/inventory-item-background.svg"></img>
-			<img class="icon"></img>
-			<span class="index">2</span>
-		</div>
-		<div id="player-action-3" class="player-action-item">
-			<img class="background" src="/datas/images/inventory-item-background.svg"></img>
-			<img class="icon"></img>
-			<span class="index">3</span>
-		</div>
-		<div id="player-action-4" class="player-action-item">
-			<img class="background" src="/datas/images/inventory-item-background.svg"></img>
-			<img class="icon"></img>
-			<span class="index">4</span>
-		</div>
-		<div id="player-action-5" class="player-action-item">
-			<img class="background" src="/datas/images/inventory-item-background.svg"></img>
-			<img class="icon"></img>
-			<span class="index">5</span>
-		</div>
-		<div id="player-action-6" class="player-action-item">
-			<img class="background" src="/datas/images/inventory-item-background.svg"></img>
-			<img class="icon"></img>
-			<span class="index">6</span>
-		</div>
-		<div id="player-action-7" class="player-action-item">
-			<img class="background" src="/datas/images/inventory-item-background.svg"></img>
-			<img class="icon"></img>
-			<span class="index">7</span>
-		</div>
-		<div id="player-action-8" class="player-action-item">
-			<img class="background" src="/datas/images/inventory-item-background.svg"></img>
-			<img class="icon"></img>
-			<span class="index">8</span>
-		</div>
-		<div id="player-action-9" class="player-action-item">
-			<img class="background" src="/datas/images/inventory-item-background.svg"></img>
-			<img class="icon"></img>
-			<span class="index">9</span>
-		</div>
-		<div id="player-action-0" class="player-action-item">
-			<img class="background" src="/datas/images/inventory-item-background.svg"></img>
-			<img class="icon"></img>
-			<span class="index">0</span>
-		</div>
-	</div>
-	<div id="meshes-info">				
-		<div id="debug-planet-perf" class="debug hidden">
-			<debug-display-frame-value id="frame-rate" label="Frame Rate fps" min="0" max="60"></debug-display-frame-value>
-			<debug-display-frame-value id="chunck-sort" label="Chuncks Sort %" min="95" max="100"></debug-display-frame-value>
-			<debug-display-frame-value id="draw-request-count" label="Draw Requests" min="0" max="100"></debug-display-frame-value>
-			<debug-display-text-value id="layer-0-count" label="Layer 0"></debug-display-text-value>
-			<debug-display-text-value id="layer-1-count" label="Layer 1"></debug-display-text-value>
-			<debug-display-text-value id="layer-2-count" label="Layer 2"></debug-display-text-value>
-			<debug-display-text-value id="layer-3-count" label="Layer 3"></debug-display-text-value>
-			<debug-display-text-value id="layer-4-count" label="Layer 4"></debug-display-text-value>
-			<debug-display-text-value id="layer-5-count" label="Layer 5"></debug-display-text-value>
-		</div>
-
-		<div id="debug-player-position" class="debug hidden">
-			<debug-display-text-value id="player-coordinates" label="Coordinates"></debug-display-text-value>
-			<debug-display-vector3-value id="player-position" label="Position" decimals="3"></debug-display-vector3-value>
-			<debug-display-vector3-value id="player-local-position" label="Local Position" decimals="3"></debug-display-vector3-value>
-			<debug-display-text-value id="player-planet-side" label="Side"></debug-display-text-value>
-			<debug-display-vector3-value id="player-global-ijk" label="Global" useIJK="true" decimals="0"></debug-display-vector3-value>
-			<debug-display-vector3-value id="player-chunck" label="Chunck" useIJK="true" decimals="0"></debug-display-vector3-value>
-			<debug-display-vector3-value id="player-local-ijk" label="Local" useIJK="true" decimals="0"></debug-display-vector3-value>
-		</div>
-
-		<div id="debug-planet-sky-color" class="debug hidden">
-			<debug-display-color-input id="planet-sky-dawn-color" label="Sky Dawn"></debug-display-color-input>
-			<debug-display-color-input id="planet-sky-zenith-color" label="Sky Zenith"></debug-display-color-input>
-			<debug-display-color-input id="planet-sky-night-color" label="Sky Night"></debug-display-color-input>
-		</div>
-	</div>
 </html>

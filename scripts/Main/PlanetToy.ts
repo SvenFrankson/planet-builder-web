@@ -1,5 +1,4 @@
 /// <reference path="../../lib/babylon.d.ts"/>
-/// <reference path="Main.ts"/>
 
 class PlanetToy extends Main {
 

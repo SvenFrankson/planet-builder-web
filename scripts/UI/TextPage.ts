@@ -26,7 +26,7 @@ class TextPage {
         );
     }
 
-    constructor(public game: Game | Demo) {
+    constructor(public main: Main) {
 
     }
 
@@ -35,18 +35,18 @@ class TextPage {
             let yZero = this.mesh.position.y;
             let t = 0;
             let cb = () => {
-                t += this.game.engine.getDeltaTime() / 1000;
+                t += this.main.engine.getDeltaTime() / 1000;
                 if (t < duration) {
                     let f = t / duration;
                     this.mesh.position.y = yZero * (1 - f) + posYTarget * f;
                 }
                 else {
                     this.mesh.position.y = posYTarget;
-                    this.game.scene.onBeforeRenderObservable.removeCallback(cb);
+                    this.main.scene.onBeforeRenderObservable.removeCallback(cb);
                     resolve();
                 }
             }
-            this.game.scene.onBeforeRenderObservable.add(cb);
+            this.main.scene.onBeforeRenderObservable.add(cb);
         });
     }
 
@@ -55,18 +55,18 @@ class TextPage {
             let xZero = this.mesh.scaling.x;
             let t = 0;
             let cb = () => {
-                t += this.game.engine.getDeltaTime() / 1000;
+                t += this.main.engine.getDeltaTime() / 1000;
                 if (t < duration) {
                     let f = t / duration;
                     this.mesh.scaling.x = xZero * (1 - f) + xTarget * f;
                 }
                 else {
                     this.mesh.scaling.x = xTarget;
-                    this.game.scene.onBeforeRenderObservable.removeCallback(cb);
+                    this.main.scene.onBeforeRenderObservable.removeCallback(cb);
                     resolve();
                 }
             }
-            this.game.scene.onBeforeRenderObservable.add(cb);
+            this.main.scene.onBeforeRenderObservable.add(cb);
         });
     }
 
@@ -75,26 +75,27 @@ class TextPage {
             let yZero = this.mesh.scaling.y;
             let t = 0;
             let cb = () => {
-                t += this.game.engine.getDeltaTime() / 1000;
+                t += this.main.engine.getDeltaTime() / 1000;
                 if (t < duration) {
                     let f = t / duration;
                     this.mesh.scaling.y = yZero * (1 - f) + yTarget * f;
                 }
                 else {
                     this.mesh.scaling.y = yTarget;
-                    this.game.scene.onBeforeRenderObservable.removeCallback(cb);
+                    this.main.scene.onBeforeRenderObservable.removeCallback(cb);
                     resolve();
                 }
             }
-            this.game.scene.onBeforeRenderObservable.add(cb);
+            this.main.scene.onBeforeRenderObservable.add(cb);
         });
     }
 
     public instantiate(): void {
         this.baseMesh = BABYLON.MeshBuilder.CreateCylinder("text-page-base", { height: 0.1, diameter: 0.5 });
+        //this.baseMesh = BABYLON.MeshBuilder.CreateBox("text-page-base", { height: 0.1, width: 1, depth: 1 });
 
         this.mesh = new BABYLON.Mesh("text-page");
-        this.mesh.layerMask = 0x10000000;
+        //this.mesh.layerMask = 0x10000000;
         this.mesh.parent = this.baseMesh;
         this.mesh.position.y = 0;
         this.mesh.rotation.y = Math.PI;
@@ -128,18 +129,18 @@ class TextPage {
 
         data.applyToMesh(this.mesh);
 
-        this.material = new BABYLON.StandardMaterial("text-page-material", this.game.scene);
+        this.material = new BABYLON.StandardMaterial("text-page-material", this.main.scene);
         this.material.useAlphaFromDiffuseTexture = true;
         this.material.specularColor.copyFromFloats(0, 0, 0);
         this.material.emissiveColor.copyFromFloats(1, 1, 1);
         this.mesh.material = this.material;
 
-        this.texture = new BABYLON.DynamicTexture("text-page-texture", { width: this._w, height: this._h }, this.game.scene, true);
+        this.texture = new BABYLON.DynamicTexture("text-page-texture", { width: this._w, height: this._h }, this.main.scene, true);
         this.texture.hasAlpha = true;
         this.material.diffuseTexture = this.texture;
 
         this.meshOnOff = new BABYLON.Mesh("text-page");
-        this.meshOnOff.layerMask = 0x10000000;
+        //this.meshOnOff.layerMask = 0x10000000;
         this.meshOnOff.parent = this.baseMesh;
         this.meshOnOff.position.y = 1.05;
         this.meshOnOff.position.z = 0.05;
@@ -172,13 +173,13 @@ class TextPage {
 
         data.applyToMesh(this.meshOnOff);
 
-        this.materialOnOff = new BABYLON.StandardMaterial("text-page-material-on-off", this.game.scene);
+        this.materialOnOff = new BABYLON.StandardMaterial("text-page-material-on-off", this.main.scene);
         this.materialOnOff.useAlphaFromDiffuseTexture = true;
         this.materialOnOff.specularColor.copyFromFloats(0, 0, 0);
         this.materialOnOff.emissiveColor.copyFromFloats(1, 1, 1);
         this.meshOnOff.material = this.materialOnOff;
 
-        this.textureOnOff = new BABYLON.DynamicTexture("text-page-texture-on-off", { width: 140, height: 140 }, this.game.scene, true);
+        this.textureOnOff = new BABYLON.DynamicTexture("text-page-texture-on-off", { width: 140, height: 140 }, this.main.scene, true);
         this.textureOnOff.hasAlpha = true;
         this.materialOnOff.diffuseTexture = this.textureOnOff;
 
@@ -237,12 +238,25 @@ class TextPage {
         }
     }
 
-    public setTarget(target: BABYLON.Vector3): void {
-        let y = this.baseMesh.position.clone().normalize();
-        let z = target.subtract(this.baseMesh.position);
-        let x = BABYLON.Vector3.Cross(y, z);
-        z = BABYLON.Vector3.Cross(x, y);
+    public setTarget(target: BABYLON.Vector3, usePlanetUp: boolean = false): void {
+        let y: BABYLON.Vector3;
+        if (usePlanetUp && this.baseMesh.position.lengthSquared() != 0) {
+            y = this.baseMesh.position.clone().normalize();
+        }
+        else {
+            y = BABYLON.Vector3.Up();
+        }
+        let z = target.subtract(this.baseMesh.position).normalize();
+        let x = BABYLON.Vector3.Cross(y, z).normalize();
+        z = BABYLON.Vector3.Cross(x, y).normalize();
         this.baseMesh.rotationQuaternion = BABYLON.Quaternion.RotationQuaternionFromAxis(x, y, z);
+    }
+
+    public redrawSVG(image: any): void {
+        let context = this.texture.getContext();
+        context.clearRect(0, 0, this._w, this._h);
+
+        context.drawImage(image, 0, 0, this._w, this._h);
     }
 
     public redraw(): void {

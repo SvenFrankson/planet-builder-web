@@ -1,5 +1,3 @@
-/// <reference path="Main.ts"/>
-
 class Miniature extends Main {
 
     public camera: BABYLON.ArcRotateCamera;

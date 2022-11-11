@@ -1,5 +1,5 @@
 /// <reference path="../../lib/babylon.d.ts"/>
-/// <reference path="Main.ts"/>
+/// <reference path="../Main.ts"/>
 
 class ChunckTest extends Main {
 

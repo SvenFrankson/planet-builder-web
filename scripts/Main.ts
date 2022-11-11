@@ -49,6 +49,13 @@ window.addEventListener("DOMContentLoaded", () => {
             planetToy.animate();
         });
     }
+    else if (window.location.href.indexOf("game.html") != -1) {
+        let game: Game = new Game("renderCanvas");
+        game.createScene();
+        game.initialize().then(() => {
+            game.animate();
+        });
+    }
     else if (window.location.href.indexOf("miniature.html") != -1) {
         let miniature: Miniature = new Miniature("renderCanvas");
         miniature.createScene();
@@ -71,10 +78,10 @@ window.addEventListener("DOMContentLoaded", () => {
         });
     }
     else {
-        let game: Game = new Game("renderCanvas");
-        game.createScene();
-        game.initialize().then(() => {
-            game.animate();
+        let mainMenu: MainMenu = new MainMenu("renderCanvas");
+        mainMenu.createScene();
+        mainMenu.initialize().then(() => {
+            mainMenu.animate();
         });
     }
 });
