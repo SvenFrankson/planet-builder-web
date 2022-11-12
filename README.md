@@ -7,11 +7,6 @@ Typescript implementation of PlanetBuilder generation algorithms.
 
 Go to https://svenfrankson.github.io/PlanetBuilder2022/demo.html
 
-# Run the project from Source
-
-* 1 - Download and extract .zip archive to your chosen local web-server public directory.
-* 2 - Run index.html from your local web-server.
-
 # Compiling
 
 * 1 - Open folder with your IDE, install Typescript and use tsconfig.
