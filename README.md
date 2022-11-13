@@ -10,4 +10,4 @@ Go to https://svenfrankson.github.io/PlanetBuilder2022/demo.html
 # Compiling
 
 * 1 - Open folder with your IDE, install Typescript and use tsconfig.
-* 2 - Because this project is quite old, it does not benefit from BabylonJS npm packages, and an up-to-date version of BabylonJS and its type definition is versionned in this repo.
+* 2 - Because this project is quite old, it does not benefit from BabylonJS npm packages, and an up-to-date version of BabylonJS and its type definition are versionned in this repo.
