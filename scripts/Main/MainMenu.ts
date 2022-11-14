@@ -36,6 +36,24 @@ class MainMenu extends Main {
 			let context = textPage.texture.getContext();
 
 			let silka = new Slika(1600, 1000, context);
+			for (let i = 50; i < 1000; i += 100) {
+				silka.add(new SlikaLine(
+					new SlikaPosition(10, i),
+					new SlikaPosition(1590, i),
+					new SlikaShapeStyle(
+						"white", 3, "grey", 20
+					)
+				))
+			}
+			for (let i = 50; i < 1600; i += 100) {
+				silka.add(new SlikaLine(
+					new SlikaPosition(i, 10),
+					new SlikaPosition(i, 990),
+					new SlikaShapeStyle(
+						"white", 3, "grey", 20
+					)
+				))
+			}
 			silka.add(new SlikaText(
 				"SLIKA",
 				new SlikaPosition(100, 100),

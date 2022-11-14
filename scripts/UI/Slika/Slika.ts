@@ -16,6 +16,18 @@ class SlikaPosition {
     }
 }
 
+class SlikaShapeStyle {
+
+    constructor(
+        public color: string = "white",
+        public width: number = 1,
+        public highlightColor: string = "white",
+        public highlightRadius: number = 20
+    ) {
+
+    }
+}
+
 class SlikaTextStyle {
 
     public color: string = "white";
@@ -61,6 +73,29 @@ class SlikaPath extends SlikaElement {
 
     public redraw(context: BABYLON.ICanvasRenderingContext): void {
         
+    }
+}
+
+class SlikaLine extends SlikaElement {
+
+    constructor(
+        public pStart: SlikaPosition = new SlikaPosition(),
+        public pEnd: SlikaPosition = new SlikaPosition(),
+        public style: SlikaShapeStyle = new SlikaShapeStyle()
+    ) {
+        super();
+    }
+
+    public redraw(context: BABYLON.ICanvasRenderingContext): void {
+        context.strokeStyle = this.style.color;
+        context.shadowBlur = this.style.highlightRadius;
+        context.shadowColor = this.style.highlightColor;
+        context.strokeStyle = this.style.highlightColor;
+        context.lineWidth = this.style.width;
+        context.beginPath();
+        context.moveTo(this.pStart.x, this.pStart.y);
+        context.lineTo(this.pEnd.x, this.pEnd.y);
+        context.stroke();
     }
 }
 
