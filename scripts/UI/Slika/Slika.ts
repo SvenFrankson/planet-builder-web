@@ -21,6 +21,8 @@ class SlikaTextStyle {
     public color: string = "white";
     public size: number = 20;
     public fontFamily: string = "Consolas";
+    public highlightColor: string = "white";
+    public highlightRadius: number = 20;
 
     constructor(
         color?: string,
@@ -35,6 +37,9 @@ class SlikaTextStyle {
         }
         if (fontFamily) {
             this.fontFamily = fontFamily;
+        }
+        if (this.highlightRadius) {
+            this.highlightRadius = this.highlightRadius;
         }
     }
 }
@@ -80,11 +85,19 @@ class SlikaText extends SlikaElement {
         else {
             this.textStyle = new SlikaTextStyle();
         }
+        let highlightColor = BABYLON.Color3.FromHexString(this.textStyle.color);
+        highlightColor.scaleInPlace(0.5);
+        this.textStyle.highlightColor = highlightColor.toHexString();
     }
 
     public redraw(context: BABYLON.ICanvasRenderingContext): void {
         context.fillStyle = this.textStyle.color;
         context.font = this.textStyle.size + "px " + this.textStyle.fontFamily;
+        context.shadowBlur = this.textStyle.highlightRadius;
+        context.shadowColor = this.textStyle.highlightColor;
+        context.strokeStyle = this.textStyle.highlightColor;
+        context.lineWidth = this.textStyle.highlightRadius * 0.2;
+        context.strokeText(this.text, this.position.x, this.position.y);
         context.fillText(this.text, this.position.x, this.position.y);
     }
 }
