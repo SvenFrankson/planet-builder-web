@@ -27,33 +27,24 @@ class MainMenu extends Main {
     public async initialize(): Promise<void> {
 		return new Promise<void>(resolve => {
 
-			let svg = document.createElement("svg");
-			svg.setAttribute("viewBox", "0 0 100 100");
-			let rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-			rect.setAttribute("x", "40");
-			rect.setAttribute("y", "60");
-			rect.setAttribute("width", "100");
-			rect.setAttribute("height", "100");
-			rect.setAttribute("fill", "red");
-			rect.setAttribute("stroke", "lime");
-			svg.appendChild(rect);
-
 			let textPage = new TextPage(this);
 			textPage.instantiate();
 			textPage.setPosition(BABYLON.Vector3.Zero());
 			textPage.setTarget(new BABYLON.Vector3(0, 1, - 5));
 			textPage.open();
 			
-			let image = new Image();
-			image.onload = () => {
-				image.src = URL.createObjectURL(
-					new Blob(
-						[svg.outerHTML],
-						{type:'image/svg+xml;charset=utf-8'}
-					)
-				);
-				textPage.redrawSVG(image);
-			}
+			let context = textPage.texture.getContext();
+
+			let silka = new Slika(1600, 1000, context);
+			silka.add(new SlikaText(
+				"Slika",
+				new SlikaPosition(100, 100),
+				new SlikaTextStyle("red", 40)
+			));
+			silka.clear("black");
+			silka.redraw();
+
+			textPage.texture.update();
 
 			this._textPage = textPage;
 

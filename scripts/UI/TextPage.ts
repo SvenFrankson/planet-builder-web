@@ -257,6 +257,8 @@ class TextPage {
         context.clearRect(0, 0, this._w, this._h);
 
         context.drawImage(image, 0, 0, this._w, this._h);
+        
+        this.texture.update();
     }
 
     public redraw(): void {
