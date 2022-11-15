@@ -1,18 +1,21 @@
 class SlikaPosition {
 
-    public x: number = 0;
-    public y: number = 0;
+    constructor(
+        public x: number = 0,
+        public y: number = 0,
+        public textAlign: string = "start"
+    ) {
+
+    }
+}
+
+class SlikaPoints {
 
     constructor(
-        x?: number,
-        y?: number
+        public points: number[] = [],
+        public close: boolean = false
     ) {
-        if (isFinite(x)) {
-            this.x = x;
-        }
-        if (isFinite(y)) {
-            this.y = y;
-        }
+
     }
 }
 
@@ -31,29 +34,14 @@ class SlikaShapeStyle {
 
 class SlikaTextStyle {
 
-    public color: string = "white";
-    public size: number = 20;
-    public fontFamily: string = "Consolas";
-    public highlightColor: string = "white";
-    public highlightRadius: number = 20;
-
     constructor(
-        color?: string,
-        size?: number,
-        fontFamily?: string
+        public color: string = "white",
+        public size: number = 20,
+        public fontFamily: string = "Consolas",
+        public highlightColor: string = "white",
+        public highlightRadius: number = 20
     ) {
-        if (color) {
-            this.color = color;
-        }
-        if (isFinite(size)) {
-            this.size = size;
-        }
-        if (fontFamily) {
-            this.fontFamily = fontFamily;
-        }
-        if (this.highlightRadius) {
-            this.highlightRadius = this.highlightRadius;
-        }
+        
     }
 }
 
@@ -68,12 +56,79 @@ abstract class SlikaElement {
 
 class SlikaPath extends SlikaElement {
 
-    constructor() {
+    public static CreatePan(
+        x0: number,
+        x1: number,
+        y0: number,
+        thickness: number,
+        H: number,
+        ratio: number,
+        bigRight: boolean,
+        flip: boolean,
+        style: SlikaShapeStyle
+    ): SlikaPath {
+
+        let points: number[];
+        
+        let sign = flip ? - 1 : 1;
+
+        if (bigRight) {
+            let xBottom = x1 - (x1 - x0) * ratio;
+            let xUp = xBottom - (H - thickness);
+
+            points = [
+                x0, y0,
+                x1, y0,
+                x1, y0 + sign * H,
+                xBottom, y0 + sign * H,
+                xUp, y0 + sign * thickness,
+                x0, y0 + sign * thickness
+            ];
+        }
+        else {
+            let xBottom = x0 + (x1 - x0) * ratio;
+            let xUp = xBottom + (H - thickness);
+
+            points = [
+                x0, y0,
+                x1, y0,
+                x1, y0 + sign * thickness,
+                xUp, y0 + sign * thickness,
+                xBottom, y0 + sign * H,
+                x0, y0 + sign * H
+            ];
+        }
+
+        return new SlikaPath(new SlikaPoints(points, true), style);
+    }
+
+    constructor(
+        public points: SlikaPoints,
+        public style: SlikaShapeStyle
+    ) {
         super();
     }
 
     public redraw(context: BABYLON.ICanvasRenderingContext): void {
-        
+        if (this.points.points.length > 0) {
+            context.fillStyle = this.style.fill;
+            context.strokeStyle = this.style.stroke;
+            context.shadowBlur = this.style.highlightRadius;
+            context.shadowColor = this.style.highlightColor;
+            context.strokeStyle = this.style.highlightColor;
+            context.lineWidth = this.style.width;
+            context.beginPath();
+            context.moveTo(this.points.points[0], this.points.points[1]);
+            for (let i = 1; i < this.points.points.length / 2; i++) {
+                context.lineTo(this.points.points[2 * i], this.points.points[2 * i + 1]);
+            }
+            if (this.style.fill != "none") {
+                context.fill();
+            }
+            if (this.style.stroke != "none") {
+                context.stroke();
+            }
+        }
     }
 }
 
@@ -99,7 +154,6 @@ class SlikaLine extends SlikaElement {
         context.strokeStyle = this.style.stroke;
         context.shadowBlur = this.style.highlightRadius;
         context.shadowColor = this.style.highlightColor;
-        context.strokeStyle = this.style.highlightColor;
         context.lineWidth = this.style.width;
         context.beginPath();
         context.moveTo(this.pStart.x, this.pStart.y);
@@ -141,8 +195,15 @@ class SlikaText extends SlikaElement {
         context.shadowColor = this.textStyle.highlightColor;
         context.strokeStyle = this.textStyle.highlightColor;
         context.lineWidth = this.textStyle.highlightRadius * 0.2;
-        context.strokeText(this.text, this.position.x, this.position.y);
-        context.fillText(this.text, this.position.x, this.position.y);
+        let offsetX = 0;
+        if (this.position.textAlign === "center") {
+            offsetX = context.measureText(this.text).width * 0.5;
+        }
+        else if (this.position.textAlign === "end") {
+            offsetX = context.measureText(this.text).width;
+        }
+        context.strokeText(this.text, this.position.x - offsetX, this.position.y);
+        context.fillText(this.text, this.position.x - offsetX, this.position.y);
     }
 }
 
