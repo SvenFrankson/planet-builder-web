@@ -19,7 +19,8 @@ class SlikaPosition {
 class SlikaShapeStyle {
 
     constructor(
-        public color: string = "white",
+        public stroke: string = "white",
+        public fill: string = "none",
         public width: number = 1,
         public highlightColor: string = "white",
         public highlightRadius: number = 20
@@ -78,6 +79,14 @@ class SlikaPath extends SlikaElement {
 
 class SlikaLine extends SlikaElement {
 
+    public static Create(x0: number, y0: number, x1: number, y1: number, style = new SlikaShapeStyle()): SlikaLine {
+        return new SlikaLine(
+            new SlikaPosition(x0, y0),
+            new SlikaPosition(x1, y1),
+            style
+        );
+    }
+
     constructor(
         public pStart: SlikaPosition = new SlikaPosition(),
         public pEnd: SlikaPosition = new SlikaPosition(),
@@ -87,7 +96,7 @@ class SlikaLine extends SlikaElement {
     }
 
     public redraw(context: BABYLON.ICanvasRenderingContext): void {
-        context.strokeStyle = this.style.color;
+        context.strokeStyle = this.style.stroke;
         context.shadowBlur = this.style.highlightRadius;
         context.shadowColor = this.style.highlightColor;
         context.strokeStyle = this.style.highlightColor;

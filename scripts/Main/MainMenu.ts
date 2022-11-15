@@ -27,7 +27,10 @@ class MainMenu extends Main {
     public async initialize(): Promise<void> {
 		return new Promise<void>(resolve => {
 
-			let textPage = new TextPage(this);
+			let w = 600;
+			let h = 1200;
+
+			let textPage = new TextPage(0.7, w, h, this);
 			textPage.instantiate();
 			textPage.setPosition(BABYLON.Vector3.Zero());
 			textPage.setTarget(new BABYLON.Vector3(0, 1, - 3));
@@ -35,24 +38,12 @@ class MainMenu extends Main {
 			
 			let context = textPage.texture.getContext();
 
-			let silka = new Slika(1600, 1000, context);
-			for (let i = 50; i < 1000; i += 100) {
-				silka.add(new SlikaLine(
-					new SlikaPosition(10, i),
-					new SlikaPosition(1590, i),
-					new SlikaShapeStyle(
-						"white", 3, "grey", 20
-					)
-				))
+			let silka = new Slika(w, h, context);
+			for (let i = 50; i < h; i += 100) {
+				silka.add(SlikaLine.Create(10, i, w - 10, i, new SlikaShapeStyle("white", "none", 3, "grey", 20)));
 			}
-			for (let i = 50; i < 1600; i += 100) {
-				silka.add(new SlikaLine(
-					new SlikaPosition(i, 10),
-					new SlikaPosition(i, 990),
-					new SlikaShapeStyle(
-						"white", 3, "grey", 20
-					)
-				))
+			for (let i = 50; i < w; i += 100) {
+				silka.add(SlikaLine.Create(i, 10, i, h - 10, new SlikaShapeStyle("white", "none", 3, "grey", 20)));
 			}
 			silka.add(new SlikaText(
 				"SLIKA",

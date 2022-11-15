@@ -11,9 +11,6 @@ class TextPage {
     // 24 lines of 80 characters each
     public lines: string[] = [];
 
-    private _w: number = 1600;
-    private _h: number = 1000;
-
     private _angle = 0.8;
     private _radius = 2;
     private _cz = -2;
@@ -26,8 +23,13 @@ class TextPage {
         );
     }
 
-    constructor(public main: Main) {
-
+    constructor(
+        public size: number = 1,
+        private _w: number = 1600,
+        private _h: number = 1000,
+        public main: Main
+    ) {
+        this._angle = this.size / this._radius;
     }
 
     private async _animatePosY(posYTarget: number, duration: number): Promise<void> {
@@ -109,11 +111,12 @@ class TextPage {
         let uvs: number[] = [];
         let normals: number[] = [];
 
+        let h = this._angle * this._radius / this._w * this._h;
         for (let i = 0; i <= 8; i++) {
-            let p = this.xTextureToPos(i * 1600 / 8);
+            let p = this.xTextureToPos(i * this._w / 8);
             let l = positions.length / 3;
-            positions.push(p.x, -0.5, p.y);
-            positions.push(p.x, 0.5, p.y);
+            positions.push(p.x, - h * 0.5, p.y);
+            positions.push(p.x, h * 0.5, p.y);
             uvs.push(i / 8, 0);
             uvs.push(i / 8, 1);
             if (i < 8) {
@@ -221,7 +224,7 @@ class TextPage {
     }
 
     public async open(): Promise<void> {
-        await this._animatePosY(1.5, 0.3);
+        await this._animatePosY(1, 0.3);
         await this._animateScaleX(1, 0.2);
         await this._animateScaleY(1, 0.2);
     }
