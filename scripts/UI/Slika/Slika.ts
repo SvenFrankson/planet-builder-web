@@ -56,6 +56,33 @@ abstract class SlikaElement {
 
 class SlikaPath extends SlikaElement {
 
+    public static CreateParenthesis(
+        x0: number,
+        x1: number,
+        y0: number,
+        H: number,
+        flip: boolean,
+        style: SlikaShapeStyle
+    ): SlikaPath {
+        let yUp = y0 + (x1 - x0);
+        let yBottom = y0 + H - (x1 - x0);
+        
+        if (flip) {
+            let tmp = x1;
+            x1 = x0;
+            x0 = tmp;
+        }
+        
+        return new SlikaPath(
+            new SlikaPoints([
+                x1, y0,
+                x0, yUp,
+                x0, yBottom,
+                x1, y0 + H
+            ],
+            true), style);
+    }
+
     public static CreatePan(
         x0: number,
         x1: number,

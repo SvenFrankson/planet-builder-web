@@ -39,7 +39,7 @@ class MainMenu extends Main {
 			let context = textPage.texture.getContext();
 
 			let slika = new Slika(w, h, context);
-			slika.add(new SlikaPath(new SlikaPoints([23, 33, w - 23, 33, w - 23, h - 33, 23, h - 33]), new SlikaShapeStyle("none", "#596b6680", 0, "white", 0)));
+			slika.add(new SlikaPath(new SlikaPoints([23, 18, w - 23, 18, w - 23, h - 18, 23, h - 18]), new SlikaShapeStyle("none", "#596b6680", 0, "white", 0)));
 			for (let i = 100; i < h; i += 100) {
 				slika.add(SlikaLine.Create(23, i, w - 23, i, new SlikaShapeStyle("#ffffff30", "none", 3, "ffffff", 20)));
 			}
@@ -47,7 +47,7 @@ class MainMenu extends Main {
 				slika.add(SlikaLine.Create(i, 33, i, h - 33, new SlikaShapeStyle("#ffffff30", "none", 3, "ffffff", 20)));
 			}
 
-			slika.add(SlikaLine.Create(150, 15, 450, 15, new SlikaShapeStyle("#8dd6c0", "none", 6, "#8dd6c0", 10)));
+			slika.add(SlikaLine.Create(20, 15, w - 20, 15, new SlikaShapeStyle("#8dd6c0", "none", 6, "#8dd6c0", 10)));
 			slika.add(SlikaLine.Create(20, 30, 120, 30, new SlikaShapeStyle("#8dd6c0", "none", 6, "#8dd6c0", 10)));
 			slika.add(SlikaLine.Create(130, 30, w - 20, 30, new SlikaShapeStyle("#8dd6c0", "none", 6, "#8dd6c0", 10)));
 
@@ -56,7 +56,7 @@ class MainMenu extends Main {
 			
 			slika.add(SlikaLine.Create(20, h - 30, 300, h - 30, new SlikaShapeStyle("#8dd6c0", "none", 6, "#8dd6c0", 10)));
 			slika.add(SlikaLine.Create(310, h - 30, w - 20, h - 30, new SlikaShapeStyle("#8dd6c0", "none", 6, "#8dd6c0", 10)));
-			slika.add(SlikaLine.Create(150, h - 15, 450, h - 15, new SlikaShapeStyle("#8dd6c0", "none", 6, "#8dd6c0", 10)));
+			slika.add(SlikaLine.Create(20, h - 15, w - 20, h - 15, new SlikaShapeStyle("#8dd6c0", "none", 6, "#8dd6c0", 10)));
 
 			//silka.add(new SlikaPath(new SlikaPoints([35, 40, w - 33, 40, w - 33, 80, 400, 80, 360, 46, 35, 46]), new SlikaShapeStyle("none", "#8dd6c0", 0, "#8dd6c0", 10)));
 			slika.add(SlikaPath.CreatePan(35, w - 35, 40, 6, 40, 0.3, true, false, new SlikaShapeStyle("none", "#8dd6c0", 0, "#8dd6c0", 10)));
@@ -65,9 +65,9 @@ class MainMenu extends Main {
 			/*
 			*/
 			slika.add(new SlikaText(
-				"quality",
-				new SlikaPosition(80, 105),
-				new SlikaTextStyle("#8dd6c0", 60, "XoloniumRegular")
+				"GRAPHICS",
+				new SlikaPosition(60, 110),
+				new SlikaTextStyle("#8dd6c0", 50, "XoloniumRegular")
 			));
 			
 			slika.add(new SlikaText(
@@ -75,32 +75,39 @@ class MainMenu extends Main {
 				new SlikaPosition(300, 300, "center"),
 				new SlikaTextStyle("#8dd6c0", 60, "XoloniumRegular")
 			));
-			slika.add(SlikaPath.CreatePan(150, w - 35, 220, 6, 50, 0.15, true, false, new SlikaShapeStyle("none", "#8dd6c080", 0, "#8dd6c0", 10)));
-			slika.add(SlikaPath.CreatePan(150, w - 35, 350, 6, 50, 0.15, true, true, new SlikaShapeStyle("none", "#8dd6c0", 0, "#8dd6c0", 10)));
+			slika.add(SlikaPath.CreateParenthesis(120, 135, 222, 126, false, new SlikaShapeStyle("8dd6c080", "none", 6, "#8dd6c0", 20)));
+			slika.add(SlikaPath.CreatePan(150, 450, 220, 6, 120, 0.3, true, false, new SlikaShapeStyle("none", "#8dd6c020", 0, "#8dd6c0", 20)));
+			slika.add(SlikaLine.Create(150, 350, 450, 350, new SlikaShapeStyle("8dd6c080", "none", 6, "#8dd6c0", 20)));
+			slika.add(SlikaPath.CreateParenthesis(465, 480, 222, 126, true, new SlikaShapeStyle("8dd6c080", "none", 6, "#8dd6c0", 20)));
+			//slika.add(SlikaPath.CreatePan(150, w - 35, 350, 6, 50, 0.15, true, true, new SlikaShapeStyle("none", "#8dd6c0", 0, "#8dd6c0", 20)));
 			
 			slika.add(new SlikaText(
 				"Medium",
 				new SlikaPosition(300, 500, "center"),
 				new SlikaTextStyle("#d6d48d", 60, "XoloniumRegular")
 			));
-			slika.add(SlikaPath.CreatePan(150, w - 35, 420, 6, 50, 0.15, true, false, new SlikaShapeStyle("none", "#d6d48d80", 0, "#d6d48d", 10)));
-			slika.add(SlikaPath.CreatePan(150, w - 35, 550, 6, 50, 0.15, true, true, new SlikaShapeStyle("none", "#d6d48d", 0, "#d6d48d", 10)));
+			slika.add(SlikaPath.CreateParenthesis(110, 130, 412, 146, false, new SlikaShapeStyle("d6d48d80", "none", 6, "#d6d48d", 20)));
+			slika.add(SlikaPath.CreateParenthesis(120, 135, 422, 126, false, new SlikaShapeStyle("d6d48d80", "none", 6, "#d6d48d", 20)));
+			slika.add(SlikaPath.CreatePan(150, w - 35, 420, 6, 50, 0.15, true, false, new SlikaShapeStyle("none", "#d6d48d80", 0, "#d6d48d", 20)));
+			slika.add(SlikaPath.CreatePan(150, w - 35, 550, 6, 50, 0.15, true, true, new SlikaShapeStyle("none", "#d6d48d", 0, "#d6d48d", 20)));
 			
 			slika.add(new SlikaText(
 				"Low",
 				new SlikaPosition(300, 700, "center"),
 				new SlikaTextStyle("#8dd6c0", 60, "XoloniumRegular")
 			));
-			slika.add(SlikaPath.CreatePan(150, w - 35, 620, 6, 50, 0.15, true, false, new SlikaShapeStyle("none", "#8dd6c080", 0, "#8dd6c0", 10)));
-			slika.add(SlikaPath.CreatePan(150, w - 35, 750, 6, 50, 0.15, true, true, new SlikaShapeStyle("none", "#8dd6c0", 0, "#8dd6c0", 10)));
+			slika.add(SlikaPath.CreateParenthesis(120, 135, 622, 126, false, new SlikaShapeStyle("8dd6c080", "none", 6, "#8dd6c0", 20)));
+			slika.add(SlikaPath.CreatePan(150, w - 35, 620, 6, 50, 0.15, true, false, new SlikaShapeStyle("none", "#8dd6c080", 0, "#8dd6c0", 20)));
+			slika.add(SlikaPath.CreatePan(150, w - 35, 750, 6, 50, 0.15, true, true, new SlikaShapeStyle("none", "#8dd6c0", 0, "#8dd6c0", 20)));
 			
 			slika.add(new SlikaText(
 				"Custom",
 				new SlikaPosition(300, 900, "center"),
 				new SlikaTextStyle("#8dd6c0", 60, "XoloniumRegular")
 			));
-			slika.add(SlikaPath.CreatePan(150, w - 35, 820, 6, 50, 0.15, true, false, new SlikaShapeStyle("none", "#8dd6c080", 0, "#8dd6c0", 10)));
-			slika.add(SlikaPath.CreatePan(150, w - 35, 950, 6, 50, 0.15, true, true, new SlikaShapeStyle("none", "#8dd6c0", 0, "#8dd6c0", 10)));
+			slika.add(SlikaPath.CreateParenthesis(120, 135, 822, 126, false, new SlikaShapeStyle("8dd6c080", "none", 6, "#8dd6c0", 20)));
+			slika.add(SlikaPath.CreatePan(150, w - 35, 820, 6, 50, 0.15, true, false, new SlikaShapeStyle("none", "#8dd6c080", 0, "#8dd6c0", 20)));
+			slika.add(SlikaPath.CreatePan(150, w - 35, 950, 6, 50, 0.15, true, true, new SlikaShapeStyle("none", "#8dd6c0", 0, "#8dd6c0", 20)));
 
 			slika.clear("#00000000");
 			slika.redraw();
