@@ -234,6 +234,54 @@ class SlikaText extends SlikaElement {
     }
 }
 
+class SlikaButton extends SlikaElement {
+
+    private _text: SlikaText;
+    private _strokes: (SlikaPath | SlikaLine)[] = [];
+    private _fills: SlikaPath[] = [];
+
+    constructor(
+        public label: string,
+        public position: SlikaPosition,
+        public color: BABYLON.Color3 = BABYLON.Color3.White()
+    ) {
+        super();
+
+        let hexColor = color.toHexString();
+
+        this._text = new SlikaText(
+            label,
+            new SlikaPosition(this.position.x + 180, this.position.y + 80, "center"),
+            new SlikaTextStyle(hexColor, 60, "XoloniumRegular")
+        );
+
+        this._strokes.push(
+            SlikaPath.CreateParenthesis(this.position.x, this.position.x + 15, this.position.y + 3, 126, false, new SlikaShapeStyle(hexColor, "none", 6, hexColor, 20))
+        );
+        this._strokes.push(
+            SlikaLine.Create(this.position.x + 30, this.position.y, this.position.x + 330, this.position.y, new SlikaShapeStyle(hexColor, "none", 6, hexColor, 20))
+        );
+        this._fills.push(
+            SlikaPath.CreatePan(this.position.x + 30, this.position.x + 330, this.position.y + 9, 6, 111, 0.3, true, false, new SlikaShapeStyle("none", hexColor + "40", 0, hexColor, 20))
+        );
+        this._strokes.push(
+            SlikaLine.Create(this.position.x + 30, this.position.y + 132, this.position.x + 330, this.position.y + 132, new SlikaShapeStyle(hexColor, "none", 6, hexColor, 20))
+        );
+        this._strokes.push(
+            SlikaPath.CreateParenthesis(this.position.x + 345, this.position.x + 360, this.position.y + 3, 126, true, new SlikaShapeStyle(hexColor, "none", 6, hexColor, 20))
+        );
+    }
+
+    public redraw(context: BABYLON.ICanvasRenderingContext): void {
+        this._fills.forEach(f => {
+            f.redraw(context);
+        })
+        this._strokes.forEach(s => {
+            s.redraw(context);
+        })
+        this._text.redraw(context);
+    }
+}
 class Slika {
 
     private width: number;

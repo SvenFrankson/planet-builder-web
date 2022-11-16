@@ -70,44 +70,39 @@ class MainMenu extends Main {
 				new SlikaTextStyle("#8dd6c0", 50, "XoloniumRegular")
 			));
 			
-			slika.add(new SlikaText(
+			slika.add(new SlikaButton(
 				"High",
-				new SlikaPosition(300, 300, "center"),
-				new SlikaTextStyle("#8dd6c0", 60, "XoloniumRegular")
-			));
-			slika.add(SlikaPath.CreateParenthesis(120, 135, 222, 126, false, new SlikaShapeStyle("8dd6c080", "none", 6, "#8dd6c0", 20)));
-			slika.add(SlikaPath.CreatePan(150, 450, 220, 6, 120, 0.3, true, false, new SlikaShapeStyle("none", "#8dd6c020", 0, "#8dd6c0", 20)));
-			slika.add(SlikaLine.Create(150, 350, 450, 350, new SlikaShapeStyle("8dd6c080", "none", 6, "#8dd6c0", 20)));
-			slika.add(SlikaPath.CreateParenthesis(465, 480, 222, 126, true, new SlikaShapeStyle("8dd6c080", "none", 6, "#8dd6c0", 20)));
-			//slika.add(SlikaPath.CreatePan(150, w - 35, 350, 6, 50, 0.15, true, true, new SlikaShapeStyle("none", "#8dd6c0", 0, "#8dd6c0", 20)));
-			
-			slika.add(new SlikaText(
+				new SlikaPosition(120, 240),
+				BABYLON.Color3.FromHexString("#cc8a2d")
+			))
+
+			slika.add(new SlikaButton(
 				"Medium",
-				new SlikaPosition(300, 500, "center"),
-				new SlikaTextStyle("#d6d48d", 60, "XoloniumRegular")
-			));
-			slika.add(SlikaPath.CreateParenthesis(110, 130, 412, 146, false, new SlikaShapeStyle("d6d48d80", "none", 6, "#d6d48d", 20)));
-			slika.add(SlikaPath.CreateParenthesis(120, 135, 422, 126, false, new SlikaShapeStyle("d6d48d80", "none", 6, "#d6d48d", 20)));
-			slika.add(SlikaPath.CreatePan(150, w - 35, 420, 6, 50, 0.15, true, false, new SlikaShapeStyle("none", "#d6d48d80", 0, "#d6d48d", 20)));
-			slika.add(SlikaPath.CreatePan(150, w - 35, 550, 6, 50, 0.15, true, true, new SlikaShapeStyle("none", "#d6d48d", 0, "#d6d48d", 20)));
+				new SlikaPosition(120, 440),
+				BABYLON.Color3.FromHexString("#2dafcc")
+			))
 			
-			slika.add(new SlikaText(
+			//slika.add(new SlikaText(
+			//	"Medium",
+			//	new SlikaPosition(300, 500, "center"),
+			//	new SlikaTextStyle("#d6d48d", 60, "XoloniumRegular")
+			//));
+			//slika.add(SlikaPath.CreateParenthesis(110, 130, 412, 146, false, new SlikaShapeStyle("d6d48d80", "none", 6, "#d6d48d", 20)));
+			//slika.add(SlikaPath.CreateParenthesis(120, 135, 422, 126, false, new SlikaShapeStyle("d6d48d80", "none", 6, "#d6d48d", 20)));
+			//slika.add(SlikaPath.CreatePan(150, w - 35, 420, 6, 50, 0.15, true, false, new SlikaShapeStyle("none", "#d6d48d80", 0, "#d6d48d", 20)));
+			//slika.add(SlikaPath.CreatePan(150, w - 35, 550, 6, 50, 0.15, true, true, new SlikaShapeStyle("none", "#d6d48d", 0, "#d6d48d", 20)));
+			
+			slika.add(new SlikaButton(
 				"Low",
-				new SlikaPosition(300, 700, "center"),
-				new SlikaTextStyle("#8dd6c0", 60, "XoloniumRegular")
-			));
-			slika.add(SlikaPath.CreateParenthesis(120, 135, 622, 126, false, new SlikaShapeStyle("8dd6c080", "none", 6, "#8dd6c0", 20)));
-			slika.add(SlikaPath.CreatePan(150, w - 35, 620, 6, 50, 0.15, true, false, new SlikaShapeStyle("none", "#8dd6c080", 0, "#8dd6c0", 20)));
-			slika.add(SlikaPath.CreatePan(150, w - 35, 750, 6, 50, 0.15, true, true, new SlikaShapeStyle("none", "#8dd6c0", 0, "#8dd6c0", 20)));
-			
-			slika.add(new SlikaText(
+				new SlikaPosition(120, 640),
+				BABYLON.Color3.FromHexString("#2dcc77")
+			))
+
+			slika.add(new SlikaButton(
 				"Custom",
-				new SlikaPosition(300, 900, "center"),
-				new SlikaTextStyle("#8dd6c0", 60, "XoloniumRegular")
-			));
-			slika.add(SlikaPath.CreateParenthesis(120, 135, 822, 126, false, new SlikaShapeStyle("8dd6c080", "none", 6, "#8dd6c0", 20)));
-			slika.add(SlikaPath.CreatePan(150, w - 35, 820, 6, 50, 0.15, true, false, new SlikaShapeStyle("none", "#8dd6c080", 0, "#8dd6c0", 20)));
-			slika.add(SlikaPath.CreatePan(150, w - 35, 950, 6, 50, 0.15, true, true, new SlikaShapeStyle("none", "#8dd6c0", 0, "#8dd6c0", 20)));
+				new SlikaPosition(120, 840),
+				BABYLON.Color3.FromHexString("#2dafcc")
+			))
 
 			slika.clear("#00000000");
 			slika.redraw();
