@@ -39,8 +39,6 @@ class PlanetGeneratorMars extends PlanetGenerator {
 
     public makeData(chunck: PlanetChunck, refData: number[][][], refProcedural: ProceduralTree[]): void {
         let f = Math.pow(2, this._mainHeightMap.degree - chunck.degree);
-        let maxTree = 1;
-        let treeCount = 0;
 
         for (let i: number = 0; i < PlanetTools.CHUNCKSIZE; i++) {
             refData[i - chunck.firstI] = [];

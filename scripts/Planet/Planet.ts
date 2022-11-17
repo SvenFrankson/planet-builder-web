@@ -21,7 +21,8 @@ class Planet extends BABYLON.Mesh {
         name: string,
         public kPosMax: number,
         public seaLevelRatio: number,
-        public scene: BABYLON.Scene
+        public scene: BABYLON.Scene,
+        createGenerator: (planet: Planet) => PlanetGenerator
     ) {
         super(name, scene);
         Planet.DEBUG_INSTANCE = this;
@@ -31,7 +32,10 @@ class Planet extends BABYLON.Mesh {
 
         this.seaLevel = Math.round(this.kPosMax * this.seaLevelRatio * PlanetTools.CHUNCKSIZE);
 		
-        this.generator =  new PlanetGeneratorMars(this, 0.1);
+        this.generator = createGenerator(this);
+        if (!this.generator) {
+            debugger;
+        }
         if (name === "Paulita") {
             this.generator.showDebug();
         }

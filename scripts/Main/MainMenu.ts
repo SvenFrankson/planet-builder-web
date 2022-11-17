@@ -3,6 +3,7 @@
 class MainMenu extends Main {
 
 	public camera: BABYLON.FreeCamera;
+	private _testAltitude = 20;
 
 	public createScene(): void {
 		super.createScene();
@@ -15,7 +16,7 @@ class MainMenu extends Main {
 		light.diffuse = new BABYLON.Color3(1, 1, 1);
 		light.groundColor = new BABYLON.Color3(0.5, 0.5, 0.5);
 
-		this.camera = new BABYLON.FreeCamera("camera", new BABYLON.Vector3(0, 1.7, - 1), this.scene);
+		this.camera = new BABYLON.FreeCamera("camera", new BABYLON.Vector3(0, 1.7 + this._testAltitude, - 1), this.scene);
 		this.camera.minZ = 0.1;
 		this.camera.attachControl();
 		this.camera.speed *= 0.2;
@@ -27,19 +28,20 @@ class MainMenu extends Main {
 	private _textPage: TextPage;
 
     public async initialize(): Promise<void> {
-        let vertexData = (await this.vertexDataLoader.get("main-room"))[0];
-		let roomMesh = new BABYLON.Mesh("main-room");
-		vertexData.applyToMesh(roomMesh);
-		let material = new PlanetMaterial("room", this.scene);
-		material.setUseVertexColor(true);
-		roomMesh.material = material;
+		Config.chunckPartConfiguration.filename = "round-smooth-chunck-parts";
+		Config.chunckPartConfiguration.lodMin = 0;
+		Config.chunckPartConfiguration.lodMax = 1;
+		Config.chunckPartConfiguration.useXZAxisRotation = false;
 
 		return new Promise<void>(resolve => {
+			
+			let mainMenuPlanet: Planet = PlanetGeneratorFactory.Create(PlanetGeneratorType.Flat, 1, this.scene);
+			mainMenuPlanet.initialize();
 
 			let w = 600;
 			let h = 1200;
 
-			let graphicsPanel = new TextPage(0.4, 1.5, w, h, this);
+			let graphicsPanel = new TextPage(0.4, 1.5 + this._testAltitude, w, h, this);
 			graphicsPanel.instantiate();
 			graphicsPanel.setPosition(new BABYLON.Vector3(-0.6, 0, 0.8));
 			graphicsPanel.setTarget(this.camera.position);
@@ -124,7 +126,7 @@ class MainMenu extends Main {
 			let wMain = 1200;
 			let hMain = 800;
 
-			let mainPanel = new TextPage(1, 1.5, wMain, hMain, this);
+			let mainPanel = new TextPage(1, 1.5 + this._testAltitude, wMain, hMain, this);
 			mainPanel.instantiate();
 			mainPanel.setPosition(new BABYLON.Vector3(0.2, 0, 1));
 			mainPanel.setTarget(this.camera.position);
@@ -168,12 +170,21 @@ class MainMenu extends Main {
 			);
 			mainSlika.add(buttonPlay);
 
+			PlanetChunckVertexData.InitializeData().then(
+				() => {
+					mainMenuPlanet.register();
+					//moon.register();
+
+					resolve();
+				}
+			);
+
 			resolve();
 		})
 	}
 
 	public update(): void {
 		//this._textPage.baseMesh.rotate(BABYLON.Axis.Y, Math.PI / 60)
-		this.camera.position.y = 1.7;
+		this.camera.position.y = 1.7 + this._testAltitude;
 	}
 }

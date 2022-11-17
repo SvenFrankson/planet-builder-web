@@ -1,3 +1,37 @@
+enum PlanetGeneratorType {
+    Flat,
+    Earth,
+    Mars
+}
+
+class PlanetGeneratorFactory {
+
+    public static Create(type: PlanetGeneratorType, kPosMax: number, scene: BABYLON.Scene): Planet {
+        let name = "paulita-" + Math.floor(Math.random() * 1000).toString(16);
+        let planet = new Planet(
+            name,
+            kPosMax,
+            0.65,
+            scene, 
+            (p) => {
+                if (type === PlanetGeneratorType.Flat) {
+                    return new PlanetGeneratorFlat(p);
+                }
+                else if (type === PlanetGeneratorType.Earth) {
+                    return new PlanetGeneratorChaos(p, 0.15);
+                }
+                else if (type === PlanetGeneratorType.Mars) {
+                    return new PlanetGeneratorMars(p, 0.1);
+                }
+                else {
+                    debugger;
+                }
+            }
+        )
+        return planet;
+    }
+}
+
 abstract class PlanetGenerator {
 
     public heightMaps: PlanetHeightMap[];
@@ -290,33 +324,6 @@ class PlanetGeneratorHole extends PlanetGenerator {
     
                     if (refData[i - chunck.firstI][j - chunck.firstJ][k - chunck.firstK] === BlockType.None && globalK < seaLevel * 0.5) {
                         refData[i - chunck.firstI][j - chunck.firstJ][k - chunck.firstK] = BlockType.Water;
-                    }
-                }
-            }
-        }
-    }
-}
-
-class PlanetGeneratorFlat extends PlanetGenerator {
-
-    constructor(planet: Planet, private _mountainHeight: number) {
-        super(planet);
-    }
-
-    public makeData(chunck: PlanetChunck, refData: number[][][], refProcedural: ProceduralTree[]): void {
-
-        for (let i: number = 0; i < PlanetTools.CHUNCKSIZE; i++) {
-            refData[i - chunck.firstI] = [];
-            for (let j: number = 0; j < PlanetTools.CHUNCKSIZE; j++) {
-                refData[i - chunck.firstI][j - chunck.firstJ] = [];
-
-                let altitude = Math.floor(this.planet.seaLevel * this.planet.kPosMax * PlanetTools.CHUNCKSIZE);
-
-                for (let k: number = 0; k < PlanetTools.CHUNCKSIZE; k++) {
-                    let globalK = k + chunck.kPos * PlanetTools.CHUNCKSIZE;
-
-                    if (globalK <= altitude) {
-                        refData[i - chunck.firstI][j - chunck.firstJ][k - chunck.firstK] = BlockType.Grass;
                     }
                 }
             }

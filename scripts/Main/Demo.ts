@@ -47,7 +47,7 @@ class Demo extends Main {
 		return new Promise<void>(resolve => {
 
 			let kPosMax = 7;
-			let planetTest: Planet = new Planet("Paulita", kPosMax, 0.65, this.scene);
+			let planetTest: Planet = PlanetGeneratorFactory.Create(PlanetGeneratorType.Mars, kPosMax, this.scene);
 			planetTest.initialize();
 			//let moon: Planet = new Planet("Moon", 2, 0.60, this.scene);
 			//moon.position.x = 160;
