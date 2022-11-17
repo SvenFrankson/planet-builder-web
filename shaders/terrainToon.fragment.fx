@@ -6,6 +6,7 @@ uniform vec3 terrainColors[9];
 uniform vec3 globalColor;
 uniform int useSeaLevelTexture;
 uniform sampler2D seaLevelTexture;
+uniform int useVertexColor;
 
 in vec3 vPositionW;
 in vec3 vNormalW;
@@ -43,6 +44,9 @@ void main() {
    vec3 color = vec3(0., 0., 0.);
    if (useSeaLevelTexture == 1) {
       color = texture(seaLevelTexture, vUv).rgb;
+   }
+   else if (useVertexColor == 1) {
+      color = vColor.rgb;
    }
    else {
       int d0 = int(vColor.a * 128. + 0.002);

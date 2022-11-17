@@ -53,6 +53,13 @@ class VertexDataLoader {
             let loadedMesh = loadedFileMeshes[i];
             if (loadedMesh instanceof BABYLON.Mesh) {
                 vertexData =  BABYLON.VertexData.ExtractFromMesh(loadedMesh);
+                if (!vertexData.colors) {
+                    let colors: number[] = [];
+                    for (let i = 0; i < vertexData.positions.length / 3; i++) {
+                        colors.push(1, 1, 1, 1);
+                    }
+                    vertexData.colors = colors;
+                }
                 vertexDatas.push(vertexData);
             }
         }

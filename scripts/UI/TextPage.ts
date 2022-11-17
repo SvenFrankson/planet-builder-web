@@ -3,10 +3,7 @@ class TextPage {
     public baseMesh: BABYLON.Mesh;
     public mesh: BABYLON.Mesh;
     public material: BABYLON.StandardMaterial;
-    public meshOnOff: BABYLON.Mesh;
-    public materialOnOff: BABYLON.StandardMaterial;
     public texture: BABYLON.DynamicTexture;
-    public textureOnOff: BABYLON.DynamicTexture;
 
     // 24 lines of 80 characters each
     public lines: string[] = [];
@@ -25,6 +22,7 @@ class TextPage {
 
     constructor(
         public size: number = 1,
+        public height: number = 1,
         private _w: number = 1600,
         private _h: number = 1000,
         public main: Main
@@ -142,80 +140,6 @@ class TextPage {
         this.texture.hasAlpha = true;
         this.material.diffuseTexture = this.texture;
 
-        this.meshOnOff = new BABYLON.Mesh("text-page");
-        //this.meshOnOff.layerMask = 0x10000000;
-        this.meshOnOff.parent = this.baseMesh;
-        this.meshOnOff.position.y = 1.05;
-        this.meshOnOff.position.z = 0.05;
-        this.meshOnOff.rotation.y = Math.PI;
-
-        data = new BABYLON.VertexData();
-        positions = [];
-        indices = [];
-        uvs = [];
-        normals = [];
-
-        for (let i = 0; i <= 2; i++) {
-            let p = this.xTextureToPos(730 + 70 * i);
-            let l = positions.length / 3;
-            positions.push(p.x, -0.07, p.y);
-            positions.push(p.x, 0.07, p.y);
-            uvs.push(i / 2, 0);
-            uvs.push(i / 2, 1);
-            if (i < 2) {
-                indices.push(l + 1, l, l + 2);
-                indices.push(l + 1, l + 2, l + 3);
-            }
-        }
-
-        BABYLON.VertexData.ComputeNormals(positions, indices, normals);
-        data.positions = positions;
-        data.indices = indices;
-        data.uvs = uvs;
-        data.normals = normals;
-
-        data.applyToMesh(this.meshOnOff);
-
-        this.materialOnOff = new BABYLON.StandardMaterial("text-page-material-on-off", this.main.scene);
-        this.materialOnOff.useAlphaFromDiffuseTexture = true;
-        this.materialOnOff.specularColor.copyFromFloats(0, 0, 0);
-        this.materialOnOff.emissiveColor.copyFromFloats(1, 1, 1);
-        this.meshOnOff.material = this.materialOnOff;
-
-        this.textureOnOff = new BABYLON.DynamicTexture("text-page-texture-on-off", { width: 140, height: 140 }, this.main.scene, true);
-        this.textureOnOff.hasAlpha = true;
-        this.materialOnOff.diffuseTexture = this.textureOnOff;
-
-        let context = this.textureOnOff.getContext();
-        context.clearRect(0, 0, 140, 140);
-        let path = TextPage.MakePath([
-            50, 20,
-            90, 20,
-            120, 50,
-            120, 90,
-            90, 120,
-            50, 120,
-            20, 90,
-            20, 50,
-        ]);
-        TextPage.FillPath(
-            path,
-            BABYLON.Color3.FromHexString("#3a3e45"),
-            0.8,
-            context
-        );
-
-        TextPage.DrawGlowPath(
-            path,
-            10,
-            BABYLON.Color3.FromHexString("#2c4b7d"),
-            1,
-            true,
-            true,
-            context
-        );
-        this.textureOnOff.update();
-
         this.lines[0] = "You know what? It is beets. I've crashed into a beet truck. Jaguar shark! So tell me - does it really exist? Is this my espresso machine? Wh-what is-h-how did you get my espresso machine? Hey, take a look at the earthlings. Goodbye! I was part of something special.";
         this.lines[1] = "Yeah, but John, if The Pirates of the Caribbean breaks down, the pirates don’t eat the tourists. Jaguar shark! So tell me - does it really exist? Did he just throw my cat out of the window? You're a very talented young man, with your own clever thoughts and ideas. Do you need a manager?";
         this.lines[2] = "Forget the fat lady! You're obsessed with the fat lady! Drive us out of here! God creates dinosaurs. God destroys dinosaurs. God creates Man. Man destroys God. Man creates Dinosaurs. You know what? It is beets. I've crashed into a beet truck. Hey, you know how I'm, like, always trying to save the planet? Here's my chance.";
@@ -224,7 +148,7 @@ class TextPage {
     }
 
     public async open(): Promise<void> {
-        await this._animatePosY(1, 0.3);
+        await this._animatePosY(this.height, 0.3);
         await this._animateScaleX(1, 0.2);
         await this._animateScaleY(1, 0.2);
     }

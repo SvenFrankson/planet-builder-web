@@ -4,6 +4,7 @@ class PlanetMaterial extends BABYLON.ShaderMaterial {
     private _terrainColors: BABYLON.Color3[];
     private _useSeaLevelTexture: number;
     private _seaLevelTexture: BABYLON.Texture;
+    private _useVertexColor: number;
 
     constructor(name: string, scene: BABYLON.Scene) {
         super(
@@ -63,6 +64,11 @@ class PlanetMaterial extends BABYLON.ShaderMaterial {
         if (this._seaLevelTexture) {
             this.setTexture("seaLevelTexture", this._seaLevelTexture);
         }
+    }
+
+    public setUseVertexColor(useVertexColor: boolean): void {
+        this._useVertexColor = useVertexColor ? 1 : 0;
+        this.setInt("useVertexColor", this._useVertexColor);
     }
 
     private setFlatColors(): void {

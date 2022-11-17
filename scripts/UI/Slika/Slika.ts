@@ -38,7 +38,7 @@ class SlikaTextStyle {
         public color: string = "white",
         public size: number = 20,
         public fontFamily: string = "Consolas",
-        public highlightColor: string = "white",
+        public highlightColor: string = "grey",
         public highlightRadius: number = 20
     ) {
         
@@ -46,6 +46,9 @@ class SlikaTextStyle {
 }
 
 abstract class SlikaElement {
+
+    public slika: Slika;
+    public scene: BABYLON.Scene;
 
     constructor() {
 
@@ -210,9 +213,6 @@ class SlikaText extends SlikaElement {
         else {
             this.textStyle = new SlikaTextStyle();
         }
-        let highlightColor = BABYLON.Color3.FromHexString(this.textStyle.color);
-        highlightColor.scaleInPlace(0.5);
-        this.textStyle.highlightColor = highlightColor.toHexString();
     }
 
     public redraw(context: BABYLON.ICanvasRenderingContext): void {
@@ -234,7 +234,20 @@ class SlikaText extends SlikaElement {
     }
 }
 
+enum SlikaButtonState {
+    Enabled,
+    Disabled,
+    Active
+}
+
 class SlikaButton extends SlikaElement {
+
+    public state: SlikaButtonState = SlikaButtonState.Enabled;
+    public colors: BABYLON.Color3[] = [
+        BABYLON.Color3.FromHexString("#8dd6c0"),
+        BABYLON.Color3.FromHexString("#8dd6c0").scale(0.5),
+        BABYLON.Color3.FromHexString("#cc8a2d")
+    ];
 
     private _text: SlikaText;
     private _strokes: (SlikaPath | SlikaLine)[] = [];
@@ -252,7 +265,7 @@ class SlikaButton extends SlikaElement {
         this._text = new SlikaText(
             label,
             new SlikaPosition(this.position.x + 180, this.position.y + 80, "center"),
-            new SlikaTextStyle(hexColor, 60, "XoloniumRegular")
+            new SlikaTextStyle(hexColor, 60, "XoloniumRegular", color.scale(0.6).toHexString())
         );
 
         this._strokes.push(
@@ -272,6 +285,11 @@ class SlikaButton extends SlikaElement {
         );
     }
 
+    public setStatus(state: number): void {
+        this.state = state;
+        this._animateColor(this.colors[this.state], 0.5);
+    }
+
     public redraw(context: BABYLON.ICanvasRenderingContext): void {
         this._fills.forEach(f => {
             f.redraw(context);
@@ -281,23 +299,80 @@ class SlikaButton extends SlikaElement {
         })
         this._text.redraw(context);
     }
+
+    private _updateColor(): void {
+        let hexColor = this.color.toHexString();
+        this._fills.forEach(f => {
+            f.style.fill = hexColor + "40";
+            f.style.highlightColor = hexColor;
+        })
+        this._strokes.forEach(s => {
+            s.style.stroke = hexColor;
+            s.style.highlightColor = hexColor;
+        })
+        this._text.textStyle.color = hexColor;
+        this._text.textStyle.highlightColor = this.color.scale(0.6).toHexString();
+        if (this.slika) {
+            this.slika.needRedraw = true;
+        }
+    }
+
+    private async _animateColor(targetColor: BABYLON.Color3, duration: number = 1): Promise<void> {
+        if (this.scene) {
+            return new Promise<void>(resolve => {
+                let colorZero = this.color.clone();
+                let t = 0;
+                let cb = () => {
+                    t += this.scene.getEngine().getDeltaTime() / 1000;
+                    if (t < duration) {
+                        let f = t / duration;
+                        BABYLON.Color3.LerpToRef(colorZero, targetColor, f, this.color);
+                        this._updateColor();
+                    }
+                    else {
+                        this.color.copyFrom(targetColor);
+                        this._updateColor();
+                        this.scene.onBeforeRenderObservable.removeCallback(cb);
+                        resolve();
+                    }
+                }
+                this.scene.onBeforeRenderObservable.add(cb);
+            });
+        }
+    }
 }
 class Slika {
 
-    private width: number;
-    private height: number;
     private elements: UniqueList<SlikaElement> = new UniqueList<SlikaElement>();
+    public needRedraw: boolean = true;
 
-    private context: BABYLON.ICanvasRenderingContext;
+    constructor(
+        private width: number,
+        private height: number,
+        private context: BABYLON.ICanvasRenderingContext,
+        private texture: BABYLON.DynamicTexture
+    ) {
+        if (texture) {
+            this.texture.getScene().onBeforeRenderObservable.add(this._update);
+        }
+    }
 
-    constructor(width: number, height: number, context: BABYLON.ICanvasRenderingContext) {
-        this.width = width;
-        this.height = height;
-        this.context = context;
+    private _update = () => {
+        if (this.needRedraw) {
+            this.redraw();
+            if (this.texture) {
+                this.texture.update();
+            }
+            this.needRedraw = false;
+        }
     }
 
     public add(e: SlikaElement): void {
         this.elements.push(e);
+        e.slika = this;
+        if (this.texture) {
+            e.scene = this.texture.getScene();
+        }
     }
 
     public remove(e: SlikaElement): void {
@@ -305,14 +380,10 @@ class Slika {
     }
 
     public redraw(): void {
+        this.context.clearRect(0, 0, this.width, this.height);
         for (let i = 0; i < this.elements.length; i++) {
             console.log("redraw");
             this.elements.get(i).redraw(this.context);
         }
-    }
-
-    public clear(clearColor: string): void {
-        this.context.fillStyle = clearColor;
-        this.context.fillRect(0, 0, this.width, this.height);
     }
 }
