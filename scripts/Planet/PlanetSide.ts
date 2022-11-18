@@ -285,7 +285,7 @@ class PlanetSide extends BABYLON.Mesh {
         }
 
         let material = new PlanetMaterial(this.name, this.getScene());
-        material.setSeaLevelTexture((this.planet.generator as PlanetGeneratorChaos).getTexture(this.side));
+        material.setSeaLevelTexture((this.planet.generator as PlanetGeneratorEarth).getTexture(this.side));
         this.seaLevelMaterial = material;
     }
     
