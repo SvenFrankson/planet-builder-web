@@ -229,7 +229,6 @@ class SlikaText extends SlikaElement {
         else if (this.position.textAlign === "end") {
             offsetX = context.measureText(this.text).width;
         }
-        context.strokeText(this.text, this.position.x - offsetX, this.position.y);
         context.fillText(this.text, this.position.x - offsetX, this.position.y);
     }
 }
@@ -245,7 +244,7 @@ class SlikaButton extends SlikaElement {
     public state: SlikaButtonState = SlikaButtonState.Enabled;
     public colors: BABYLON.Color3[] = [
         BABYLON.Color3.FromHexString("#8dd6c0"),
-        BABYLON.Color3.FromHexString("#8dd6c0").scale(0.5),
+        BABYLON.Color3.FromHexString("#a0bab2"),
         BABYLON.Color3.FromHexString("#cc8a2d")
     ];
 
@@ -341,6 +340,7 @@ class SlikaButton extends SlikaElement {
         }
     }
 }
+
 class Slika {
 
     private elements: UniqueList<SlikaElement> = new UniqueList<SlikaElement>();
