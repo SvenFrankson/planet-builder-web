@@ -20,6 +20,9 @@ enum KeyInput {
 
 class InputManager {
 
+    public isPointerLocked: boolean = false;
+    public isPointerDown: boolean = false;
+
     public keyInputMap: Map<string, KeyInput> = new Map<string, KeyInput>();
 
     public keyInputDown: UniqueList<KeyInput> = new UniqueList<KeyInput>();
@@ -29,7 +32,26 @@ class InputManager {
     public keyUpListeners: ((k: KeyInput) => any)[] = [];
     public mappedKeyUpListeners: Map<KeyInput,(() => any)[]> = new Map<KeyInput,(() => any)[]>();
 
+    constructor(public canvas: HTMLCanvasElement) {
+
+    }
+
     public initialize(): void {
+        window.addEventListener("pointerdown", () => {
+            this.isPointerDown = true;
+            if (Config.controlConfiguration.canLockPointer) {
+                this.canvas.requestPointerLock();
+                this.isPointerLocked = true;
+            }
+        });
+        window.addEventListener("pointerup", () => {
+            this.isPointerDown = false;
+        });
+        document.addEventListener("pointerlockchange", () => {
+            if (!(document.pointerLockElement === this.canvas)) {
+                this.isPointerLocked = false;
+            }
+        });
 
         this.keyInputMap.set("Digit0", KeyInput.ACTION_SLOT_0);
         this.keyInputMap.set("Digit1", KeyInput.ACTION_SLOT_1);

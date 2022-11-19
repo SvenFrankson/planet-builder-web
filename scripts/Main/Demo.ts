@@ -69,7 +69,7 @@ class Demo extends Main {
 			this.cameraManager.player = this.player;
 			this.player.lockInPlace = true;
 
-			this.inputManager = new InputManager();
+			this.inputManager = new InputManager(this.canvas);
 			this.inputManager.initialize();
             
             let debugPlanetPerf = new DebugPlanetPerf(this);
@@ -96,12 +96,6 @@ class Demo extends Main {
 							debugger;
 						}
 					}
-				}
-				else if (eventData.type === BABYLON.PointerEventTypes.POINTERDOWN) {
-					Game.LockedMouse = true;
-				}
-				else if (eventData.type === BABYLON.PointerEventTypes.POINTERUP) {
-					Game.LockedMouse = false;
 				}
 			});
 

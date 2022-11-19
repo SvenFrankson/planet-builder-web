@@ -8,6 +8,7 @@ class Main {
 
     constructor(canvasElement: string) {
 		this.canvas = document.getElementById(canvasElement) as HTMLCanvasElement;
+        this.canvas.requestPointerLock = this.canvas.requestPointerLock || this.canvas.msRequestPointerLock || this.canvas.mozRequestPointerLock || this.canvas.webkitRequestPointerLock;
 		Main.Engine = new BABYLON.Engine(this.canvas, true);
         this.engine = Main.Engine;
 		BABYLON.Engine.ShadersRepository = "./shaders/";

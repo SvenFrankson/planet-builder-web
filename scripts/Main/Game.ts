@@ -13,7 +13,6 @@ class Game extends Main {
 
 	public static Instance: Game;
 	public static Light: BABYLON.HemisphericLight;
-	public static PlanetEditor: PlanetEditor;
 	public static CameraManager: CameraManager;
 	public cameraManager: CameraManager;
 	public static Player: Player;
@@ -28,9 +27,6 @@ class Game extends Main {
 	public headPad: PlayerInputHeadPad;
 	public movePad: PlayerInputMovePad;
 	public actionButton: PlayerInputVirtualButton;
-	public static LockedMouse: boolean = false;
-	public static ClientXOnLock: number = -1;
-	public static ClientYOnLock: number = -1;
 
 	constructor(canvasElement: string) {
 		super(canvasElement);
@@ -59,6 +55,8 @@ class Game extends Main {
 		Config.chunckPartConfiguration.lodMax = 1;
 		Config.chunckPartConfiguration.useXZAxisRotation = false;
 
+		Config.controlConfiguration.canLockPointer = true;
+
 		return new Promise<void>(resolve => {
 			let kPosMax = 7;
 			let planetTest: Planet = PlanetGeneratorFactory.Create(PlanetGeneratorType.Earth, kPosMax, this.scene);
@@ -68,7 +66,7 @@ class Game extends Main {
 			Game.Player = new Player(new BABYLON.Vector3(0, (kPosMax + 1) * PlanetTools.CHUNCKSIZE * 0.8, 0), planetTest, this);
 			this.player = Game.Player;
 
-			this.inputManager = new InputManager();
+			this.inputManager = new InputManager(this.canvas);
 			this.inputManager.initialize();
 
 			this.actionManager = new PlayerActionManager(this.player, this);
@@ -83,9 +81,6 @@ class Game extends Main {
 			ass();
 			
 			this.player.registerControl();
-
-			Game.PlanetEditor = new PlanetEditor(planetTest);
-			//Game.PlanetEditor.initialize();
 
 			//Game.Plane = new Plane(new BABYLON.Vector3(0, 80, 0), planetTest);
 			//Game.Plane.instantiate();
@@ -128,28 +123,11 @@ class Game extends Main {
 				}
 				if (event["pointerType"] === "mouse") {
 					this.setInputMode(InputMode.Mouse);
-					if (!Game.LockedMouse) {
-						Game.LockMouse(event);
-					}
 				}
 			});
 
 			this.canvas.addEventListener("touchstart", (event: MouseEvent) => {
 				this.setInputMode(InputMode.Touch);
-			});
-
-			document.addEventListener("mousemove", (event: MouseEvent) => {
-				if (Game.CameraManager.cameraMode === CameraMode.Sky) {
-					return;
-				}
-				if (Game.LockedMouse) {
-					if (event.clientX !== Game.ClientXOnLock) {
-						Game.UnlockMouse();
-					}
-					else if (event.clientY !== Game.ClientYOnLock) {
-						Game.UnlockMouse();
-					}
-				}
 			});
 		})
 	}
@@ -189,33 +167,8 @@ class Game extends Main {
 		}
 	}
 
-	public static LockMouse(event: MouseEvent): void {
-		if (Game.LockedMouse) {
-			console.log("No need to lock.");
-			return;
-		}
-
-		Game.Instance.canvas.requestPointerLock =
-		Game.Instance.canvas.requestPointerLock ||
-		Game.Instance.canvas.msRequestPointerLock ||
-		Game.Instance.canvas.mozRequestPointerLock ||
-		Game.Instance.canvas.webkitRequestPointerLock;
-
-		if (Game.Instance.canvas.requestPointerLock) {
-			Game.Instance.canvas.requestPointerLock();
-			Game.LockedMouse = true;
-			Game.ClientXOnLock = event.clientX;
-			Game.ClientYOnLock = event.clientY;
-			console.log("Lock");
-		}
-	}
-
 	public static UnlockMouse(): void {
-		if (!Game.LockMouse) {
-			return;
-		}
 		document.exitPointerLock();
-		Game.LockedMouse = false;
 		console.log("Unlock");
 	}
 }

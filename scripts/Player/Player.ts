@@ -100,7 +100,7 @@ class Player extends BABYLON.Mesh {
     };
 
     private _mouseMove = (event: MouseEvent) => {
-        if (Game.LockedMouse) {
+        if (this.game.inputManager.isPointerDown || this.game.inputManager.isPointerLocked) {
             let movementX: number = event.movementX;
             let movementY: number = event.movementY;
             this.inputHeadRight += movementX / 100;

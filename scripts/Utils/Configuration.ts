@@ -14,10 +14,16 @@ class ConfigurationPerformance {
     public seaLevelMeshVertexCount: number = 16;
 }
 
+class ConfigurationControl {
+
+    public canLockPointer: boolean = false;
+}
+
 class Configuration {
 
     public chunckPartConfiguration: ConfigurationChunckPart = new ConfigurationChunckPart();
     public performanceConfiguration: ConfigurationPerformance = new ConfigurationPerformance();
+    public controlConfiguration: ConfigurationControl = new ConfigurationControl();
 }
 
 var Config: Configuration = new Configuration();
