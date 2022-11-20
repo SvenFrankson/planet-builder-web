@@ -19,7 +19,6 @@ class Game extends Main {
 	public player: Player;
 	public actionManager: PlayerActionManager;
 	public planetSky: PlanetSky;
-	public inputManager: InputManager;
 
 	public planets: Planet[] = [];
 
@@ -50,6 +49,8 @@ class Game extends Main {
 	}
 
     public async initialize(): Promise<void> {
+		await super.initialize();
+
 		Config.chunckPartConfiguration.filename = "round-smooth-chunck-parts";
 		Config.chunckPartConfiguration.lodMin = 0;
 		Config.chunckPartConfiguration.lodMax = 1;
@@ -65,9 +66,6 @@ class Game extends Main {
 
 			Game.Player = new Player(new BABYLON.Vector3(0, (kPosMax + 1) * PlanetTools.CHUNCKSIZE * 0.8, 0), planetTest, this);
 			this.player = Game.Player;
-
-			this.inputManager = new InputManager(this.canvas);
-			this.inputManager.initialize();
 
 			this.actionManager = new PlayerActionManager(this.player, this);
 			this.actionManager.initialize();

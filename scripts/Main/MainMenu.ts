@@ -28,6 +28,8 @@ class MainMenu extends Main {
 	private _textPage: TextPage;
 
     public async initialize(): Promise<void> {
+		await super.initialize();
+		
 		Config.chunckPartConfiguration.filename = "round-smooth-chunck-parts";
 		Config.chunckPartConfiguration.lodMin = 0;
 		Config.chunckPartConfiguration.lodMax = 1;

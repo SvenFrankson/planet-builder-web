@@ -7,7 +7,6 @@ class Demo extends Main {
 	public light: BABYLON.HemisphericLight;
 	public planetSky: PlanetSky;
 	public player: Player;
-	public inputManager: InputManager;
 	public cameraManager: CameraManager;
 
 	public planets: Planet[] = [];
@@ -39,6 +38,8 @@ class Demo extends Main {
 	public path: BABYLON.Vector3[] = [];
 
     public async initialize(): Promise<void> {
+		await super.initialize();
+		
 		Config.chunckPartConfiguration.filename = "round-smooth-chunck-parts";
 		Config.chunckPartConfiguration.lodMin = 0;
 		Config.chunckPartConfiguration.lodMax = 1;
@@ -68,9 +69,6 @@ class Demo extends Main {
 			this.player = new Player(new BABYLON.Vector3(0, (kPosMax + 1) * PlanetTools.CHUNCKSIZE * 0.8, 0), planetTest, this);
 			this.cameraManager.player = this.player;
 			this.player.lockInPlace = true;
-
-			this.inputManager = new InputManager(this.canvas);
-			this.inputManager.initialize();
             
             let debugPlanetPerf = new DebugPlanetPerf(this);
             debugPlanetPerf.show();
