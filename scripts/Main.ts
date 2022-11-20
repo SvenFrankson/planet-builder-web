@@ -20,7 +20,7 @@ class Main {
 		this.scene = Main.Scene;
 		this.scene.clearColor.copyFromFloats(166 / 255, 231 / 255, 255 / 255, 1);
         this.vertexDataLoader = new VertexDataLoader(this.scene);
-        this.inputManager = new InputManager(this.canvas);
+        this.inputManager = new InputManager(this.scene, this.canvas);
 	}
 
 	public animate(): void {

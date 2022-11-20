@@ -1,8 +1,9 @@
-class TextPage {
+/// <reference path="Pickable.ts"/>
 
-    public baseMesh: BABYLON.Mesh;
-    public mesh: BABYLON.Mesh;
-    public material: BABYLON.StandardMaterial;
+class HoloPanel extends Pickable {
+
+    public holoMesh: BABYLON.Mesh;
+    public holoMaterial: BABYLON.StandardMaterial;
     public texture: BABYLON.DynamicTexture;
 
     // 24 lines of 80 characters each
@@ -25,23 +26,24 @@ class TextPage {
         public height: number = 1,
         private _w: number = 1600,
         private _h: number = 1000,
-        public main: Main
+        main: Main
     ) {
+        super("holo-panel", main);
         this._angle = this.size / this._radius;
     }
 
     private async _animatePosY(posYTarget: number, duration: number): Promise<void> {
         return new Promise<void>(resolve => {
-            let yZero = this.mesh.position.y;
+            let yZero = this.holoMesh.position.y;
             let t = 0;
             let cb = () => {
                 t += this.main.engine.getDeltaTime() / 1000;
                 if (t < duration) {
                     let f = t / duration;
-                    this.mesh.position.y = yZero * (1 - f) + posYTarget * f;
+                    this.holoMesh.position.y = yZero * (1 - f) + posYTarget * f;
                 }
                 else {
-                    this.mesh.position.y = posYTarget;
+                    this.holoMesh.position.y = posYTarget;
                     this.main.scene.onBeforeRenderObservable.removeCallback(cb);
                     resolve();
                 }
@@ -52,16 +54,16 @@ class TextPage {
 
     private async _animateScaleX(xTarget: number, duration: number): Promise<void> {
         return new Promise<void>(resolve => {
-            let xZero = this.mesh.scaling.x;
+            let xZero = this.holoMesh.scaling.x;
             let t = 0;
             let cb = () => {
                 t += this.main.engine.getDeltaTime() / 1000;
                 if (t < duration) {
                     let f = t / duration;
-                    this.mesh.scaling.x = xZero * (1 - f) + xTarget * f;
+                    this.holoMesh.scaling.x = xZero * (1 - f) + xTarget * f;
                 }
                 else {
-                    this.mesh.scaling.x = xTarget;
+                    this.holoMesh.scaling.x = xTarget;
                     this.main.scene.onBeforeRenderObservable.removeCallback(cb);
                     resolve();
                 }
@@ -72,16 +74,16 @@ class TextPage {
 
     private async _animateScaleY(yTarget: number, duration: number): Promise<void> {
         return new Promise<void>(resolve => {
-            let yZero = this.mesh.scaling.y;
+            let yZero = this.holoMesh.scaling.y;
             let t = 0;
             let cb = () => {
                 t += this.main.engine.getDeltaTime() / 1000;
                 if (t < duration) {
                     let f = t / duration;
-                    this.mesh.scaling.y = yZero * (1 - f) + yTarget * f;
+                    this.holoMesh.scaling.y = yZero * (1 - f) + yTarget * f;
                 }
                 else {
-                    this.mesh.scaling.y = yTarget;
+                    this.holoMesh.scaling.y = yTarget;
                     this.main.scene.onBeforeRenderObservable.removeCallback(cb);
                     resolve();
                 }
@@ -91,17 +93,23 @@ class TextPage {
     }
 
     public instantiate(): void {
-        this.baseMesh = BABYLON.MeshBuilder.CreateCylinder("text-page-base", { height: 0.1, diameter: 0.5 });
-        //this.baseMesh = BABYLON.MeshBuilder.CreateBox("text-page-base", { height: 0.1, width: 1, depth: 1 });
+        super.instantiate();
 
-        this.mesh = new BABYLON.Mesh("text-page");
-        //this.mesh.layerMask = 0x10000000;
-        this.mesh.parent = this.baseMesh;
-        this.mesh.position.y = 0;
-        this.mesh.rotation.y = Math.PI;
-        this.mesh.scaling.x = 0.1;
-        this.mesh.scaling.y = 0.1;
-        this.mesh.alphaIndex = 100;
+        BABYLON.CreateCylinderVertexData({ height: 0.1, diameter: 0.5 }).applyToMesh(this);
+        let mat = new BABYLON.StandardMaterial("base-material", this.main.scene);
+        mat.diffuseColor.copyFromFloats(0.8, 0, 0.2);
+        mat.specularColor.copyFromFloats(0, 0, 0);
+        this.material = mat;
+        //this = BABYLON.MeshBuilder.CreateBox("text-page-base", { height: 0.1, width: 1, depth: 1 });
+
+        this.holoMesh = new BABYLON.Mesh("text-page");
+        //this.holoMesh.layerMask = 0x10000000;
+        this.holoMesh.parent = this;
+        this.holoMesh.position.y = 0;
+        this.holoMesh.rotation.y = Math.PI;
+        this.holoMesh.scaling.x = 0.1;
+        this.holoMesh.scaling.y = 0.1;
+        this.holoMesh.alphaIndex = 100;
 
         let data = new BABYLON.VertexData();
         let positions: number[] = [];
@@ -128,23 +136,25 @@ class TextPage {
         data.uvs = uvs;
         data.normals = normals;
 
-        data.applyToMesh(this.mesh);
+        data.applyToMesh(this.holoMesh);
 
-        this.material = new BABYLON.StandardMaterial("text-page-material", this.main.scene);
-        this.material.useAlphaFromDiffuseTexture = true;
-        this.material.specularColor.copyFromFloats(0, 0, 0);
-        this.material.emissiveColor.copyFromFloats(1, 1, 1);
-        this.mesh.material = this.material;
+        this.holoMaterial = new BABYLON.StandardMaterial("text-page-material", this.main.scene);
+        this.holoMaterial.useAlphaFromDiffuseTexture = true;
+        this.holoMaterial.specularColor.copyFromFloats(0, 0, 0);
+        this.holoMaterial.emissiveColor.copyFromFloats(1, 1, 1);
+        this.holoMesh.material = this.holoMaterial;
 
         this.texture = new BABYLON.DynamicTexture("text-page-texture", { width: this._w, height: this._h }, this.main.scene, true);
         this.texture.hasAlpha = true;
-        this.material.diffuseTexture = this.texture;
+        this.holoMaterial.diffuseTexture = this.texture;
 
         this.lines[0] = "You know what? It is beets. I've crashed into a beet truck. Jaguar shark! So tell me - does it really exist? Is this my espresso machine? Wh-what is-h-how did you get my espresso machine? Hey, take a look at the earthlings. Goodbye! I was part of something special.";
         this.lines[1] = "Yeah, but John, if The Pirates of the Caribbean breaks down, the pirates don’t eat the tourists. Jaguar shark! So tell me - does it really exist? Did he just throw my cat out of the window? You're a very talented young man, with your own clever thoughts and ideas. Do you need a manager?";
         this.lines[2] = "Forget the fat lady! You're obsessed with the fat lady! Drive us out of here! God creates dinosaurs. God destroys dinosaurs. God creates Man. Man destroys God. Man creates Dinosaurs. You know what? It is beets. I've crashed into a beet truck. Hey, you know how I'm, like, always trying to save the planet? Here's my chance.";
         this.lines[3] = "Eventually, you do plan to have dinosaurs on your dinosaur tour, right? Just my luck, no ice. Remind me to thank John for a lovely weekend. This thing comes fully loaded. AM/FM radio, reclining bucket seats, and... power windows. Must go faster... go, go, go, go, go!";
         this.lines[4] = "Checkmate... Must go faster... go, go, go, go, go! Hey, you know how I'm, like, always trying to save the planet? Here's my chance. God creates dinosaurs. God destroys dinosaurs. God creates Man. Man destroys God. Man creates Dinosaurs. Checkmate... You're a very talented young man, with your own clever thoughts and ideas. Do you need a manager?";
+    
+        this.proxyPickMesh = this.holoMesh;
     }
 
     public async open(): Promise<void> {
@@ -160,23 +170,23 @@ class TextPage {
     }
 
     public setPosition(position: BABYLON.Vector3): void {
-        if (this.baseMesh) {
-            this.baseMesh.position = position;
+        if (this) {
+            this.position = position;
         }
     }
 
     public setTarget(target: BABYLON.Vector3, usePlanetUp: boolean = false): void {
         let y: BABYLON.Vector3;
-        if (usePlanetUp && this.baseMesh.position.lengthSquared() != 0) {
-            y = this.baseMesh.position.clone().normalize();
+        if (usePlanetUp && this.position.lengthSquared() != 0) {
+            y = this.position.clone().normalize();
         }
         else {
             y = BABYLON.Vector3.Up();
         }
-        let z = target.subtract(this.baseMesh.position).normalize();
+        let z = target.subtract(this.position).normalize();
         let x = BABYLON.Vector3.Cross(y, z).normalize();
         z = BABYLON.Vector3.Cross(x, y).normalize();
-        this.baseMesh.rotationQuaternion = BABYLON.Quaternion.RotationQuaternionFromAxis(x, y, z);
+        this.rotationQuaternion = BABYLON.Quaternion.RotationQuaternionFromAxis(x, y, z);
     }
 
     public redrawSVG(image: any): void {
@@ -211,14 +221,14 @@ class TextPage {
         let context = this.texture.getContext();
         context.clearRect(0, 0, this._w, this._h);
         
-        let decoyPath0 = TextPage.MakePath([
+        let decoyPath0 = HoloPanel.MakePath([
             frameX0 - sCornerSize, frameY0 + frameH * 0.25 + sCornerSize,
             frameX0 - sCornerSize, frameY0 + sCornerSize,
             frameX0 + sCornerSize, frameY0 - sCornerSize,
             frameX0 + frameW * 0.25 + sCornerSize, frameY0 - sCornerSize,
         ]);
 
-        TextPage.DrawGlowPath(
+        HoloPanel.DrawGlowPath(
             decoyPath0,
             6,
             BABYLON.Color3.FromHexString("#2c4b7d"),
@@ -228,14 +238,14 @@ class TextPage {
             context
         );
 
-        let decoyPath1 = TextPage.MakePath([
+        let decoyPath1 = HoloPanel.MakePath([
             frameX1 + sCornerSize, frameY0 + frameH * 0.25 + sCornerSize,
             frameX1 + sCornerSize, frameY0 + sCornerSize,
             frameX1 - sCornerSize, frameY0 - sCornerSize,
             frameX1 - frameW * 0.25 - sCornerSize, frameY0 - sCornerSize,
         ]);
 
-        TextPage.DrawGlowPath(
+        HoloPanel.DrawGlowPath(
             decoyPath1,
             6,
             BABYLON.Color3.FromHexString("#2c4b7d"),
@@ -245,14 +255,14 @@ class TextPage {
             context
         );
         
-        let decoyPath2 = TextPage.MakePath([
+        let decoyPath2 = HoloPanel.MakePath([
             frameX1 + sCornerSize, frameY1 - frameH * 0.25 - sCornerSize,
             frameX1 + sCornerSize, frameY1 - sCornerSize,
             frameX1 - sCornerSize, frameY1 + sCornerSize,
             frameX1 - frameW * 0.25 - sCornerSize, frameY1 + sCornerSize,
         ]);
 
-        TextPage.DrawGlowPath(
+        HoloPanel.DrawGlowPath(
             decoyPath2,
             6,
             BABYLON.Color3.FromHexString("#2c4b7d"),
@@ -262,14 +272,14 @@ class TextPage {
             context
         );
         
-        let decoyPath3 = TextPage.MakePath([
+        let decoyPath3 = HoloPanel.MakePath([
             frameX0 - sCornerSize, frameY1 - frameH * 0.25 - sCornerSize,
             frameX0 - sCornerSize, frameY1 - sCornerSize,
             frameX0 + sCornerSize, frameY1 + sCornerSize,
             frameX0 + frameW * 0.25 + sCornerSize, frameY1 + sCornerSize,
         ]);
 
-        TextPage.DrawGlowPath(
+        HoloPanel.DrawGlowPath(
             decoyPath3,
             6,
             BABYLON.Color3.FromHexString("#2c4b7d"),
@@ -279,7 +289,7 @@ class TextPage {
             context
         );
         
-        let path = TextPage.MakePath([
+        let path = HoloPanel.MakePath([
             frameX0 + cornerSize, frameY0,
             frameX0 + frameW * 0.25, frameY0,
             frameX0 + frameW * 0.25 + cornerSize, frameY0 - cornerSize,
@@ -319,7 +329,7 @@ class TextPage {
                 y0 -= cornerSize;
                 y1 += cornerSize;
             }
-            TextPage.DrawGlowLine(x, y0, x, y1, 1, grey, 0.7, false, context);
+            HoloPanel.DrawGlowLine(x, y0, x, y1, 1, grey, 0.7, false, context);
         }
 
         nLine = 7;
@@ -332,17 +342,17 @@ class TextPage {
                 x0 -= cornerSize;
                 x1 += cornerSize;
             }
-            TextPage.DrawGlowLine(x0, y, x1, y, 1, grey, 0.7, false, context);
+            HoloPanel.DrawGlowLine(x0, y, x1, y, 1, grey, 0.7, false, context);
         }
 
-        TextPage.FillPath(
+        HoloPanel.FillPath(
             path,
             BABYLON.Color3.FromHexString("#3a3e45"),
             0.8,
             context
         );
 
-        TextPage.DrawGlowPath(
+        HoloPanel.DrawGlowPath(
             path,
             10,
             BABYLON.Color3.FromHexString("#2c4b7d"),
@@ -398,7 +408,7 @@ class TextPage {
     }
 
     public static DrawGlowLine(x0: number, y0: number, x1: number, y1: number, width: number, color: BABYLON.Color3, alpha: number, outline: boolean, context: BABYLON.ICanvasRenderingContext): void {
-        TextPage.DrawGlowPath([new BABYLON.Vector2(x0, y0), new BABYLON.Vector2(x1, y1)], width, color, alpha, false, outline, context);
+        HoloPanel.DrawGlowPath([new BABYLON.Vector2(x0, y0), new BABYLON.Vector2(x1, y1)], width, color, alpha, false, outline, context);
     }
 
     public static DrawGlowPath(path: BABYLON.Vector2[], width: number, color: BABYLON.Color3, alpha: number, closePath: boolean, outline: boolean, context: BABYLON.ICanvasRenderingContext): void {
@@ -429,5 +439,19 @@ class TextPage {
         context.lineWidth = w * 0.5;
         context.strokeStyle = "rgba(" + (rMax * 255).toFixed(0) + ", " + (gMax * 255).toFixed(0) + ", " + (bMax * 255).toFixed(0) + ", " + alpha.toFixed(2) + ")";
         context.stroke();
+    }
+
+    public onHoverStart(): void {
+        let mat = this.material;
+        if (mat instanceof BABYLON.StandardMaterial) {
+            mat.diffuseColor.copyFromFloats(0, 0.8, 0.2);
+        }
+    }
+
+    public onHoverEnd(): void {
+        let mat = this.material;
+        if (mat instanceof BABYLON.StandardMaterial) {
+            mat.diffuseColor.copyFromFloats(0.8, 0, 0.2);
+        }
     }
 }

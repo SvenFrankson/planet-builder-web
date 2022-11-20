@@ -24,16 +24,17 @@ class InputManager {
     public isPointerDown: boolean = false;
 
     public keyInputMap: Map<string, KeyInput> = new Map<string, KeyInput>();
-
     public keyInputDown: UniqueList<KeyInput> = new UniqueList<KeyInput>();
-
     public keyDownListeners: ((k: KeyInput) => any)[] = [];
     public mappedKeyDownListeners: Map<KeyInput,(() => any)[]> = new Map<KeyInput,(() => any)[]>();
     public keyUpListeners: ((k: KeyInput) => any)[] = [];
     public mappedKeyUpListeners: Map<KeyInput,(() => any)[]> = new Map<KeyInput,(() => any)[]>();
 
-    constructor(public canvas: HTMLCanvasElement) {
+    public aimedElement: Pickable;
+    public pickableElements: UniqueList<Pickable>;
 
+    constructor(public scene: BABYLON.Scene, public canvas: HTMLCanvasElement) {
+        this.pickableElements = new UniqueList<Pickable>();
     }
 
     public initialize(): void {
@@ -51,6 +52,9 @@ class InputManager {
             if (!(document.pointerLockElement === this.canvas)) {
                 this.isPointerLocked = false;
             }
+        });
+        this.scene.onBeforeRenderObservable.add(() => {
+            this.updateAimedElement();
         });
 
         this.keyInputMap.set("Digit0", KeyInput.ACTION_SLOT_0);
@@ -202,5 +206,44 @@ class InputManager {
             return KeyInput.ACTION_SLOT_9;
         }
         return KeyInput.NULL;
+    }
+
+    public updateAimedElement(): void {
+        let x: number = 0;
+        let y: number = 0;
+        if (this.isPointerLocked) {
+            x = this.canvas.clientWidth * 0.5;
+            y = this.canvas.clientHeight * 0.5;
+        }
+        else {
+            x = this.scene.pointerX;
+            y = this.scene.pointerY;
+        }
+        let aimedPickable: Pickable;
+        let aimedDist: number = Infinity;
+        let ray = this.scene.createPickingRay(x, y, BABYLON.Matrix.Identity(), this.scene.activeCamera);
+        for (let i = 0; i < this.pickableElements.length; i++) {
+            let pickableElement = this.pickableElements.get(i);
+            let mesh: BABYLON.Mesh = pickableElement;
+            if (pickableElement.proxyPickMesh) {
+                mesh = pickableElement.proxyPickMesh;
+            }
+            let pick = ray.intersectsMesh(mesh);
+            if (pick && pick.hit && pick.pickedMesh) {
+                if (pick.distance < aimedDist) {
+                    aimedPickable = pickableElement;
+                    aimedDist = pick.distance;
+                }
+            }
+        }
+        if (aimedPickable != this.aimedElement) {
+            if (this.aimedElement) {
+                this.aimedElement.onHoverEnd();
+            }
+            this.aimedElement = aimedPickable;
+            if (this.aimedElement) {
+                this.aimedElement.onHoverStart();
+            }
+        }
     }
 }

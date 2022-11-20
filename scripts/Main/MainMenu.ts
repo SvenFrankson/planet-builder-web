@@ -3,7 +3,7 @@
 class MainMenu extends Main {
 
 	public camera: BABYLON.FreeCamera;
-	private _testAltitude = 20;
+	private _testAltitude = 20.5;
 
 	public createScene(): void {
 		super.createScene();
@@ -25,11 +25,11 @@ class MainMenu extends Main {
 		this.scene.clearColor.copyFromFloats(0, 0, 0, 1);
 	}
 
-	private _textPage: TextPage;
+	private _textPage: HoloPanel;
 
     public async initialize(): Promise<void> {
 		await super.initialize();
-		
+
 		Config.chunckPartConfiguration.filename = "round-smooth-chunck-parts";
 		Config.chunckPartConfiguration.lodMin = 0;
 		Config.chunckPartConfiguration.lodMax = 1;
@@ -43,9 +43,9 @@ class MainMenu extends Main {
 			let w = 600;
 			let h = 1200;
 
-			let graphicsPanel = new TextPage(0.4, 1.5 + this._testAltitude, w, h, this);
+			let graphicsPanel = new HoloPanel(0.4, 1.2, w, h, this);
 			graphicsPanel.instantiate();
-			graphicsPanel.setPosition(new BABYLON.Vector3(-0.6, 0, 0.8));
+			graphicsPanel.setPosition(new BABYLON.Vector3(-0.6, this._testAltitude, 0.8));
 			graphicsPanel.setTarget(this.camera.position);
 			graphicsPanel.open();
 			
@@ -128,9 +128,9 @@ class MainMenu extends Main {
 			let wMain = 1200;
 			let hMain = 800;
 
-			let mainPanel = new TextPage(1, 1.5 + this._testAltitude, wMain, hMain, this);
+			let mainPanel = new HoloPanel(1, 1.2, wMain, hMain, this);
 			mainPanel.instantiate();
-			mainPanel.setPosition(new BABYLON.Vector3(0.2, 0, 1));
+			mainPanel.setPosition(new BABYLON.Vector3(0.2, this._testAltitude, 1));
 			mainPanel.setTarget(this.camera.position);
 			mainPanel.open();
 			

@@ -160,7 +160,7 @@ class Player extends BABYLON.Mesh {
             this._debugAimGroundMesh.position.copyFrom(hit[0].pickedPoint);
             let chunck = PlanetTools.WorldPositionToChunck(this.planet, hit[0].pickedPoint);
             if (chunck) {
-                let textPage = new TextPage(1.5, 1.5, 1600, 1000, this.game);
+                let textPage = new HoloPanel(1.5, 1.5, 1600, 1000, this.game);
                 textPage.instantiate();
                 textPage.lines = chunck.debugTextInfo();
                 textPage.redraw();
