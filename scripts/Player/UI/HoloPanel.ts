@@ -177,8 +177,11 @@ class HoloPanel extends Pickable {
         this.pointerMaterial.diffuseTexture = this.pointerTexture;
 
         let pointerSlika = new Slika(this._w, this._h, this.pointerTexture.getContext());
-        pointerSlika.add(SlikaLine.Create(this._w * 0.5, 0, this._w * 0.5, this._h, new SlikaShapeStyle("#8dd6c0", "none", 3, "#8dd6c0", 10)));
-        pointerSlika.add(SlikaLine.Create(0, this._h * 0.5, this._w, this._h * 0.5, new SlikaShapeStyle("#8dd6c0", "none", 3, "#8dd6c0", 10)));
+        pointerSlika.add(SlikaLine.Create(this._w * 0.5, 0, this._w * 0.5, this._h * 0.5 - 60, new SlikaShapeStyle("#8dd6c0", "none", 3, "#8dd6c0", 10)));
+        pointerSlika.add(SlikaLine.Create(this._w * 0.5, this._h * 0.5 + 60, this._w * 0.5, this._h, new SlikaShapeStyle("#8dd6c0", "none", 3, "#8dd6c0", 10)));
+        pointerSlika.add(SlikaLine.Create(0, this._h * 0.5, this._w * 0.5 - 60, this._h * 0.5, new SlikaShapeStyle("#8dd6c0", "none", 3, "#8dd6c0", 10)));
+        pointerSlika.add(SlikaLine.Create(this._w * 0.5 + 60, this._h * 0.5, this._w, this._h * 0.5, new SlikaShapeStyle("#8dd6c0", "none", 3, "#8dd6c0", 10)));
+        pointerSlika.add(SlikaCircle.Circle(this._w * 0.5, this._h * 0.5, 60, new SlikaShapeStyle("#8dd6c0", "none", 3, "#8dd6c0", 10)));
         pointerSlika.redraw();
         this.pointerTexture.update();
 

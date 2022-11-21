@@ -9,6 +9,17 @@ class SlikaPosition {
     }
 }
 
+class SlikaArcDesc {
+
+    constructor(
+        public r: number = 10,
+        public a0: number = 0,
+        public a1: number = 2 * Math.PI
+    ) {
+        
+    }
+}
+
 class SlikaPoints {
 
     constructor(
@@ -188,6 +199,35 @@ class SlikaLine extends SlikaElement {
         context.beginPath();
         context.moveTo(this.pStart.x, this.pStart.y);
         context.lineTo(this.pEnd.x, this.pEnd.y);
+        context.stroke();
+    }
+}
+
+class SlikaCircle extends SlikaElement {
+
+    public static Circle(x: number, y: number, r: number, style = new SlikaShapeStyle()): SlikaCircle {
+        return new SlikaCircle(
+            new SlikaPosition(x, y),
+            new SlikaArcDesc(r, 0, 2 * Math.PI),
+            style
+        );
+    }
+
+    constructor(
+        public pCenter: SlikaPosition = new SlikaPosition(),
+        public pArc: SlikaArcDesc = new SlikaArcDesc(),
+        public style: SlikaShapeStyle = new SlikaShapeStyle()
+    ) {
+        super();
+    }
+
+    public redraw(context: BABYLON.ICanvasRenderingContext): void {
+        context.strokeStyle = this.style.stroke;
+        context.shadowBlur = this.style.highlightRadius;
+        context.shadowColor = this.style.highlightColor;
+        context.lineWidth = this.style.width;
+        context.beginPath();
+        context.arc(this.pCenter.x, this.pCenter.y, this.pArc.r, this.pArc.a0, this.pArc.a1, true);
         context.stroke();
     }
 }
