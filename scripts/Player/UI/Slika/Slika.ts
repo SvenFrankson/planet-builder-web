@@ -350,7 +350,7 @@ class Slika {
         private width: number,
         private height: number,
         private context: BABYLON.ICanvasRenderingContext,
-        private texture: BABYLON.DynamicTexture
+        private texture?: BABYLON.DynamicTexture
     ) {
         if (texture) {
             this.texture.getScene().onBeforeRenderObservable.add(this._update);
@@ -382,7 +382,6 @@ class Slika {
     public redraw(): void {
         this.context.clearRect(0, 0, this.width, this.height);
         for (let i = 0; i < this.elements.length; i++) {
-            console.log("redraw");
             this.elements.get(i).redraw(this.context);
         }
     }

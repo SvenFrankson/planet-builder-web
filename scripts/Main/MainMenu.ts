@@ -3,7 +3,7 @@
 class MainMenu extends Main {
 
 	public camera: BABYLON.FreeCamera;
-	private _testAltitude = 20.5;
+	private _testAltitude = 20.7;
 
 	public createScene(): void {
 		super.createScene();
@@ -49,9 +49,9 @@ class MainMenu extends Main {
 			graphicsPanel.setTarget(this.camera.position);
 			graphicsPanel.open();
 			
-			let graphicsContext = graphicsPanel.texture.getContext();
+			let graphicsContext = graphicsPanel.holoTexture.getContext();
 
-			let graphicsSlika = new Slika(w, h, graphicsContext, graphicsPanel.texture);
+			let graphicsSlika = new Slika(w, h, graphicsContext, graphicsPanel.holoTexture);
 			graphicsSlika.add(new SlikaPath(new SlikaPoints([23, 18, w - 23, 18, w - 23, h - 18, 23, h - 18]), new SlikaShapeStyle("none", "#596b66e0", 0, "white", 0)));
 			for (let i = 100; i < h; i += 100) {
 				graphicsSlika.add(SlikaLine.Create(23, i, w - 23, i, new SlikaShapeStyle("#ffffff30", "none", 3, "ffffff", 20)));
@@ -134,9 +134,9 @@ class MainMenu extends Main {
 			mainPanel.setTarget(this.camera.position);
 			mainPanel.open();
 			
-			let mainContext = mainPanel.texture.getContext();
+			let mainContext = mainPanel.holoTexture.getContext();
 
-			let mainSlika = new Slika(wMain, hMain, mainContext, mainPanel.texture);
+			let mainSlika = new Slika(wMain, hMain, mainContext, mainPanel.holoTexture);
 			mainSlika.add(new SlikaPath(new SlikaPoints([23, 18, wMain - 23, 18, wMain - 23, hMain - 18, 23, hMain - 18]), new SlikaShapeStyle("none", "#596b66e0", 0, "white", 0)));
 			for (let i = 100; i < hMain; i += 100) {
 				mainSlika.add(SlikaLine.Create(23, i, wMain - 23, i, new SlikaShapeStyle("#ffffff30", "none", 3, "ffffff", 20)));

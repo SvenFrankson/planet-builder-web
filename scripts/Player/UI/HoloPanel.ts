@@ -4,7 +4,11 @@ class HoloPanel extends Pickable {
 
     public holoMesh: BABYLON.Mesh;
     public holoMaterial: BABYLON.StandardMaterial;
-    public texture: BABYLON.DynamicTexture;
+    public holoTexture: BABYLON.DynamicTexture;
+
+    public pointerMesh: BABYLON.Mesh;
+    public pointerMaterial: BABYLON.StandardMaterial;
+    public pointerTexture: BABYLON.DynamicTexture;
 
     // 24 lines of 80 characters each
     public lines: string[] = [];
@@ -19,6 +23,11 @@ class HoloPanel extends Pickable {
             Math.sin(a) * this._radius,
             Math.cos(a) * this._radius + this._cz
         );
+    }
+
+    private posXToXTexture(posX: number): number {
+        let a = Math.asin(posX / this._radius);
+        return a * this._w / this._angle + this._w * 0.5;
     }
 
     constructor(
@@ -96,20 +105,26 @@ class HoloPanel extends Pickable {
         super.instantiate();
 
         BABYLON.CreateCylinderVertexData({ height: 0.1, diameter: 0.5 }).applyToMesh(this);
+        let test = BABYLON.MeshBuilder.CreateBox("test", { size: 0.05 });
+        test.parent = this;
+        test.position.z = 0.25;
         let mat = new BABYLON.StandardMaterial("base-material", this.main.scene);
         mat.diffuseColor.copyFromFloats(0.8, 0, 0.2);
         mat.specularColor.copyFromFloats(0, 0, 0);
         this.material = mat;
-        //this = BABYLON.MeshBuilder.CreateBox("text-page-base", { height: 0.1, width: 1, depth: 1 });
 
         this.holoMesh = new BABYLON.Mesh("text-page");
         //this.holoMesh.layerMask = 0x10000000;
         this.holoMesh.parent = this;
         this.holoMesh.position.y = 0;
-        this.holoMesh.rotation.y = Math.PI;
         this.holoMesh.scaling.x = 0.1;
         this.holoMesh.scaling.y = 0.1;
-        this.holoMesh.alphaIndex = 100;
+        this.holoMesh.alphaIndex = 1;
+
+        this.pointerMesh = new BABYLON.Mesh("pointer-mesh");
+        this.pointerMesh.position.z = - 0.03;
+        this.pointerMesh.parent = this.holoMesh;
+        this.pointerMesh.alphaIndex = 2;
 
         let data = new BABYLON.VertexData();
         let positions: number[] = [];
@@ -138,15 +153,34 @@ class HoloPanel extends Pickable {
 
         data.applyToMesh(this.holoMesh);
 
+        data.applyToMesh(this.pointerMesh, true);
+        this.pointerMesh.isVisible = false;
+
         this.holoMaterial = new BABYLON.StandardMaterial("text-page-material", this.main.scene);
         this.holoMaterial.useAlphaFromDiffuseTexture = true;
         this.holoMaterial.specularColor.copyFromFloats(0, 0, 0);
         this.holoMaterial.emissiveColor.copyFromFloats(1, 1, 1);
         this.holoMesh.material = this.holoMaterial;
 
-        this.texture = new BABYLON.DynamicTexture("text-page-texture", { width: this._w, height: this._h }, this.main.scene, true);
-        this.texture.hasAlpha = true;
-        this.holoMaterial.diffuseTexture = this.texture;
+        this.holoTexture = new BABYLON.DynamicTexture("text-page-texture", { width: this._w, height: this._h }, this.main.scene, true);
+        this.holoTexture.hasAlpha = true;
+        this.holoMaterial.diffuseTexture = this.holoTexture;
+
+        this.pointerMaterial = new BABYLON.StandardMaterial("text-page-material", this.main.scene);
+        this.pointerMaterial.useAlphaFromDiffuseTexture = true;
+        this.pointerMaterial.specularColor.copyFromFloats(0, 0, 0);
+        this.pointerMaterial.emissiveColor.copyFromFloats(1, 1, 1);
+        this.pointerMesh.material = this.pointerMaterial;
+
+        this.pointerTexture = new BABYLON.DynamicTexture("text-page-texture", { width: this._w, height: this._h }, this.main.scene, true);
+        this.pointerTexture.hasAlpha = true;
+        this.pointerMaterial.diffuseTexture = this.pointerTexture;
+
+        let pointerSlika = new Slika(this._w, this._h, this.pointerTexture.getContext());
+        pointerSlika.add(SlikaLine.Create(this._w * 0.5, 0, this._w * 0.5, this._h, new SlikaShapeStyle("#8dd6c0", "none", 3, "#8dd6c0", 10)));
+        pointerSlika.add(SlikaLine.Create(0, this._h * 0.5, this._w, this._h * 0.5, new SlikaShapeStyle("#8dd6c0", "none", 3, "#8dd6c0", 10)));
+        pointerSlika.redraw();
+        this.pointerTexture.update();
 
         this.lines[0] = "You know what? It is beets. I've crashed into a beet truck. Jaguar shark! So tell me - does it really exist? Is this my espresso machine? Wh-what is-h-how did you get my espresso machine? Hey, take a look at the earthlings. Goodbye! I was part of something special.";
         this.lines[1] = "Yeah, but John, if The Pirates of the Caribbean breaks down, the pirates don’t eat the tourists. Jaguar shark! So tell me - does it really exist? Did he just throw my cat out of the window? You're a very talented young man, with your own clever thoughts and ideas. Do you need a manager?";
@@ -183,19 +217,19 @@ class HoloPanel extends Pickable {
         else {
             y = BABYLON.Vector3.Up();
         }
-        let z = target.subtract(this.position).normalize();
+        let z = target.subtract(this.position).normalize().scaleInPlace(-1);
         let x = BABYLON.Vector3.Cross(y, z).normalize();
         z = BABYLON.Vector3.Cross(x, y).normalize();
         this.rotationQuaternion = BABYLON.Quaternion.RotationQuaternionFromAxis(x, y, z);
     }
 
     public redrawSVG(image: any): void {
-        let context = this.texture.getContext();
+        let context = this.holoTexture.getContext();
         context.clearRect(0, 0, this._w, this._h);
 
         context.drawImage(image, 0, 0, this._w, this._h);
         
-        this.texture.update();
+        this.holoTexture.update();
     }
 
     public redraw(): void {
@@ -218,7 +252,7 @@ class HoloPanel extends Pickable {
 
         let grey = new BABYLON.Color3(0.5, 0.5, 0.5);
 
-        let context = this.texture.getContext();
+        let context = this.holoTexture.getContext();
         context.clearRect(0, 0, this._w, this._h);
         
         let decoyPath0 = HoloPanel.MakePath([
@@ -382,7 +416,7 @@ class HoloPanel extends Pickable {
             i++;
             line = this.lines[i];
         }
-        this.texture.update();
+        this.holoTexture.update();
     }
 
     public static MakePath(points: number[]): BABYLON.Vector2[] {
@@ -446,6 +480,8 @@ class HoloPanel extends Pickable {
         if (mat instanceof BABYLON.StandardMaterial) {
             mat.diffuseColor.copyFromFloats(0, 0.8, 0.2);
         }
+        this.pointerMesh.isVisible = true;
+        this.scene.onBeforeRenderObservable.add(this._updatePointerMesh);
     }
 
     public onHoverEnd(): void {
@@ -453,5 +489,20 @@ class HoloPanel extends Pickable {
         if (mat instanceof BABYLON.StandardMaterial) {
             mat.diffuseColor.copyFromFloats(0.8, 0, 0.2);
         }
+        this.pointerMesh.isVisible = false;
+        this.scene.onBeforeRenderObservable.removeCallback(this._updatePointerMesh);
+    }
+
+    private _updatePointerMesh = () => {
+        let local = BABYLON.Vector3.TransformCoordinates(this.inputManager.aimedPosition, this.holoMesh.getWorldMatrix().clone().invert());
+        let h = this._angle * this._radius / this._w * this._h;
+        let du = this.posXToXTexture(local.x) / this._w - 0.5;
+        let dv = local.y / h;
+        let uvs = [];
+        for (let i = 0; i <= 8; i++) {
+            uvs.push(i / 8 - du, 0 - dv);
+            uvs.push(i / 8 - du, 1 - dv);
+        }
+        this.pointerMesh.setVerticesData(BABYLON.VertexBuffer.UVKind, uvs, true);
     }
 }

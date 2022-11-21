@@ -31,6 +31,7 @@ class InputManager {
     public mappedKeyUpListeners: Map<KeyInput,(() => any)[]> = new Map<KeyInput,(() => any)[]>();
 
     public aimedElement: Pickable;
+    public aimedPosition: BABYLON.Vector3;
     public pickableElements: UniqueList<Pickable>;
 
     constructor(public scene: BABYLON.Scene, public canvas: HTMLCanvasElement) {
@@ -233,6 +234,7 @@ class InputManager {
                 if (pick.distance < aimedDist) {
                     aimedPickable = pickableElement;
                     aimedDist = pick.distance;
+                    this.aimedPosition = pick.pickedPoint;
                 }
             }
         }

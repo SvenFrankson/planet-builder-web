@@ -251,7 +251,6 @@ class PlanetChunckVertexData {
         if (!PlanetChunckVertexData._VertexDatas[lod].has(mirrorYRef)) {
             let mirrorYData = PlanetChunckVertexData.MirrorY(data);
             PlanetChunckVertexData._VertexDatas[lod].set(mirrorYRef, new ExtendedVertexData(mirrorYRef, mirrorYData));
-            console.log(mirrorYRef.toString(2).padStart(8, "0").split("").reverse().join("") + " made by yMirroring from " + ref.toString(2).padStart(8, "0").split("").reverse().join(""));
             PlanetChunckVertexData._TryAddMirrorZChunckPart(lod, mirrorYRef, mirrorYData);
             return true;
         }
