@@ -3,11 +3,11 @@
 class HoloPanel extends Pickable {
 
     public holoMesh: BABYLON.Mesh;
-    public holoMaterial: BABYLON.StandardMaterial;
+    public holoMaterial: HoloPanelMaterial;
     public holoTexture: BABYLON.DynamicTexture;
 
     public pointerMesh: BABYLON.Mesh;
-    public pointerMaterial: BABYLON.StandardMaterial;
+    public pointerMaterial: HoloPanelMaterial;
     public pointerTexture: BABYLON.DynamicTexture;
     public pointerElement: SlikaPointer;
 
@@ -161,26 +161,20 @@ class HoloPanel extends Pickable {
 
         data.applyToMesh(this.pointerMesh, true);
 
-        this.holoMaterial = new BABYLON.StandardMaterial("text-page-material", this.main.scene);
-        this.holoMaterial.useAlphaFromDiffuseTexture = true;
-        this.holoMaterial.specularColor.copyFromFloats(0, 0, 0);
-        this.holoMaterial.emissiveColor.copyFromFloats(1, 1, 1);
+        this.holoMaterial = new HoloPanelMaterial("text-page-material", this.main.scene);
         this.holoMesh.material = this.holoMaterial;
 
         this.holoTexture = new BABYLON.DynamicTexture("text-page-texture", { width: this._w, height: this._h }, this.main.scene, true);
         this.holoTexture.hasAlpha = true;
-        this.holoMaterial.diffuseTexture = this.holoTexture;
+        this.holoMaterial.holoTexture = this.holoTexture;
 
-        this.pointerMaterial = new BABYLON.StandardMaterial("text-page-material", this.main.scene);
-        this.pointerMaterial.useAlphaFromDiffuseTexture = true;
-        this.pointerMaterial.specularColor.copyFromFloats(0, 0, 0);
-        this.pointerMaterial.emissiveColor.copyFromFloats(1, 1, 1);
+        this.pointerMaterial = new HoloPanelMaterial("text-page-material", this.main.scene);
         this.pointerMaterial.alpha = 0;
         this.pointerMesh.material = this.pointerMaterial;
 
         this.pointerTexture = new BABYLON.DynamicTexture("text-page-texture", { width: this._w, height: this._h }, this.main.scene, true);
         this.pointerTexture.hasAlpha = true;
-        this.pointerMaterial.diffuseTexture = this.pointerTexture;
+        this.pointerMaterial.holoTexture = this.pointerTexture;
 
         let pointerSlika = new Slika(this._w, this._h, this.pointerTexture.getContext(), this.pointerTexture);
         this.pointerElement = new SlikaPointer(
