@@ -163,7 +163,6 @@ class Player extends BABYLON.Mesh {
                 let textPage = new HoloPanel(1.5, 1.5, 1600, 1000, this.game);
                 textPage.instantiate();
                 textPage.lines = chunck.debugTextInfo();
-                textPage.redraw();
                 textPage.setPosition(hit[0].pickedPoint);
                 textPage.setTarget(this.position);
                 textPage.open();

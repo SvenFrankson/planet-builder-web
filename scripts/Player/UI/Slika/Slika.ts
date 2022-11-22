@@ -279,6 +279,74 @@ enum SlikaButtonState {
     Active
 }
 
+class SlikaPointer extends SlikaElement {
+
+    private _lines: SlikaLine[] = [];
+    private _circle: SlikaCircle;
+
+    constructor(
+        public position: SlikaPosition,
+        public min: SlikaPosition,
+        public max: SlikaPosition,
+        public r: number,
+        public color: BABYLON.Color3 = BABYLON.Color3.White()
+    ) {
+        super();
+
+        let hexColor = color.toHexString();
+
+        this._lines.push(new SlikaLine(undefined, undefined, new SlikaShapeStyle(hexColor, "none", 3, hexColor, 10)));
+        this._lines.push(new SlikaLine(undefined, undefined, new SlikaShapeStyle(hexColor, "none", 3, hexColor, 10)));
+        this._lines.push(new SlikaLine(undefined, undefined, new SlikaShapeStyle(hexColor, "none", 3, hexColor, 10)));
+        this._lines.push(new SlikaLine(undefined, undefined, new SlikaShapeStyle(hexColor, "none", 3, hexColor, 10)));
+        this._circle = SlikaCircle.Circle(0, 0, 60, new SlikaShapeStyle(hexColor, "none", 3, hexColor, 10));
+    }
+
+    public setPosition(x: number, y: number): void {
+        this.position.x = x;
+        this.position.x = Math.max(this.min.x + this.r, Math.min(this.max.x - this.r, this.position.x));
+        this.position.y = y;
+        this.position.y = Math.max(this.min.y + this.r, Math.min(this.max.y - this.r, this.position.y));
+
+        this._updatePosition();
+    }
+
+    private _updatePosition(): void {
+        this._lines[0].pStart.x = this.min.x;
+        this._lines[0].pStart.y = this.position.y;
+        this._lines[0].pEnd.x = this.position.x - this.r;
+        this._lines[0].pEnd.y = this.position.y;
+        
+        this._lines[1].pStart.x = this.position.x;
+        this._lines[1].pStart.y = this.min.y;
+        this._lines[1].pEnd.x = this.position.x;
+        this._lines[1].pEnd.y = this.position.y - this.r;
+        
+        this._lines[2].pStart.x = this.position.x + this.r;
+        this._lines[2].pStart.y = this.position.y;
+        this._lines[2].pEnd.x = this.max.x;
+        this._lines[2].pEnd.y = this.position.y;
+        
+        this._lines[3].pStart.x = this.position.x;
+        this._lines[3].pStart.y = this.position.y + this.r;
+        this._lines[3].pEnd.x = this.position.x;
+        this._lines[3].pEnd.y = this.max.y;
+
+        this._circle.pCenter.x = this.position.x;
+        this._circle.pCenter.y = this.position.y;
+
+        if (this.slika) {
+            this.slika.needRedraw = true;
+        }
+    }
+
+    public redraw(context: BABYLON.ICanvasRenderingContext): void {
+        this._lines.forEach(l => {
+            l.redraw(context);
+        });
+        this._circle.redraw(context);
+    }
+}
 class SlikaButton extends SlikaElement {
 
     public state: SlikaButtonState = SlikaButtonState.Enabled;
