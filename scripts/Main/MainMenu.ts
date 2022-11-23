@@ -43,7 +43,7 @@ class MainMenu extends Main {
 			let w = 600;
 			let h = 1200;
 
-			let graphicsPanel = new HoloPanel(0.4, 1.2, w, h, this);
+			let graphicsPanel = new HoloPanel(0.4, 1.5, w, h, this);
 			graphicsPanel.instantiate();
 			graphicsPanel.setPosition(new BABYLON.Vector3(-0.6, this._testAltitude, 0.8));
 			graphicsPanel.setTarget(this.camera.position);
@@ -128,7 +128,7 @@ class MainMenu extends Main {
 			let wMain = 1200;
 			let hMain = 800;
 
-			let mainPanel = new HoloPanel(1, 1.2, wMain, hMain, this);
+			let mainPanel = new HoloPanel(1, 1.5, wMain, hMain, this);
 			mainPanel.instantiate();
 			mainPanel.setPosition(new BABYLON.Vector3(0.2, this._testAltitude, 1));
 			mainPanel.setTarget(this.camera.position);

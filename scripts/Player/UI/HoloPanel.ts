@@ -193,6 +193,13 @@ class HoloPanel extends Pickable {
         this.lines[4] = "Checkmate... Must go faster... go, go, go, go, go! Hey, you know how I'm, like, always trying to save the planet? Here's my chance. God creates dinosaurs. God destroys dinosaurs. God creates Man. Man destroys God. Man creates Dinosaurs. Checkmate... You're a very talented young man, with your own clever thoughts and ideas. Do you need a manager?";
     
         this.proxyPickMesh = this.holoMesh;
+
+        let off = 0;
+        let target = 0;
+        this.scene.onBeforeRenderObservable.add(() => {
+            off += 1 / 60;
+            this.holoMaterial.offset = off;
+        });
     }
 
     public async open(): Promise<void> {

@@ -12,21 +12,31 @@ class HoloPanelMaterial extends BABYLON.ShaderMaterial {
             },
             {
                 attributes: ["position", "normal", "uv", "color"],
-                uniforms: ["world", "worldView", "worldViewProjection", "view", "projection"],
+                uniforms: ["world", "worldView", "worldViewProjection", "view", "projection", "alpha"],
                 needAlphaBlending: true
             }
         );
         
+        this.setFloat("alpha", this._alpha);
         this.setFloat("offset", this._offset);
     }
 
-    public getOffset(): number {
+    public get offset(): number {
         return this._offset;
     }
 
-    public setOffset(v: number): void {
+    public set offset(v: number) {
         this._offset = v;
         this.setFloat("offset", this._offset);
+    }
+
+    public get alpha(): number {
+        return this._alpha;
+    }
+
+    public set alpha(v: number) {
+        this._alpha = v;
+        this.setFloat("alpha", this._alpha);
     }
 
     private _holoTexture: BABYLON.Texture;
