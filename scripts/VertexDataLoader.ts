@@ -63,6 +63,7 @@ class VertexDataLoader {
                 vertexDatas.push(vertexData);
             }
         }
+        this._vertexDatas.set(name, vertexDatas);
         loadedFileMeshes.forEach(m => { m.dispose(); });
         loadedFile.skeletons.forEach(s => { s.dispose(); });
         return vertexDatas;

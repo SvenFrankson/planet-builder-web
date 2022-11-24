@@ -110,10 +110,16 @@ class HoloPanel extends Pickable {
     public instantiate(): void {
         super.instantiate();
 
+        let h = this._angle * this._radius / this._w * this._h;
+
         BABYLON.CreateCylinderVertexData({ height: 0.1, diameter: 0.5 }).applyToMesh(this);
-        let test = BABYLON.MeshBuilder.CreateBox("test", { size: 0.05 });
-        test.parent = this;
-        test.position.z = 0.25;
+        let frame = BABYLON.MeshBuilder.CreateBox("frame", { size: 0.05 });
+        frame.parent = this;
+        frame.position.y = this.height - h * 0.5;
+        VertexDataLoader.instance.get("holoPanelFrame").then(vertexDatas => {
+            let vData = vertexDatas[1];
+            vData.applyToMesh(frame);
+        })
         let mat = new BABYLON.StandardMaterial("base-material", this.main.scene);
         mat.diffuseColor.copyFromFloats(0.8, 0, 0.2);
         mat.specularColor.copyFromFloats(0, 0, 0);
@@ -138,7 +144,6 @@ class HoloPanel extends Pickable {
         let uvs: number[] = [];
         let normals: number[] = [];
 
-        let h = this._angle * this._radius / this._w * this._h;
         for (let i = 0; i <= 8; i++) {
             let p = this.xTextureToPos(i * this._w / 8);
             let l = positions.length / 3;
