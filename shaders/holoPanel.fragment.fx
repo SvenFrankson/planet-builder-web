@@ -20,10 +20,22 @@ void main() {
    //   color = color * 0.9;
    //}
 
-   float f = (cos((vPositionW.y + offset) * 500.0) + 1.);
-   f = min(f, 1.) * 0.25 + 0.75;
+/*
+   float f = (cos((vPositionW.y + offset) * 500.0) + 0.5);
+   f = min(f, 1.) * 0.1 + 0.9;
    if (color.a < 0.99) {
       color.a *= f;
+   }
+   */
+   if (color.a > 0.9) {
+      float y = vPositionW.y - offset;
+      float d = (y * 4. - round(y * 4.)) / 4.;
+      if (abs(d) < 0.005) {
+         float x = d / 0.005;
+         float f = 1. - x * x;
+         
+         color.rgb *= 1. + f * 0.5;
+      }
    }
 
    color.a *= alpha;

@@ -194,11 +194,19 @@ class HoloPanel extends Pickable {
     
         this.proxyPickMesh = this.holoMesh;
 
-        let off = 0;
-        let target = 0;
+        let off = 5 * Math.random();
+        let offPointer = 5 * Math.random();
         this.scene.onBeforeRenderObservable.add(() => {
-            off += 1 / 60;
+            off += this.scene.getEngine().getDeltaTime() / 1000 * 0.15;
+            offPointer += this.scene.getEngine().getDeltaTime() / 1000 * 0.15;
+            if (off > 100) {
+                off -= 100;
+            }
+            if (offPointer > 100) {
+                offPointer -= 100;
+            }
             this.holoMaterial.offset = off;
+            this.pointerMaterial.offset = offPointer;
         });
     }
 
