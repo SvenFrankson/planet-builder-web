@@ -556,12 +556,10 @@ class Slika {
             if (x > e.hitBox.x0 && x < e.hitBox.x1) {
                 if (y > e.hitBox.y0 && y < e.hitBox.y1) {
                     this.setAimedElement(e);
-                    console.log(":)");
                     return;
                 }
             }
         }
-        console.log(":( " + this.pickableElements.length);
         this.setAimedElement(undefined);
     }
 

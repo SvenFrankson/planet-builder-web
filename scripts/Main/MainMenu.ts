@@ -45,7 +45,7 @@ class MainMenu extends Main {
 
 			let graphicsPanel = new HoloPanel(0.4, 1.5, w, h, this);
 			graphicsPanel.instantiate();
-			graphicsPanel.setPosition(new BABYLON.Vector3(-0.6, this._testAltitude, 0.8));
+			graphicsPanel.setPosition(new BABYLON.Vector3(-0.6, this._testAltitude, - 0.2));
 			graphicsPanel.setTarget(this.camera.position);
 			graphicsPanel.open();
 			
@@ -73,8 +73,6 @@ class MainMenu extends Main {
 			graphicsSlika.add(SlikaPath.CreatePan(35, w - 35, 40, 6, 40, 0.3, true, false, new SlikaShapeStyle("none", "#8dd6c0", 0, "#8dd6c0", 10)));
 			graphicsSlika.add(SlikaPath.CreatePan(35, w - 35, 155, 6, 20, 0.3, false, true, new SlikaShapeStyle("none", "#8dd6c0", 0, "#8dd6c0", 10)));
 
-			/*
-			*/
 			graphicsSlika.add(new SlikaText(
 				"GRAPHICS",
 				new SPosition(60, 110),
@@ -118,7 +116,7 @@ class MainMenu extends Main {
 
 			let mainPanel = new HoloPanel(1, 1.5, wMain, hMain, this);
 			mainPanel.instantiate();
-			mainPanel.setPosition(new BABYLON.Vector3(0.2, this._testAltitude, 1));
+			mainPanel.setPosition(new BABYLON.Vector3(0.2, this._testAltitude, 0));
 			mainPanel.setTarget(this.camera.position);
 			mainPanel.open();
 			
@@ -163,6 +161,12 @@ class MainMenu extends Main {
 					mainMenuPlanet.register();
 					//moon.register();
 
+					this._playerArm = new PlayerArm(this.scene);
+					this._playerArm.position = this.camera.position.clone();
+					this._playerArm.position.x -= 0.2;
+					this._playerArm.position.y -= 0.25;
+					this._playerArm.instantiate();
+
 					resolve();
 				}
 			);
@@ -171,8 +175,13 @@ class MainMenu extends Main {
 		})
 	}
 
+	private _playerArm: PlayerArm;
+
 	public update(): void {
 		//this._textPage.baseMesh.rotate(BABYLON.Axis.Y, Math.PI / 60)
 		this.camera.position.y = 1.7 + this._testAltitude;
+		if (this._playerArm && this.inputManager.aimedPosition) {
+			this._playerArm.setTarget(this.inputManager.aimedPosition);
+		}
 	}
 }
