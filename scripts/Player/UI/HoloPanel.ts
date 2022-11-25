@@ -5,6 +5,7 @@ class HoloPanel extends Pickable {
     public holoMesh: BABYLON.Mesh;
     public holoMaterial: HoloPanelMaterial;
     public holoTexture: BABYLON.DynamicTexture;
+    public holoSlika: Slika;
 
     public pointerMesh: BABYLON.Mesh;
     public pointerMaterial: HoloPanelMaterial;
@@ -173,6 +174,8 @@ class HoloPanel extends Pickable {
         this.holoTexture.hasAlpha = true;
         this.holoMaterial.holoTexture = this.holoTexture;
 
+        this.holoSlika = new Slika(this._w, this._h, this.holoTexture.getContext(), this.holoTexture);
+
         this.pointerMaterial = new HoloPanelMaterial("text-page-material", this.main.scene);
         this.pointerMaterial.alpha = 0;
         this.pointerMesh.material = this.pointerMaterial;
@@ -183,9 +186,9 @@ class HoloPanel extends Pickable {
 
         let pointerSlika = new Slika(this._w, this._h, this.pointerTexture.getContext(), this.pointerTexture);
         this.pointerElement = new SlikaPointer(
-            new SlikaPosition(this._w * 0.5, this._h * 0.5),
-            new SlikaPosition(30, 13),
-            new SlikaPosition(this._w - 26, this._h - 21),
+            new SPosition(this._w * 0.5, this._h * 0.5),
+            new SPosition(30, 13),
+            new SPosition(this._w - 26, this._h - 21),
             60,
             BABYLON.Color3.FromHexString("#8dd6c0")
         );
@@ -271,6 +274,7 @@ class HoloPanel extends Pickable {
             mat.diffuseColor.copyFromFloats(0.8, 0, 0.2);
         }
         this._animatePointerAlpha(0, 0.5);
+        this.holoSlika.onPointerExit();
         this.scene.onBeforeRenderObservable.removeCallback(this._updatePointerMesh);
     }
 
@@ -278,6 +282,7 @@ class HoloPanel extends Pickable {
         let local = BABYLON.Vector3.TransformCoordinates(this.inputManager.aimedPosition, this.holoMesh.getWorldMatrix().clone().invert());
         let x = this.posXToXTexture(local.x);
         let y = this.posYToYTexture(local.y);
+        this.holoSlika.onPointerMove(x, y);
         this.pointerElement.setPosition(x, y);
     }
 

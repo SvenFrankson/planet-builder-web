@@ -49,10 +49,8 @@ class MainMenu extends Main {
 			graphicsPanel.setTarget(this.camera.position);
 			graphicsPanel.open();
 			
-			let graphicsContext = graphicsPanel.holoTexture.getContext();
-
-			let graphicsSlika = new Slika(w, h, graphicsContext, graphicsPanel.holoTexture);
-			graphicsSlika.add(new SlikaPath(new SlikaPoints([23, 18, w - 23, 18, w - 23, h - 18, 23, h - 18]), new SlikaShapeStyle("none", "#596b66e0", 0, "white", 0)));
+			let graphicsSlika = graphicsPanel.holoSlika;
+			graphicsSlika.add(new SlikaPath(new SPoints([23, 18, w - 23, 18, w - 23, h - 18, 23, h - 18]), new SlikaShapeStyle("none", "#596b66e0", 0, "white", 0)));
 			for (let i = 100; i < h; i += 100) {
 				graphicsSlika.add(SlikaLine.Create(23, i, w - 23, i, new SlikaShapeStyle("#ffffff30", "none", 3, "ffffff", 20)));
 			}
@@ -79,33 +77,34 @@ class MainMenu extends Main {
 			*/
 			graphicsSlika.add(new SlikaText(
 				"GRAPHICS",
-				new SlikaPosition(60, 110),
+				new SPosition(60, 110),
 				new SlikaTextStyle("#8dd6c0", 50, "XoloniumRegular")
 			));
 			
 			let buttonHigh = new SlikaButton(
 				"High",
-				new SlikaPosition(120, 240),
+				new SPosition(120, 240),
 				BABYLON.Color3.FromHexString("#8dd6c0")
 			);
 
 			let buttonMedium = new SlikaButton(
 				"Medium",
-				new SlikaPosition(120, 440),
+				new SPosition(120, 440),
 				BABYLON.Color3.FromHexString("#8dd6c0")
 			);
 			
 			let buttonLow = new SlikaButton(
 				"Low",
-				new SlikaPosition(120, 640),
+				new SPosition(120, 640),
 				BABYLON.Color3.FromHexString("#8dd6c0")
 			);
 
 			let buttonCustom = new SlikaButton(
 				"Custom",
-				new SlikaPosition(120, 840),
+				new SPosition(120, 840),
 				BABYLON.Color3.FromHexString("#8dd6c0")
 			);
+			console.log(buttonHigh.isPickable);
 
 			graphicsSlika.add(buttonHigh);
 			graphicsSlika.add(buttonMedium);
@@ -113,17 +112,6 @@ class MainMenu extends Main {
 			graphicsSlika.add(buttonCustom);
 
 			this._textPage = graphicsPanel;
-
-			setTimeout(() => {
-				buttonHigh.setStatus(SlikaButtonState.Enabled);
-				buttonMedium.setStatus(SlikaButtonState.Enabled);
-				buttonLow.setStatus(SlikaButtonState.Enabled);
-				buttonCustom.setStatus(SlikaButtonState.Disabled);
-			
-				setTimeout(() => {
-					buttonHigh.setStatus(SlikaButtonState.Active);
-				}, 2000);
-			}, 2000);
 
 			let wMain = 1200;
 			let hMain = 800;
@@ -134,10 +122,8 @@ class MainMenu extends Main {
 			mainPanel.setTarget(this.camera.position);
 			mainPanel.open();
 			
-			let mainContext = mainPanel.holoTexture.getContext();
-
-			let mainSlika = new Slika(wMain, hMain, mainContext, mainPanel.holoTexture);
-			mainSlika.add(new SlikaPath(new SlikaPoints([23, 18, wMain - 23, 18, wMain - 23, hMain - 18, 23, hMain - 18]), new SlikaShapeStyle("none", "#596b66e0", 0, "white", 0)));
+			let mainSlika = mainPanel.holoSlika;
+			mainSlika.add(new SlikaPath(new SPoints([23, 18, wMain - 23, 18, wMain - 23, hMain - 18, 23, hMain - 18]), new SlikaShapeStyle("none", "#596b66e0", 0, "white", 0)));
 			for (let i = 100; i < hMain; i += 100) {
 				mainSlika.add(SlikaLine.Create(23, i, wMain - 23, i, new SlikaShapeStyle("#ffffff30", "none", 3, "ffffff", 20)));
 			}
@@ -161,13 +147,13 @@ class MainMenu extends Main {
 
 			mainSlika.add(new SlikaText(
 				"PLANET BUILDER WEB",
-				new SlikaPosition(60, 110),
+				new SPosition(60, 110),
 				new SlikaTextStyle("#8dd6c0", 50, "XoloniumRegular")
 			));
 			
 			let buttonPlay = new SlikaButton(
 				"Play",
-				new SlikaPosition(420, 340),
+				new SPosition(420, 340),
 				BABYLON.Color3.FromHexString("#8dd6c0")
 			);
 			mainSlika.add(buttonPlay);

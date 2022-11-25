@@ -1,4 +1,4 @@
-class SlikaPosition {
+class SPosition {
 
     constructor(
         public x: number = 0,
@@ -9,7 +9,27 @@ class SlikaPosition {
     }
 }
 
-class SlikaArcDesc {
+class SRect {
+
+    public static WidthHeight(x: number, y: number, w: number, h: number): SRect {
+        return new SRect(x, y, x + w, y + h);
+    }
+
+    public static MinMax(xMin: number, yMin: number, xMax: number, yMax: number): SRect {
+        return new SRect(xMin, yMin, xMax, yMax);
+    }
+    
+    constructor(
+        public x0: number = 0,
+        public y0: number = 0,
+        public x1: number = 0,
+        public y1: number = 0
+    ) {
+
+    }
+}
+
+class SArc {
 
     constructor(
         public r: number = 10,
@@ -20,7 +40,7 @@ class SlikaArcDesc {
     }
 }
 
-class SlikaPoints {
+class SPoints {
 
     constructor(
         public points: number[] = [],
@@ -60,12 +80,18 @@ abstract class SlikaElement {
 
     public slika: Slika;
     public scene: BABYLON.Scene;
+    public isPickable: boolean = false;
+    public hitBox : SRect;
 
     constructor() {
 
     }
 
     public abstract redraw(context: BABYLON.ICanvasRenderingContext): void;
+
+    public onHoverStart(): void {}
+
+    public onHoverEnd(): void {}
 }
 
 class SlikaPath extends SlikaElement {
@@ -88,7 +114,7 @@ class SlikaPath extends SlikaElement {
         }
         
         return new SlikaPath(
-            new SlikaPoints([
+            new SPoints([
                 x1, y0,
                 x0, yUp,
                 x0, yBottom,
@@ -140,11 +166,11 @@ class SlikaPath extends SlikaElement {
             ];
         }
 
-        return new SlikaPath(new SlikaPoints(points, true), style);
+        return new SlikaPath(new SPoints(points, true), style);
     }
 
     constructor(
-        public points: SlikaPoints,
+        public points: SPoints,
         public style: SlikaShapeStyle
     ) {
         super();
@@ -177,15 +203,15 @@ class SlikaLine extends SlikaElement {
 
     public static Create(x0: number, y0: number, x1: number, y1: number, style = new SlikaShapeStyle()): SlikaLine {
         return new SlikaLine(
-            new SlikaPosition(x0, y0),
-            new SlikaPosition(x1, y1),
+            new SPosition(x0, y0),
+            new SPosition(x1, y1),
             style
         );
     }
 
     constructor(
-        public pStart: SlikaPosition = new SlikaPosition(),
-        public pEnd: SlikaPosition = new SlikaPosition(),
+        public pStart: SPosition = new SPosition(),
+        public pEnd: SPosition = new SPosition(),
         public style: SlikaShapeStyle = new SlikaShapeStyle()
     ) {
         super();
@@ -207,15 +233,15 @@ class SlikaCircle extends SlikaElement {
 
     public static Circle(x: number, y: number, r: number, style = new SlikaShapeStyle()): SlikaCircle {
         return new SlikaCircle(
-            new SlikaPosition(x, y),
-            new SlikaArcDesc(r, 0, 2 * Math.PI),
+            new SPosition(x, y),
+            new SArc(r, 0, 2 * Math.PI),
             style
         );
     }
 
     constructor(
-        public pCenter: SlikaPosition = new SlikaPosition(),
-        public pArc: SlikaArcDesc = new SlikaArcDesc(),
+        public pCenter: SPosition = new SPosition(),
+        public pArc: SArc = new SArc(),
         public style: SlikaShapeStyle = new SlikaShapeStyle()
     ) {
         super();
@@ -235,17 +261,17 @@ class SlikaCircle extends SlikaElement {
 class SlikaText extends SlikaElement {
 
     public text: string;
-    public position: SlikaPosition;
+    public position: SPosition;
     public textStyle: SlikaTextStyle;
 
-    constructor(text: string = "", position?: SlikaPosition, textStyle?: SlikaTextStyle) {
+    constructor(text: string = "", position?: SPosition, textStyle?: SlikaTextStyle) {
         super();
         this.text = text;
         if (position) {
             this.position = position;
         }
         else {
-            this.position = new SlikaPosition();
+            this.position = new SPosition();
         }
         if (textStyle) {
             this.textStyle = textStyle;
@@ -273,21 +299,15 @@ class SlikaText extends SlikaElement {
     }
 }
 
-enum SlikaButtonState {
-    Enabled,
-    Disabled,
-    Active
-}
-
 class SlikaPointer extends SlikaElement {
 
     private _lines: SlikaLine[] = [];
     private _circle: SlikaCircle;
 
     constructor(
-        public position: SlikaPosition,
-        public min: SlikaPosition,
-        public max: SlikaPosition,
+        public position: SPosition,
+        public min: SPosition,
+        public max: SPosition,
         public r: number,
         public color: BABYLON.Color3 = BABYLON.Color3.White()
     ) {
@@ -347,6 +367,13 @@ class SlikaPointer extends SlikaElement {
         this._circle.redraw(context);
     }
 }
+
+enum SlikaButtonState {
+    Enabled,
+    Disabled,
+    Active
+}
+
 class SlikaButton extends SlikaElement {
 
     public state: SlikaButtonState = SlikaButtonState.Enabled;
@@ -362,16 +389,18 @@ class SlikaButton extends SlikaElement {
 
     constructor(
         public label: string,
-        public position: SlikaPosition,
+        public position: SPosition,
         public color: BABYLON.Color3 = BABYLON.Color3.White()
     ) {
         super();
+        this.isPickable = true;
+        this.hitBox = SRect.WidthHeight(this.position.x, this.position.y, 360, 132);
 
         let hexColor = color.toHexString();
 
         this._text = new SlikaText(
             label,
-            new SlikaPosition(this.position.x + 180, this.position.y + 80, "center"),
+            new SPosition(this.position.x + 180, this.position.y + 80, "center"),
             new SlikaTextStyle(hexColor, 60, "XoloniumRegular", color.scale(0.6).toHexString())
         );
 
@@ -395,6 +424,16 @@ class SlikaButton extends SlikaElement {
     public setStatus(state: number): void {
         this.state = state;
         this._animateColor(this.colors[this.state], 0.5);
+    }
+
+    public onHoverStart(): void {
+        let color = this.colors[this.state].clone().scale(1.4);
+        color.clampToRef(0, 1, color);
+        this._animateColor(color, 0.3);
+    }
+
+    public onHoverEnd(): void {
+        this._animateColor(this.colors[this.state], 0.3);
     }
 
     public redraw(context: BABYLON.ICanvasRenderingContext): void {
@@ -424,12 +463,16 @@ class SlikaButton extends SlikaElement {
         }
     }
 
+    private _animateColorCB: () => void;
     private async _animateColor(targetColor: BABYLON.Color3, duration: number = 1): Promise<void> {
         if (this.scene) {
+            if (this._animateColorCB) {
+                this.scene.onBeforeRenderObservable.removeCallback(this._animateColorCB);
+            }
             return new Promise<void>(resolve => {
                 let colorZero = this.color.clone();
                 let t = 0;
-                let cb = () => {
+                this._animateColorCB = () => {
                     t += this.scene.getEngine().getDeltaTime() / 1000;
                     if (t < duration) {
                         let f = t / duration;
@@ -439,11 +482,12 @@ class SlikaButton extends SlikaElement {
                     else {
                         this.color.copyFrom(targetColor);
                         this._updateColor();
-                        this.scene.onBeforeRenderObservable.removeCallback(cb);
+                        this.scene.onBeforeRenderObservable.removeCallback(this._animateColorCB);
+                        this._animateColorCB = undefined;
                         resolve();
                     }
                 }
-                this.scene.onBeforeRenderObservable.add(cb);
+                this.scene.onBeforeRenderObservable.add(this._animateColorCB);
             });
         }
     }
@@ -452,7 +496,9 @@ class SlikaButton extends SlikaElement {
 class Slika {
 
     private elements: UniqueList<SlikaElement> = new UniqueList<SlikaElement>();
+    private pickableElements: UniqueList<SlikaElement> = new UniqueList<SlikaElement>();
     public needRedraw: boolean = true;
+    public aimedElement: SlikaElement;
 
     constructor(
         private width: number,
@@ -477,20 +523,61 @@ class Slika {
 
     public add(e: SlikaElement): void {
         this.elements.push(e);
+        if (e.isPickable) {
+            this.pickableElements.push(e);
+        }
         e.slika = this;
         if (this.texture) {
             e.scene = this.texture.getScene();
         }
+        console.log(this.pickableElements.length);
     }
 
     public remove(e: SlikaElement): void {
         this.elements.remove(e);
+        this.pickableElements.remove(e);
+        console.log("X" + this.pickableElements.length);
     }
 
     public redraw(): void {
         this.context.clearRect(0, 0, this.width, this.height);
         for (let i = 0; i < this.elements.length; i++) {
             this.elements.get(i).redraw(this.context);
+        }
+    }
+
+    public onPointerEnter(x: number, y: number): void {
+        this.onPointerMove(x, y);
+    }
+
+    public onPointerMove(x: number, y: number): void {
+        for (let i = 0; i < this.pickableElements.length; i++) {
+            let e = this.pickableElements.get(i);
+            if (x > e.hitBox.x0 && x < e.hitBox.x1) {
+                if (y > e.hitBox.y0 && y < e.hitBox.y1) {
+                    this.setAimedElement(e);
+                    console.log(":)");
+                    return;
+                }
+            }
+        }
+        console.log(":( " + this.pickableElements.length);
+        this.setAimedElement(undefined);
+    }
+
+    public onPointerExit(): void {
+        this.setAimedElement(undefined);
+    }
+
+    public setAimedElement(e: SlikaElement): void {
+        if (e != this.aimedElement) {
+            if (this.aimedElement) {
+                this.aimedElement.onHoverEnd();
+            }
+            this.aimedElement = e;
+            if (this.aimedElement) {
+                this.aimedElement.onHoverStart();
+            }
         }
     }
 }
