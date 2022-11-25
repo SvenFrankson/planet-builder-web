@@ -119,6 +119,9 @@ class HoloPanel extends Pickable {
         frame.position.y = this.height - h * 0.5;
         VertexDataLoader.instance.get("holoPanelFrame").then(vertexDatas => {
             let vData = vertexDatas[1];
+            if (this.size < 1) {
+                vData = vertexDatas[0];
+            }
             vData.applyToMesh(frame);
         })
         let mat = new BABYLON.StandardMaterial("base-material", this.main.scene);
@@ -204,9 +207,13 @@ class HoloPanel extends Pickable {
 
         let off = 5 * Math.random();
         let offPointer = 5 * Math.random();
+        let offSpeed = 0.13 + 0.4 * Math.random();
         this.scene.onBeforeRenderObservable.add(() => {
-            off += this.scene.getEngine().getDeltaTime() / 1000 * 0.15;
-            offPointer += this.scene.getEngine().getDeltaTime() / 1000 * 0.15;
+            if (Math.random() < 0.1) {
+                offSpeed = 0.1 + 0.1 * Math.random();
+            }
+            off += this.scene.getEngine().getDeltaTime() / 1000 * offSpeed;
+            offPointer += this.scene.getEngine().getDeltaTime() / 1000 * offSpeed;
             if (off > 100) {
                 off -= 100;
             }

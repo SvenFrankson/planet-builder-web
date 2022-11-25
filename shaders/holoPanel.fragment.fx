@@ -29,7 +29,7 @@ void main() {
    */
    if (color.a > 0.9) {
       float y = vPositionW.y - offset;
-      float d = (y * 4. - round(y * 4.)) / 4.;
+      float d = (y * 3. - round(y * 3.)) / 3.;
       if (abs(d) < 0.005) {
          float x = d / 0.005;
          float f = 1. - x * x;
