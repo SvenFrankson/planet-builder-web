@@ -19,7 +19,7 @@ class MainMenu extends Main {
 		this.camera = new BABYLON.FreeCamera("camera", new BABYLON.Vector3(0, 1.7 + this._testAltitude, - 1), this.scene);
 		this.camera.minZ = 0.1;
 		this.camera.attachControl();
-		this.camera.speed *= 0.2;
+		this.camera.speed *= 0.1;
 		//this.camera.layerMask = 0x10000000;
 
 		this.scene.clearColor.copyFromFloats(0, 0, 0, 1);
@@ -177,12 +177,21 @@ class MainMenu extends Main {
 	}
 
 	private _playerArm: PlayerArm;
+	private _t: number = 0;
 
 	public update(): void {
+		this._t += this.engine.getDeltaTime();
+		let d = 0.05;
+		if (this._t > 3000) {
+			d = (1 - (this._t - 3000) / 300) * 0.05;
+		}
+		if (this._t > 3300) {
+			this._t = 0;
+		}
 		//this._textPage.baseMesh.rotate(BABYLON.Axis.Y, Math.PI / 60)
 		this.camera.position.y = 1.7 + this._testAltitude;
 		if (this._playerArm && this.inputManager.aimedPosition) {
-			this._playerArm.setTarget(this.inputManager.aimedPosition);
+			this._playerArm.setTarget(this.inputManager.aimedPosition.add(this.inputManager.aimedNormal.scale(d)));
 		}
 	}
 }

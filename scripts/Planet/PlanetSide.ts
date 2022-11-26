@@ -269,7 +269,7 @@ class PlanetSide extends BABYLON.Mesh {
         side: Side,
         planet: Planet
     ) {
-        let name: string = "side-" + side;
+        let name: string = planet.name + "-side-" + side;
         super(name, Game.Scene);
 
         this.planet = planet;

@@ -32,6 +32,7 @@ class InputManager {
 
     public aimedElement: Pickable;
     public aimedPosition: BABYLON.Vector3;
+    public aimedNormal: BABYLON.Vector3;
     public pickableElements: UniqueList<Pickable>;
 
     constructor(public scene: BABYLON.Scene, public canvas: HTMLCanvasElement) {
@@ -235,6 +236,7 @@ class InputManager {
                     aimedPickable = pickableElement;
                     aimedDist = pick.distance;
                     this.aimedPosition = pick.pickedPoint;
+                    this.aimedNormal = pick.getNormal(true, true);
                 }
             }
         }
