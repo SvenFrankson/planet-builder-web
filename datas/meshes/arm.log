@@ -30,51 +30,6 @@ Exporter version: 6.4.5, Blender version: 2.90.1
 		num uvs2           :  0
 		num colors         :  0
 		num triangles      :  148
-	processing begun of mesh:  finger-4-0
-		WARNING: No materials have been assigned: 
-		num positions      :  110
-		num normals        :  110
-		num tangents       :  0
-		num uvs            :  220
-		num uvs2           :  0
-		num colors         :  0
-		num triangles      :  42
-	processing begun of mesh:  finger-3-0
-		WARNING: No materials have been assigned: 
-		num positions      :  109
-		num normals        :  109
-		num tangents       :  0
-		num uvs            :  218
-		num uvs2           :  0
-		num colors         :  0
-		num triangles      :  42
-	processing begun of mesh:  finger-2-0
-		WARNING: No materials have been assigned: 
-		num positions      :  110
-		num normals        :  110
-		num tangents       :  0
-		num uvs            :  220
-		num uvs2           :  0
-		num colors         :  0
-		num triangles      :  42
-	processing begun of mesh:  finger-1-0
-		WARNING: No materials have been assigned: 
-		num positions      :  109
-		num normals        :  109
-		num tangents       :  0
-		num uvs            :  218
-		num uvs2           :  0
-		num colors         :  0
-		num triangles      :  42
-	processing begun of mesh:  finger-2-1
-		WARNING: No materials have been assigned: 
-		num positions      :  112
-		num normals        :  112
-		num tangents       :  0
-		num uvs            :  224
-		num uvs2           :  0
-		num colors         :  0
-		num triangles      :  42
 	processing begun of mesh:  1-elbow
 		WARNING: No materials have been assigned: 
 		num positions      :  320
@@ -102,117 +57,32 @@ Exporter version: 6.4.5, Blender version: 2.90.1
 		num uvs2           :  0
 		num colors         :  0
 		num triangles      :  218
-	processing begun of mesh:  finger-1-1
+	processing begun of mesh:  5-finger
 		WARNING: No materials have been assigned: 
-		num positions      :  109
-		num normals        :  109
+		num positions      :  242
+		num normals        :  242
 		num tangents       :  0
-		num uvs            :  218
+		num uvs            :  484
 		num uvs2           :  0
-		num colors         :  0
-		num triangles      :  42
-	processing begun of mesh:  finger-3-1
+		num colors         :  968
+		num triangles      :  94
+	processing begun of mesh:  6-finger-tip
 		WARNING: No materials have been assigned: 
-		num positions      :  110
-		num normals        :  110
+		num positions      :  405
+		num normals        :  405
 		num tangents       :  0
-		num uvs            :  220
+		num uvs            :  810
 		num uvs2           :  0
-		num colors         :  0
-		num triangles      :  42
-	processing begun of mesh:  finger-4-1
-		WARNING: No materials have been assigned: 
-		num positions      :  112
-		num normals        :  112
-		num tangents       :  0
-		num uvs            :  224
-		num uvs2           :  0
-		num colors         :  0
-		num triangles      :  42
-	processing begun of mesh:  finger-1-2
-		WARNING: No materials have been assigned: 
-		num positions      :  97
-		num normals        :  97
-		num tangents       :  0
-		num uvs            :  194
-		num uvs2           :  0
-		num colors         :  0
-		num triangles      :  36
-	processing begun of mesh:  finger-2-2
-		WARNING: No materials have been assigned: 
-		num positions      :  97
-		num normals        :  97
-		num tangents       :  0
-		num uvs            :  194
-		num uvs2           :  0
-		num colors         :  0
-		num triangles      :  36
-	processing begun of mesh:  finger-3-2
-		WARNING: No materials have been assigned: 
-		num positions      :  98
-		num normals        :  98
-		num tangents       :  0
-		num uvs            :  196
-		num uvs2           :  0
-		num colors         :  0
-		num triangles      :  36
-	processing begun of mesh:  finger-4-2
-		WARNING: No materials have been assigned: 
-		num positions      :  97
-		num normals        :  97
-		num tangents       :  0
-		num uvs            :  194
-		num uvs2           :  0
-		num colors         :  0
-		num triangles      :  36
-	processing begun of mesh:  finger-0-0
-		WARNING: No materials have been assigned: 
-		num positions      :  111
-		num normals        :  111
-		num tangents       :  0
-		num uvs            :  222
-		num uvs2           :  0
-		num colors         :  0
-		num triangles      :  42
-	processing begun of mesh:  finger-0-1
-		WARNING: No materials have been assigned: 
-		num positions      :  111
-		num normals        :  111
-		num tangents       :  0
-		num uvs            :  222
-		num uvs2           :  0
-		num colors         :  0
-		num triangles      :  42
-	processing begun of mesh:  finger-0-2
-		WARNING: No materials have been assigned: 
-		num positions      :  97
-		num normals        :  97
-		num tangents       :  0
-		num uvs            :  194
-		num uvs2           :  0
-		num colors         :  0
-		num triangles      :  36
+		num colors         :  1620
+		num triangles      :  150
 ========= Writing of JSON file started =========
 	writing mesh:  0-arm
 	writing mesh:  2-foreArm
-	writing mesh:  finger-4-0
-	writing mesh:  finger-3-0
-	writing mesh:  finger-2-0
-	writing mesh:  finger-1-0
-	writing mesh:  finger-2-1
 	writing mesh:  1-elbow
 	writing mesh:  3-wrist
 	writing mesh:  4-hand
-	writing mesh:  finger-1-1
-	writing mesh:  finger-3-1
-	writing mesh:  finger-4-1
-	writing mesh:  finger-1-2
-	writing mesh:  finger-2-2
-	writing mesh:  finger-3-2
-	writing mesh:  finger-4-2
-	writing mesh:  finger-0-0
-	writing mesh:  finger-0-1
-	writing mesh:  finger-0-2
+	writing mesh:  5-finger
+	writing mesh:  6-finger-tip
 ========= Writing of JSON file completed =========
 ========= end of processing =========
-elapsed time:  0 min, 0.1058 secs
+elapsed time:  0 min, 0.0738 secs
