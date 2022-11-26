@@ -14,23 +14,23 @@ Exporter version: 6.4.5, Blender version: 2.90.1
 	WARNING: No active camera has been assigned, or is not in a currently selected Blender layer
 	processing begun of mesh:  0-arm
 		WARNING: No materials have been assigned: 
-		num positions      :  511
-		num normals        :  511
+		num positions      :  488
+		num normals        :  488
 		num tangents       :  0
-		num uvs            :  1022
+		num uvs            :  976
 		num uvs2           :  0
 		num colors         :  0
-		num triangles      :  204
+		num triangles      :  196
 	processing begun of mesh:  2-foreArm
 		WARNING: No materials have been assigned: 
-		num positions      :  98
-		num normals        :  98
+		num positions      :  363
+		num normals        :  363
 		num tangents       :  0
-		num uvs            :  196
+		num uvs            :  726
 		num uvs2           :  0
 		num colors         :  0
-		num triangles      :  44
-	processing begun of mesh:  3-hand
+		num triangles      :  148
+	processing begun of mesh:  4-hand
 		WARNING: No materials have been assigned: 
 		num positions      :  29
 		num normals        :  29
@@ -183,10 +183,19 @@ Exporter version: 6.4.5, Blender version: 2.90.1
 		num uvs2           :  0
 		num colors         :  0
 		num triangles      :  122
+	processing begun of mesh:  3-wrist
+		WARNING: No materials have been assigned: 
+		num positions      :  249
+		num normals        :  249
+		num tangents       :  0
+		num uvs            :  498
+		num uvs2           :  0
+		num colors         :  0
+		num triangles      :  108
 ========= Writing of JSON file started =========
 	writing mesh:  0-arm
 	writing mesh:  2-foreArm
-	writing mesh:  3-hand
+	writing mesh:  4-hand
 	writing mesh:  finger-4-0
 	writing mesh:  finger-3-0
 	writing mesh:  finger-2-0
@@ -203,6 +212,7 @@ Exporter version: 6.4.5, Blender version: 2.90.1
 	writing mesh:  finger-0-1
 	writing mesh:  finger-0-2
 	writing mesh:  1-elbow
+	writing mesh:  3-wrist
 ========= Writing of JSON file completed =========
 ========= end of processing =========
-elapsed time:  0 min, 0.0573 secs
+elapsed time:  0 min, 0.0728 secs
