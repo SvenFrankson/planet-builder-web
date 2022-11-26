@@ -23,13 +23,13 @@ Exporter version: 6.4.5, Blender version: 2.90.1
 		num triangles      :  196
 	processing begun of mesh:  2-foreArm
 		WARNING: No materials have been assigned: 
-		num positions      :  363
-		num normals        :  363
+		num positions      :  566
+		num normals        :  566
 		num tangents       :  0
-		num uvs            :  726
+		num uvs            :  1132
 		num uvs2           :  0
-		num colors         :  0
-		num triangles      :  148
+		num colors         :  2264
+		num triangles      :  230
 	processing begun of mesh:  1-elbow
 		WARNING: No materials have been assigned: 
 		num positions      :  320
@@ -50,21 +50,21 @@ Exporter version: 6.4.5, Blender version: 2.90.1
 		num triangles      :  108
 	processing begun of mesh:  4-hand
 		WARNING: No materials have been assigned: 
-		num positions      :  650
-		num normals        :  650
+		num positions      :  339
+		num normals        :  339
 		num tangents       :  0
-		num uvs            :  1300
+		num uvs            :  678
 		num uvs2           :  0
-		num colors         :  0
-		num triangles      :  218
+		num colors         :  1356
+		num triangles      :  124
 	processing begun of mesh:  5-finger
 		WARNING: No materials have been assigned: 
-		num positions      :  242
-		num normals        :  242
+		num positions      :  241
+		num normals        :  241
 		num tangents       :  0
-		num uvs            :  484
+		num uvs            :  482
 		num uvs2           :  0
-		num colors         :  968
+		num colors         :  964
 		num triangles      :  94
 	processing begun of mesh:  6-finger-tip
 		WARNING: No materials have been assigned: 
@@ -75,6 +75,42 @@ Exporter version: 6.4.5, Blender version: 2.90.1
 		num uvs2           :  0
 		num colors         :  1620
 		num triangles      :  150
+	processing begun of mesh:  5-finger.001
+		WARNING: No materials have been assigned: 
+		num positions      :  241
+		num normals        :  241
+		num tangents       :  0
+		num uvs            :  482
+		num uvs2           :  0
+		num colors         :  964
+		num triangles      :  94
+	processing begun of mesh:  5-finger.002
+		WARNING: No materials have been assigned: 
+		num positions      :  241
+		num normals        :  241
+		num tangents       :  0
+		num uvs            :  482
+		num uvs2           :  0
+		num colors         :  964
+		num triangles      :  94
+	processing begun of mesh:  5-finger.003
+		WARNING: No materials have been assigned: 
+		num positions      :  241
+		num normals        :  241
+		num tangents       :  0
+		num uvs            :  482
+		num uvs2           :  0
+		num colors         :  964
+		num triangles      :  94
+	processing begun of mesh:  5-finger.004
+		WARNING: No materials have been assigned: 
+		num positions      :  241
+		num normals        :  241
+		num tangents       :  0
+		num uvs            :  482
+		num uvs2           :  0
+		num colors         :  964
+		num triangles      :  94
 ========= Writing of JSON file started =========
 	writing mesh:  0-arm
 	writing mesh:  2-foreArm
@@ -83,6 +119,10 @@ Exporter version: 6.4.5, Blender version: 2.90.1
 	writing mesh:  4-hand
 	writing mesh:  5-finger
 	writing mesh:  6-finger-tip
+	writing mesh:  5-finger.001
+	writing mesh:  5-finger.002
+	writing mesh:  5-finger.003
+	writing mesh:  5-finger.004
 ========= Writing of JSON file completed =========
 ========= end of processing =========
-elapsed time:  0 min, 0.0738 secs
+elapsed time:  0 min, 0.1163 secs
