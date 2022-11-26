@@ -21,7 +21,7 @@ class PlayerArm extends BABYLON.Mesh {
         [0.035, 0.023, 0.03]
     ];
 
-    public handUp: BABYLON.Vector3 = new BABYLON.Vector3(0, 1, 0);
+    public handUp: BABYLON.Vector3 = new BABYLON.Vector3(- 0.5, 1, 0);
 
     public get scene(): BABYLON.Scene {
         return this._scene;
@@ -69,20 +69,20 @@ class PlayerArm extends BABYLON.Mesh {
         this._fingers[0][0] = new BABYLON.Mesh("finger-0-0");
         data[5].applyToMesh(this._fingers[0][0]);
         this._fingers[0][0].parent = this._hand;
-        this._fingers[0][0].position.copyFromFloats(0.035, 0, 0.01);
-        this._fingers[0][0].rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI * 0.5);
+        this._fingers[0][0].position.copyFromFloats(0.035, - 0.01, 0.01);
+        this._fingers[0][0].rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, Math.PI * 0.25);
 
         for (let i = 1; i <= 4; i++) {
             this._fingers[i] = [];
             this._fingers[i][0] = new BABYLON.Mesh("finger-" + i.toFixed(0) + "-0");
             data[5 + i * 3].applyToMesh(this._fingers[i][0]);
             this._fingers[i][0].parent = this._hand;
-            this._fingers[i][0].rotationQuaternion = BABYLON.Quaternion.Identity();
+            //this._fingers[i][0].rotationQuaternion = BABYLON.Quaternion.Identity();
         }
-        this._fingers[1][0].position.copyFromFloats(0.034, 0, 0.087);
-        this._fingers[2][0].position.copyFromFloats(0.012, 0, 0.088);
-        this._fingers[3][0].position.copyFromFloats(- 0.01, 0, 0.086);
-        this._fingers[4][0].position.copyFromFloats(- 0.033, 0, 0.079);
+        this._fingers[1][0].position.copyFromFloats(0.034, 0.005, 0.087);
+        this._fingers[2][0].position.copyFromFloats(0.012, 0.01, 0.088);
+        this._fingers[3][0].position.copyFromFloats(- 0.01, 0.01, 0.086);
+        this._fingers[4][0].position.copyFromFloats(- 0.033, 0.005, 0.079);
 
         for (let i = 0; i <= 4; i++) {
             for (let j = 1; j <= 2; j++) {
@@ -90,9 +90,14 @@ class PlayerArm extends BABYLON.Mesh {
                 data[5 + i * 3 + j].applyToMesh(this._fingers[i][j]);
                 this._fingers[i][j].parent = this._fingers[i][j - 1];
                 this._fingers[i][j].position.z = this._fingersLength[i][j - 1];
-                this._fingers[i][j].rotationQuaternion = BABYLON.Quaternion.Identity();
+                //this._fingers[i][j].rotationQuaternion = BABYLON.Quaternion.Identity();
             }
         }
+
+        this.setFingerGrabiness(1, 0);
+        this.setFingerGrabiness(2, 0.2);
+        this.setFingerGrabiness(3, 0.35);
+        this.setFingerGrabiness(4, 0.5);
 
         this.scene.onBeforeRenderObservable.add(this._update);
     }
@@ -103,6 +108,13 @@ class PlayerArm extends BABYLON.Mesh {
             let n = this.target.subtract(this.position).normalize().scaleInPlace(this._armLength + this._elbowToTargetLength);
             this.target.copyFrom(n).addInPlace(this.position);
         }
+    }
+
+    public setFingerGrabiness(fingerIndex: number, grabiness: number): void {
+        let a = grabiness * Math.PI * 0.5;
+        this._fingers[fingerIndex][0].rotation.x = a;
+        this._fingers[fingerIndex][1].rotation.x = a;
+        this._fingers[fingerIndex][2].rotation.x = a;
     }
 
     private _elbowPosition: BABYLON.Vector3 = BABYLON.Vector3.Zero();
@@ -151,8 +163,9 @@ class PlayerArm extends BABYLON.Mesh {
         BABYLON.Quaternion.RotationQuaternionFromAxisToRef(elbowX, elbowY, elbowZ, this._elbow.rotationQuaternion);
 
         this._hand.position.copyFrom(this._wristPosition);
-        let handX = BABYLON.Vector3.Cross(foreArmZ, handZ);
-        let handY = BABYLON.Vector3.Cross(handZ, handX);
+        let handY = this.handUp;
+        let handX = BABYLON.Vector3.Cross(handY, handZ);
+        handY = BABYLON.Vector3.Cross(handZ, handX);
         BABYLON.Quaternion.RotationQuaternionFromAxisToRef(handX, handY, handZ, this._hand.rotationQuaternion);
 
         this._wrist.position.copyFrom(this._wristPosition);
