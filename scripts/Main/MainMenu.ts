@@ -165,6 +165,7 @@ class MainMenu extends Main {
 					this._playerArm.position = this.camera.position.clone();
 					this._playerArm.position.x -= 0.2;
 					this._playerArm.position.y -= 0.25;
+					this._playerArm.position.z += 0.1;
 					this._playerArm.instantiate();
 
 					resolve();

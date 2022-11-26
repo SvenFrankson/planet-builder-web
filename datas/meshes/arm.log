@@ -14,23 +14,23 @@ Exporter version: 6.4.5, Blender version: 2.90.1
 	WARNING: No active camera has been assigned, or is not in a currently selected Blender layer
 	processing begun of mesh:  0-arm
 		WARNING: No materials have been assigned: 
-		num positions      :  29
-		num normals        :  29
+		num positions      :  511
+		num normals        :  511
 		num tangents       :  0
-		num uvs            :  58
+		num uvs            :  1022
 		num uvs2           :  0
 		num colors         :  0
-		num triangles      :  12
-	processing begun of mesh:  1-foreArm
+		num triangles      :  204
+	processing begun of mesh:  2-foreArm
 		WARNING: No materials have been assigned: 
-		num positions      :  29
-		num normals        :  29
+		num positions      :  98
+		num normals        :  98
 		num tangents       :  0
-		num uvs            :  58
+		num uvs            :  196
 		num uvs2           :  0
 		num colors         :  0
-		num triangles      :  12
-	processing begun of mesh:  2-hand
+		num triangles      :  44
+	processing begun of mesh:  3-hand
 		WARNING: No materials have been assigned: 
 		num positions      :  29
 		num normals        :  29
@@ -174,10 +174,19 @@ Exporter version: 6.4.5, Blender version: 2.90.1
 		num uvs2           :  0
 		num colors         :  0
 		num triangles      :  12
+	processing begun of mesh:  1-elbow
+		WARNING: No materials have been assigned: 
+		num positions      :  320
+		num normals        :  320
+		num tangents       :  0
+		num uvs            :  640
+		num uvs2           :  0
+		num colors         :  0
+		num triangles      :  122
 ========= Writing of JSON file started =========
 	writing mesh:  0-arm
-	writing mesh:  1-foreArm
-	writing mesh:  2-hand
+	writing mesh:  2-foreArm
+	writing mesh:  3-hand
 	writing mesh:  finger-4-0
 	writing mesh:  finger-3-0
 	writing mesh:  finger-2-0
@@ -193,6 +202,7 @@ Exporter version: 6.4.5, Blender version: 2.90.1
 	writing mesh:  finger-0-0
 	writing mesh:  finger-0-1
 	writing mesh:  finger-0-2
+	writing mesh:  1-elbow
 ========= Writing of JSON file completed =========
 ========= end of processing =========
-elapsed time:  0 min, 0.0379 secs
+elapsed time:  0 min, 0.0573 secs
