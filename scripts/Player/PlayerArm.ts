@@ -1,3 +1,9 @@
+enum HandMode {
+    Idle,
+    Point,
+    Like
+}
+
 class PlayerArm extends BABYLON.Mesh {
 
     public requestedTarget: BABYLON.Vector3 = BABYLON.Vector3.Zero();
@@ -136,6 +142,52 @@ class PlayerArm extends BABYLON.Mesh {
         this._fingers[fingerIndex][0].rotation.x = a;
         this._fingers[fingerIndex][1].rotation.x = a;
         this._fingers[fingerIndex][2].rotation.x = a;
+    }
+
+    public handMode: HandMode = HandMode.Point;
+    public setHandMode(mode: HandMode): void {
+        this.handMode = mode;
+        if (this.handMode === HandMode.Idle) {
+            this._animateGrabiness(0, 0.2, 1);
+            this._animateGrabiness(1, 0.2, 1);
+            this._animateGrabiness(2, 0.2, 1);
+            this._animateGrabiness(3, 0.2, 1);
+            this._animateGrabiness(4, 0.2, 1);
+        }
+        else if (this.handMode === HandMode.Point) {
+            this._animateGrabiness(0, 0.6, 1);
+            this._animateGrabiness(1, 0.1, 1);
+            this._animateGrabiness(2, 0.35, 1);
+            this._animateGrabiness(3, 0.5, 1);
+            this._animateGrabiness(4, 0.65, 1);
+        }
+        else if (this.handMode === HandMode.Like) {
+            this._animateGrabiness(0, 0, 1);
+            this._animateGrabiness(1, 1, 1);
+            this._animateGrabiness(2, 1, 1);
+            this._animateGrabiness(3, 1, 1);
+            this._animateGrabiness(4, 1, 1);
+        }
+    }
+
+    private async _animateGrabiness(fingerIndex: number, grabinessTarget: number, duration: number): Promise<void> {
+        return new Promise<void>(resolve => {
+            let grabinessZero = this._fingers[fingerIndex][0].rotation.x / (Math.PI * 0.5);
+            let t = 0;
+            let cb = () => {
+                t += this.scene.getEngine().getDeltaTime() / 1000;
+                if (t < duration) {
+                    let f = t / duration;
+                    this.setFingerGrabiness(fingerIndex, grabinessZero * (1 - f) + grabinessTarget * f);
+                }
+                else {
+                    this.setFingerGrabiness(fingerIndex, grabinessTarget);
+                    this.scene.onBeforeRenderObservable.removeCallback(cb);
+                    resolve();
+                }
+            }
+            this.scene.onBeforeRenderObservable.add(cb);
+        });
     }
 
     public updateHandUp(): void {

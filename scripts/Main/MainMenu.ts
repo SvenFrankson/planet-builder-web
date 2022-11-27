@@ -181,17 +181,14 @@ class MainMenu extends Main {
 
 	public update(): void {
 		this._t += this.engine.getDeltaTime();
-		let d = 0.05;
 		if (this._t > 3000) {
-			d = (1 - (this._t - 3000) / 300) * 0.05;
-		}
-		if (this._t > 3300) {
 			this._t = 0;
+			this._playerArm.setHandMode(Math.floor(Math.random() * 3));
 		}
 		//this._textPage.baseMesh.rotate(BABYLON.Axis.Y, Math.PI / 60)
 		this.camera.position.y = 1.7 + this._testAltitude;
 		if (this._playerArm && this.inputManager.aimedPosition) {
-			this._playerArm.setTarget(this.inputManager.aimedPosition.add(this.inputManager.aimedNormal.scale(d)));
+			this._playerArm.setTarget(this.inputManager.aimedPosition.add(this.inputManager.aimedNormal.scale(.5)));
 		}
 	}
 }
