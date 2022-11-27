@@ -16,6 +16,7 @@ class PlayerArm extends BABYLON.Mesh {
     private _wrist: BABYLON.Mesh;
     private _hand: BABYLON.Mesh;
     private _fingers: BABYLON.Mesh[][];
+    public maxHandSpeed: number = 2;
 
     private _armLength: number = 0.34;
     private _foreArmLength: number = 0.35;
@@ -191,11 +192,17 @@ class PlayerArm extends BABYLON.Mesh {
     }
 
     public updateHandUp(): void {
-        let delta = this.target.subtract(this.position);
-        let dx = delta.x / this._fullLength;
-        this.handUp.x = dx;
-        this.handUp.y = 1;
-        this.handUp.normalize();
+        if (this.handMode === HandMode.Idle || this.handMode === HandMode.Point) {
+            let delta = this.target.subtract(this.position);
+            let dx = delta.x / this._fullLength;
+            this.handUp.x = this.handUp.x * 0.9 + (dx) * 0.1;
+            this.handUp.y = this.handUp.y * 0.9 + (1) * 0.1;
+            this.handUp.normalize();
+        }
+        else if (this.handMode === HandMode.Like) {
+            this.handUp.x = this.handUp.x * 0.9 + (- 1) * 0.1;
+            this.handUp.y = this.handUp.y * 0.9 + (0) * 0.1;
+        }
     }
 
     private _elbowPosition: BABYLON.Vector3 = BABYLON.Vector3.Zero();
@@ -203,11 +210,19 @@ class PlayerArm extends BABYLON.Mesh {
     private _v0: BABYLON.Vector3 = BABYLON.Vector3.Zero();
     private _v1: BABYLON.Vector3 = BABYLON.Vector3.Zero();
     private _v2: BABYLON.Vector3 = BABYLON.Vector3.Zero();
-    
+
     private _update = () => {
+        let dt = this.scene.getEngine().getDeltaTime() / 1000;
         this.updateHandUp();
 
-        this.target.scaleInPlace(0.9).addInPlace(this.requestedTarget.scale(0.1));
+        let dTargetMove = dt * this.maxHandSpeed;
+        if (BABYLON.Vector3.DistanceSquared(this.target, this.requestedTarget) < dTargetMove * dTargetMove) {
+            this.target.copyFrom(this.requestedTarget);
+        }
+        else {
+            let n = this.requestedTarget.subtract(this.target).normalize().scaleInPlace(dTargetMove);
+            this.target.addInPlace(n);
+        }
 
         this._elbowPosition.y -= 0.005;
         this._elbowPosition.x -= 0.005;
