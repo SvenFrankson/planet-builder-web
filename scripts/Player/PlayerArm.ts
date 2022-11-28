@@ -1,6 +1,7 @@
 enum HandMode {
     Idle,
     Point,
+    Grab,
     Like
 }
 
@@ -9,6 +10,7 @@ class PlayerArm extends BABYLON.Mesh {
     public requestedTarget: BABYLON.Vector3 = BABYLON.Vector3.Zero();
     public target: BABYLON.Vector3 = BABYLON.Vector3.Zero();
     public targetOffset: BABYLON.Vector3 = BABYLON.Vector3.Zero();
+    public targetUp: BABYLON.Vector3 = BABYLON.Vector3.Up();
 
     private _arm: BABYLON.Mesh;
     private _elbow: BABYLON.Mesh;
@@ -162,6 +164,13 @@ class PlayerArm extends BABYLON.Mesh {
             this._animateGrabiness(3, 0.5, 1);
             this._animateGrabiness(4, 0.65, 1);
         }
+        else if (this.handMode === HandMode.Grab) {
+            this._animateGrabiness(0, 0.1, 1);
+            this._animateGrabiness(1, 0.1, 1);
+            this._animateGrabiness(2, 0.1, 1);
+            this._animateGrabiness(3, 0.1, 1);
+            this._animateGrabiness(4, 0.1, 1);
+        }
         else if (this.handMode === HandMode.Like) {
             this._animateGrabiness(0, 0, 1);
             this._animateGrabiness(1, 1, 1);
@@ -199,13 +208,21 @@ class PlayerArm extends BABYLON.Mesh {
             this.handUp.y = this.handUp.y * 0.9 + (1) * 0.1;
             this.handUp.normalize();
         }
+        else if (this.handMode === HandMode.Grab) {
+            this.handUp.x = this.handUp.x * 0.9 + this.targetUp.x * 0.1;
+            this.handUp.y = this.handUp.y * 0.9 + this.targetUp.y * 0.1;
+            this.handUp.z = this.handUp.z * 0.9 + this.targetUp.z * 0.1;
+            this.handUp.normalize();
+        }
         else if (this.handMode === HandMode.Like) {
             this.handUp.x = this.handUp.x * 0.9 + (- 1) * 0.1;
             this.handUp.y = this.handUp.y * 0.9 + (0) * 0.1;
+            this.handUp.normalize();
         }
         else if (this.handMode === HandMode.Idle) {
             this.handUp.x = this.handUp.x * 0.9 + (- 1) * 0.1;
             this.handUp.y = this.handUp.y * 0.9 + (0) * 0.1;
+            this.handUp.normalize();
         }
     }
 

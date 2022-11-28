@@ -1,5 +1,11 @@
+enum InteractionMode {
+    Point,
+    Grab,
+}
+
 class Pickable extends BABYLON.Mesh {
 
+    public interactionMode: InteractionMode = InteractionMode.Point;
     public proxyPickMesh: BABYLON.Mesh;
 
     public get scene(): BABYLON.Scene {

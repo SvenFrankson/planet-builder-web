@@ -36,6 +36,10 @@ class MainMenu extends Main {
 		Config.chunckPartConfiguration.useXZAxisRotation = false;
 
 		return new Promise<void>(resolve => {
+
+			let testGrab = new TestGrab("test-grab", this);
+			testGrab.position = new BABYLON.Vector3(- 0.2, this._testAltitude + 1, - 0.1);
+			testGrab.instantiate();
 			
 			let mainMenuPlanet: Planet = PlanetGeneratorFactory.Create(PlanetGeneratorType.Flat, 1, this.scene);
 			mainMenuPlanet.initialize();
@@ -184,10 +188,20 @@ class MainMenu extends Main {
 		this.camera.position.y = 1.7 + this._testAltitude;
 		if (this._playerArm) {
 			if (this.inputManager.aimedPosition) {
-				if (this._playerArm.handMode != HandMode.Point) {
-					this._playerArm.setHandMode(HandMode.Point);
+				if (this.inputManager.aimedElement.interactionMode === InteractionMode.Point) {
+					if (this._playerArm.handMode != HandMode.Point) {
+						this._playerArm.setHandMode(HandMode.Point);
+					}
 				}
-				this._playerArm.setTarget(this.inputManager.aimedPosition.add(this.inputManager.aimedNormal.scale(.2)));
+				else if (this.inputManager.aimedElement.interactionMode === InteractionMode.Grab) {
+					if (this._playerArm.handMode != HandMode.Grab) {
+						this._playerArm.setHandMode(HandMode.Grab);
+					}
+				}
+				this._playerArm.setTarget(this.inputManager.aimedPosition.add(this.inputManager.aimedNormal.scale(0.02)));
+				if (this._playerArm.handMode === HandMode.Grab) {
+					this._playerArm.targetUp.copyFrom(this.inputManager.aimedNormal);
+				}
 			}
 			else {
 				if (this._playerArm.handMode != HandMode.Idle) {
