@@ -211,9 +211,9 @@ class PlayerArm extends BABYLON.Mesh {
 
     public updateHandTarget(): void {
         if (this.handMode === HandMode.Idle) {
-            this.requestedTarget.x = this.requestedTarget.x * 0.9 + (- 0.1) * 0.1;
-            this.requestedTarget.y = this.requestedTarget.y * 0.9 + (- this._fullLength * 0.9) * 0.1;
-            this.requestedTarget.z = this.requestedTarget.z * 0.9 + (0.05) * 0.1;
+            this.requestedTarget.x = this.requestedTarget.x * 0.95 + (- 0.1) * 0.05;
+            this.requestedTarget.y = this.requestedTarget.y * 0.95 + (- this._fullLength * 0.9) * 0.05;
+            this.requestedTarget.z = this.requestedTarget.z * 0.95 + (0.05) * 0.05;
         }
     }
 
@@ -278,7 +278,7 @@ class PlayerArm extends BABYLON.Mesh {
         BABYLON.Quaternion.RotationQuaternionFromAxisToRef(foreArmX, foreArmY, foreArmZ, this._foreArm.rotationQuaternion);
 
         this._elbow.position.copyFrom(this._elbowPosition);
-        let elbowX = foreArmX;
+        let elbowX = foreArmZ;
         let elbowZ = armZ;
         let elbowY = BABYLON.Vector3.Cross(elbowZ, elbowX);
         elbowX = BABYLON.Vector3.Cross(elbowY, elbowZ);

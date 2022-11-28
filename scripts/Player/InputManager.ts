@@ -223,6 +223,7 @@ class InputManager {
         }
         let aimedPickable: Pickable;
         let aimedDist: number = Infinity;
+        let hit = false;
         let ray = this.scene.createPickingRay(x, y, BABYLON.Matrix.Identity(), this.scene.activeCamera);
         for (let i = 0; i < this.pickableElements.length; i++) {
             let pickableElement = this.pickableElements.get(i);
@@ -237,8 +238,13 @@ class InputManager {
                     aimedDist = pick.distance;
                     this.aimedPosition = pick.pickedPoint;
                     this.aimedNormal = pick.getNormal(true, true);
+                    hit = true;
                 }
             }
+        }
+        if (!hit) {
+            this.aimedPosition = undefined;
+            this.aimedNormal = undefined;
         }
         if (aimedPickable != this.aimedElement) {
             if (this.aimedElement) {

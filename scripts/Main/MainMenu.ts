@@ -167,6 +167,7 @@ class MainMenu extends Main {
 					this._playerArm.position.y -= 0.25;
 					this._playerArm.position.z += 0.1;
 					this._playerArm.instantiate();
+					this._playerArm.setHandMode(HandMode.Idle);
 
 					resolve();
 				}
@@ -180,15 +181,19 @@ class MainMenu extends Main {
 	private _t: number = 0;
 
 	public update(): void {
-		this._t += this.engine.getDeltaTime();
-		if (this._t > 3000) {
-			this._t = 0;
-			this._playerArm.setHandMode(Math.floor(Math.random() * 3));
-		}
-		//this._textPage.baseMesh.rotate(BABYLON.Axis.Y, Math.PI / 60)
 		this.camera.position.y = 1.7 + this._testAltitude;
-		if (this._playerArm && this._playerArm.handMode != HandMode.Idle && this.inputManager.aimedPosition) {
-			this._playerArm.setTarget(this.inputManager.aimedPosition.add(this.inputManager.aimedNormal.scale(.2)));
+		if (this._playerArm) {
+			if (this.inputManager.aimedPosition) {
+				if (this._playerArm.handMode != HandMode.Point) {
+					this._playerArm.setHandMode(HandMode.Point);
+				}
+				this._playerArm.setTarget(this.inputManager.aimedPosition.add(this.inputManager.aimedNormal.scale(.2)));
+			}
+			else {
+				if (this._playerArm.handMode != HandMode.Idle) {
+					this._playerArm.setHandMode(HandMode.Idle);
+				}
+			}
 		}
 	}
 }
