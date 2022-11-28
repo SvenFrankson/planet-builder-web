@@ -38,7 +38,7 @@ class MainMenu extends Main {
 		return new Promise<void>(resolve => {
 
 			let testGrab = new TestGrab("test-grab", this);
-			testGrab.position = new BABYLON.Vector3(- 0.2, this._testAltitude + 1, - 0.1);
+			testGrab.position = new BABYLON.Vector3(- 0.3, this._testAltitude + 1.1, - 0.1);
 			testGrab.instantiate();
 			
 			let mainMenuPlanet: Planet = PlanetGeneratorFactory.Create(PlanetGeneratorType.Flat, 1, this.scene);
@@ -166,12 +166,12 @@ class MainMenu extends Main {
 					//moon.register();
 
 					this._playerArm = new PlayerArm(this.scene);
+					this._playerArm.initialize();
 					this._playerArm.position = this.camera.position.clone();
 					this._playerArm.position.x -= 0.2;
 					this._playerArm.position.y -= 0.25;
 					this._playerArm.position.z += 0.1;
 					this._playerArm.instantiate();
-					this._playerArm.setHandMode(HandMode.Idle);
 
 					resolve();
 				}
@@ -198,7 +198,7 @@ class MainMenu extends Main {
 						this._playerArm.setHandMode(HandMode.Grab);
 					}
 				}
-				this._playerArm.setTarget(this.inputManager.aimedPosition.add(this.inputManager.aimedNormal.scale(0.02)));
+				this._playerArm.setTarget(this.inputManager.aimedPosition);
 				if (this._playerArm.handMode === HandMode.Grab) {
 					this._playerArm.targetUp.copyFrom(this.inputManager.aimedNormal);
 				}

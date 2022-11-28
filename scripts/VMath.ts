@@ -37,4 +37,68 @@ class VMath {
         }
         return angle;
     }
+
+    private static _Tmp3: BABYLON.Vector3 = BABYLON.Vector3.Zero();
+    public static StepToRef(from: BABYLON.Vector3, to: BABYLON.Vector3, step: number, ref: BABYLON.Vector3): BABYLON.Vector3 {
+        from = VMath._Tmp3.copyFrom(from);
+        let sqrStep = step * step;
+        if (BABYLON.Vector3.DistanceSquared(from, to) < sqrStep) {
+            ref.copyFrom(to);
+            console.log("!");
+        }
+        else {
+            ref.copyFrom(to).subtractInPlace(from).normalize().scaleInPlace(step).addInPlace(from);
+            console.log("...");
+        }
+
+        return ref;
+    }
+
+    private static _Tmp0: BABYLON.Vector3 = BABYLON.Vector3.Zero();
+    private static _Tmp1: BABYLON.Vector3 = BABYLON.Vector3.Zero();
+    private static _Tmp2: BABYLON.Vector3 = BABYLON.Vector3.Zero();
+    public static QuaternionFromXYAxisToRef(x: BABYLON.Vector3, y: BABYLON.Vector3, ref: BABYLON.Quaternion): BABYLON.Quaternion {
+        let xAxis = VMath._Tmp0.copyFrom(x);
+        let yAxis = VMath._Tmp1.copyFrom(y);
+        let zAxis = VMath._Tmp2;
+        
+        BABYLON.Vector3.CrossToRef(xAxis, yAxis, zAxis);
+        BABYLON.Vector3.CrossToRef(zAxis, xAxis, yAxis);
+        BABYLON.Quaternion.RotationQuaternionFromAxisToRef(xAxis, yAxis, zAxis, ref);
+
+        return ref;
+    }
+    public static QuaternionFromYZAxisToRef(y: BABYLON.Vector3, z: BABYLON.Vector3, ref: BABYLON.Quaternion): BABYLON.Quaternion {
+        let xAxis = VMath._Tmp0;
+        let yAxis = VMath._Tmp1.copyFrom(y);
+        let zAxis = VMath._Tmp2.copyFrom(z);
+        
+        BABYLON.Vector3.CrossToRef(yAxis, zAxis, xAxis);
+        BABYLON.Vector3.CrossToRef(xAxis, yAxis, zAxis);
+        BABYLON.Quaternion.RotationQuaternionFromAxisToRef(xAxis, yAxis, zAxis, ref);
+
+        return ref;
+    }
+    public static QuaternionFromZXAxisToRef(z: BABYLON.Vector3, x: BABYLON.Vector3, ref: BABYLON.Quaternion): BABYLON.Quaternion {
+        let xAxis = VMath._Tmp0.copyFrom(x);
+        let yAxis = VMath._Tmp1;
+        let zAxis = VMath._Tmp2.copyFrom(z);
+        
+        BABYLON.Vector3.CrossToRef(zAxis, xAxis, yAxis);
+        BABYLON.Vector3.CrossToRef(yAxis, zAxis, xAxis);
+        BABYLON.Quaternion.RotationQuaternionFromAxisToRef(xAxis, yAxis, zAxis, ref);
+
+        return ref;
+    }
+    public static QuaternionFromZYAxisToRef(z: BABYLON.Vector3, y: BABYLON.Vector3, ref: BABYLON.Quaternion): BABYLON.Quaternion {
+        let xAxis = VMath._Tmp0;
+        let yAxis = VMath._Tmp1.copyFrom(y);
+        let zAxis = VMath._Tmp2.copyFrom(z);
+        
+        BABYLON.Vector3.CrossToRef(yAxis, zAxis, xAxis);
+        BABYLON.Vector3.CrossToRef(zAxis, xAxis, yAxis);
+        BABYLON.Quaternion.RotationQuaternionFromAxisToRef(xAxis, yAxis, zAxis, ref);
+
+        return ref;
+    }
 }
