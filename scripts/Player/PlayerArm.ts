@@ -192,7 +192,7 @@ class PlayerArm extends BABYLON.Mesh {
     }
 
     public updateHandUp(): void {
-        if (this.handMode === HandMode.Idle || this.handMode === HandMode.Point) {
+        if (this.handMode === HandMode.Point) {
             let delta = this.target.subtract(this.position);
             let dx = delta.x / this._fullLength;
             this.handUp.x = this.handUp.x * 0.9 + (dx) * 0.1;
@@ -202,6 +202,18 @@ class PlayerArm extends BABYLON.Mesh {
         else if (this.handMode === HandMode.Like) {
             this.handUp.x = this.handUp.x * 0.9 + (- 1) * 0.1;
             this.handUp.y = this.handUp.y * 0.9 + (0) * 0.1;
+        }
+        else if (this.handMode === HandMode.Idle) {
+            this.handUp.x = this.handUp.x * 0.9 + (- 1) * 0.1;
+            this.handUp.y = this.handUp.y * 0.9 + (0) * 0.1;
+        }
+    }
+
+    public updateHandTarget(): void {
+        if (this.handMode === HandMode.Idle) {
+            this.requestedTarget.x = this.requestedTarget.x * 0.9 + (- 0.1) * 0.1;
+            this.requestedTarget.y = this.requestedTarget.y * 0.9 + (- this._fullLength * 0.9) * 0.1;
+            this.requestedTarget.z = this.requestedTarget.z * 0.9 + (0.05) * 0.1;
         }
     }
 
@@ -214,8 +226,13 @@ class PlayerArm extends BABYLON.Mesh {
     private _update = () => {
         let dt = this.scene.getEngine().getDeltaTime() / 1000;
         this.updateHandUp();
+        this.updateHandTarget()
 
         let dTargetMove = dt * this.maxHandSpeed;
+        if (BABYLON.Vector3.Distance(this.position, this.target) > this._fullLength) {
+            let n = this.target.subtract(this.position).normalize().scaleInPlace(this._fullLength);
+            this.target.copyFrom(n).addInPlace(this.position);
+        }
         if (BABYLON.Vector3.DistanceSquared(this.target, this.requestedTarget) < dTargetMove * dTargetMove) {
             this.target.copyFrom(this.requestedTarget);
         }

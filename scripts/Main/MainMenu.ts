@@ -187,7 +187,7 @@ class MainMenu extends Main {
 		}
 		//this._textPage.baseMesh.rotate(BABYLON.Axis.Y, Math.PI / 60)
 		this.camera.position.y = 1.7 + this._testAltitude;
-		if (this._playerArm && this.inputManager.aimedPosition) {
+		if (this._playerArm && this._playerArm.handMode != HandMode.Idle && this.inputManager.aimedPosition) {
 			this._playerArm.setTarget(this.inputManager.aimedPosition.add(this.inputManager.aimedNormal.scale(.2)));
 		}
 	}
