@@ -64,11 +64,12 @@ class PlayerArm extends BABYLON.Mesh {
     }
 
     public initialize(): void {
+        this.rotationQuaternion = BABYLON.Quaternion.Identity();
+        
         let mat = new ToonMaterial("player-arm-material", this.scene);
 
         this._arm = new BABYLON.Mesh("arm");
         this._arm.material = mat;
-        this._arm.parent = this;
         this._arm.rotationQuaternion = BABYLON.Quaternion.Identity();
 
         this._elbow = new BABYLON.Mesh("elbow");
@@ -207,19 +208,15 @@ class PlayerArm extends BABYLON.Mesh {
         });
     }
 
-    public updateTargetPosition(): void {
-        let dt = this.scene.getEngine().getDeltaTime() / 1000;
-        if (this.handMode === HandMode.Idle) {
-            VMath.StepToRef(this.requestedTarget, this.position.add(new BABYLON.Vector3(- this.signLeft * 0.1, - this._fullLength * 0.9, 0.05)), 1 * dt, this.requestedTarget);
-        }
-    }
-
     public updateHandUp(): void {
         if (this.handMode === HandMode.Point) {
             let delta = this.target.subtract(this.position);
-            let dx = this.signLeft * delta.x / this._fullLength;
-            this.handUp.x = this.handUp.x * 0.9 + (dx) * 0.1;
-            this.handUp.y = this.handUp.y * 0.9 + (1) * 0.1;
+            let dx = this.signLeft * BABYLON.Vector3.Dot(delta, this.right) / this._fullLength;
+            let target = new BABYLON.Vector3(dx, 1, 0);
+            VMath.RotateVectorByQuaternionToRef(target, this.rotationQuaternion, target);
+            this.handUp.x = this.handUp.x * 0.9 + (target.x) * 0.1;
+            this.handUp.y = this.handUp.y * 0.9 + (target.y) * 0.1;
+            this.handUp.z = this.handUp.z * 0.9 + (target.z) * 0.1;
             this.handUp.normalize();
         }
         else if (this.handMode === HandMode.Grab) {
@@ -234,8 +231,11 @@ class PlayerArm extends BABYLON.Mesh {
             this.handUp.normalize();
         }
         else if (this.handMode === HandMode.Idle) {
-            this.handUp.x = this.handUp.x * 0.9 + (- this.signLeft * 1) * 0.1;
-            this.handUp.y = this.handUp.y * 0.9 + (0) * 0.1;
+            let target = new BABYLON.Vector3(- this.signLeft * 1, 0, 0);
+            VMath.RotateVectorByQuaternionToRef(target, this.rotationQuaternion, target);
+            this.handUp.x = this.handUp.x * 0.9 + (target.x) * 0.1;
+            this.handUp.y = this.handUp.y * 0.9 + (target.y) * 0.1;
+            this.handUp.z = this.handUp.z * 0.9 + (target.z) * 0.1;
             this.handUp.normalize();
         }
     }
@@ -329,7 +329,6 @@ class PlayerArm extends BABYLON.Mesh {
     private _update = () => {
         let dt = this.scene.getEngine().getDeltaTime() / 1000;
 
-        this.updateTargetPosition();
         this.updateHandUp();
         this.updateHandUpStrictness();
         this.updateTargetAnchor();
@@ -344,13 +343,16 @@ class PlayerArm extends BABYLON.Mesh {
         
         VMath.StepToRef(this.target, this.requestedTarget, dTargetMove, this.target);
 
-        this._elbowPosition.y -= 2 * dt;
-        this._elbowPosition.x -= this.signLeft * 2 * dt;
+        let elbowOffset = new BABYLON.Vector3(this.signLeft * 2 * dt, 2 * dt, 0);
+        VMath.RotateVectorByQuaternionToRef(elbowOffset, this.rotationQuaternion, elbowOffset);
+        this._elbowPosition.subtractInPlace(elbowOffset);
 
         let currentTarget = this.target.add(this.targetOffset);
 
         let n = currentTarget.subtract(this._elbowPosition).normalize();
         this._wristPosition.subtractInPlace(n.scale(0.07));
+
+        this._arm.position.copyFrom(this.absolutePosition);
 
         let anchor = this.getAnchorPosition()
         let handLength = BABYLON.Vector3.Distance(anchor, this._wristPosition);
@@ -370,7 +372,7 @@ class PlayerArm extends BABYLON.Mesh {
 
         this._wristPosition.copyFrom(this._elbowPosition).addInPlace(foreArmZ);
         
-        let armY = BABYLON.Vector3.Right().scaleInPlace(- this.signLeft * 1);
+        let armY = this.right.scaleInPlace(- this.signLeft * 1);
         VMath.QuaternionFromZYAxisToRef(armZ, armY, this._q0);
         BABYLON.Quaternion.SlerpToRef(this._arm.rotationQuaternion, this._q0, 1, this._arm.rotationQuaternion);
         

@@ -54,6 +54,18 @@ class VMath {
         return ref;
     }
 
+    private static _Tmp4: BABYLON.Vector3 = BABYLON.Vector3.Zero();
+    public static RotateVectorByQuaternionToRef(v: BABYLON.Vector3, q: BABYLON.Quaternion, ref: BABYLON.Vector3): BABYLON.Vector3 {
+        let u = VMath._Tmp4.copyFromFloats(q.x, q.y, q.z);
+        let s = q.w;
+    
+        let v1 = u.scale(2 * BABYLON.Vector3.Dot(u, v));
+        let v2 = v.scale(s * s - BABYLON.Vector3.Dot(u, u));
+        let v3 = BABYLON.Vector3.Cross(u, v).scale(2 * s);
+        
+        return ref.copyFrom(v1).addInPlace(v2).addInPlace(v3);
+    }
+
     private static _Tmp0: BABYLON.Vector3 = BABYLON.Vector3.Zero();
     private static _Tmp1: BABYLON.Vector3 = BABYLON.Vector3.Zero();
     private static _Tmp2: BABYLON.Vector3 = BABYLON.Vector3.Zero();
