@@ -6,6 +6,7 @@ class Main {
     public scene: BABYLON.Scene;
     public vertexDataLoader: VertexDataLoader;
 	public inputManager: InputManager;
+	public cameraManager: CameraManager;
 
     constructor(canvasElement: string) {
 		this.canvas = document.getElementById(canvasElement) as HTMLCanvasElement;
@@ -21,6 +22,7 @@ class Main {
 		this.scene.clearColor.copyFromFloats(166 / 255, 231 / 255, 255 / 255, 1);
         this.vertexDataLoader = new VertexDataLoader(this.scene);
         this.inputManager = new InputManager(this.scene, this.canvas);
+		this.cameraManager = new CameraManager(this);
 	}
 
 	public animate(): void {

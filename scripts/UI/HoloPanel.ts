@@ -130,7 +130,7 @@ class HoloPanel extends Pickable {
         this.material = mat;
 
         this.holoMesh = new BABYLON.Mesh("text-page");
-        //this.holoMesh.layerMask = 0x10000000;
+        this.holoMesh.layerMask = 0x10000000;
         this.holoMesh.parent = this;
         this.holoMesh.position.y = 0;
         this.holoMesh.scaling.x = 0.1;

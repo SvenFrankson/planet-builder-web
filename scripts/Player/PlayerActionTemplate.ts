@@ -9,7 +9,7 @@ class PlayerActionTemplate {
         let previewMesh: BABYLON.Mesh;
         action.iconUrl = "/datas/images/block-icon-" + BlockTypeNames[blockType] + "-miniature.png";
 
-        let vData: BABYLON.VertexData = (await player.game.vertexDataLoader.get("chunck-part"))[0];
+        let vData: BABYLON.VertexData = (await player.main.vertexDataLoader.get("chunck-part"))[0];
         let lastSize: number;
         let lastI: number;
         let lastJ: number;

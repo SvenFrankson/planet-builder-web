@@ -14,7 +14,6 @@ class Game extends Main {
 	public static Instance: Game;
 	public static Light: BABYLON.HemisphericLight;
 	public static CameraManager: CameraManager;
-	public cameraManager: CameraManager;
 	public static Player: Player;
 	public player: Player;
 	public actionManager: PlayerActionManager;

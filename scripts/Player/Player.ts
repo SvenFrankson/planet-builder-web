@@ -11,19 +11,29 @@ class Player extends BABYLON.Mesh {
     public inputHeadUp: number = 0;
     public inputHeadRight: number = 0;
     public godMode: boolean;
+    public armManager: PlayerArmManager;
     
     public currentAction: PlayerAction;
 
     public lockInPlace: boolean = false;
 
-    constructor(position: BABYLON.Vector3, public planet: Planet, public game: Game | Demo) {
-        super("Player", game.scene);
+    public get inputManager(): InputManager {
+        return this.main.inputManager;
+    }
+
+    public get scene(): BABYLON.Scene {
+        return this._scene;
+    }
+
+    constructor(position: BABYLON.Vector3, public planet: Planet, public main: Main) {
+        super("Player", main.scene);
         this.planet = planet;
         this.position = position;
         this.rotationQuaternion = BABYLON.Quaternion.Identity();
         this.camPos = new BABYLON.Mesh("Dummy", Game.Scene);
         this.camPos.parent = this;
         this.camPos.position = new BABYLON.Vector3(0, 1, 0);
+        this.armManager = new PlayerArmManager(this);
         //BABYLON.VertexData.CreateSphere({ diameterX: 1, diameterY: 2, diameterZ: 1 }).applyToMesh(this);
         //let material = new BABYLON.StandardMaterial("material", this.getScene());
         //material.alpha = 0.5;
@@ -35,39 +45,40 @@ class Player extends BABYLON.Mesh {
     public initialize(): void {
         if (!this._initialized) {
             Game.Scene.onBeforeRenderObservable.add(this._update);
+            this.armManager.initialize();
             this._initialized = true;
         }
     }
 
     public registerControl(): void {
-        this.game.inputManager.addMappedKeyDownListener(KeyInput.MOVE_FORWARD, () => {
+        this.main.inputManager.addMappedKeyDownListener(KeyInput.MOVE_FORWARD, () => {
             this.inputForward = 1;
         });
-        this.game.inputManager.addMappedKeyDownListener(KeyInput.MOVE_BACK, () => {
+        this.main.inputManager.addMappedKeyDownListener(KeyInput.MOVE_BACK, () => {
             this.inputForward = - 1;
         });
-        this.game.inputManager.addMappedKeyDownListener(KeyInput.MOVE_RIGHT, () => {
+        this.main.inputManager.addMappedKeyDownListener(KeyInput.MOVE_RIGHT, () => {
             this.inputRight = 1;
         });
-        this.game.inputManager.addMappedKeyDownListener(KeyInput.MOVE_LEFT, () => {
+        this.main.inputManager.addMappedKeyDownListener(KeyInput.MOVE_LEFT, () => {
             this.inputRight = - 1;
         });
 
-        this.game.inputManager.addMappedKeyUpListener(KeyInput.MOVE_FORWARD, () => {
+        this.main.inputManager.addMappedKeyUpListener(KeyInput.MOVE_FORWARD, () => {
             this.inputForward = 0;
         });
-        this.game.inputManager.addMappedKeyUpListener(KeyInput.MOVE_BACK, () => {
+        this.main.inputManager.addMappedKeyUpListener(KeyInput.MOVE_BACK, () => {
             this.inputForward = 0;
         });
-        this.game.inputManager.addMappedKeyUpListener(KeyInput.MOVE_RIGHT, () => {
+        this.main.inputManager.addMappedKeyUpListener(KeyInput.MOVE_RIGHT, () => {
             this.inputRight = 0;
         });
-        this.game.inputManager.addMappedKeyUpListener(KeyInput.MOVE_LEFT, () => {
+        this.main.inputManager.addMappedKeyUpListener(KeyInput.MOVE_LEFT, () => {
             this.inputRight = 0;
         });
-        this.game.canvas.addEventListener("keyup", this._keyUp);
-        this.game.canvas.addEventListener("pointermove", this._mouseMove);
-        this.game.canvas.addEventListener("mouseup", () => {
+        this.main.canvas.addEventListener("keyup", this._keyUp);
+        this.main.canvas.addEventListener("pointermove", this._mouseMove);
+        this.main.canvas.addEventListener("mouseup", () => {
             if (this.currentAction) {
                 if (this.currentAction.onClick) {
                     this.currentAction.onClick();
@@ -100,7 +111,7 @@ class Player extends BABYLON.Mesh {
     };
 
     private _mouseMove = (event: MouseEvent) => {
-        if (this.game.inputManager.isPointerDown || this.game.inputManager.isPointerLocked) {
+        if (this.main.inputManager.isPointerDown || this.main.inputManager.isPointerLocked) {
             let movementX: number = event.movementX;
             let movementY: number = event.movementY;
             this.inputHeadRight += movementX / 100;
@@ -111,9 +122,9 @@ class Player extends BABYLON.Mesh {
     };
 
     public unregisterControl(): void {
-        this.game.canvas.removeEventListener("keyup", this._keyUp);
-        this.game.canvas.removeEventListener("mousemove", this._mouseMove);
-        this.game.canvas.removeEventListener("mouseup", this._action);
+        this.main.canvas.removeEventListener("keyup", this._keyUp);
+        this.main.canvas.removeEventListener("mousemove", this._mouseMove);
+        this.main.canvas.removeEventListener("mouseup", this._action);
     }
 
     private _gravityFactor: BABYLON.Vector3 = BABYLON.Vector3.Zero();
@@ -160,7 +171,7 @@ class Player extends BABYLON.Mesh {
             this._debugAimGroundMesh.position.copyFrom(hit[0].pickedPoint);
             let chunck = PlanetTools.WorldPositionToChunck(this.planet, hit[0].pickedPoint);
             if (chunck) {
-                let textPage = new HoloPanel(1.5, 1.5, 1600, 1000, this.game);
+                let textPage = new HoloPanel(1.5, 1.5, 1600, 1000, this.main);
                 textPage.instantiate();
                 textPage.lines = chunck.debugTextInfo();
                 textPage.setPosition(hit[0].pickedPoint);
@@ -185,7 +196,7 @@ class Player extends BABYLON.Mesh {
             }
             let t = 0;
             let cb = () => {
-                t += this.game.engine.getDeltaTime() / 1000;
+                t += this.main.engine.getDeltaTime() / 1000;
                 if (t < duration) {
                     let f = Easing.easeInOutSine(t / duration);
                     this.position.copyFrom(posZero).scaleInPlace(1 - f).addInPlace(posTarget.scale(f));
@@ -195,20 +206,20 @@ class Player extends BABYLON.Mesh {
                 }
                 else {
                     this.position.copyFrom(posTarget);
-                    this.game.scene.onBeforeRenderObservable.removeCallback(cb);
+                    this.main.scene.onBeforeRenderObservable.removeCallback(cb);
                     resolve();
                 }
             }
-            this.game.scene.onBeforeRenderObservable.add(cb);
+            this.main.scene.onBeforeRenderObservable.add(cb);
         });
     }
 
     private _currentChunck: PlanetChunck;
     private _update = () => {
-        if (this.game.cameraManager.cameraMode != CameraMode.Player) {
+        if (this.main.cameraManager.cameraMode != CameraMode.Player) {
             return;
         }
-        let deltaTime: number = this.game.engine.getDeltaTime() / 1000;
+        let deltaTime: number = this.main.engine.getDeltaTime() / 1000;
 
         this._jumpTimer = Math.max(this._jumpTimer - deltaTime, 0);
 
@@ -234,10 +245,8 @@ class Player extends BABYLON.Mesh {
         }
         */
 
-        if (this.game.inputMode === InputMode.Mouse) {
-            this.inputHeadRight *= 0.8;
-            this.inputHeadUp *= 0.8;
-        }
+        this.inputHeadRight *= 0.8;
+        this.inputHeadUp *= 0.8;
 
         if (this.lockInPlace) {
             return;

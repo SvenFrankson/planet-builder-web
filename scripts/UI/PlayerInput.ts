@@ -1,11 +1,11 @@
 class PlayerInput {
 
-    public game: Game | Demo;
+    public game: Main;
 
     constructor(
         public player: Player
     ) {
-        this.game = player.game;
+        this.game = player.main;
     }
 
     public connectInput(): void {

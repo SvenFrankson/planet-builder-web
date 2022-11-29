@@ -2,7 +2,7 @@
 
 class MainMenu extends Main {
 
-	public camera: BABYLON.FreeCamera;
+	public player: Player;
 	private _testAltitude = 20.7;
 
 	public createScene(): void {
@@ -15,12 +15,6 @@ class MainMenu extends Main {
 		);
 		light.diffuse = new BABYLON.Color3(1, 1, 1);
 		light.groundColor = new BABYLON.Color3(0.5, 0.5, 0.5);
-
-		this.camera = new BABYLON.FreeCamera("camera", new BABYLON.Vector3(0, 1.7 + this._testAltitude, - 0.8), this.scene);
-		this.camera.minZ = 0.1;
-		this.camera.attachControl();
-		this.camera.speed *= 0.1;
-		//this.camera.layerMask = 0x10000000;
 
 		this.scene.clearColor.copyFromFloats(0, 0, 0, 1);
 	}
@@ -50,7 +44,7 @@ class MainMenu extends Main {
 			let graphicsPanel = new HoloPanel(0.4, 1.5, w, h, this);
 			graphicsPanel.instantiate();
 			graphicsPanel.setPosition(new BABYLON.Vector3(-0.6, this._testAltitude, - 0.2));
-			graphicsPanel.setTarget(this.camera.position);
+			graphicsPanel.setTarget(new BABYLON.Vector3(0, 1.7 + this._testAltitude, - 0.8));
 			graphicsPanel.open();
 			
 			let graphicsSlika = graphicsPanel.holoSlika;
@@ -106,7 +100,6 @@ class MainMenu extends Main {
 				new SPosition(120, 840),
 				BABYLON.Color3.FromHexString("#8dd6c0")
 			);
-			console.log(buttonHigh.isPickable);
 
 			graphicsSlika.add(buttonHigh);
 			graphicsSlika.add(buttonMedium);
@@ -121,7 +114,7 @@ class MainMenu extends Main {
 			let mainPanel = new HoloPanel(1, 1.5, wMain, hMain, this);
 			mainPanel.instantiate();
 			mainPanel.setPosition(new BABYLON.Vector3(0.2, this._testAltitude, 0));
-			mainPanel.setTarget(this.camera.position);
+			mainPanel.setTarget(new BABYLON.Vector3(0, 1.7 + this._testAltitude, - 0.8));
 			mainPanel.open();
 			
 			let mainSlika = mainPanel.holoSlika;
@@ -160,26 +153,16 @@ class MainMenu extends Main {
 			);
 			mainSlika.add(buttonPlay);
 
+			this.player = new Player(new BABYLON.Vector3(0, 1.7 + this._testAltitude, - 0.8), mainMenuPlanet, this);
+			this.cameraManager.player = this.player;
+			this.cameraManager.setMode(CameraMode.Player);
+
 			PlanetChunckVertexData.InitializeData().then(
 				() => {
 					mainMenuPlanet.register();
+					this.player.initialize();
+					this.player.registerControl();
 					//moon.register();
-
-					this._playerArmLeft = new PlayerArm(true, this.scene);
-					this._playerArmLeft.initialize();
-					this._playerArmLeft.position = this.camera.position.clone();
-					this._playerArmLeft.position.x -= 0.2;
-					this._playerArmLeft.position.y -= 0.25;
-					this._playerArmLeft.position.z += 0.1;
-					this._playerArmLeft.instantiate();
-
-					this._playerArmRight = new PlayerArm(false, this.scene);
-					this._playerArmRight.initialize();
-					this._playerArmRight.position = this.camera.position.clone();
-					this._playerArmRight.position.x += 0.2;
-					this._playerArmRight.position.y -= 0.25;
-					this._playerArmRight.position.z += 0.1;
-					this._playerArmRight.instantiate();
 
 					resolve();
 				}
@@ -189,50 +172,7 @@ class MainMenu extends Main {
 		})
 	}
 
-	private _playerArmLeft: PlayerArm;
-	private _playerArmRight: PlayerArm;
-	private _t: number = 0;
-
 	public update(): void {
-		this.camera.position.y = 1.7 + this._testAltitude;
-		if (this._playerArmLeft) {
-			if (this.inputManager.aimedPosition) {
-				let arm: PlayerArm;
-				if (this.inputManager.aimedPosition.x > 0) {
-					arm = this._playerArmRight;
-					if (this._playerArmLeft.handMode != HandMode.Idle) {
-						this._playerArmLeft.setHandMode(HandMode.Idle);
-					}
-				}
-				else {
-					arm = this._playerArmLeft;
-					if (this._playerArmRight.handMode != HandMode.Idle) {
-						this._playerArmRight.setHandMode(HandMode.Idle);
-					}
-				}
-				if (this.inputManager.aimedElement.interactionMode === InteractionMode.Point) {
-					if (arm.handMode != HandMode.Point) {
-						arm.setHandMode(HandMode.Point);
-					}
-				}
-				else if (this.inputManager.aimedElement.interactionMode === InteractionMode.Grab) {
-					if (arm.handMode != HandMode.Grab) {
-						arm.setHandMode(HandMode.Grab);
-					}
-				}
-				arm.setTarget(this.inputManager.aimedPosition);
-				if (arm.handMode === HandMode.Grab) {
-					arm.targetUp.copyFrom(this.inputManager.aimedNormal);
-				}
-			}
-			else {
-				if (this._playerArmLeft.handMode != HandMode.Idle) {
-					this._playerArmLeft.setHandMode(HandMode.Idle);
-				}
-				if (this._playerArmRight.handMode != HandMode.Idle) {
-					this._playerArmRight.setHandMode(HandMode.Idle);
-				}
-			}
-		}
+		
 	}
 }

@@ -7,7 +7,6 @@ class Demo extends Main {
 	public light: BABYLON.HemisphericLight;
 	public planetSky: PlanetSky;
 	public player: Player;
-	public cameraManager: CameraManager;
 
 	public planets: Planet[] = [];
 

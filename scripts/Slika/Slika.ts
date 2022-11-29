@@ -530,13 +530,11 @@ class Slika {
         if (this.texture) {
             e.scene = this.texture.getScene();
         }
-        console.log(this.pickableElements.length);
     }
 
     public remove(e: SlikaElement): void {
         this.elements.remove(e);
         this.pickableElements.remove(e);
-        console.log("X" + this.pickableElements.length);
     }
 
     public redraw(): void {

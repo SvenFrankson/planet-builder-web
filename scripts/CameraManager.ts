@@ -24,36 +24,36 @@ class CameraManager {
         }
     }
 
-    constructor(public game: Game | Demo) {
+    constructor(public main: Main) {
         this.arcRotateCamera = new BABYLON.ArcRotateCamera(
             "Camera",
             0,
             Math.PI / 2,
             120,
             BABYLON.Vector3.Zero(),
-            this.game.scene
+            this.main.scene
         );
         this.arcRotateCamera.angularSensibilityX *= 5;
         this.arcRotateCamera.angularSensibilityY *= 5;
-        this.arcRotateCamera.attachControl(this.game.canvas);
+        this.arcRotateCamera.attachControl(this.main.canvas);
         
         this.freeCamera = new BABYLON.FreeCamera(
             "Camera",
             BABYLON.Vector3.Zero(),
-            this.game.scene
+            this.main.scene
         );
         this.freeCamera.rotationQuaternion = BABYLON.Quaternion.Identity();
         this.freeCamera.minZ = 0.1;
         this.freeCamera.maxZ = 1000;
         if (this.useOutline) {
-            const rtt = new BABYLON.RenderTargetTexture('render target', { width: this.game.engine.getRenderWidth(), height: this.game.engine.getRenderHeight() }, this.game.scene);
+            const rtt = new BABYLON.RenderTargetTexture('render target', { width: this.main.engine.getRenderWidth(), height: this.main.engine.getRenderHeight() }, this.main.scene);
             rtt.samples = 1;
             this.freeCamera.outputRenderTarget = rtt;
     
             this.noOutlineCamera = new BABYLON.FreeCamera(
                 "Camera",
                 BABYLON.Vector3.Zero(),
-                this.game.scene
+                this.main.scene
             );
             this.noOutlineCamera.minZ = 0.1;
             this.noOutlineCamera.maxZ = 1000;
@@ -88,20 +88,20 @@ class CameraManager {
                 this.freeCamera.rotationQuaternion.copyFrom(BABYLON.Quaternion.Identity());
                 this.freeCamera.computeWorldMatrix();
                 if (this.useOutline) {
-                    this.game.scene.activeCameras = [this.freeCamera, this.noOutlineCamera];
+                    this.main.scene.activeCameras = [this.freeCamera, this.noOutlineCamera];
                 }
                 else {
-                    this.game.scene.activeCamera = this.freeCamera;
+                    this.main.scene.activeCamera = this.freeCamera;
                 }
             }
             if (this.cameraMode === CameraMode.Sky) {
                 if (this.useOutline) {
-                    this.game.scene.activeCameras = [this.arcRotateCamera];
+                    this.main.scene.activeCameras = [this.arcRotateCamera];
                 }
                 else {
-                    this.game.scene.activeCamera = this.arcRotateCamera;
+                    this.main.scene.activeCamera = this.arcRotateCamera;
                 }
-                this.arcRotateCamera.attachControl(this.game.canvas);
+                this.arcRotateCamera.attachControl(this.main.canvas);
             }
         }
     }
