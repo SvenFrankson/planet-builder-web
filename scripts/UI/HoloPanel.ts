@@ -138,6 +138,7 @@ class HoloPanel extends Pickable {
         this.holoMesh.alphaIndex = 1;
 
         this.pointerMesh = new BABYLON.Mesh("pointer-mesh");
+        this.pointerMesh.layerMask = 0x10000000;
         this.pointerMesh.position.z = - 0.03;
         this.pointerMesh.parent = this.holoMesh;
         this.pointerMesh.alphaIndex = 2;
