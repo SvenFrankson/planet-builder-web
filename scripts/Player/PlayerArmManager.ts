@@ -8,6 +8,12 @@ class PlayerArmManager {
 
     public leftArm: PlayerArm;
     public rightArm: PlayerArm;
+    public other(arm: PlayerArm): PlayerArm {
+        if (arm === this.leftArm) {
+            return this.rightArm;
+        }
+        return this.leftArm;
+    }
 
     public get inputManager(): InputManager {
         return this.player.inputManager;
@@ -65,9 +71,29 @@ class PlayerArmManager {
         if (this.rightArm.handMode != HandMode.Idle) {
             this.rightArm.setHandMode(HandMode.Idle);
         }
+
+        this._updateRequestedTargetIdle(this.leftArm);
+        this._updateRequestedTargetIdle(this.rightArm);
+    }
+
+    private _updateRequestedTargetIdle(arm: PlayerArm): void {
+        let dP = 2 * this.player.scene.getEngine().getDeltaTime() / 1000;
+        if (arm === this.leftArm) {
+            let target = new BABYLON.Vector3(- 0.1, - this.leftArm.wristLength, 0);
+            target.normalize().scaleInPlace(this.leftArm.wristLength);
+            target = BABYLON.Vector3.TransformCoordinates(target, this.leftArm.getWorldMatrix());
+            VMath.StepToRef(this.leftArm.requestedTarget, target, dP, this.leftArm.requestedTarget);
+        }
+        else {
+            let target = new BABYLON.Vector3(0.1, - this.rightArm.wristLength, 0);
+            target.normalize().scaleInPlace(this.rightArm.wristLength);
+            target = BABYLON.Vector3.TransformCoordinates(target, this.rightArm.getWorldMatrix());
+            VMath.StepToRef(this.rightArm.requestedTarget, target, dP, this.rightArm.requestedTarget);
+        }
     }
 
     private _aimingArm: PlayerArm;
+    private _aimingStretch: number = 0.6;
     private _updateAim(): void {
 
         if (!this.inputManager.aimedPosition) {
@@ -96,8 +122,8 @@ class PlayerArmManager {
         let d = BABYLON.Vector3.Distance(this.inputManager.aimedPosition, this._aimingArm.absolutePosition);
         // 2 - Update the way the hand should interact depending on aimed object.
         if (d > 0.9) {
-            if (this._aimingArm.handMode != HandMode.Idle) {
-                this._aimingArm.setHandMode(HandMode.Idle);
+            if (this._aimingArm.handMode != HandMode.Point) {
+                this._aimingArm.setHandMode(HandMode.Point);
             }
         }
         else {
@@ -114,17 +140,22 @@ class PlayerArmManager {
         }
 
         // 3 - Update arm target position.
+        let dP = 0.5 * this.player.scene.getEngine().getDeltaTime() / 1000;
         if (d < 0.9) {
-            this._aimingArm.setTarget(this.inputManager.aimedPosition);
+            this._aimingStretch += dP;
         }
         else {
-            let tmp = new BABYLON.Vector3();
-            VMath.StepToRef(this._aimingArm.absolutePosition, this.inputManager.aimedPosition, 0.7, tmp);
-            tmp.subtractInPlace(this.rightArm.up.scale(0.2));
-            this._aimingArm.setTarget(tmp);
+            this._aimingStretch -= dP;
         }
+        this._aimingStretch = Math.max(Math.min(this._aimingStretch, this._aimingArm.fullLength), 0.4);
+        
+        let tmp = new BABYLON.Vector3();
+        VMath.StepToRef(this.player.camPos.absolutePosition, this.inputManager.aimedPosition, this._aimingStretch, tmp);
+        this._aimingArm.setTarget(tmp);
+
         if (this._aimingArm.handMode === HandMode.Grab) {
             this._aimingArm.targetUp.copyFrom(this.inputManager.aimedNormal);
         }
+        this._updateRequestedTargetIdle(this.other(this._aimingArm));
     }
 }

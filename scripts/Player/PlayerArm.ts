@@ -29,13 +29,20 @@ class PlayerArm extends BABYLON.Mesh {
     private _wrist: BABYLON.Mesh;
     private _hand: BABYLON.Mesh;
     private _fingers: BABYLON.Mesh[][];
-    public maxHandSpeed: number = 2;
+    public maxHandSpeed: number = 3;
 
     private _armLength: number = 0.34;
     private _foreArmLength: number = 0.35;
     private _handLength: number = 0.22;
+    private _wristLength: number = this._armLength + this._foreArmLength;
+    public get wristLength(): number {
+        return this._wristLength;
+    }
     private _elbowToTargetLength: number = this._foreArmLength + this._handLength;
     private _fullLength: number = this._armLength + this._foreArmLength + this._handLength;
+    public get fullLength(): number {
+        return this._fullLength;
+    }
     private _fingersLength: number[][] = [
         [0.043, 0.042, 0.04],
         [0.040, 0.038, 0.035],
@@ -166,10 +173,6 @@ class PlayerArm extends BABYLON.Mesh {
 
     public setTarget(newTarget: BABYLON.Vector3): void {
         this.requestedTarget.copyFrom(newTarget);
-        if (BABYLON.Vector3.Distance(this.position, this.requestedTarget) > this._fullLength) {
-            let n = this.requestedTarget.subtract(this.position).normalize().scaleInPlace(this._fullLength);
-            this.requestedTarget.copyFrom(n).addInPlace(this.position);
-        }
     }
 
     public setFingerGrabiness(fingerIndex: number, grabiness: number): void {
@@ -328,6 +331,11 @@ class PlayerArm extends BABYLON.Mesh {
 
     private _update = () => {
         let dt = this.scene.getEngine().getDeltaTime() / 1000;
+        
+        if (BABYLON.Vector3.Distance(this.position, this.requestedTarget) > this._fullLength) {
+            let n = this.requestedTarget.subtract(this.position).normalize().scaleInPlace(this._fullLength);
+            this.requestedTarget.copyFrom(n).addInPlace(this.position);
+        }
 
         this.updateHandUp();
         this.updateHandUpStrictness();
@@ -359,7 +367,7 @@ class PlayerArm extends BABYLON.Mesh {
         let armZ = this._v0;
         let foreArmZ = this._v1;
         let handZ = this._v2;
-        for (let i = 0; i < 1; i++) {
+        for (let i = 0; i < 3; i++) {
             handZ.copyFrom(currentTarget).subtractInPlace(this._wristPosition).normalize().scaleInPlace(handLength);
             this._wristPosition.copyFrom(currentTarget).subtractInPlace(handZ);
 
@@ -391,11 +399,11 @@ class PlayerArm extends BABYLON.Mesh {
         let handY = this.handUp;
         if (this.handUpStrictness < 0.5) {
             VMath.QuaternionFromZYAxisToRef(handZ, handY, this._computedHandQ);
-            BABYLON.Quaternion.SlerpToRef(this._hand.rotationQuaternion, this._computedHandQ, 0.05, this._hand.rotationQuaternion);
+            BABYLON.Quaternion.SlerpToRef(this._hand.rotationQuaternion, this._computedHandQ, 0.1, this._hand.rotationQuaternion);
         }
         else {
             VMath.QuaternionFromYZAxisToRef(handY, handZ, this._computedHandQ);
-            BABYLON.Quaternion.SlerpToRef(this._hand.rotationQuaternion, this._computedHandQ, 0.05, this._hand.rotationQuaternion);
+            BABYLON.Quaternion.SlerpToRef(this._hand.rotationQuaternion, this._computedHandQ, 0.1, this._hand.rotationQuaternion);
         }
 
         this._wrist.position.copyFrom(this._wristPosition);
