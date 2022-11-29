@@ -78,11 +78,14 @@ class Player extends BABYLON.Mesh {
         });
         this.main.canvas.addEventListener("keyup", this._keyUp);
         this.main.canvas.addEventListener("pointermove", this._mouseMove);
-        this.main.canvas.addEventListener("mouseup", () => {
+        this.main.canvas.addEventListener("pointerup", () => {
             if (this.currentAction) {
                 if (this.currentAction.onClick) {
                     this.currentAction.onClick();
                 }
+            }
+            if (this.armManager) {
+                this.armManager.startActionAnimation();
             }
         });
     }
@@ -124,7 +127,6 @@ class Player extends BABYLON.Mesh {
     public unregisterControl(): void {
         this.main.canvas.removeEventListener("keyup", this._keyUp);
         this.main.canvas.removeEventListener("mousemove", this._mouseMove);
-        this.main.canvas.removeEventListener("mouseup", this._action);
     }
 
     private _gravityFactor: BABYLON.Vector3 = BABYLON.Vector3.Zero();
@@ -156,31 +158,7 @@ class Player extends BABYLON.Mesh {
     public get meshes(): BABYLON.Mesh[] {
         return this._meshes;
     }
-
-    private _action = () => {
-        let ray: BABYLON.Ray = new BABYLON.Ray(this.camPos.absolutePosition, this.camPos.forward);
-        let hit: BABYLON.PickingInfo[] = ray.intersectsMeshes(this._meshes);
-        hit = hit.sort((h1, h2) => { return h1.distance - h2.distance; });
-        if (hit[0] && hit[0].pickedPoint) {
-            if (!this._debugAimGroundMesh) {
-                this._debugAimGroundMesh = BABYLON.MeshBuilder.CreateSphere("debug-aim-mesh", { diameter: 0.2 }, this.getScene());
-                let material = new BABYLON.StandardMaterial("material", this.getScene());
-                material.alpha = 0.5;
-                this._debugAimGroundMesh.material = material;
-            }
-            this._debugAimGroundMesh.position.copyFrom(hit[0].pickedPoint);
-            let chunck = PlanetTools.WorldPositionToChunck(this.planet, hit[0].pickedPoint);
-            if (chunck) {
-                let textPage = new HoloPanel(1.5, 1.5, 1600, 1000, this.main);
-                textPage.instantiate();
-                textPage.lines = chunck.debugTextInfo();
-                textPage.setPosition(hit[0].pickedPoint);
-                textPage.setTarget(this.position);
-                textPage.open();
-            }
-        }
-    }
-
+    
     public async animatePos(posTarget: BABYLON.Vector3, duration: number, lookingAt?: boolean): Promise<void> {
         return new Promise<void>(resolve => {
             let posZero = this.position.clone();

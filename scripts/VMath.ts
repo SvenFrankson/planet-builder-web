@@ -44,11 +44,9 @@ class VMath {
         let sqrStep = step * step;
         if (BABYLON.Vector3.DistanceSquared(from, to) < sqrStep) {
             ref.copyFrom(to);
-            console.log("!");
         }
         else {
             ref.copyFrom(to).subtractInPlace(from).normalize().scaleInPlace(step).addInPlace(from);
-            console.log("...");
         }
 
         return ref;

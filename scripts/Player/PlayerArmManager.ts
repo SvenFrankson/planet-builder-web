@@ -82,18 +82,19 @@ class PlayerArmManager {
             let target = new BABYLON.Vector3(- 0.1, - this.leftArm.wristLength, 0);
             target.normalize().scaleInPlace(this.leftArm.wristLength);
             target = BABYLON.Vector3.TransformCoordinates(target, this.leftArm.getWorldMatrix());
-            VMath.StepToRef(this.leftArm.requestedTarget, target, dP, this.leftArm.requestedTarget);
+            VMath.StepToRef(this.leftArm.targetPosition, target, dP, this.leftArm.targetPosition);
         }
         else {
             let target = new BABYLON.Vector3(0.1, - this.rightArm.wristLength, 0);
             target.normalize().scaleInPlace(this.rightArm.wristLength);
             target = BABYLON.Vector3.TransformCoordinates(target, this.rightArm.getWorldMatrix());
-            VMath.StepToRef(this.rightArm.requestedTarget, target, dP, this.rightArm.requestedTarget);
+            VMath.StepToRef(this.rightArm.targetPosition, target, dP, this.rightArm.targetPosition);
         }
     }
 
     private _aimingArm: PlayerArm;
     private _aimingStretch: number = 0.6;
+    private _aimingDistance: number = 0.1;
     private _updateAim(): void {
 
         if (!this.inputManager.aimedPosition) {
@@ -128,7 +129,7 @@ class PlayerArmManager {
         }
         else {
             if (this.inputManager.aimedElement.interactionMode === InteractionMode.Point) {
-                if (this._aimingArm.handMode != HandMode.Point) {
+                if (this._aimingArm.handMode != HandMode.Point && this._aimingArm.handMode != HandMode.PointPress) {
                     this._aimingArm.setHandMode(HandMode.Point);
                 }
             }
@@ -150,12 +151,47 @@ class PlayerArmManager {
         this._aimingStretch = Math.max(Math.min(this._aimingStretch, this._aimingArm.fullLength), 0.4);
         
         let tmp = new BABYLON.Vector3();
-        VMath.StepToRef(this.player.camPos.absolutePosition, this.inputManager.aimedPosition, this._aimingStretch, tmp);
+        VMath.StepToRef(this.player.camPos.absolutePosition.add(this._aimingArm.absolutePosition).scale(0.5), this.inputManager.aimedPosition.add(this.inputManager.aimedNormal.scale(this._aimingDistance)), this._aimingStretch, tmp);
         this._aimingArm.setTarget(tmp);
 
         if (this._aimingArm.handMode === HandMode.Grab) {
             this._aimingArm.targetUp.copyFrom(this.inputManager.aimedNormal);
         }
         this._updateRequestedTargetIdle(this.other(this._aimingArm));
+    }
+
+    public async startActionAnimation(): Promise<void> {
+        console.log('alpha');
+        this._aimingArm.setHandMode(HandMode.PointPress);
+        await this._animateAimingDistance(0.01, 0.3);
+        this._aimingArm.setHandMode(HandMode.Point);
+        await this._animateAimingDistance(0.1, 0.3);
+    }
+
+    private _animateAimingDistanceCB: () => void;
+    private async _animateAimingDistance(distanceTarget: number, duration: number = 1): Promise<void> {
+        if (this.player.scene) {
+            if (this._animateAimingDistanceCB) {
+                this.player.scene.onBeforeRenderObservable.removeCallback(this._animateAimingDistanceCB);
+            }
+            return new Promise<void>(resolve => {
+                let distanceZero = this._aimingDistance;
+                let t = 0;
+                this._animateAimingDistanceCB = () => {
+                    t += this.player.scene.getEngine().getDeltaTime() / 1000;
+                    if (t < duration) {
+                        let f = t / duration;
+                        this._aimingDistance = distanceZero * (1 - f) + distanceTarget * f;
+                    }
+                    else {
+                        this._aimingDistance = distanceTarget;
+                        this.player.scene.onBeforeRenderObservable.removeCallback(this._animateAimingDistanceCB);
+                        this._animateAimingDistanceCB = undefined;
+                        resolve();
+                    }
+                }
+                this.player.scene.onBeforeRenderObservable.add(this._animateAimingDistanceCB);
+            });
+        }
     }
 }

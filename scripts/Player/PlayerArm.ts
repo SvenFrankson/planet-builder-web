@@ -1,6 +1,7 @@
 enum HandMode {
     Idle,
     Point,
+    PointPress,
     Grab,
     Like
 }
@@ -17,8 +18,7 @@ enum HandTargetAnchor {
 
 class PlayerArm extends BABYLON.Mesh {
 
-    public requestedTarget: BABYLON.Vector3 = BABYLON.Vector3.Zero();
-    public target: BABYLON.Vector3 = BABYLON.Vector3.Zero();
+    public targetPosition: BABYLON.Vector3 = BABYLON.Vector3.Zero();
     public targetOffset: BABYLON.Vector3 = BABYLON.Vector3.Zero();
     public targetUp: BABYLON.Vector3 = BABYLON.Vector3.Up();
     public targetAnchor: HandTargetAnchor = HandTargetAnchor.Palm;
@@ -29,7 +29,6 @@ class PlayerArm extends BABYLON.Mesh {
     private _wrist: BABYLON.Mesh;
     private _hand: BABYLON.Mesh;
     private _fingers: BABYLON.Mesh[][];
-    public maxHandSpeed: number = 3;
 
     private _armLength: number = 0.34;
     private _foreArmLength: number = 0.35;
@@ -172,7 +171,7 @@ class PlayerArm extends BABYLON.Mesh {
     }
 
     public setTarget(newTarget: BABYLON.Vector3): void {
-        this.requestedTarget.copyFrom(newTarget);
+        this.targetPosition.copyFrom(newTarget);
     }
 
     public setFingerGrabiness(fingerIndex: number, grabiness: number): void {
@@ -212,8 +211,8 @@ class PlayerArm extends BABYLON.Mesh {
     }
 
     public updateHandUp(): void {
-        if (this.handMode === HandMode.Point) {
-            let delta = this.target.subtract(this.position);
+        if (this.handMode === HandMode.Point || this.handMode === HandMode.PointPress) {
+            let delta = this.targetPosition.subtract(this.position);
             let dx = this.signLeft * BABYLON.Vector3.Dot(delta, this.right) / this._fullLength;
             let target = new BABYLON.Vector3(dx, 1, 0);
             VMath.RotateVectorByQuaternionToRef(target, this.rotationQuaternion, target);
@@ -253,7 +252,7 @@ class PlayerArm extends BABYLON.Mesh {
     }
 
     public updateTargetAnchor(): void {
-        if (this.handMode === HandMode.Point) {
+        if (this.handMode === HandMode.Point || this.handMode === HandMode.PointPress) {
             this.targetAnchor = HandTargetAnchor.IndexTip;
         }
         else if (this.handMode === HandMode.Grab) {
@@ -278,34 +277,41 @@ class PlayerArm extends BABYLON.Mesh {
         }
     }
 
-    public animateToGrabness(mode: HandMode, duration: number = 1): void {
+    public animateToGrabness(mode: HandMode): void {
         if (mode === HandMode.Point) {
-            this._animateGrabness(0, 0.6, duration);
-            this._animateGrabness(1, 0.1, duration);
-            this._animateGrabness(2, 0.35, duration);
-            this._animateGrabness(3, 0.5, duration);
-            this._animateGrabness(4, 0.65, duration);
+            this._animateGrabness(0, 0.6, 0.6);
+            this._animateGrabness(1, 0.1, 0.6);
+            this._animateGrabness(2, 0.35, 0.6);
+            this._animateGrabness(3, 0.5, 0.6);
+            this._animateGrabness(4, 0.65, 0.6);
+        }
+        else if (mode === HandMode.PointPress) {
+            this._animateGrabness(0, 0.7, 0.2);
+            this._animateGrabness(1, 0, 0.2);
+            this._animateGrabness(2, 0.45, 0.2);
+            this._animateGrabness(3, 0.6, 0.2);
+            this._animateGrabness(4, 0.75, 0.2);
         }
         else if (mode === HandMode.Grab) {
-            this._animateGrabness(0, 0.1, duration);
-            this._animateGrabness(1, 0.1, duration);
-            this._animateGrabness(2, 0.1, duration);
-            this._animateGrabness(3, 0.1, duration);
-            this._animateGrabness(4, 0.1, duration);
+            this._animateGrabness(0, 0.1, 0.6);
+            this._animateGrabness(1, 0.1, 0.6);
+            this._animateGrabness(2, 0.1, 0.6);
+            this._animateGrabness(3, 0.1, 0.6);
+            this._animateGrabness(4, 0.1, 0.6);
         }
         else if (mode === HandMode.Like) {
-            this._animateGrabness(0, 0, duration);
-            this._animateGrabness(1, 1, duration);
-            this._animateGrabness(2, 1, duration);
-            this._animateGrabness(3, 1, duration);
-            this._animateGrabness(4, 1, duration);
+            this._animateGrabness(0, 0, 0.6);
+            this._animateGrabness(1, 1, 0.6);
+            this._animateGrabness(2, 1, 0.6);
+            this._animateGrabness(3, 1, 0.6);
+            this._animateGrabness(4, 1, 0.6);
         }
         else {
-            this._animateGrabness(0, 0.2, duration);
-            this._animateGrabness(1, 0.2, duration);
-            this._animateGrabness(2, 0.2, duration);
-            this._animateGrabness(3, 0.2, duration);
-            this._animateGrabness(4, 0.2, duration);
+            this._animateGrabness(0, 0.2, 0.6);
+            this._animateGrabness(1, 0.2, 0.6);
+            this._animateGrabness(2, 0.2, 0.6);
+            this._animateGrabness(3, 0.2, 0.6);
+            this._animateGrabness(4, 0.2, 0.6);
         }
     }
 
@@ -328,42 +334,30 @@ class PlayerArm extends BABYLON.Mesh {
     private _v2: BABYLON.Vector3 = BABYLON.Vector3.Zero();
     private _q0: BABYLON.Quaternion = BABYLON.Quaternion.Identity();
     private _computedHandQ: BABYLON.Quaternion = BABYLON.Quaternion.Identity();
+    private _anchor: BABYLON.Vector3 = BABYLON.Vector3.Zero();
 
     private _update = () => {
         let dt = this.scene.getEngine().getDeltaTime() / 1000;
         
-        if (BABYLON.Vector3.Distance(this.position, this.requestedTarget) > this._fullLength) {
-            let n = this.requestedTarget.subtract(this.position).normalize().scaleInPlace(this._fullLength);
-            this.requestedTarget.copyFrom(n).addInPlace(this.position);
-        }
-
         this.updateHandUp();
         this.updateHandUpStrictness();
         this.updateTargetAnchor();
         this.updateGrabness();
         this.updateSpreadness();
-
-        let dTargetMove = dt * this.maxHandSpeed;
-        if (BABYLON.Vector3.Distance(this.position, this.target) > this._fullLength) {
-            let n = this.target.subtract(this.position).normalize().scaleInPlace(this._fullLength);
-            this.target.copyFrom(n).addInPlace(this.position);
-        }
         
-        VMath.StepToRef(this.target, this.requestedTarget, dTargetMove, this.target);
-
         let elbowOffset = new BABYLON.Vector3(this.signLeft * 2 * dt, 2 * dt, 0);
         VMath.RotateVectorByQuaternionToRef(elbowOffset, this.rotationQuaternion, elbowOffset);
         this._elbowPosition.subtractInPlace(elbowOffset);
 
-        let currentTarget = this.target.add(this.targetOffset);
+        let currentTarget = this.targetPosition.add(this.targetOffset);
 
         let n = currentTarget.subtract(this._elbowPosition).normalize();
         this._wristPosition.subtractInPlace(n.scale(0.07));
 
         this._arm.position.copyFrom(this.absolutePosition);
 
-        let anchor = this.getAnchorPosition()
-        let handLength = BABYLON.Vector3.Distance(anchor, this._wristPosition);
+        this._anchor.scaleInPlace(0.5).addInPlace(this.getAnchorPosition().scale(0.5));
+        let handLength = BABYLON.Vector3.Distance(this._anchor, this._wristPosition);
         let armZ = this._v0;
         let foreArmZ = this._v1;
         let handZ = this._v2;
@@ -412,7 +406,7 @@ class PlayerArm extends BABYLON.Mesh {
         VMath.QuaternionFromZYAxisToRef(wristZ, wristY, this._q0);
         BABYLON.Quaternion.SlerpToRef(this._wrist.rotationQuaternion, this._q0, 1, this._wrist.rotationQuaternion);
 
-        let error = this.target.subtract(anchor);
+        let error = this.targetPosition.subtract(this._anchor);
         if (error.lengthSquared() > 0.1 * 0.1) {
             this.targetOffset.scaleInPlace(0.95);
             error.normalize().scaleInPlace(0.1);
