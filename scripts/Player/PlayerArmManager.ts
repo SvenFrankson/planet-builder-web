@@ -1,3 +1,9 @@
+enum ArmManagerMode {
+    Idle,
+    Aim,
+    Lean
+}
+
 class PlayerArmManager {
 
     public leftArm: PlayerArm;
@@ -31,48 +37,73 @@ class PlayerArmManager {
         this.player.scene.onBeforeRenderObservable.removeCallback(this._update);
     }
 
+    private mode: ArmManagerMode = ArmManagerMode.Idle;
+
     private _update = () => {
         this.leftArm.position = BABYLON.Vector3.TransformCoordinates(new BABYLON.Vector3(- 0.2, 0.7, 0), this.player.getWorldMatrix());
         this.leftArm.rotationQuaternion = this.player.rotationQuaternion;
         this.rightArm.position = BABYLON.Vector3.TransformCoordinates(new BABYLON.Vector3(0.2, 0.7, 0), this.player.getWorldMatrix());
         this.rightArm.rotationQuaternion = this.player.rotationQuaternion;
 
-        if (this.inputManager.aimedPosition) {
-            let arm: PlayerArm;
-            if (this.inputManager.aimedPosition.x > 0) {
-                arm = this.rightArm;
-                if (this.leftArm.handMode != HandMode.Idle) {
-                    this.leftArm.setHandMode(HandMode.Idle);
-                }
-            }
-            else {
-                arm = this.leftArm;
-                if (this.rightArm.handMode != HandMode.Idle) {
-                    this.rightArm.setHandMode(HandMode.Idle);
-                }
-            }
-            if (this.inputManager.aimedElement.interactionMode === InteractionMode.Point) {
-                if (arm.handMode != HandMode.Point) {
-                    arm.setHandMode(HandMode.Point);
-                }
-            }
-            else if (this.inputManager.aimedElement.interactionMode === InteractionMode.Grab) {
-                if (arm.handMode != HandMode.Grab) {
-                    arm.setHandMode(HandMode.Grab);
-                }
-            }
-            arm.setTarget(this.inputManager.aimedPosition);
-            if (arm.handMode === HandMode.Grab) {
-                arm.targetUp.copyFrom(this.inputManager.aimedNormal);
-            }
+        if (this.mode === ArmManagerMode.Idle) {
+            this._updateIdle();
         }
-        else {
+        else if (this.mode === ArmManagerMode.Aim) {
+            this._updateAim();
+        }
+    }
+
+    private _updateIdle(): void {
+        if (this.inputManager.aimedPosition) {
+            this.mode = ArmManagerMode.Aim;
+            return;
+        }
+
+        if (this.leftArm.handMode != HandMode.Idle) {
+            this.leftArm.setHandMode(HandMode.Idle);
+        }
+        if (this.rightArm.handMode != HandMode.Idle) {
+            this.rightArm.setHandMode(HandMode.Idle);
+        }
+    }
+
+    private _aimingArm: PlayerArm;
+    private _updateAim(): void {
+
+        if (!this.inputManager.aimedPosition) {
+            this.mode = ArmManagerMode.Idle;
+            return;
+        }
+        
+        if (!this._aimingArm) {
+            this._aimingArm = this.rightArm;
+        }
+        
+        if (this._aimingArm === this.leftArm && this.inputManager.aimedPosition.x > 0.2) {
+            this._aimingArm = this.rightArm;
             if (this.leftArm.handMode != HandMode.Idle) {
                 this.leftArm.setHandMode(HandMode.Idle);
             }
+        }
+        else if (this._aimingArm === this.rightArm && this.inputManager.aimedPosition.x < - 0.2) {
+            this._aimingArm = this.leftArm;
             if (this.rightArm.handMode != HandMode.Idle) {
                 this.rightArm.setHandMode(HandMode.Idle);
             }
+        }
+        if (this.inputManager.aimedElement.interactionMode === InteractionMode.Point) {
+            if (this._aimingArm.handMode != HandMode.Point) {
+                this._aimingArm.setHandMode(HandMode.Point);
+            }
+        }
+        else if (this.inputManager.aimedElement.interactionMode === InteractionMode.Grab) {
+            if (this._aimingArm.handMode != HandMode.Grab) {
+                this._aimingArm.setHandMode(HandMode.Grab);
+            }
+        }
+        this._aimingArm.setTarget(this.inputManager.aimedPosition);
+        if (this._aimingArm.handMode === HandMode.Grab) {
+            this._aimingArm.targetUp.copyFrom(this.inputManager.aimedNormal);
         }
     }
 }
