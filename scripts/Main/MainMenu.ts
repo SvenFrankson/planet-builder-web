@@ -16,7 +16,7 @@ class MainMenu extends Main {
 		light.diffuse = new BABYLON.Color3(1, 1, 1);
 		light.groundColor = new BABYLON.Color3(0.5, 0.5, 0.5);
 
-		this.camera = new BABYLON.FreeCamera("camera", new BABYLON.Vector3(0, 1.7 + this._testAltitude, - 1), this.scene);
+		this.camera = new BABYLON.FreeCamera("camera", new BABYLON.Vector3(0, 1.7 + this._testAltitude, - 0.8), this.scene);
 		this.camera.minZ = 0.1;
 		this.camera.attachControl();
 		this.camera.speed *= 0.1;
@@ -165,13 +165,21 @@ class MainMenu extends Main {
 					mainMenuPlanet.register();
 					//moon.register();
 
-					this._playerArm = new PlayerArm(this.scene);
-					this._playerArm.initialize();
-					this._playerArm.position = this.camera.position.clone();
-					this._playerArm.position.x -= 0.2;
-					this._playerArm.position.y -= 0.25;
-					this._playerArm.position.z += 0.1;
-					this._playerArm.instantiate();
+					this._playerArmLeft = new PlayerArm(true, this.scene);
+					this._playerArmLeft.initialize();
+					this._playerArmLeft.position = this.camera.position.clone();
+					this._playerArmLeft.position.x -= 0.2;
+					this._playerArmLeft.position.y -= 0.25;
+					this._playerArmLeft.position.z += 0.1;
+					this._playerArmLeft.instantiate();
+
+					this._playerArmRight = new PlayerArm(false, this.scene);
+					this._playerArmRight.initialize();
+					this._playerArmRight.position = this.camera.position.clone();
+					this._playerArmRight.position.x += 0.2;
+					this._playerArmRight.position.y -= 0.25;
+					this._playerArmRight.position.z += 0.1;
+					this._playerArmRight.instantiate();
 
 					resolve();
 				}
@@ -181,31 +189,48 @@ class MainMenu extends Main {
 		})
 	}
 
-	private _playerArm: PlayerArm;
+	private _playerArmLeft: PlayerArm;
+	private _playerArmRight: PlayerArm;
 	private _t: number = 0;
 
 	public update(): void {
 		this.camera.position.y = 1.7 + this._testAltitude;
-		if (this._playerArm) {
+		if (this._playerArmLeft) {
 			if (this.inputManager.aimedPosition) {
+				let arm: PlayerArm;
+				if (this.inputManager.aimedPosition.x > 0) {
+					arm = this._playerArmRight;
+					if (this._playerArmLeft.handMode != HandMode.Idle) {
+						this._playerArmLeft.setHandMode(HandMode.Idle);
+					}
+				}
+				else {
+					arm = this._playerArmLeft;
+					if (this._playerArmRight.handMode != HandMode.Idle) {
+						this._playerArmRight.setHandMode(HandMode.Idle);
+					}
+				}
 				if (this.inputManager.aimedElement.interactionMode === InteractionMode.Point) {
-					if (this._playerArm.handMode != HandMode.Point) {
-						this._playerArm.setHandMode(HandMode.Point);
+					if (arm.handMode != HandMode.Point) {
+						arm.setHandMode(HandMode.Point);
 					}
 				}
 				else if (this.inputManager.aimedElement.interactionMode === InteractionMode.Grab) {
-					if (this._playerArm.handMode != HandMode.Grab) {
-						this._playerArm.setHandMode(HandMode.Grab);
+					if (arm.handMode != HandMode.Grab) {
+						arm.setHandMode(HandMode.Grab);
 					}
 				}
-				this._playerArm.setTarget(this.inputManager.aimedPosition);
-				if (this._playerArm.handMode === HandMode.Grab) {
-					this._playerArm.targetUp.copyFrom(this.inputManager.aimedNormal);
+				arm.setTarget(this.inputManager.aimedPosition);
+				if (arm.handMode === HandMode.Grab) {
+					arm.targetUp.copyFrom(this.inputManager.aimedNormal);
 				}
 			}
 			else {
-				if (this._playerArm.handMode != HandMode.Idle) {
-					this._playerArm.setHandMode(HandMode.Idle);
+				if (this._playerArmLeft.handMode != HandMode.Idle) {
+					this._playerArmLeft.setHandMode(HandMode.Idle);
+				}
+				if (this._playerArmRight.handMode != HandMode.Idle) {
+					this._playerArmRight.setHandMode(HandMode.Idle);
 				}
 			}
 		}

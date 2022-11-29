@@ -41,21 +41,21 @@ Exporter version: 6.4.5, Blender version: 2.90.1
 		num triangles      :  122
 	processing begun of mesh:  3-wrist
 		WARNING: No materials have been assigned: 
-		num positions      :  249
-		num normals        :  249
+		num positions      :  294
+		num normals        :  294
 		num tangents       :  0
-		num uvs            :  498
+		num uvs            :  588
 		num uvs2           :  0
-		num colors         :  996
-		num triangles      :  108
+		num colors         :  1176
+		num triangles      :  116
 	processing begun of mesh:  4-hand
 		WARNING: No materials have been assigned: 
-		num positions      :  339
-		num normals        :  339
+		num positions      :  350
+		num normals        :  350
 		num tangents       :  0
-		num uvs            :  678
+		num uvs            :  700
 		num uvs2           :  0
-		num colors         :  1356
+		num colors         :  1400
 		num triangles      :  124
 	processing begun of mesh:  5-finger
 		WARNING: No materials have been assigned: 
@@ -125,4 +125,4 @@ Exporter version: 6.4.5, Blender version: 2.90.1
 	writing mesh:  Z-finger.004
 ========= Writing of JSON file completed =========
 ========= end of processing =========
-elapsed time:  0 min, 0.1187 secs
+elapsed time:  0 min, 0.1167 secs
