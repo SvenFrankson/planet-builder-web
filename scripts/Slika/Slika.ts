@@ -309,7 +309,9 @@ class SlikaPointer extends SlikaElement {
         public min: SPosition,
         public max: SPosition,
         public r: number,
-        public color: BABYLON.Color3 = BABYLON.Color3.White()
+        public color: BABYLON.Color3 = BABYLON.Color3.White(),
+        public XToDY?: (x: number) => number,
+        public YToDX?: (y: number) => number
     ) {
         super();
 
@@ -332,25 +334,34 @@ class SlikaPointer extends SlikaElement {
     }
 
     private _updatePosition(): void {
-        this._lines[0].pStart.x = this.min.x;
+        let dx = 0;
+        if (this.YToDX) {
+            dx = this.YToDX(this.position.y);
+        }
+        let dy = 0;
+        if (this.XToDY) {
+            dy = this.XToDY(this.position.x);
+        }
+
+        this._lines[0].pStart.x = this.min.x + dx;
         this._lines[0].pStart.y = this.position.y;
         this._lines[0].pEnd.x = this.position.x - this.r;
         this._lines[0].pEnd.y = this.position.y;
         
         this._lines[1].pStart.x = this.position.x;
-        this._lines[1].pStart.y = this.min.y;
+        this._lines[1].pStart.y = this.min.y + dy;
         this._lines[1].pEnd.x = this.position.x;
         this._lines[1].pEnd.y = this.position.y - this.r;
         
         this._lines[2].pStart.x = this.position.x + this.r;
         this._lines[2].pStart.y = this.position.y;
-        this._lines[2].pEnd.x = this.max.x;
+        this._lines[2].pEnd.x = this.max.x - dx;
         this._lines[2].pEnd.y = this.position.y;
         
         this._lines[3].pStart.x = this.position.x;
         this._lines[3].pStart.y = this.position.y + this.r;
         this._lines[3].pEnd.x = this.position.x;
-        this._lines[3].pEnd.y = this.max.y;
+        this._lines[3].pEnd.y = this.max.y - dy;
 
         this._circle.pCenter.x = this.position.x;
         this._circle.pCenter.y = this.position.y;

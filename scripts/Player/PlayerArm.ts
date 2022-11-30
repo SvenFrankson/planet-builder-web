@@ -393,11 +393,11 @@ class PlayerArm extends BABYLON.Mesh {
         let handY = this.handUp;
         if (this.handUpStrictness < 0.5) {
             VMath.QuaternionFromZYAxisToRef(handZ, handY, this._computedHandQ);
-            BABYLON.Quaternion.SlerpToRef(this._hand.rotationQuaternion, this._computedHandQ, 0.1, this._hand.rotationQuaternion);
+            BABYLON.Quaternion.SlerpToRef(this._hand.rotationQuaternion, this._computedHandQ, 0.2, this._hand.rotationQuaternion);
         }
         else {
             VMath.QuaternionFromYZAxisToRef(handY, handZ, this._computedHandQ);
-            BABYLON.Quaternion.SlerpToRef(this._hand.rotationQuaternion, this._computedHandQ, 0.1, this._hand.rotationQuaternion);
+            BABYLON.Quaternion.SlerpToRef(this._hand.rotationQuaternion, this._computedHandQ, 0.2, this._hand.rotationQuaternion);
         }
 
         this._wrist.position.copyFrom(this._wristPosition);

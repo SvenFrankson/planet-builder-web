@@ -111,12 +111,15 @@ class MainMenu extends Main {
 			let wMain = 1200;
 			let hMain = 800;
 
-			let mainPanel = new HoloPanel(1, 1.5, wMain, hMain, this);
+			let mainPanel = new MainMenuPanel(100, this);
 			mainPanel.instantiate();
 			mainPanel.setPosition(new BABYLON.Vector3(0.2, this._testAltitude, 0));
 			mainPanel.setTarget(new BABYLON.Vector3(0, 1.7 + this._testAltitude, - 0.8));
 			mainPanel.open();
-			
+			setTimeout(() => {
+				mainPanel.holoSlika.needRedraw = true;
+			}, 1000);
+			/*
 			let mainSlika = mainPanel.holoSlika;
 			mainSlika.add(new SlikaPath(new SPoints([23, 18, wMain - 23, 18, wMain - 23, hMain - 18, 23, hMain - 18]), new SlikaShapeStyle("none", "#596b66e0", 0, "white", 0)));
 			for (let i = 100; i < hMain; i += 100) {
@@ -152,6 +155,7 @@ class MainMenu extends Main {
 				BABYLON.Color3.FromHexString("#8dd6c0")
 			);
 			mainSlika.add(buttonPlay);
+			*/
 
 			this.player = new Player(new BABYLON.Vector3(0, 1.7 + this._testAltitude, - 0.8), mainMenuPlanet, this);
 			this.cameraManager.player = this.player;
