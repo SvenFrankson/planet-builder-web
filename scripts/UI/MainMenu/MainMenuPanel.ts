@@ -105,16 +105,9 @@ class MainMenuPanel extends HoloPanel {
                 new SlikaShapeStyle("#8dd6c0", "none", 3, "#8dd6c0", 10)
             )
         );
-
-        this.holoSlika.add(
-            new SlikaPath(
-                new SPoints([
-                    M, 230,
-                    1000 - M, 230
-                ]),
-                new SlikaShapeStyle("#8dd6c0", "none", 3, "#8dd6c0", 10)
-            )
-        );
+        
+        this.holoSlika.add(SlikaPath.CreatePan(M + L2, 1000 - M - L2, 220, 3, 15, 0.30, true, false, new SlikaShapeStyle("none", "#8dd6c0", 0, "#8dd6c0", 10)));
+        this.holoSlika.add(SlikaPath.CreatePan(M + L2, 1000 - M - L2, 250, 3, 15, 0.30, false, true, new SlikaShapeStyle("none", "#8dd6c0", 0, "#8dd6c0", 10)));
 
         this.holoSlika.add(
             new SlikaPath(
@@ -169,43 +162,59 @@ class MainMenuPanel extends HoloPanel {
         );
 
         this.holoSlika.add(new SlikaText(
-            "WELCOME TO",
-            new SPosition(500, 120, "center"),
+            "Welcome to",
+            new SPosition(500, 110, "center"),
             new SlikaTextStyle("#8dd6c0", 60, "XoloniumRegular")
         ));
 
         this.holoSlika.add(new SlikaText(
             "PLANET BUILDER WEB",
-            new SPosition(500, 190, "center"),
+            new SPosition(500, 180, "center"),
             new SlikaTextStyle("#8dd6c0", 60, "XoloniumRegular")
         ));
 
         this.holoSlika.add(new SlikaText(
-            "A Spherical Voxel Engine demo",
-            new SPosition(500, 320, "center"),
+            "a Spherical Voxel",
+            new SPosition(550, 370, "end"),
             new SlikaTextStyle("#8dd6c0", 50, "XoloniumRegular")
+        ));
+
+        this.holoSlika.add(new SlikaText(
+            "Engine demo",
+            new SPosition(550, 430, "end"),
+            new SlikaTextStyle("#8dd6c0", 50, "XoloniumRegular")
+        ));
+
+        
+        this.holoSlika.add(SlikaPath.CreatePan(100, 620, 460, 3, 30, 0.15, false, true, new SlikaShapeStyle("none", "#8dd6c0", 0, "#8dd6c0", 10)));
+
+        this.holoSlika.add(new SlikaImage(
+            new SPosition(650, 290),
+            200, 
+            200,
+            "datas/images/planet.png"
         ));
 
         let buttonPlay = new SlikaButton(
             "Enter",
-            new SPosition(320, 450),
+            new SPosition(320, 550),
             BABYLON.Color3.FromHexString("#8dd6c0")
         );
         this.holoSlika.add(buttonPlay);
         this.holoSlika.add(new SlikaText(
             "(press to enter)",
-            new SPosition(500, 640, "center"),
+            new SPosition(500, 720, "center"),
             new SlikaTextStyle("#8dd6c0", 30, "XoloniumRegular")
         ));
 
         this.holoSlika.add(new SlikaText(
             "powered by BabylonJS",
-            new SPosition(850, 830, "end"),
-            new SlikaTextStyle("#8dd6c0", 50, "XoloniumRegular")
+            new SPosition(850, 850, "end"),
+            new SlikaTextStyle("#8dd6c0", 40, "XoloniumRegular")
         ));
 
         this.holoSlika.add(new SlikaImage(
-            new SPosition(870, 775),
+            new SPosition(870, 795),
             80, 
             80,
             "datas/images/babylonjs-holo-logo.png"
@@ -213,8 +222,8 @@ class MainMenuPanel extends HoloPanel {
 
         this.holoSlika.add(new SlikaText(
             "made by Sven Frankson",
-            new SPosition(870, 910, "end"),
-            new SlikaTextStyle("#8dd6c0", 50, "XoloniumRegular")
+            new SPosition(940, 920, "end"),
+            new SlikaTextStyle("#8dd6c0", 40, "XoloniumRegular")
         ));
     }
 }
