@@ -229,6 +229,45 @@ class SlikaLine extends SlikaElement {
     }
 }
 
+class SlikaImage extends SlikaElement {
+
+    private _img: HTMLImageElement;
+    private _isLoaded: boolean = false;
+
+    public static Create(x0: number, y0: number, x1: number, y1: number, style = new SlikaShapeStyle()): SlikaLine {
+        return new SlikaLine(
+            new SPosition(x0, y0),
+            new SPosition(x1, y1),
+            style
+        );
+    }
+
+    constructor(
+        public p: SPosition = new SPosition(),
+        public w: number,
+        public h: number,
+        public url: string
+    ) {
+        super();
+        this._img = new Image();
+        this._img.src = url;
+        this._img.onload = () => {
+            this._isLoaded = true;
+        };
+    }
+
+    public redraw(context: BABYLON.ICanvasRenderingContext): void {
+        if (this._isLoaded) {
+            context.drawImage(this._img, this.p.x, this.p.y, this.w, this.h);
+        }
+        else {
+            requestAnimationFrame(() => {
+                this.redraw(context);
+            })
+        }
+    }
+}
+
 class SlikaCircle extends SlikaElement {
 
     public static Circle(x: number, y: number, r: number, style = new SlikaShapeStyle()): SlikaCircle {

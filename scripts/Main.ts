@@ -47,6 +47,7 @@ class Main {
 
 window.addEventListener("DOMContentLoaded", () => {
     console.log("DOMContentLoaded " + window.location.href);
+
     if (window.location.href.indexOf("planet-toy.html") != -1) {
         let planetToy: PlanetToy = new PlanetToy("renderCanvas");
         planetToy.createScene();
