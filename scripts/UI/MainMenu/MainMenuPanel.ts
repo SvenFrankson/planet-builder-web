@@ -62,19 +62,19 @@ class MainMenuPanel extends HoloPanel {
                     
                     M + L1, M,
                 ]),
-                new SlikaShapeStyle("none", "#292e2cc0", 0, "white", 0)
+                new SlikaShapeStyle("none", 1, "#292e2c", 0.75, 0, "white", 0)
             )
         );
 
         for (let i = 100; i < 1000; i += 100) {
-            this.holoSlika.add(SlikaLine.Create(M, i, 1000 - M, i, new SlikaShapeStyle("#ffffff10", "none", 3, "ffffff", 20)));
+            this.holoSlika.add(SlikaLine.Create(M, i, 1000 - M, i, new SlikaShapeStyle("#ffffff", 0.5, "none", 1, 3, "ffffff", 20)));
         }
         for (let i = 100; i < 1000; i += 100) {
             let dy = M;
             if (Math.abs(500 - i) < L4 * 0.5 + L2) {
                 dy = M + L2;
             }
-            this.holoSlika.add(SlikaLine.Create(i, dy, i, 1000 - dy, new SlikaShapeStyle("#ffffff10", "none", 3, "ffffff", 20)));
+            this.holoSlika.add(SlikaLine.Create(i, dy, i, 1000 - dy, new SlikaShapeStyle("#ffffff", 0.5, "none", 1, 3, "ffffff", 20)));
         }
 
         this.holoSlika.add(
@@ -102,12 +102,12 @@ class MainMenuPanel extends HoloPanel {
                     
                     M + L1, M,
                 ]),
-                new SlikaShapeStyle("#8dd6c0", "none", 3, "#8dd6c0", 10)
+                new SlikaShapeStyle("#8dd6c0", 1, "none", 1, 3, "#8dd6c0", 10)
             )
         );
         
-        this.holoSlika.add(SlikaPath.CreatePan(M + L2, 1000 - M - L2, 220, 3, 15, 0.30, true, false, new SlikaShapeStyle("none", "#8dd6c0", 0, "#8dd6c0", 10)));
-        this.holoSlika.add(SlikaPath.CreatePan(M + L2, 1000 - M - L2, 250, 3, 15, 0.30, false, true, new SlikaShapeStyle("none", "#8dd6c0", 0, "#8dd6c0", 10)));
+        this.holoSlika.add(SlikaPath.CreatePan(M + L2, 1000 - M - L2, 220, 3, 15, 0.30, true, false, new SlikaShapeStyle("none", 1, "#8dd6c0", 1, 0, "#8dd6c0", 10)));
+        this.holoSlika.add(SlikaPath.CreatePan(M + L2, 1000 - M - L2, 250, 3, 15, 0.30, false, true, new SlikaShapeStyle("none", 1, "#8dd6c0", 1, 0, "#8dd6c0", 10)));
 
         this.holoSlika.add(
             new SlikaPath(
@@ -118,7 +118,7 @@ class MainMenuPanel extends HoloPanel {
                     500 + L5 * 0.5, M + L2,
                     500 - L5 * 0.5, M + L2,
                 ]),
-                new SlikaShapeStyle("none", "#8dd6c0", 0, "#8dd6c0", 10)
+                new SlikaShapeStyle("none", 1, "#8dd6c0", 1, 0, "#8dd6c0", 10)
             )
         );
 
@@ -131,7 +131,7 @@ class MainMenuPanel extends HoloPanel {
                     500 + L5 * 0.5, 1000 - (M + L2),
                     500 - L5 * 0.5, 1000 - (M + L2),
                 ]),
-                new SlikaShapeStyle("none", "#8dd6c0", 0, "#8dd6c0", 10)
+                new SlikaShapeStyle("none", 1, "#8dd6c0", 1, 0, "#8dd6c0", 10)
             )
         );
 
@@ -144,7 +144,7 @@ class MainMenuPanel extends HoloPanel {
                     M, 500 + L6 * 0.5,
                     M, 500 - L6 * 0.5,
                 ]),
-                new SlikaShapeStyle("none", "#8dd6c0", 0, "#8dd6c0", 10)
+                new SlikaShapeStyle("none", 1, "#8dd6c0", 1, 0, "#8dd6c0", 10)
             )
         );
 
@@ -157,7 +157,7 @@ class MainMenuPanel extends HoloPanel {
                     1000 - M, 500 + L6 * 0.5,
                     1000 - M, 500 - L6 * 0.5,
                 ]),
-                new SlikaShapeStyle("none", "#8dd6c0", 0, "#8dd6c0", 10)
+                new SlikaShapeStyle("none", 1, "#8dd6c0", 1, 0, "#8dd6c0", 10)
             )
         );
 
@@ -167,7 +167,7 @@ class MainMenuPanel extends HoloPanel {
             new SlikaTextStyle("#8dd6c0", 60, "XoloniumRegular")
         ));
 
-        this.holoSlika.add(new SlikaText(
+        let title = this.holoSlika.add(new SlikaText(
             "PLANET BUILDER WEB",
             new SPosition(500, 180, "center"),
             new SlikaTextStyle("#8dd6c0", 60, "XoloniumRegular")
@@ -186,7 +186,7 @@ class MainMenuPanel extends HoloPanel {
         ));
 
         
-        this.holoSlika.add(SlikaPath.CreatePan(100, 620, 460, 3, 30, 0.15, false, true, new SlikaShapeStyle("none", "#8dd6c0", 0, "#8dd6c0", 10)));
+        this.holoSlika.add(SlikaPath.CreatePan(100, 620, 460, 3, 30, 0.15, false, true, new SlikaShapeStyle("none", 1, "#8dd6c0", 1, 0, "#8dd6c0", 10)));
 
         this.holoSlika.add(new SlikaImage(
             new SPosition(650, 290),
@@ -200,7 +200,12 @@ class MainMenuPanel extends HoloPanel {
             new SPosition(320, 550),
             BABYLON.Color3.FromHexString("#8dd6c0")
         );
+        buttonPlay.onPointerUp = () => {
+            console.log("HEY !");
+            title.animateAlpha(0, 3);
+        }
         this.holoSlika.add(buttonPlay);
+
         this.holoSlika.add(new SlikaText(
             "(press to enter)",
             new SPosition(500, 720, "center"),

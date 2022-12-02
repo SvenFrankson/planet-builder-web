@@ -84,8 +84,16 @@ class Player extends BABYLON.Mesh {
                     this.currentAction.onClick();
                 }
             }
+            if (this.inputManager && this.inputManager.aimedElement) {
+                this.inputManager.aimedElement.onPointerUp();
+            }
             if (this.armManager) {
                 this.armManager.startActionAnimation();
+            }
+        });
+        this.main.canvas.addEventListener("pointerdown", () => {
+            if (this.inputManager && this.inputManager.aimedElement) {
+                this.inputManager.aimedElement.onPointerDown();
             }
         });
     }

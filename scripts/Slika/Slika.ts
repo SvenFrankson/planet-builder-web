@@ -52,14 +52,44 @@ class SPoints {
 
 class SlikaShapeStyle {
 
+    private _strokeAlphaString: string = "ff";
+    public get strokeAlphaString(): string {
+        return this._strokeAlphaString;
+    }
+    private _fillAlphaString: string = "ff";
+    public get fillAlphaString(): string {
+        return this._fillAlphaString;
+    }
+
+    public get strokeAlpha(): number {
+        return this._strokeAlpha;
+    }
+
+    public set strokeAlpha(a: number) {
+        this._strokeAlpha = a;
+        this._strokeAlphaString = Math.floor(this._strokeAlpha * 255).toString(16).padStart(2, "0");
+    }
+
+    public get fillAlpha(): number {
+        return this._fillAlpha;
+    }
+
+    public set fillAlpha(a: number) {
+        this._fillAlpha = a;
+        this._fillAlphaString = Math.floor(this._fillAlpha * 255).toString(16).padStart(2, "0");
+    }
+
     constructor(
         public stroke: string = "white",
+        private _strokeAlpha: number = 1,
         public fill: string = "none",
+        private _fillAlpha: number = 1,
         public width: number = 1,
         public highlightColor: string = "white",
         public highlightRadius: number = 20
     ) {
-
+        this._strokeAlphaString = Math.floor(this._strokeAlpha * 255).toString(16).padStart(2, "0");
+        this._fillAlphaString = Math.floor(this._fillAlpha * 255).toString(16).padStart(2, "0");
     }
 }
 
@@ -82,6 +112,10 @@ abstract class SlikaElement {
     public scene: BABYLON.Scene;
     public isPickable: boolean = false;
     public hitBox : SRect;
+    public alpha: number = 1;
+
+    public onPointerDown: () => void;
+    public onPointerUp: () => void;
 
     constructor() {
 
@@ -92,6 +126,43 @@ abstract class SlikaElement {
     public onHoverStart(): void {}
 
     public onHoverEnd(): void {}
+
+    private _animateAlphaCB: () => void;
+    public async animateAlpha(alphaTarget: number, duration: number = 1): Promise<void> {
+        console.log("alpha");
+        if (this.scene) {
+            console.log("bravo");
+            if (this._animateAlphaCB) {
+                this.scene.onBeforeRenderObservable.removeCallback(this._animateAlphaCB);
+            }
+            return new Promise<void>(resolve => {
+                console.log("charly");
+                let alphaZero = this.alpha;
+                let t = 0;
+                this._animateAlphaCB = () => {
+                    console.log("delta");
+                    t += this.scene.getEngine().getDeltaTime() / 1000;
+                    if (t < duration) {
+                        let f = t / duration;
+                        this.alpha = alphaZero * (1 - f) + alphaTarget * f;
+                        if (this.slika) {
+                            this.slika.needRedraw = true;
+                        }
+                    }
+                    else {
+                        this.alpha = alphaTarget;
+                        if (this.slika) {
+                            this.slika.needRedraw = true;
+                        }
+                        this.scene.onBeforeRenderObservable.removeCallback(this._animateAlphaCB);
+                        this._animateAlphaCB = undefined;
+                        resolve();
+                    }
+                }
+                this.scene.onBeforeRenderObservable.add(this._animateAlphaCB);
+            });
+        }
+    }
 }
 
 class SlikaPath extends SlikaElement {
@@ -178,8 +249,22 @@ class SlikaPath extends SlikaElement {
 
     public redraw(context: BABYLON.ICanvasRenderingContext): void {
         if (this.points.points.length > 0) {
-            context.fillStyle = this.style.fill;
-            context.strokeStyle = this.style.stroke;
+            if (this.style.fill === "none") {
+                context.fillStyle = "none";
+            }
+            else {
+                let s = this.style.fill + this.style.fillAlphaString;
+                if (s.length > 9) {
+                    console.warn("oups");
+                }
+                context.fillStyle = this.style.fill + this.style.fillAlphaString;
+            }
+            if (this.style.stroke === "none") {
+                context.strokeStyle = "none";
+            }
+            else {
+                context.strokeStyle = this.style.stroke + this.style.strokeAlphaString;
+            }
             context.shadowBlur = this.style.highlightRadius;
             context.shadowColor = this.style.highlightColor;
             context.strokeStyle = this.style.highlightColor;
@@ -218,7 +303,7 @@ class SlikaLine extends SlikaElement {
     }
 
     public redraw(context: BABYLON.ICanvasRenderingContext): void {
-        context.strokeStyle = this.style.stroke;
+        context.strokeStyle = this.style.stroke + this.style.strokeAlphaString;
         context.shadowBlur = this.style.highlightRadius;
         context.shadowColor = this.style.highlightColor;
         context.lineWidth = this.style.width;
@@ -287,7 +372,7 @@ class SlikaCircle extends SlikaElement {
     }
 
     public redraw(context: BABYLON.ICanvasRenderingContext): void {
-        context.strokeStyle = this.style.stroke;
+        context.strokeStyle = this.style.stroke + this.style.strokeAlphaString;
         context.shadowBlur = this.style.highlightRadius;
         context.shadowColor = this.style.highlightColor;
         context.lineWidth = this.style.width;
@@ -321,11 +406,12 @@ class SlikaText extends SlikaElement {
     }
 
     public redraw(context: BABYLON.ICanvasRenderingContext): void {
-        context.fillStyle = this.textStyle.color;
+        let alphaString = Math.floor(this.alpha * 255).toString(16).padStart(2, "0");
+        context.fillStyle = this.textStyle.color + alphaString;
         context.font = this.textStyle.size + "px " + this.textStyle.fontFamily;
         context.shadowBlur = this.textStyle.highlightRadius;
-        context.shadowColor = this.textStyle.highlightColor;
-        context.strokeStyle = this.textStyle.highlightColor;
+        context.shadowColor = this.textStyle.highlightColor + alphaString;;
+        context.strokeStyle = this.textStyle.highlightColor + alphaString;;
         context.lineWidth = this.textStyle.highlightRadius * 0.2;
         let offsetX = 0;
         if (this.position.textAlign === "center") {
@@ -356,11 +442,11 @@ class SlikaPointer extends SlikaElement {
 
         let hexColor = color.toHexString();
 
-        this._lines.push(new SlikaLine(undefined, undefined, new SlikaShapeStyle(hexColor, "none", 3, hexColor, 10)));
-        this._lines.push(new SlikaLine(undefined, undefined, new SlikaShapeStyle(hexColor, "none", 3, hexColor, 10)));
-        this._lines.push(new SlikaLine(undefined, undefined, new SlikaShapeStyle(hexColor, "none", 3, hexColor, 10)));
-        this._lines.push(new SlikaLine(undefined, undefined, new SlikaShapeStyle(hexColor, "none", 3, hexColor, 10)));
-        this._circle = SlikaCircle.Circle(0, 0, 60, new SlikaShapeStyle(hexColor, "none", 3, hexColor, 10));
+        this._lines.push(new SlikaLine(undefined, undefined, new SlikaShapeStyle(hexColor, 1, "none", 1, 3, hexColor, 10)));
+        this._lines.push(new SlikaLine(undefined, undefined, new SlikaShapeStyle(hexColor, 1, "none", 1, 3, hexColor, 10)));
+        this._lines.push(new SlikaLine(undefined, undefined, new SlikaShapeStyle(hexColor, 1, "none", 1, 3, hexColor, 10)));
+        this._lines.push(new SlikaLine(undefined, undefined, new SlikaShapeStyle(hexColor, 1, "none", 1, 3, hexColor, 10)));
+        this._circle = SlikaCircle.Circle(0, 0, 60, new SlikaShapeStyle(hexColor, 1, "none", 1, 3, hexColor, 10));
     }
 
     public setPosition(x: number, y: number): void {
@@ -455,19 +541,19 @@ class SlikaButton extends SlikaElement {
         );
 
         this._strokes.push(
-            SlikaPath.CreateParenthesis(this.position.x, this.position.x + 15, this.position.y + 3, 126, false, new SlikaShapeStyle(hexColor, "none", 6, hexColor, 20))
+            SlikaPath.CreateParenthesis(this.position.x, this.position.x + 15, this.position.y + 3, 126, false, new SlikaShapeStyle(hexColor, 1, "none", 1, 6, hexColor, 20))
         );
         this._strokes.push(
-            SlikaLine.Create(this.position.x + 30, this.position.y, this.position.x + 330, this.position.y, new SlikaShapeStyle(hexColor, "none", 6, hexColor, 20))
+            SlikaLine.Create(this.position.x + 30, this.position.y, this.position.x + 330, this.position.y, new SlikaShapeStyle(hexColor, 1, "none", 1, 6, hexColor, 20))
         );
         this._fills.push(
-            SlikaPath.CreatePan(this.position.x + 30, this.position.x + 330, this.position.y + 9, 6, 111, 0.3, true, false, new SlikaShapeStyle("none", hexColor + "40", 0, hexColor, 20))
+            SlikaPath.CreatePan(this.position.x + 30, this.position.x + 330, this.position.y + 9, 6, 111, 0.3, true, false, new SlikaShapeStyle("none", 1, hexColor, 0.25, 0, hexColor, 20))
         );
         this._strokes.push(
-            SlikaLine.Create(this.position.x + 30, this.position.y + 132, this.position.x + 330, this.position.y + 132, new SlikaShapeStyle(hexColor, "none", 6, hexColor, 20))
+            SlikaLine.Create(this.position.x + 30, this.position.y + 132, this.position.x + 330, this.position.y + 132, new SlikaShapeStyle(hexColor, 1, "none", 1, 6, hexColor, 20))
         );
         this._strokes.push(
-            SlikaPath.CreateParenthesis(this.position.x + 345, this.position.x + 360, this.position.y + 3, 126, true, new SlikaShapeStyle(hexColor, "none", 6, hexColor, 20))
+            SlikaPath.CreateParenthesis(this.position.x + 345, this.position.x + 360, this.position.y + 3, 126, true, new SlikaShapeStyle(hexColor, 1, "none", 1, 6, hexColor, 20))
         );
     }
 
@@ -499,7 +585,7 @@ class SlikaButton extends SlikaElement {
     private _updateColor(): void {
         let hexColor = this.color.toHexString();
         this._fills.forEach(f => {
-            f.style.fill = hexColor + "40";
+            f.style.fill = hexColor;
             f.style.highlightColor = hexColor;
         })
         this._strokes.forEach(s => {
@@ -571,7 +657,7 @@ class Slika {
         }
     }
 
-    public add(e: SlikaElement): void {
+    public add(e: SlikaElement): SlikaElement {
         this.elements.push(e);
         if (e.isPickable) {
             this.pickableElements.push(e);
@@ -580,6 +666,7 @@ class Slika {
         if (this.texture) {
             e.scene = this.texture.getScene();
         }
+        return e;
     }
 
     public remove(e: SlikaElement): void {
@@ -609,6 +696,22 @@ class Slika {
             }
         }
         this.setAimedElement(undefined);
+    }
+
+    public onPointerDown(x: number, y: number): void {
+        if (this.aimedElement) {
+            if (this.aimedElement.onPointerDown) {
+                this.aimedElement.onPointerDown();
+            }
+        }
+    }
+
+    public onPointerUp(x: number, y: number): void {
+        if (this.aimedElement) {
+            if (this.aimedElement.onPointerUp) {
+                this.aimedElement.onPointerUp();
+            }
+        }
     }
 
     public onPointerExit(): void {

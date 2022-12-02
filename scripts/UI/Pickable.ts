@@ -29,8 +29,12 @@ class Pickable extends BABYLON.Mesh {
         this.inputManager.pickableElements.remove(this);
     }
 
-    public onPick(): void {
+    public onPointerDown(): void {
 
+    }
+
+    public onPointerUp(): void {
+        
     }
 
     public onHoverStart(): void {

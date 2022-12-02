@@ -267,6 +267,20 @@ class HoloPanel extends Pickable {
         this.holoTexture.update();
     }
 
+    public onPointerDown(): void {
+        let local = BABYLON.Vector3.TransformCoordinates(this.inputManager.aimedPosition, this.holoMesh.getWorldMatrix().clone().invert());
+        let x = this.posXToXTexture(local.x);
+        let y = this.posYToYTexture(local.y);
+        this.holoSlika.onPointerDown(x, y);
+    }
+
+    public onPointerUp(): void {
+        let local = BABYLON.Vector3.TransformCoordinates(this.inputManager.aimedPosition, this.holoMesh.getWorldMatrix().clone().invert());
+        let x = this.posXToXTexture(local.x);
+        let y = this.posYToYTexture(local.y);
+        this.holoSlika.onPointerUp(x, y);
+    }
+
     public onHoverStart(): void {
         let mat = this.material;
         if (mat instanceof BABYLON.StandardMaterial) {

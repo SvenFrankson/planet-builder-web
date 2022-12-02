@@ -161,11 +161,12 @@ class PlayerArmManager {
     }
 
     public async startActionAnimation(): Promise<void> {
-        console.log('alpha');
-        this._aimingArm.setHandMode(HandMode.PointPress);
-        await this._animateAimingDistance(0.01, 0.3);
-        this._aimingArm.setHandMode(HandMode.Point);
-        await this._animateAimingDistance(0.1, 0.3);
+        if (this._aimingArm) {
+            this._aimingArm.setHandMode(HandMode.PointPress);
+            await this._animateAimingDistance(0.01, 0.3);
+            this._aimingArm.setHandMode(HandMode.Point);
+            await this._animateAimingDistance(0.1, 0.3);
+        }
     }
 
     private _animateAimingDistanceCB: () => void;
