@@ -45,9 +45,16 @@ class SlikaButton extends SlikaElement {
         let hexColor = color.toHexString();
 
         this._text = new SlikaText(
-            label,
-            new SPosition(this.position.x + w * 0.5, this.position.y + h * 0.5 + this.fontSize * 0.3, "center"),
-            new SlikaTextStyle(hexColor, this.fontSize, "XoloniumRegular", color.scale(0.6).toHexString(), 20)
+            {
+                text: label,
+                x: this.position.x + w * 0.5,
+                y: this.position.y + h * 0.5 + this.fontSize * 0.3,
+                textAlign: "center",
+                color: color,
+                fontSize: this.fontSize,
+                fontFamily: "XoloniumRegular",
+                highlightRadius: 20
+            }
         );
 
         let L1 = w / 3;
@@ -152,8 +159,7 @@ class SlikaButton extends SlikaElement {
             s.style.stroke = hexColor;
             s.style.highlightColor = hexColor;
         })
-        this._text.textStyle.color = hexColor;
-        this._text.textStyle.highlightColor = this.color.scale(0.6).toHexString();
+        this._text.prop.color = this.color;
         if (this.slika) {
             this.slika.needRedraw = true;
         }

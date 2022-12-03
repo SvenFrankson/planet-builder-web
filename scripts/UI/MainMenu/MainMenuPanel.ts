@@ -176,12 +176,13 @@ class MainMenuPanel extends HoloPanel {
         this.introPage = new MainMenuPanelIntroPage(this);
         this.introPage.hide(0.2);
         this.graphicsPage = new MainMenuPanelGraphicsPage(this);
-        this.graphicsPage.show(0.2);
+        this.graphicsPage.hide(0.2);
         this.planetPage = new MainMenuPlanetSelectionPage(this);
-        this.planetPage.hide(0.2);
+        this.planetPage.show(0.2);
     }
 
     public animateTitleHeight = AnimationFactory.CreateNumber(
+        this,
         this,
         "titleHeight",
         () => {

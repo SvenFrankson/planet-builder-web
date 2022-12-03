@@ -1,5 +1,3 @@
-
-
 class SlikaPath extends SlikaElement {
 
     public posX: number = 0;

@@ -2,6 +2,10 @@
 
 class Easing {
     
+    public static easeOutCubic(x: number): number {
+        return 1 - Math.pow(1 - x, 3);
+    }
+
     public static easeInOutSine(x: number): number {
         return - (Math.cos(Math.PI * x) - 1) / 2;
     }

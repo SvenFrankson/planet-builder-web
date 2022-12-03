@@ -9,29 +9,49 @@ class MainMenuPanelIntroPage extends MainMenuPanelPage {
     constructor(mainMenuPanel: MainMenuPanel) {
         super(mainMenuPanel);        
 
-        let title1 = this.holoSlika.add(new SlikaText(
-            "Welcome to",
-            new SPosition(500, 110, "center"),
-            new SlikaTextStyle("#8dd6c0", 60, "XoloniumRegular")
-        ));
+        let title1 = this.holoSlika.add(new SlikaText({
+            text: "Welcome to",
+            x: 500,
+            y: 110,
+            textAlign: "center",
+            color: BABYLON.Color3.FromHexString("#8dd6c0"),
+            fontSize: 60,
+            fontFamily: "XoloniumRegular",
+            highlightRadius: 20
+        }));
 
-        let title2 = this.holoSlika.add(new SlikaText(
-            "PLANET BUILDER WEB",
-            new SPosition(500, 180, "center"),
-            new SlikaTextStyle("#8dd6c0", 60, "XoloniumRegular")
-        ));
+        let title2 = this.holoSlika.add(new SlikaText({
+            text: "PLANET BUILDER WEB",
+            x: 500,
+            y: 180,
+            textAlign: "center",
+            color: BABYLON.Color3.FromHexString("#8dd6c0"),
+            fontSize: 60,
+            fontFamily: "XoloniumRegular",
+            highlightRadius: 20
+        }));
 
-        let text1 = this.holoSlika.add(new SlikaText(
-            "a Spherical Voxel",
-            new SPosition(550, 370, "end"),
-            new SlikaTextStyle("#8dd6c0", 50, "XoloniumRegular")
-        ));
+        let text1 = this.holoSlika.add(new SlikaText({
+            text: "a Spherical Voxel",
+            x: 550,
+            y: 370,
+            textAlign: "end",
+            color: BABYLON.Color3.FromHexString("#8dd6c0"),
+            fontSize: 50,
+            fontFamily: "XoloniumRegular",
+            highlightRadius: 20
+        }));
 
-        let text2 = this.holoSlika.add(new SlikaText(
-            "Engine demo",
-            new SPosition(550, 430, "end"),
-            new SlikaTextStyle("#8dd6c0", 50, "XoloniumRegular")
-        ));
+        let text2 = this.holoSlika.add(new SlikaText({
+            text: "Engine demo",
+            x: 550,
+            y: 430,
+            textAlign: "end",
+            color: BABYLON.Color3.FromHexString("#8dd6c0"),
+            fontSize: 50,
+            fontFamily: "XoloniumRegular",
+            highlightRadius: 20
+        }));
 
         let textDecoy = this.holoSlika.add(SlikaPath.CreatePan(100, 620, 460, 3, 30, 0.15, false, true, new SlikaShapeStyle("none", 1, "#8dd6c0", 1, 0, "#8dd6c0", 10)));
 
@@ -54,17 +74,27 @@ class MainMenuPanelIntroPage extends MainMenuPanelPage {
         }
         this.holoSlika.add(buttonPlay);
 
-        let buttonPlayLabel = this.holoSlika.add(new SlikaText(
-            "(press to enter)",
-            new SPosition(500, 740, "center"),
-            new SlikaTextStyle("#8dd6c0", 30, "XoloniumRegular")
-        ));
+        let buttonPlayLabel = this.holoSlika.add(new SlikaText({
+            text: "(press to enter)",
+            x: 500,
+            y: 740,
+            textAlign: "center",
+            color: BABYLON.Color3.FromHexString("#8dd6c0"),
+            fontSize: 30,
+            fontFamily: "XoloniumRegular",
+            highlightRadius: 20
+        }));
 
-        let bottom1 = this.holoSlika.add(new SlikaText(
-            "powered by BabylonJS",
-            new SPosition(850, 850, "end"),
-            new SlikaTextStyle("#8dd6c0", 40, "XoloniumRegular")
-        ));
+        let bottom1 = this.holoSlika.add(new SlikaText({
+            text: "powered by BabylonJS",
+            x: 850,
+            y: 850,
+            textAlign: "end",
+            color: BABYLON.Color3.FromHexString("#8dd6c0"),
+            fontSize: 40,
+            fontFamily: "XoloniumRegular",
+            highlightRadius: 20
+        }));
 
         let babylonIcon = this.holoSlika.add(new SlikaImage(
             new SPosition(910, 835),
@@ -73,11 +103,16 @@ class MainMenuPanelIntroPage extends MainMenuPanelPage {
             "datas/images/babylonjs-holo-logo.png"
         ));
 
-        let bottom2 = this.holoSlika.add(new SlikaText(
-            "made by Sven Frankson",
-            new SPosition(940, 920, "end"),
-            new SlikaTextStyle("#8dd6c0", 40, "XoloniumRegular")
-        ));
+        let bottom2 = this.holoSlika.add(new SlikaText({
+            text: "made by Sven Frankson",
+            x: 940,
+            y: 920,
+            textAlign: "end",
+            color: BABYLON.Color3.FromHexString("#8dd6c0"),
+            fontSize: 40,
+            fontFamily: "XoloniumRegular",
+            highlightRadius: 20
+        }));
 
         this.elements.push(title1, title2, text1, text2, textDecoy, planetImage, buttonPlay, buttonPlayLabel, bottom1, babylonIcon, bottom2);
     }

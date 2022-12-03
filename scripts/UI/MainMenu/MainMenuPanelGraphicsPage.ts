@@ -11,11 +11,16 @@ class MainMenuPanelGraphicsPage extends MainMenuPanelPage {
 
         this.targetTitleHeight = 150;
 
-        let title1 = this.holoSlika.add(new SlikaText(
-            "GRAPHIC SETTINGS",
-            new SPosition(500, 110, "center"),
-            new SlikaTextStyle("#8dd6c0", 60, "XoloniumRegular")
-        ));
+        let title1 = this.holoSlika.add(new SlikaText({
+            text: "GRAPHIC SETTINGS",
+            x: 500,
+            y: 110,
+            textAlign: "center",
+            color: BABYLON.Color3.FromHexString("#8dd6c0"),
+            fontSize: 60,
+            fontFamily: "XoloniumRegular",
+            highlightRadius: 20
+        }));
 
         let buttonHigh = new SlikaButton(
             "HIGH",

@@ -154,7 +154,7 @@ abstract class SlikaElement {
                 this._animateAlphaCB = () => {
                     t += this.scene.getEngine().getDeltaTime() / 1000;
                     if (t < duration) {
-                        let f = t / duration;
+                        let f = Easing.easeOutCubic(t / duration);
                         this.setAlpha(alphaZero * (1 - f) + alphaTarget * f);
                         if (this.slika) {
                             this.slika.needRedraw = true;
@@ -308,49 +308,6 @@ class SlikaCircle extends SlikaElement {
         context.beginPath();
         context.arc(this.pCenter.x * hsf, this.pCenter.y * hsf, this.pArc.r * hsf, this.pArc.a0, this.pArc.a1, true);
         context.stroke();
-    }
-}
-
-class SlikaText extends SlikaElement {
-
-    public text: string;
-    public position: SPosition;
-    public textStyle: SlikaTextStyle;
-
-    constructor(text: string = "", position?: SPosition, textStyle?: SlikaTextStyle) {
-        super();
-        this.text = text;
-        if (position) {
-            this.position = position;
-        }
-        else {
-            this.position = new SPosition();
-        }
-        if (textStyle) {
-            this.textStyle = textStyle;
-        }
-        else {
-            this.textStyle = new SlikaTextStyle();
-        }
-    }
-
-    public redraw(context: BABYLON.ICanvasRenderingContext): void {
-        let hsf = Config.performanceConfiguration.holoScreenFactor;
-
-        let alphaString = Math.floor(this.alpha * 255).toString(16).padStart(2, "0");
-        context.fillStyle = this.textStyle.color + alphaString;
-        context.font = (this.textStyle.size * hsf) + "px " + this.textStyle.fontFamily;
-        context.shadowBlur = this.textStyle.highlightRadius * hsf;
-        context.shadowColor = this.textStyle.color + alphaString;
-        context.lineWidth = this.textStyle.highlightRadius * 0.2 * hsf;
-        let offsetX = 0;
-        if (this.position.textAlign === "center") {
-            offsetX = context.measureText(this.text).width * 0.5 / hsf;
-        }
-        else if (this.position.textAlign === "end") {
-            offsetX = context.measureText(this.text).width / hsf;
-        }
-        context.fillText(this.text, (this.position.x - offsetX) * hsf, this.position.y * hsf);
     }
 }
 
