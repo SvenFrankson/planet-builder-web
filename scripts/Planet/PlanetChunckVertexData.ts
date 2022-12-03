@@ -780,7 +780,7 @@ class PlanetChunckVertexData {
     }
 
     public static async InitializeData(): Promise<boolean> {
-        for (let lod = Config.chunckPartConfiguration.lodMin; lod <= Config.chunckPartConfiguration.lodMax; lod++) {
+        for (let lod = 0; lod <= 2; lod++) {
             await PlanetChunckVertexData._LoadChunckVertexDatasFromFile(lod, Config.chunckPartConfiguration.useXZAxisRotation);
             PlanetChunckVertexData._LoadComposedChunckVertexDatasNoXZAxisRotation(lod, Config.chunckPartConfiguration.useXZAxisRotation);
         }

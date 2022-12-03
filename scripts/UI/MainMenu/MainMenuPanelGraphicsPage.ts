@@ -90,19 +90,19 @@ class MainMenuPanelGraphicsPage extends MainMenuPanelPage {
             buttonHigh.setStatus(SlikaButtonState.Active);
             buttonMedium.setStatus(SlikaButtonState.Enabled);
             buttonLow.setStatus(SlikaButtonState.Enabled);
-            Config.performanceConfiguration.setHoloScreenFactor(1);
+            Config.setConfHighPreset();
         }
         buttonMedium.onPointerUp = () => {
             buttonHigh.setStatus(SlikaButtonState.Enabled);
             buttonMedium.setStatus(SlikaButtonState.Active);
             buttonLow.setStatus(SlikaButtonState.Enabled);
-            Config.performanceConfiguration.setHoloScreenFactor(0.75);
+            Config.setConfMediumPreset();
         }
         buttonLow.onPointerUp = () => {
             buttonHigh.setStatus(SlikaButtonState.Enabled);
             buttonMedium.setStatus(SlikaButtonState.Enabled);
             buttonLow.setStatus(SlikaButtonState.Active);
-            Config.performanceConfiguration.setHoloScreenFactor(0.5);
+            Config.setConfLowPreset();
         }
 
         let buttonBack = new SlikaButton(

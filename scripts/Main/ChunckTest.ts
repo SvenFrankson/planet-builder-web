@@ -33,9 +33,10 @@ class ChunckTest extends Main {
 	public path: BABYLON.Vector3[] = [];
 
     public async initialize(): Promise<void> {
-		Config.chunckPartConfiguration.filename = "round-smooth-chunck-parts";
-		Config.chunckPartConfiguration.lodMin = 0;
-		Config.chunckPartConfiguration.lodMax = 1;
+
+		Config.chunckPartConfiguration.setFilename("round-smooth-chunck-parts", false);
+		Config.chunckPartConfiguration.setLodMin(0, false);
+		Config.chunckPartConfiguration.setLodMax(1);
 		Config.chunckPartConfiguration.useXZAxisRotation = false;
 
 		let lod = 1;

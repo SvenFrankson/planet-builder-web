@@ -230,10 +230,6 @@ class SlikaImage extends SlikaElement {
         let hsf = Config.performanceConfiguration.holoScreenFactor;
         
         if (this._isLoaded) {
-            console.log("dx " + ((this.p.x - this.w * 0.5 * this.size) * hsf));
-            console.log("dy " + ((this.p.y - this.h * 0.5 * this.size) * hsf));
-            console.log("dW " + ((this.w * this.size) * hsf));
-            console.log("dH " + ((this.h * this.size) * hsf));
             context.drawImage(this._img, (this.p.x - this.w * 0.5 * this.size) * hsf, (this.p.y - this.h * 0.5 * this.size) * hsf, (this.w * this.size) * hsf, (this.h * this.size) * hsf);
         }
         else {
