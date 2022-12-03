@@ -128,8 +128,10 @@ class MainMenuPanelGraphicsPage extends MainMenuPanelPage {
             100,
             40
         );
-        buttonNext.onPointerUp = () => {
-            this.mainMenuPanel.introPage.hide(1);
+        buttonNext.onPointerUp = async () => {
+            this.mainMenuPanel.animateTitleHeight(this.mainMenuPanel.planetPage.targetTitleHeight, 1);
+            await this.mainMenuPanel.graphicsPage.hide(0.5);
+            await this.mainMenuPanel.planetPage.show(0.5);
         }
         this.holoSlika.add(buttonNext);
         buttonNext.setStatus(SlikaButtonState.Disabled);
