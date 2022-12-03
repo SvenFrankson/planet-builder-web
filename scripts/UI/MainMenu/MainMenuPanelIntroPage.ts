@@ -6,8 +6,8 @@ class MainMenuPanelIntroPage extends MainMenuPanelPage {
         return this.mainMenuPanel.holoSlika;
     }
 
-    constructor(public mainMenuPanel: MainMenuPanel) {
-        super();        
+    constructor(mainMenuPanel: MainMenuPanel) {
+        super(mainMenuPanel);        
 
         let title1 = this.holoSlika.add(new SlikaText(
             "Welcome to",
@@ -44,12 +44,13 @@ class MainMenuPanelIntroPage extends MainMenuPanelPage {
 
         let buttonPlay = new SlikaButton(
             "Enter",
-            new SPosition(320, 550),
+            new SPosition(275, 550),
             BABYLON.Color3.FromHexString("#8dd6c0")
         );
         buttonPlay.onPointerUp = async () => {
-            await this.mainMenuPanel.introPage.hide(1);
-            await this.mainMenuPanel.graphicsPage.show(1);
+            this.mainMenuPanel.animateTitleHeight(this.mainMenuPanel.graphicsPage.targetTitleHeight, 1);
+            await this.mainMenuPanel.introPage.hide(0.5);
+            await this.mainMenuPanel.graphicsPage.show(0.5);
         }
         this.holoSlika.add(buttonPlay);
 

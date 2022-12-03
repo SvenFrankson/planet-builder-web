@@ -1,8 +1,16 @@
 class MainMenuPanelPage {
 
+    public targetTitleHeight: number = 220;
+
     public elements: SlikaElement[] = [];
 
+    constructor(public mainMenuPanel: MainMenuPanel) {
+
+    }
+
     public async show(duration: number): Promise<void> {
+        this.mainMenuPanel.animateTitleHeight(this.targetTitleHeight, duration);
+
         for (let i = 0; i < this.elements.length - 1; i++) {
             let e = this.elements[i];
             if (e instanceof SlikaImage) {

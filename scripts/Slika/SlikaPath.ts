@@ -2,6 +2,9 @@
 
 class SlikaPath extends SlikaElement {
 
+    public posX: number = 0;
+    public posY: number = 0;
+
     public static CreateParenthesis(
         x0: number,
         x1: number,
@@ -100,9 +103,9 @@ class SlikaPath extends SlikaElement {
             context.shadowColor = this.style.highlightColor;
             context.lineWidth = this.style.width;
             context.beginPath();
-            context.moveTo(this.points.points[0], this.points.points[1]);
+            context.moveTo(this.points.points[0] + this.posX, this.points.points[1] + this.posY);
             for (let i = 1; i < this.points.points.length / 2; i++) {
-                context.lineTo(this.points.points[2 * i], this.points.points[2 * i + 1]);
+                context.lineTo(this.points.points[2 * i] + this.posX, this.points.points[2 * i + 1] + this.posY);
             }
             if (this.points.close) {
                 context.closePath();

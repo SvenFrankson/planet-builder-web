@@ -33,7 +33,10 @@ class SlikaButton extends SlikaElement {
     constructor(
         public label: string,
         public position: SPosition,
-        public color: BABYLON.Color3 = BABYLON.Color3.White()
+        public color: BABYLON.Color3 = BABYLON.Color3.White(),
+        public w = 450,
+        public h = 160,
+        public fontSize: number = 80
     ) {
         super();
         this.isPickable = true;
@@ -41,13 +44,10 @@ class SlikaButton extends SlikaElement {
 
         let hexColor = color.toHexString();
 
-        let w = 360;
-        let h = 160;
-
         this._text = new SlikaText(
             label,
-            new SPosition(this.position.x + w * 0.5, this.position.y + h * 0.5 + 80 * 0.3, "center"),
-            new SlikaTextStyle(hexColor, 80, "XoloniumRegular", color.scale(0.6).toHexString())
+            new SPosition(this.position.x + w * 0.5, this.position.y + h * 0.5 + this.fontSize * 0.3, "center"),
+            new SlikaTextStyle(hexColor, this.fontSize, "XoloniumRegular", color.scale(0.6).toHexString())
         );
 
         let L1 = w / 3;
@@ -119,7 +119,7 @@ class SlikaButton extends SlikaElement {
 
     public setStatus(state: number): void {
         this.state = state;
-        this._animateColor(this.colors[this.state], 0.5);
+        this._animateColor(this.colors[this.state].clone(), 0.5);
     }
 
     public onHoverStart(): void {

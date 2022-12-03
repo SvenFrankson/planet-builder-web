@@ -1,5 +1,9 @@
 class MainMenuPanel extends HoloPanel {
 
+    public titleHeight: number = 220;
+    public titleLine1: SlikaPath;
+    public titleLine2: SlikaPath;
+
     public introPage: MainMenuPanelIntroPage;
     public graphicsPage: MainMenuPanelGraphicsPage;
 
@@ -109,8 +113,12 @@ class MainMenuPanel extends HoloPanel {
             )
         );
         
-        this.holoSlika.add(SlikaPath.CreatePan(M + L2, 1000 - M - L2, 220, 3, 15, 0.30, true, false, new SlikaShapeStyle("none", 1, "#8dd6c0", 1, 0, "#8dd6c0", 10)));
-        this.holoSlika.add(SlikaPath.CreatePan(M + L2, 1000 - M - L2, 250, 3, 15, 0.30, false, true, new SlikaShapeStyle("none", 1, "#8dd6c0", 1, 0, "#8dd6c0", 10)));
+        this.titleLine1 = SlikaPath.CreatePan(M + L2, 1000 - M - L2, 0, 3, 15, 0.30, true, false, new SlikaShapeStyle("none", 1, "#8dd6c0", 1, 0, "#8dd6c0", 10));
+        this.titleLine1.posY = this.titleHeight;
+        this.holoSlika.add(this.titleLine1);
+        this.titleLine2 = SlikaPath.CreatePan(M + L2, 1000 - M - L2, 30, 3, 15, 0.30, false, true, new SlikaShapeStyle("none", 1, "#8dd6c0", 1, 0, "#8dd6c0", 10));
+        this.titleLine2.posY = this.titleHeight;
+        this.holoSlika.add(this.titleLine2);
 
         this.holoSlika.add(
             new SlikaPath(
@@ -165,7 +173,18 @@ class MainMenuPanel extends HoloPanel {
         );
 
         this.introPage = new MainMenuPanelIntroPage(this);
+        this.introPage.hide(0.2);
         this.graphicsPage = new MainMenuPanelGraphicsPage(this);
-        this.graphicsPage.hide(0);
+        this.graphicsPage.show(0.2);
     }
+
+    public animateTitleHeight = AnimationFactory.CreateNumber(
+        this,
+        "titleHeight",
+        () => {
+            this.titleLine1.posY = this.titleHeight;
+            this.titleLine2.posY = this.titleHeight;
+            this.holoSlika.needRedraw = true;
+        }
+    );
 }
