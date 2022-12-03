@@ -125,6 +125,9 @@ abstract class SlikaElement {
     public setAlpha(v: number): void {
         this._alpha = v;
     }
+    public get isVisible(): boolean {
+        return this._alpha != 0;
+    }
 
     public onPointerDown: () => void;
     public onPointerUp: () => void;
@@ -210,6 +213,10 @@ class SlikaImage extends SlikaElement {
     private _img: HTMLImageElement;
     private _isLoaded: boolean = false;
     public size: number = 1;
+
+    public get isVisible(): boolean {
+        return this.size != 0;
+    }
 
     constructor(
         public p: SPosition = new SPosition(),
@@ -475,7 +482,10 @@ class Slika {
     public redraw(): void {
         this.context.clearRect(0, 0, this.width, this.height);
         for (let i = 0; i < this.elements.length; i++) {
-            this.elements.get(i).redraw(this.context);
+            let e = this.elements.get(i);
+            if (e.isVisible) {
+                this.elements.get(i).redraw(this.context);
+            }
         }
     }
 
@@ -486,10 +496,12 @@ class Slika {
     public onPointerMove(x: number, y: number): void {
         for (let i = 0; i < this.pickableElements.length; i++) {
             let e = this.pickableElements.get(i);
-            if (x > e.hitBox.x0 && x < e.hitBox.x1) {
-                if (y > e.hitBox.y0 && y < e.hitBox.y1) {
-                    this.setAimedElement(e);
-                    return;
+            if (e.isVisible) {
+                if (x > e.hitBox.x0 && x < e.hitBox.x1) {
+                    if (y > e.hitBox.y0 && y < e.hitBox.y1) {
+                        this.setAimedElement(e);
+                        return;
+                    }
                 }
             }
         }

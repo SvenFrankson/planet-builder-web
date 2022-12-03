@@ -6,6 +6,7 @@ class MainMenuPanel extends HoloPanel {
 
     public introPage: MainMenuPanelIntroPage;
     public graphicsPage: MainMenuPanelGraphicsPage;
+    public planetPage: MainMenuPlanetSelectionPage;
 
     constructor(public dpi: number, main: Main) {
         super(0.6, 1.5, 1000, 1000, main);
@@ -176,6 +177,8 @@ class MainMenuPanel extends HoloPanel {
         this.introPage.hide(0.2);
         this.graphicsPage = new MainMenuPanelGraphicsPage(this);
         this.graphicsPage.show(0.2);
+        this.planetPage = new MainMenuPlanetSelectionPage(this);
+        this.planetPage.hide(0.2);
     }
 
     public animateTitleHeight = AnimationFactory.CreateNumber(
