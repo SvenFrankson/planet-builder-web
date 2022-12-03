@@ -129,18 +129,14 @@ abstract class SlikaElement {
 
     private _animateAlphaCB: () => void;
     public async animateAlpha(alphaTarget: number, duration: number = 1): Promise<void> {
-        console.log("alpha");
         if (this.scene) {
-            console.log("bravo");
             if (this._animateAlphaCB) {
                 this.scene.onBeforeRenderObservable.removeCallback(this._animateAlphaCB);
             }
             return new Promise<void>(resolve => {
-                console.log("charly");
                 let alphaZero = this.alpha;
                 let t = 0;
                 this._animateAlphaCB = () => {
-                    console.log("delta");
                     t += this.scene.getEngine().getDeltaTime() / 1000;
                     if (t < duration) {
                         let f = t / duration;
@@ -253,17 +249,13 @@ class SlikaPath extends SlikaElement {
                 context.fillStyle = "none";
             }
             else {
-                let s = this.style.fill + this.style.fillAlphaString;
-                if (s.length > 9) {
-                    console.warn("oups");
-                }
-                context.fillStyle = this.style.fill + this.style.fillAlphaString;
+                context.fillStyle = this.style.fill + Math.floor((this.style.fillAlpha * this.alpha) * 255).toString(16).padStart(2, "0");
             }
             if (this.style.stroke === "none") {
                 context.strokeStyle = "none";
             }
             else {
-                context.strokeStyle = this.style.stroke + this.style.strokeAlphaString;
+                context.strokeStyle = this.style.stroke + Math.floor((this.style.strokeAlpha * this.alpha) * 255).toString(16).padStart(2, "0");
             }
             context.shadowBlur = this.style.highlightRadius;
             context.shadowColor = this.style.highlightColor;
@@ -318,6 +310,7 @@ class SlikaImage extends SlikaElement {
 
     private _img: HTMLImageElement;
     private _isLoaded: boolean = false;
+    public size: number = 1;
 
     public static Create(x0: number, y0: number, x1: number, y1: number, style = new SlikaShapeStyle()): SlikaLine {
         return new SlikaLine(
@@ -343,12 +336,45 @@ class SlikaImage extends SlikaElement {
 
     public redraw(context: BABYLON.ICanvasRenderingContext): void {
         if (this._isLoaded) {
-            context.drawImage(this._img, this.p.x, this.p.y, this.w, this.h);
+            context.drawImage(this._img, this.p.x - this.w * 0.5 * this.size, this.p.y - this.h * 0.5 * this.size, this.w * this.size, this.h * this.size);
         }
         else {
             requestAnimationFrame(() => {
                 this.redraw(context);
             })
+        }
+    }
+
+    private _animateSizeCB: () => void;
+    public async animateSize(sizeTarget: number, duration: number = 1): Promise<void> {
+        if (this.scene) {
+            if (this._animateSizeCB) {
+                this.scene.onBeforeRenderObservable.removeCallback(this._animateSizeCB);
+            }
+            return new Promise<void>(resolve => {
+                let sizeZero = this.size;
+                let t = 0;
+                this._animateSizeCB = () => {
+                    t += this.scene.getEngine().getDeltaTime() / 1000;
+                    if (t < duration) {
+                        let f = t / duration;
+                        this.size = sizeZero * (1 - f) + sizeTarget * f;
+                        if (this.slika) {
+                            this.slika.needRedraw = true;
+                        }
+                    }
+                    else {
+                        this.size = sizeTarget;
+                        if (this.slika) {
+                            this.slika.needRedraw = true;
+                        }
+                        this.scene.onBeforeRenderObservable.removeCallback(this._animateSizeCB);
+                        this._animateSizeCB = undefined;
+                        resolve();
+                    }
+                }
+                this.scene.onBeforeRenderObservable.add(this._animateSizeCB);
+            });
         }
     }
 }

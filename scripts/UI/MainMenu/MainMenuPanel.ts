@@ -1,5 +1,8 @@
 class MainMenuPanel extends HoloPanel {
 
+    public introPage: MainMenuPanelPage = new MainMenuPanelPage();
+    public graphic: MainMenuPanelPage = new MainMenuPanelPage();
+
     constructor(public dpi: number, main: Main) {
         super(0.6, 1.5, 1000, 1000, main);
     }
@@ -161,35 +164,34 @@ class MainMenuPanel extends HoloPanel {
             )
         );
 
-        this.holoSlika.add(new SlikaText(
+        let title1 = this.holoSlika.add(new SlikaText(
             "Welcome to",
             new SPosition(500, 110, "center"),
             new SlikaTextStyle("#8dd6c0", 60, "XoloniumRegular")
         ));
 
-        let title = this.holoSlika.add(new SlikaText(
+        let title2 = this.holoSlika.add(new SlikaText(
             "PLANET BUILDER WEB",
             new SPosition(500, 180, "center"),
             new SlikaTextStyle("#8dd6c0", 60, "XoloniumRegular")
         ));
 
-        this.holoSlika.add(new SlikaText(
+        let text1 = this.holoSlika.add(new SlikaText(
             "a Spherical Voxel",
             new SPosition(550, 370, "end"),
             new SlikaTextStyle("#8dd6c0", 50, "XoloniumRegular")
         ));
 
-        this.holoSlika.add(new SlikaText(
+        let text2 = this.holoSlika.add(new SlikaText(
             "Engine demo",
             new SPosition(550, 430, "end"),
             new SlikaTextStyle("#8dd6c0", 50, "XoloniumRegular")
         ));
 
-        
-        this.holoSlika.add(SlikaPath.CreatePan(100, 620, 460, 3, 30, 0.15, false, true, new SlikaShapeStyle("none", 1, "#8dd6c0", 1, 0, "#8dd6c0", 10)));
+        let textDecoy = this.holoSlika.add(SlikaPath.CreatePan(100, 620, 460, 3, 30, 0.15, false, true, new SlikaShapeStyle("none", 1, "#8dd6c0", 1, 0, "#8dd6c0", 10)));
 
-        this.holoSlika.add(new SlikaImage(
-            new SPosition(650, 290),
+        let planetImage = this.holoSlika.add(new SlikaImage(
+            new SPosition(750, 390),
             200, 
             200,
             "datas/images/planet.png"
@@ -201,34 +203,35 @@ class MainMenuPanel extends HoloPanel {
             BABYLON.Color3.FromHexString("#8dd6c0")
         );
         buttonPlay.onPointerUp = () => {
-            console.log("HEY !");
-            title.animateAlpha(0, 3);
+            this.introPage.hide(1);
         }
         this.holoSlika.add(buttonPlay);
 
-        this.holoSlika.add(new SlikaText(
+        let buttonPlayLabel = this.holoSlika.add(new SlikaText(
             "(press to enter)",
             new SPosition(500, 720, "center"),
             new SlikaTextStyle("#8dd6c0", 30, "XoloniumRegular")
         ));
 
-        this.holoSlika.add(new SlikaText(
+        let bottom1 = this.holoSlika.add(new SlikaText(
             "powered by BabylonJS",
             new SPosition(850, 850, "end"),
             new SlikaTextStyle("#8dd6c0", 40, "XoloniumRegular")
         ));
 
-        this.holoSlika.add(new SlikaImage(
-            new SPosition(870, 795),
+        let babylonIcon = this.holoSlika.add(new SlikaImage(
+            new SPosition(910, 835),
             80, 
             80,
             "datas/images/babylonjs-holo-logo.png"
         ));
 
-        this.holoSlika.add(new SlikaText(
+        let bottom2 = this.holoSlika.add(new SlikaText(
             "made by Sven Frankson",
             new SPosition(940, 920, "end"),
             new SlikaTextStyle("#8dd6c0", 40, "XoloniumRegular")
         ));
+
+        this.introPage.elements.push(title1, title2, text1, text2, textDecoy, planetImage, buttonPlay, buttonPlayLabel, bottom1, babylonIcon, bottom2);
     }
 }
