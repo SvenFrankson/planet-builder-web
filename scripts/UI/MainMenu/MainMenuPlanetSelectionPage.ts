@@ -2,40 +2,100 @@
 
 class MainMenuPlanetSelectionPage extends MainMenuPanelPage {
 
+    public currentPlanetIndex: number = 0;
+    public planetNames: string[] = [
+        "M6-Blue",
+        "Horus",
+        "Pavlita-6B",
+        "Echo-V",
+    ]
+    public planetDescriptions: string[] = [
+        "\n- radius : 460m\n\n- type : telluric\n\n- moons : 0",
+        "\n- radius : 210m\n\n- type : mars\n\n- moons : 2",
+        "\n- radius : 82m\n\n- type : telluric\n\n- moons : 1",
+        "\n- radius : 623m\n\n- type : dry\n\n- moons : 0"
+    ]
     public get holoSlika(): Slika {
         return this.mainMenuPanel.holoSlika;
     }
+
+    public planetNameElement: SlikaText;
+    public planetDescElement: SlikaTextBox;
 
     constructor(mainMenuPanel: MainMenuPanel) {
         super(mainMenuPanel);
 
         this.targetTitleHeight = 150;
 
-        let title1 = this.holoSlika.add(new SlikaText(
-            "PLANET SELECTION",
-            new SPosition(500, 110, "center"),
-            new SlikaTextStyle("#8dd6c0", 60, "XoloniumRegular")
-        ));
+        let title1 = this.holoSlika.add(new SlikaText({
+            text: "PLANET SELECTION",
+            x: 500,
+            y: 110,
+            textAlign: "center",
+            color: BABYLON.Color3.FromHexString("#8dd6c0"),
+            fontSize: 60,
+            fontFamily: "XoloniumRegular",
+            highlightRadius: 20
+        }));
 
         let buttonLeft = new SlikaButton(
             "<",
-            new SPosition(80, 440),
+            new SPosition(80, 470),
             BABYLON.Color3.FromHexString("#8dd6c0"),
-            120,
-            120,
+            100,
+            100,
             80
         );
+        buttonLeft.onPointerUp = () => {
+            this.currentPlanetIndex = (this.currentPlanetIndex - 1 + this.planetNames.length) % this.planetNames.length;
+            this.updateCurrentPlanetIndex(true);
+        }
         this.holoSlika.add(buttonLeft);
 
         let buttonRight = new SlikaButton(
             ">",
-            new SPosition(800, 440),
+            new SPosition(820, 470),
             BABYLON.Color3.FromHexString("#8dd6c0"),
-            120,
-            120,
+            100,
+            100,
             80
         );
+        buttonRight.onPointerUp = () => {
+            this.currentPlanetIndex = (this.currentPlanetIndex + 1) % this.planetNames.length;
+            this.updateCurrentPlanetIndex();
+        }
         this.holoSlika.add(buttonRight);
+
+        this.planetNameElement = this.holoSlika.add(new SlikaText({
+            text: "id: " + this.planetNames[this.currentPlanetIndex],
+            x: 500,
+            y: 300,
+            textAlign: "center",
+            color: BABYLON.Color3.FromHexString("#8dd6c0"),
+            fontSize: 60,
+            fontFamily: "XoloniumRegular",
+            highlightRadius: 20
+        })) as SlikaText;
+
+        let planetImage = this.holoSlika.add(new SlikaImage(
+            new SPosition(370, 520),
+            250, 
+            250,
+            "datas/images/planet.png"
+        ));
+
+        this.planetDescElement = new SlikaTextBox({
+            text: this.planetDescriptions[this.currentPlanetIndex],
+            x: 540,
+            y: 370,
+            w: 220,
+            h: 300,
+            color: BABYLON.Color3.FromHexString("#8dd6c0"),
+            fontFamily: "XoloniumRegular",
+            fontSize: 24,
+            highlightRadius: 4
+        });
+        this.holoSlika.add(this.planetDescElement);
 
         let buttonBack = new SlikaButton(
             "BACK",
@@ -67,6 +127,16 @@ class MainMenuPlanetSelectionPage extends MainMenuPanelPage {
         }
         this.holoSlika.add(buttonGo);
 
-        this.elements.push(title1, buttonLeft, buttonRight, buttonBack, buttonGo);
+        this.elements.push(title1, buttonLeft, buttonRight, this.planetNameElement, planetImage, this.planetDescElement, buttonBack, buttonGo);
+    }
+
+    public async updateCurrentPlanetIndex(left?: boolean): Promise<void> {
+        this.planetDescElement.animateAlpha(0, 0.3);
+        await this.planetNameElement.animatePosX(left ? 1500 : 0, 0.3);
+        this.planetDescElement.prop.text = this.planetDescriptions[this.currentPlanetIndex];
+        this.planetNameElement.prop.text = "id: " + this.planetNames[this.currentPlanetIndex];
+        this.planetNameElement.prop.x = left ? - 500 : 1500;
+        this.planetDescElement.animateAlpha(1, 0.3);
+        await this.planetNameElement.animatePosX(500, 0.3);
     }
 }
