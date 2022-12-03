@@ -10,6 +10,7 @@ class HoloPanel extends Pickable {
     public pointerMesh: BABYLON.Mesh;
     public pointerMaterial: HoloPanelMaterial;
     public pointerTexture: BABYLON.DynamicTexture;
+    public pointerSlika: Slika;
     public pointerElement: SlikaPointer;
 
     // 24 lines of 80 characters each
@@ -110,7 +111,6 @@ class HoloPanel extends Pickable {
 
     public instantiate(): void {
         super.instantiate();
-
         let h = this._angle * this._radius / this._w * this._h;
 
         BABYLON.CreateCylinderVertexData({ height: 0.1, diameter: 0.5 }).applyToMesh(this);
@@ -174,21 +174,15 @@ class HoloPanel extends Pickable {
         this.holoMaterial = new HoloPanelMaterial("text-page-material", this.main.scene);
         this.holoMesh.material = this.holoMaterial;
 
-        this.holoTexture = new BABYLON.DynamicTexture("text-page-texture", { width: this._w, height: this._h }, this.main.scene, true);
-        this.holoTexture.hasAlpha = true;
-        this.holoMaterial.holoTexture = this.holoTexture;
-
-        this.holoSlika = new Slika(this._w, this._h, this.holoTexture.getContext(), this.holoTexture);
-
         this.pointerMaterial = new HoloPanelMaterial("text-page-material", this.main.scene);
         this.pointerMaterial.alpha = 0;
         this.pointerMesh.material = this.pointerMaterial;
 
-        this.pointerTexture = new BABYLON.DynamicTexture("text-page-texture", { width: this._w, height: this._h }, this.main.scene, true);
-        this.pointerTexture.hasAlpha = true;
-        this.pointerMaterial.holoTexture = this.pointerTexture;
+        this.refreshHSF();
 
-        let pointerSlika = new Slika(this._w, this._h, this.pointerTexture.getContext(), this.pointerTexture);
+        this.holoSlika = new Slika(this._w, this._h, this.holoTexture.getContext(), this.holoTexture);
+
+        this.pointerSlika = new Slika(this._w, this._h, this.pointerTexture.getContext(), this.pointerTexture);
         this.pointerElement = new SlikaPointer(
             new SPosition(this._w * 0.5, this._h * 0.5),
             new SPosition(30, 13),
@@ -196,7 +190,7 @@ class HoloPanel extends Pickable {
             60,
             BABYLON.Color3.FromHexString("#8dd6c0")
         );
-        pointerSlika.add(this.pointerElement);
+        this.pointerSlika.add(this.pointerElement);
 
         this.lines[0] = "You know what? It is beets. I've crashed into a beet truck. Jaguar shark! So tell me - does it really exist? Is this my espresso machine? Wh-what is-h-how did you get my espresso machine? Hey, take a look at the earthlings. Goodbye! I was part of something special.";
         this.lines[1] = "Yeah, but John, if The Pirates of the Caribbean breaks down, the pirates don’t eat the tourists. Jaguar shark! So tell me - does it really exist? Did he just throw my cat out of the window? You're a very talented young man, with your own clever thoughts and ideas. Do you need a manager?";
@@ -224,6 +218,32 @@ class HoloPanel extends Pickable {
             this.holoMaterial.offset = off;
             this.pointerMaterial.offset = offPointer;
         });
+
+        Config.performanceConfiguration.onHoloScreenFactorChangedCallbacks.push(() => {
+            this.refreshHSF();
+        });
+    }
+
+    public refreshHSF(): void {
+        let hsf = Config.performanceConfiguration.holoScreenFactor;
+
+        this.holoTexture = new BABYLON.DynamicTexture("text-page-texture", { width: this._w * hsf, height: this._h * hsf }, this.main.scene, true);
+        this.holoTexture.hasAlpha = true;
+        this.holoMaterial.holoTexture = this.holoTexture;
+        if (this.holoSlika) {
+            this.holoSlika.texture = this.holoTexture;
+            this.holoSlika.context = this.holoTexture.getContext();
+            this.holoSlika.needRedraw = true;
+        }
+
+        this.pointerTexture = new BABYLON.DynamicTexture("text-page-texture", { width: this._w * hsf, height: this._h * hsf }, this.main.scene, true);
+        this.pointerTexture.hasAlpha = true;
+        this.pointerMaterial.holoTexture = this.pointerTexture;
+        if (this.pointerSlika) {
+            this.pointerSlika.texture = this.pointerTexture;
+            this.pointerSlika.context = this.pointerTexture.getContext();
+            this.pointerSlika.needRedraw = true;
+        }
     }
 
     public async open(): Promise<void> {

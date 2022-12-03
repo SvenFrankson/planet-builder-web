@@ -26,9 +26,22 @@ class MainMenuPanelGraphicsPage extends MainMenuPanelPage {
             50
         );
         buttonHigh.onPointerUp = () => {
-            this.mainMenuPanel.introPage.hide(1);
+            Config.performanceConfiguration.setHoloScreenFactor(1);
         }
         this.holoSlika.add(buttonHigh);
+
+        let buttonHighExplain = new SlikaTextBox({
+            text: "- Large planets and extended render distance.\n- Select if you're playing on a gaming PC or a high-end mobile phone.",
+            x: 530,
+            y: 265,
+            w: 400,
+            h: 90,
+            color: BABYLON.Color3.FromHexString("#8dd6c0"),
+            fontFamily: "XoloniumRegular",
+            fontSize: 20,
+            highlightRadius: 4
+        })
+        this.holoSlika.add(buttonHighExplain);
 
         let buttonMedium = new SlikaButton(
             "MEDIUM",
@@ -39,9 +52,22 @@ class MainMenuPanelGraphicsPage extends MainMenuPanelPage {
             50
         );
         buttonMedium.onPointerUp = () => {
-            this.mainMenuPanel.introPage.hide(1);
+            Config.performanceConfiguration.setHoloScreenFactor(0.7);
         }
         this.holoSlika.add(buttonMedium);
+
+        let buttonMediumExplain = new SlikaTextBox({
+            text: "- Medium planets and normal render distance. ",
+            x: 530,
+            y: 450,
+            w: 400,
+            h: 50,
+            color: BABYLON.Color3.FromHexString("#8dd6c0"),
+            fontFamily: "XoloniumRegular",
+            fontSize: 20,
+            highlightRadius: 4
+        })
+        this.holoSlika.add(buttonMediumExplain);
 
         let buttonLow = new SlikaButton(
             "LOW",
@@ -52,9 +78,22 @@ class MainMenuPanelGraphicsPage extends MainMenuPanelPage {
             50
         );
         buttonLow.onPointerUp = () => {
-            this.mainMenuPanel.introPage.hide(1);
+            Config.performanceConfiguration.setHoloScreenFactor(0.4);
         }
         this.holoSlika.add(buttonLow);
+
+        let buttonLowExplain = new SlikaTextBox({
+            text: "- Small planets and reduced render distance.\n- Select if you're playing on a mobile phone.",
+            x: 530,
+            y: 605,
+            w: 400,
+            h: 90,
+            color: BABYLON.Color3.FromHexString("#8dd6c0"),
+            fontFamily: "XoloniumRegular",
+            fontSize: 20,
+            highlightRadius: 4
+        })
+        this.holoSlika.add(buttonLowExplain);
 
         let buttonBack = new SlikaButton(
             "BACK",
@@ -85,6 +124,6 @@ class MainMenuPanelGraphicsPage extends MainMenuPanelPage {
         this.holoSlika.add(buttonNext);
         buttonNext.setStatus(SlikaButtonState.Disabled);
 
-        this.elements.push(title1, buttonHigh, buttonMedium, buttonLow, buttonBack, buttonNext);
+        this.elements.push(title1, buttonHigh, buttonHighExplain, buttonMedium, buttonMediumExplain, buttonLow, buttonLowExplain, buttonBack, buttonNext);
     }
 }

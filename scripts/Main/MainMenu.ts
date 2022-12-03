@@ -37,6 +37,7 @@ class MainMenu extends Main {
 			
 			let mainMenuPlanet: Planet = PlanetGeneratorFactory.Create(PlanetGeneratorType.Flat, 1, this.scene);
 			mainMenuPlanet.initialize();
+			this.planets = [mainMenuPlanet];
 
 			let w = 600;
 			let h = 1200;
@@ -160,6 +161,9 @@ class MainMenu extends Main {
 			this.player = new Player(new BABYLON.Vector3(0, 1.7 + this._testAltitude, - 0.8), mainMenuPlanet, this);
 			this.cameraManager.player = this.player;
 			this.cameraManager.setMode(CameraMode.Player);
+            
+            let debugPlanetPerf = new DebugPlanetPerf(this);
+            debugPlanetPerf.show();
 
 			PlanetChunckVertexData.InitializeData().then(
 				() => {

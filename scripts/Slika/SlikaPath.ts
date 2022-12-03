@@ -86,6 +86,8 @@ class SlikaPath extends SlikaElement {
     }
 
     public redraw(context: BABYLON.ICanvasRenderingContext): void {
+        let hsf = Config.performanceConfiguration.holoScreenFactor;
+
         if (this.points.points.length > 0) {
             if (this.style.fill === "none") {
                 context.fillStyle = "none";
@@ -99,13 +101,13 @@ class SlikaPath extends SlikaElement {
             else {
                 context.strokeStyle = this.style.stroke + Math.floor((this.style.strokeAlpha * this.alpha) * 255).toString(16).padStart(2, "0");
             }
-            context.shadowBlur = this.style.highlightRadius;
+            context.shadowBlur = this.style.highlightRadius * hsf;
             context.shadowColor = this.style.highlightColor;
-            context.lineWidth = this.style.width;
+            context.lineWidth = this.style.width * hsf;
             context.beginPath();
-            context.moveTo(this.points.points[0] + this.posX, this.points.points[1] + this.posY);
+            context.moveTo((this.points.points[0] + this.posX) * hsf, (this.points.points[1] + this.posY) * hsf);
             for (let i = 1; i < this.points.points.length / 2; i++) {
-                context.lineTo(this.points.points[2 * i] + this.posX, this.points.points[2 * i + 1] + this.posY);
+                context.lineTo((this.points.points[2 * i] + this.posX) * hsf, (this.points.points[2 * i + 1] + this.posY) * hsf);
             }
             if (this.points.close) {
                 context.closePath();

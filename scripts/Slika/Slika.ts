@@ -48,6 +48,11 @@ class SPoints {
     ) {
 
     }
+
+    public scaleInPlace(s: number): SPoints {
+        this.points = this.points.map(p => { return p * s; });
+        return this;
+    }
 }
 
 class SlikaShapeStyle {
@@ -187,13 +192,15 @@ class SlikaLine extends SlikaElement {
     }
 
     public redraw(context: BABYLON.ICanvasRenderingContext): void {
+        let hsf = Config.performanceConfiguration.holoScreenFactor;
+
         context.strokeStyle = this.style.stroke + Math.floor((this.style.strokeAlpha * this.alpha) * 255).toString(16).padStart(2, "0");
-        context.shadowBlur = this.style.highlightRadius;
+        context.shadowBlur = this.style.highlightRadius * hsf;
         context.shadowColor = this.style.highlightColor;
-        context.lineWidth = this.style.width;
+        context.lineWidth = this.style.width * hsf;
         context.beginPath();
-        context.moveTo(this.pStart.x, this.pStart.y);
-        context.lineTo(this.pEnd.x, this.pEnd.y);
+        context.moveTo(this.pStart.x * hsf, this.pStart.y * hsf);
+        context.lineTo(this.pEnd.x * hsf, this.pEnd.y * hsf);
         context.stroke();
     }
 }
@@ -204,14 +211,6 @@ class SlikaImage extends SlikaElement {
     private _isLoaded: boolean = false;
     public size: number = 1;
 
-    public static Create(x0: number, y0: number, x1: number, y1: number, style = new SlikaShapeStyle()): SlikaLine {
-        return new SlikaLine(
-            new SPosition(x0, y0),
-            new SPosition(x1, y1),
-            style
-        );
-    }
-
     constructor(
         public p: SPosition = new SPosition(),
         public w: number,
@@ -221,14 +220,21 @@ class SlikaImage extends SlikaElement {
         super();
         this._img = new Image();
         this._img.src = url;
+        console.log(url);
         this._img.onload = () => {
             this._isLoaded = true;
         };
     }
 
     public redraw(context: BABYLON.ICanvasRenderingContext): void {
+        let hsf = Config.performanceConfiguration.holoScreenFactor;
+        
         if (this._isLoaded) {
-            context.drawImage(this._img, this.p.x - this.w * 0.5 * this.size, this.p.y - this.h * 0.5 * this.size, this.w * this.size, this.h * this.size);
+            console.log("dx " + ((this.p.x - this.w * 0.5 * this.size) * hsf));
+            console.log("dy " + ((this.p.y - this.h * 0.5 * this.size) * hsf));
+            console.log("dW " + ((this.w * this.size) * hsf));
+            console.log("dH " + ((this.h * this.size) * hsf));
+            context.drawImage(this._img, (this.p.x - this.w * 0.5 * this.size) * hsf, (this.p.y - this.h * 0.5 * this.size) * hsf, (this.w * this.size) * hsf, (this.h * this.size) * hsf);
         }
         else {
             requestAnimationFrame(() => {
@@ -290,12 +296,14 @@ class SlikaCircle extends SlikaElement {
     }
 
     public redraw(context: BABYLON.ICanvasRenderingContext): void {
+        let hsf = Config.performanceConfiguration.holoScreenFactor;
+
         context.strokeStyle = this.style.stroke + this.style.strokeAlphaString;
-        context.shadowBlur = this.style.highlightRadius;
+        context.shadowBlur = this.style.highlightRadius * hsf;
         context.shadowColor = this.style.highlightColor;
-        context.lineWidth = this.style.width;
+        context.lineWidth = this.style.width * hsf;
         context.beginPath();
-        context.arc(this.pCenter.x, this.pCenter.y, this.pArc.r, this.pArc.a0, this.pArc.a1, true);
+        context.arc(this.pCenter.x * hsf, this.pCenter.y * hsf, this.pArc.r * hsf, this.pArc.a0, this.pArc.a1, true);
         context.stroke();
     }
 }
@@ -324,21 +332,22 @@ class SlikaText extends SlikaElement {
     }
 
     public redraw(context: BABYLON.ICanvasRenderingContext): void {
+        let hsf = Config.performanceConfiguration.holoScreenFactor;
+
         let alphaString = Math.floor(this.alpha * 255).toString(16).padStart(2, "0");
         context.fillStyle = this.textStyle.color + alphaString;
-        context.font = this.textStyle.size + "px " + this.textStyle.fontFamily;
-        context.shadowBlur = this.textStyle.highlightRadius;
-        context.shadowColor = this.textStyle.highlightColor + alphaString;;
-        context.strokeStyle = this.textStyle.highlightColor + alphaString;;
-        context.lineWidth = this.textStyle.highlightRadius * 0.2;
+        context.font = (this.textStyle.size * hsf) + "px " + this.textStyle.fontFamily;
+        context.shadowBlur = this.textStyle.highlightRadius * hsf;
+        context.shadowColor = this.textStyle.color + alphaString;
+        context.lineWidth = this.textStyle.highlightRadius * 0.2 * hsf;
         let offsetX = 0;
         if (this.position.textAlign === "center") {
-            offsetX = context.measureText(this.text).width * 0.5;
+            offsetX = context.measureText(this.text).width * 0.5 / hsf;
         }
         else if (this.position.textAlign === "end") {
-            offsetX = context.measureText(this.text).width;
+            offsetX = context.measureText(this.text).width / hsf;
         }
-        context.fillText(this.text, this.position.x - offsetX, this.position.y);
+        context.fillText(this.text, (this.position.x - offsetX) * hsf, this.position.y * hsf);
     }
 }
 
@@ -432,8 +441,8 @@ class Slika {
     constructor(
         private width: number,
         private height: number,
-        private context: BABYLON.ICanvasRenderingContext,
-        private texture?: BABYLON.DynamicTexture
+        public context: BABYLON.ICanvasRenderingContext,
+        public texture: BABYLON.DynamicTexture
     ) {
         if (texture) {
             this.texture.getScene().onBeforeRenderObservable.add(this._update);

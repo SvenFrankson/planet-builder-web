@@ -47,7 +47,7 @@ class SlikaButton extends SlikaElement {
         this._text = new SlikaText(
             label,
             new SPosition(this.position.x + w * 0.5, this.position.y + h * 0.5 + this.fontSize * 0.3, "center"),
-            new SlikaTextStyle(hexColor, this.fontSize, "XoloniumRegular", color.scale(0.6).toHexString())
+            new SlikaTextStyle(hexColor, this.fontSize, "XoloniumRegular", color.scale(0.6).toHexString(), 20)
         );
 
         let L1 = w / 3;

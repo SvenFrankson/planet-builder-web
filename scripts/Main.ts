@@ -8,6 +8,8 @@ class Main {
 	public inputManager: InputManager;
 	public cameraManager: CameraManager;
 
+	public planets: Planet[] = [];
+
     constructor(canvasElement: string) {
 		this.canvas = document.getElementById(canvasElement) as HTMLCanvasElement;
         this.canvas.requestPointerLock = this.canvas.requestPointerLock || this.canvas.msRequestPointerLock || this.canvas.mozRequestPointerLock || this.canvas.webkitRequestPointerLock;

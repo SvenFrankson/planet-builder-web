@@ -19,8 +19,6 @@ class Game extends Main {
 	public actionManager: PlayerActionManager;
 	public planetSky: PlanetSky;
 
-	public planets: Planet[] = [];
-
 	public inputMode: InputMode = InputMode.Unknown;
 	public headPad: PlayerInputHeadPad;
 	public movePad: PlayerInputMovePad;

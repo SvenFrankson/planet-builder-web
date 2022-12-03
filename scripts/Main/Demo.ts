@@ -8,8 +8,6 @@ class Demo extends Main {
 	public planetSky: PlanetSky;
 	public player: Player;
 
-	public planets: Planet[] = [];
-
 	public inputMode: InputMode = InputMode.Unknown;
 
 	constructor(canvasElement: string) {

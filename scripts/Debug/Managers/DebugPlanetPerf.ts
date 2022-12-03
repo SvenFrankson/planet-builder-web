@@ -5,6 +5,7 @@ class DebugPlanetPerf {
         return this._initialized;
     }
 
+    public debugContainer: HTMLDivElement;
     public container: HTMLDivElement;
 
     private _frameRate: DebugDisplayFrameValue;
@@ -16,20 +17,70 @@ class DebugPlanetPerf {
         return this.game.scene;
     }
 
-    constructor(public game: Game | Demo, private _showLayer: boolean = false) {
+    constructor(public game: Main, private _showLayer: boolean = false) {
 
     }
 
     public initialize(): void {
+        this.debugContainer = document.querySelector("#meshes-info");
+        if (!this.debugContainer) {
+            this.debugContainer = document.createElement("div");
+            this.debugContainer.id = "meshes-info";
+            document.body.appendChild(this.debugContainer);
+        }
+
         this.container = document.querySelector("#debug-planet-perf");
+        if (!this.container) {
+            this.container = document.createElement("div");
+            this.container.id = "debug-planet-perf";
+            this.container.classList.add("debug", "hidden");
+            this.debugContainer.appendChild(this.container);
+        }
         
-        this._frameRate = document.querySelector("#frame-rate") as DebugDisplayFrameValue;
+        let frameRateId = "#frame-rate";
+        this._frameRate = document.querySelector(frameRateId) as DebugDisplayFrameValue;
+        if (!this._frameRate) {
+            this._frameRate = document.createElement("debug-display-frame-value") as DebugDisplayFrameValue;
+            this._frameRate.id = frameRateId;
+            this._frameRate.setAttribute("label", "Frame Rate fps");
+            this._frameRate.setAttribute("min", "0");
+            this._frameRate.setAttribute("max", "60");
+            this.container.appendChild(this._frameRate);
+        }
+
+        let chunckSortId = "#chunck-sort";
         this._chunckSort = document.querySelector("#chunck-sort") as DebugDisplayFrameValue;
-        this._drawRequestCount = document.querySelector("#draw-request-count") as DebugDisplayFrameValue;
+        if (!this._chunckSort) {
+            this._chunckSort = document.createElement("debug-display-frame-value") as DebugDisplayFrameValue;
+            this._chunckSort.id = chunckSortId;
+            this._chunckSort.setAttribute("label", "Chuncks Sort %");
+            this._chunckSort.setAttribute("min", "95");
+            this._chunckSort.setAttribute("max", "100");
+            this.container.appendChild(this._chunckSort);
+        }
+        
+        let drawRequestId = "#draw-request-count";
+        this._drawRequestCount = document.querySelector(drawRequestId) as DebugDisplayFrameValue;
+        if (!this._drawRequestCount) {
+            this._drawRequestCount = document.createElement("debug-display-frame-value") as DebugDisplayFrameValue;
+            this._drawRequestCount.id = drawRequestId;
+            this._drawRequestCount.setAttribute("label", "Draw Requests");
+            this._drawRequestCount.setAttribute("min", "0");
+            this._drawRequestCount.setAttribute("max", "100");
+            this.container.appendChild(this._drawRequestCount);
+        }
+
         if (this._showLayer) {
             this._layerCounts = [];
             for (let i = 0; i < 6; i++) {
-                this._layerCounts[i] = document.querySelector("#layer-" + i + "-count") as DebugDisplayTextValue;
+                let id = "#layer-" + i + "-count";
+                this._layerCounts[i] = document.querySelector(id) as DebugDisplayTextValue;
+                if (!this._layerCounts[i]) {
+                    this._layerCounts[i] = document.createElement("debug-display-text-value") as DebugDisplayTextValue;
+                    this._layerCounts[i].id = id;
+                    this._layerCounts[i].setAttribute("label", "Layer " + i);
+                    this.container.appendChild(this._layerCounts[i]);
+                }
             }
         }
 

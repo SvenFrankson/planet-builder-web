@@ -1,3 +1,5 @@
+/// <reference path="./UniqueList.ts"/>
+
 class ConfigurationChunckPart {
 
     public dir: string = "datas/meshes";
@@ -12,6 +14,20 @@ class ConfigurationPerformance {
     public lodRanges: number[] = [20, 100, 150, 200, 250, 300, 350, 400];
     public lodCount: number = 2;
     public seaLevelMeshVertexCount: number = 16;
+    private _holoScreenFactor: number = 0.4;
+    public get holoScreenFactor(): number {
+        return this._holoScreenFactor;
+    }
+    public setHoloScreenFactor(v: number, ignoreCallback?: boolean): void {
+        this._holoScreenFactor = v;
+        if (!ignoreCallback) {
+            this.onHoloScreenFactorChangedCallbacks.forEach(c => {
+                c();
+            });
+        }
+    }
+
+    public onHoloScreenFactorChangedCallbacks: UniqueList<() => void> = new UniqueList<() => void>();
 }
 
 class ConfigurationControl {
