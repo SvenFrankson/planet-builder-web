@@ -28,7 +28,10 @@ class PlanetGeneratorFlat extends PlanetGenerator {
             for (let j: number = 0; j < PlanetTools.CHUNCKSIZE; j++) {
                 refData[i - chunck.firstI][j - chunck.firstJ] = [];
 
-                let altitude = this.planet.seaLevel;
+                let di = (i - PlanetTools.CHUNCKSIZE * 0.5) / (PlanetTools.CHUNCKSIZE * 0.5);
+                let dj = (j - PlanetTools.CHUNCKSIZE * 0.5) / (PlanetTools.CHUNCKSIZE * 0.5);
+                let s = 3 * (1 - Math.floor(di * di + dj * dj));
+                let altitude = this.planet.seaLevel + Math.floor(s * Math.random());
                 
                 for (let k: number = 0; k < PlanetTools.CHUNCKSIZE; k++) {
                     let globalK = k + chunck.kPos * PlanetTools.CHUNCKSIZE;
