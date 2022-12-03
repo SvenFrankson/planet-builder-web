@@ -25,9 +25,11 @@ class MainMenu extends Main {
 		await super.initialize();
 
 		Config.chunckPartConfiguration.setFilename("round-smooth-chunck-parts", false);
-		Config.chunckPartConfiguration.setLodMin(0, false);
-		Config.chunckPartConfiguration.setLodMax(1);
+		Config.chunckPartConfiguration.setLodMin(0);
+		Config.chunckPartConfiguration.setLodMax(2);
 		Config.chunckPartConfiguration.useXZAxisRotation = false;
+
+		Config.setConfMediumPreset();
 
 		return new Promise<void>(resolve => {
 
@@ -35,9 +37,11 @@ class MainMenu extends Main {
 			//testGrab.position = new BABYLON.Vector3(- 0.3, this._testAltitude + 1.1, - 0.1);
 			//testGrab.instantiate();
 			
-			let mainMenuPlanet: Planet = PlanetGeneratorFactory.Create(PlanetGeneratorType.Flat, 1, this.scene);
+			let mainMenuPlanet: Planet = PlanetGeneratorFactory.Create(BABYLON.Vector3.Zero(), PlanetGeneratorType.Flat, 1, this.scene);
 			mainMenuPlanet.initialize();
 			this.planets = [mainMenuPlanet];
+
+			this.generatePlanets();
 
 			let mainPanel = new MainMenuPanel(100, this);
 			mainPanel.instantiate();
@@ -52,12 +56,14 @@ class MainMenu extends Main {
 			this.cameraManager.player = this.player;
 			this.cameraManager.setMode(CameraMode.Player);
             
-            let debugPlanetPerf = new DebugPlanetPerf(this);
+            let debugPlanetPerf = new DebugPlanetPerf(this, true);
             debugPlanetPerf.show();
 
 			PlanetChunckVertexData.InitializeData().then(
 				() => {
-					mainMenuPlanet.register();
+					this.planets.forEach(p => {
+						p.register();
+					})
 					this.player.initialize();
 					this.player.registerControl();
 					//moon.register();
@@ -72,5 +78,18 @@ class MainMenu extends Main {
 
 	public update(): void {
 		
+	}
+
+	public generatePlanets(): void {
+		let orbitCount = 3;
+		let orbitRadius = 200;
+		let alpha = 0;
+		for (let i = 0; i < orbitCount; i++) {
+			alpha += Math.PI * 0.5 + Math.PI * Math.random();
+			let kPosMax = Math.floor(Math.random() * 8);
+			let planet: Planet = PlanetGeneratorFactory.Create(new BABYLON.Vector3(Math.cos(alpha) * orbitRadius * (i + 1), 0, Math.sin(alpha) * orbitRadius * (i + 1)), PlanetGeneratorType.Earth, kPosMax, this.scene);
+			planet.initialize();
+			this.planets.push(planet);
+		}
 	}
 }

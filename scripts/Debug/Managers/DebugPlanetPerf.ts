@@ -11,6 +11,7 @@ class DebugPlanetPerf {
     private _frameRate: DebugDisplayFrameValue;
     private _chunckSort: DebugDisplayFrameValue;
     private _drawRequestCount: DebugDisplayFrameValue;
+    private _meshesCount: DebugDisplayTextValue;
     private _layerCounts: DebugDisplayTextValue[];
 
     public get scene(): BABYLON.Scene {
@@ -54,7 +55,7 @@ class DebugPlanetPerf {
             this._chunckSort = document.createElement("debug-display-frame-value") as DebugDisplayFrameValue;
             this._chunckSort.id = chunckSortId;
             this._chunckSort.setAttribute("label", "Chuncks Sort %");
-            this._chunckSort.setAttribute("min", "95");
+            this._chunckSort.setAttribute("min", "0");
             this._chunckSort.setAttribute("max", "100");
             this.container.appendChild(this._chunckSort);
         }
@@ -68,6 +69,15 @@ class DebugPlanetPerf {
             this._drawRequestCount.setAttribute("min", "0");
             this._drawRequestCount.setAttribute("max", "100");
             this.container.appendChild(this._drawRequestCount);
+        }
+
+        let meshesCountId = "#meshes-count";
+        this._meshesCount = document.querySelector(meshesCountId) as DebugDisplayTextValue;
+        if (!this._meshesCount) {
+            this._meshesCount = document.createElement("debug-display-text-value") as DebugDisplayTextValue;
+            this._meshesCount.id = meshesCountId;
+            this._meshesCount.setAttribute("label", "Meshes Count");
+            this.container.appendChild(this._meshesCount);
         }
 
         if (this._showLayer) {
@@ -102,6 +112,8 @@ class DebugPlanetPerf {
             needRedrawCount += this.game.planets[i].chunckManager.needRedrawCount;
         }
         this._drawRequestCount.addValue(needRedrawCount);
+
+        this._meshesCount.setText(this.game.scene.meshes.length.toFixed(0));
 
         if (this._showLayer) {
             for (let i = 0; i < 6; i++) {

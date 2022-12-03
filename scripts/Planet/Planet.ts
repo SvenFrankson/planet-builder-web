@@ -19,12 +19,15 @@ class Planet extends BABYLON.Mesh {
 
     constructor(
         name: string,
+        position: BABYLON.Vector3,
         public kPosMax: number,
         public seaLevelRatio: number,
         public scene: BABYLON.Scene,
         createGenerator: (planet: Planet) => PlanetGenerator
     ) {
         super(name, scene);
+        this.position.copyFrom(position);
+        this.freezeWorldMatrix();
         Planet.DEBUG_INSTANCE = this;
         
         this.kPosMax = kPosMax;
@@ -48,7 +51,7 @@ class Planet extends BABYLON.Mesh {
         this.sides[Side.Top] = new PlanetSide(Side.Top, this);
         this.sides[Side.Bottom] = new PlanetSide(Side.Bottom, this);
 
-        this.chunckManager = new PlanetChunckManager(this._scene)
+        this.chunckManager = new PlanetChunckManager(this._scene);
     }
 
     public initialize(): void {

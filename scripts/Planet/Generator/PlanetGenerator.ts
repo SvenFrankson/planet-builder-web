@@ -6,10 +6,11 @@ enum PlanetGeneratorType {
 
 class PlanetGeneratorFactory {
 
-    public static Create(type: PlanetGeneratorType, kPosMax: number, scene: BABYLON.Scene): Planet {
+    public static Create(position: BABYLON.Vector3, type: PlanetGeneratorType, kPosMax: number, scene: BABYLON.Scene): Planet {
         let name = "paulita-" + Math.floor(Math.random() * 1000).toString(16);
         let planet = new Planet(
             name,
+            position,
             kPosMax,
             0.65,
             scene, 
