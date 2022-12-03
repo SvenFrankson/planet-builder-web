@@ -25,9 +25,6 @@ class MainMenuPanelGraphicsPage extends MainMenuPanelPage {
             120,
             50
         );
-        buttonHigh.onPointerUp = () => {
-            Config.performanceConfiguration.setHoloScreenFactor(1);
-        }
         this.holoSlika.add(buttonHigh);
 
         let buttonHighExplain = new SlikaTextBox({
@@ -51,9 +48,6 @@ class MainMenuPanelGraphicsPage extends MainMenuPanelPage {
             120,
             50
         );
-        buttonMedium.onPointerUp = () => {
-            Config.performanceConfiguration.setHoloScreenFactor(0.7);
-        }
         this.holoSlika.add(buttonMedium);
 
         let buttonMediumExplain = new SlikaTextBox({
@@ -77,9 +71,6 @@ class MainMenuPanelGraphicsPage extends MainMenuPanelPage {
             120,
             50
         );
-        buttonLow.onPointerUp = () => {
-            Config.performanceConfiguration.setHoloScreenFactor(0.4);
-        }
         this.holoSlika.add(buttonLow);
 
         let buttonLowExplain = new SlikaTextBox({
@@ -94,6 +85,25 @@ class MainMenuPanelGraphicsPage extends MainMenuPanelPage {
             highlightRadius: 4
         })
         this.holoSlika.add(buttonLowExplain);
+        
+        buttonHigh.onPointerUp = () => {
+            buttonHigh.setStatus(SlikaButtonState.Active);
+            buttonMedium.setStatus(SlikaButtonState.Enabled);
+            buttonLow.setStatus(SlikaButtonState.Enabled);
+            Config.performanceConfiguration.setHoloScreenFactor(1);
+        }
+        buttonMedium.onPointerUp = () => {
+            buttonHigh.setStatus(SlikaButtonState.Enabled);
+            buttonMedium.setStatus(SlikaButtonState.Active);
+            buttonLow.setStatus(SlikaButtonState.Enabled);
+            Config.performanceConfiguration.setHoloScreenFactor(0.75);
+        }
+        buttonLow.onPointerUp = () => {
+            buttonHigh.setStatus(SlikaButtonState.Enabled);
+            buttonMedium.setStatus(SlikaButtonState.Enabled);
+            buttonLow.setStatus(SlikaButtonState.Active);
+            Config.performanceConfiguration.setHoloScreenFactor(0.5);
+        }
 
         let buttonBack = new SlikaButton(
             "BACK",
