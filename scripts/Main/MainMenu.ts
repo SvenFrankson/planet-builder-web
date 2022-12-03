@@ -54,7 +54,7 @@ class MainMenu extends Main {
 			
 			this.player = new Player(new BABYLON.Vector3(0, 1.7 + this._testAltitude, - 0.8), mainMenuPlanet, this);
 			this.cameraManager.player = this.player;
-			this.cameraManager.setMode(CameraMode.Player);
+			this.cameraManager.setMode(CameraMode.Sky);
             
             let debugPlanetPerf = new DebugPlanetPerf(this, true);
             debugPlanetPerf.show();
@@ -81,12 +81,12 @@ class MainMenu extends Main {
 	}
 
 	public generatePlanets(): void {
-		let orbitCount = 3;
+		let orbitCount = 5;
 		let orbitRadius = 200;
 		let alpha = 0;
 		for (let i = 0; i < orbitCount; i++) {
 			alpha += Math.PI * 0.5 + Math.PI * Math.random();
-			let kPosMax = Math.floor(Math.random() * 8);
+			let kPosMax = Math.floor(3 + 5 * Math.random());
 			let planet: Planet = PlanetGeneratorFactory.Create(new BABYLON.Vector3(Math.cos(alpha) * orbitRadius * (i + 1), 0, Math.sin(alpha) * orbitRadius * (i + 1)), PlanetGeneratorType.Earth, kPosMax, this.scene);
 			planet.initialize();
 			this.planets.push(planet);

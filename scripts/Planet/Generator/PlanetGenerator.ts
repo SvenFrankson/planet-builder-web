@@ -6,8 +6,11 @@ enum PlanetGeneratorType {
 
 class PlanetGeneratorFactory {
 
+    public static Counter: number = 0;
+
     public static Create(position: BABYLON.Vector3, type: PlanetGeneratorType, kPosMax: number, scene: BABYLON.Scene): Planet {
-        let name = "paulita-" + Math.floor(Math.random() * 1000).toString(16);
+        let name = "paulita-" + Math.floor(Math.random() * 1000).toString(16) + "-" + PlanetGeneratorFactory.Counter.toFixed(0);
+        PlanetGeneratorFactory.Counter++;
         let planet = new Planet(
             name,
             position,

@@ -28,12 +28,13 @@ class PlanetChunckGroup extends AbstractPlanetChunck {
         this.kOffsetNext = PlanetTools.DegreeToKOffset(this.degree + 1);
 
         let levelCoef = Math.pow(2, level);
+        console.log(this.size + " " + (PlanetTools.CHUNCKSIZE * (this.iPos + 0.5) * levelCoef) + " " + (PlanetTools.CHUNCKSIZE * (this.jPos + 0.5) * levelCoef))
         this._barycenter = PlanetTools.EvaluateVertex(
             this.size,
             PlanetTools.CHUNCKSIZE * (this.iPos + 0.5) * levelCoef,
             PlanetTools.CHUNCKSIZE * (this.jPos + 0.5) * levelCoef 
         ).scale(
-            PlanetTools.KGlobalToAltitude((this.kOffset + (this.kPos + 0.5) * levelCoef) * PlanetTools.CHUNCKSIZE)
+            PlanetTools.KGlobalToAltitude(Math.floor((this.kOffset + (this.kPos + 0.5) * levelCoef) * PlanetTools.CHUNCKSIZE))
         );
         this._barycenter = BABYLON.Vector3.TransformCoordinates(
             this._barycenter,
@@ -91,12 +92,13 @@ class PlanetChunckGroup extends AbstractPlanetChunck {
         if (this.mesh) {
             this.mesh.dispose();
         }
-        this.mesh = new BABYLON.Mesh("test");
+        this.mesh = BABYLON.MeshBuilder.CreateBox(this.name, { size: 4 });
 
         PlanetChunckMeshBuilder.BuildSeaLevelVertexData(this).applyToMesh(this.mesh);
         this.mesh.material = this.planetSide.seaLevelMaterial;
-        //this.mesh.position = this.barycenter;
         this.mesh.parent = this.planetSide;
+        
+        this.mesh.freezeWorldMatrix();
     }
 
     public getPlanetChunck(iPos: number, jPos: number, kPos: number): PlanetChunck {
@@ -180,6 +182,18 @@ class PlanetChunckGroup extends AbstractPlanetChunck {
                 }
             }
         }
+        // debug
+        if (this.children.length === 8) {
+            let barycenterDisplacement = BABYLON.Vector3.Zero();
+            this.children.forEach(c => {
+                barycenterDisplacement.addInPlace(c.barycenter);
+                //let line = BABYLON.MeshBuilder.CreateLines("l", { points: [this.barycenter, c.barycenter ]});
+            })
+            barycenterDisplacement.scaleInPlace(1 / this.children.length);
+            console.log("barycenterDisplacement " + barycenterDisplacement.length().toFixed(2));
+        }
+        // debug done
+
         if (this.mesh) {
             this.mesh.dispose();
         }

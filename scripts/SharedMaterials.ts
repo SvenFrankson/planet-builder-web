@@ -34,4 +34,31 @@ class SharedMaterials {
         }
         return SharedMaterials.waterMaterial;
     }
+
+    private static redMaterial: BABYLON.StandardMaterial;
+    public static RedMaterial(): BABYLON.StandardMaterial {
+        if (!SharedMaterials.redMaterial) {
+            SharedMaterials.redMaterial = new BABYLON.StandardMaterial("redMaterial", Game.Scene);
+            SharedMaterials.redMaterial.diffuseColor.copyFromFloats(1, 0, 0);
+        }
+        return SharedMaterials.redMaterial;
+    }
+
+    private static greenMaterial: BABYLON.StandardMaterial;
+    public static GreenMaterial(): BABYLON.StandardMaterial {
+        if (!SharedMaterials.greenMaterial) {
+            SharedMaterials.greenMaterial = new BABYLON.StandardMaterial("greenMaterial", Game.Scene);
+            SharedMaterials.greenMaterial.diffuseColor.copyFromFloats(0, 1, 0);
+        }
+        return SharedMaterials.greenMaterial;
+    }
+
+    private static blueMaterial: BABYLON.StandardMaterial;
+    public static BlueMaterial(): BABYLON.StandardMaterial {
+        if (!SharedMaterials.blueMaterial) {
+            SharedMaterials.blueMaterial = new BABYLON.StandardMaterial("blueMaterial", Game.Scene);
+            SharedMaterials.blueMaterial.diffuseColor.copyFromFloats(0, 0, 1);
+        }
+        return SharedMaterials.blueMaterial;
+    }
 }

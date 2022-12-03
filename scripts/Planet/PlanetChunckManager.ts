@@ -127,31 +127,40 @@ class PlanetChunckManager {
     }
 
     private onChunckMovedToLayer(chunck: AbstractPlanetChunck, layerIndex: number): void {
+        if (!chunck.registered) {
+            return;
+        }
         if (Math.random() < 1 / 100) {
-            console.log("chunck lod = " + chunck.lod);
+            //console.log("chunck lod = " + chunck.lod + " " + chunck.sqrDistanceToViewpoint.toFixed(0) + " " + chunck.planetName);
         }
         if (layerIndex < Config.performanceConfiguration.lodCount) {
             if (chunck instanceof PlanetChunck) {
                 this.requestDraw(chunck, 0, "ChunckManager.update");
             }
             else if (chunck instanceof PlanetChunckGroup) {
-                chunck.subdivide();
+                if (Math.random() < 1 / 100) {
+                    console.log("wtf !");
+                }
+                return chunck.subdivide();
             }
         }
         else {
-            for (let n = Config.performanceConfiguration.lodCount; n <= this._layersCount; n++) {
-                if (chunck instanceof PlanetChunck) {
-                    this.cancelDraw(chunck);
-                    chunck.collapse();
+            if (chunck instanceof PlanetChunck) {
+                this.cancelDraw(chunck);
+                chunck.collapse();
+                return;
+            }
+            else if (chunck instanceof PlanetChunckGroup) {
+                let expectedLevel = layerIndex - (Config.performanceConfiguration.lodCount - 1);
+                if (chunck.level > expectedLevel) {
+                    //console.log("sub " + chunck.name + " expected " + expectedLevel + " " + chunck.sqrDistanceToViewpoint.toFixed(0));
+                    chunck.subdivide();
+                    return;
                 }
-                else if (chunck instanceof PlanetChunckGroup) {
-                    let expectedLevel = n - (Config.performanceConfiguration.lodCount - 1);
-                    if (chunck.level > expectedLevel) {
-                        chunck.subdivide();
-                    }
-                    else if (chunck.level < expectedLevel) {
-                        chunck.collapse();
-                    }
+                else if (chunck.level < expectedLevel) {
+                    //console.log("col " + chunck.name + " expected " + expectedLevel + " " + chunck.sqrDistanceToViewpoint.toFixed(0));
+                    chunck.collapse();
+                    return;
                 }
             }
         }
