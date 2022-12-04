@@ -9,6 +9,7 @@ class Planet extends BABYLON.Mesh {
 
     public degree: number;
     public seaLevel: number;
+    public seaAltitude: number;
 	
     public GetPlanetName(): string {
         return this.name;
@@ -34,6 +35,7 @@ class Planet extends BABYLON.Mesh {
         this.degree = PlanetTools.KPosToDegree(this.kPosMax);
 
         this.seaLevel = Math.round(this.kPosMax * this.seaLevelRatio * PlanetTools.CHUNCKSIZE);
+        this.seaAltitude = PlanetTools.KGlobalToAltitude(this.seaLevel);
 		
         this.generator = createGenerator(this);
         if (!this.generator) {

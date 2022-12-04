@@ -61,7 +61,7 @@ class Game extends Main {
 			planetTest.initialize();
 			window["PlanetTest"] = planetTest;
 
-			Game.Player = new Player(new BABYLON.Vector3(0, (kPosMax + 1) * PlanetTools.CHUNCKSIZE * 0.8, 0), planetTest, this);
+			Game.Player = new Player(new BABYLON.Vector3(0, (kPosMax + 1) * PlanetTools.CHUNCKSIZE * 0.8, 0), this);
 			this.player = Game.Player;
 
 			this.actionManager = new PlayerActionManager(this.player, this);

@@ -52,7 +52,7 @@ class MainMenu extends Main {
 				mainPanel.holoSlika.needRedraw = true;
 			}, 1000);
 			
-			this.player = new Player(new BABYLON.Vector3(0, 1.7 + this._testAltitude, - 0.8), mainMenuPlanet, this);
+			this.player = new Player(new BABYLON.Vector3(0, 1.7 + this._testAltitude, - 0.8), this);
 			this.cameraManager.player = this.player;
 			this.cameraManager.setMode(CameraMode.Player);
             

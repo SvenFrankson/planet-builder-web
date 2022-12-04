@@ -263,40 +263,39 @@ class PlanetTools {
         return hexString;
     }
 
-    public static WorldPositionToPlanetSide(
+    public static PlanetPositionToPlanetSide(
         planet: Planet,
-        worldPos: BABYLON.Vector3
+        planetPos: BABYLON.Vector3
     ): PlanetSide {
-        let ax = Math.abs(worldPos.x);
-        let ay = Math.abs(worldPos.y);
-        let az = Math.abs(worldPos.z);
+        let ax = Math.abs(planetPos.x);
+        let ay = Math.abs(planetPos.y);
+        let az = Math.abs(planetPos.z);
         if (ax >= ay && ax >= az) {
-            if (worldPos.x >= 0) {
+            if (planetPos.x >= 0) {
                 return planet.GetSide(Side.Right);
             }
             return planet.GetSide(Side.Left);
         }
         if (ay >= ax && ay >= az) {
-            if (worldPos.y >= 0) {
+            if (planetPos.y >= 0) {
                 return planet.GetSide(Side.Top);
             }
             return planet.GetSide(Side.Bottom);
         }
         if (az >= ax && az >= ay) {
-            if (worldPos.z >= 0) {
+            if (planetPos.z >= 0) {
                 return planet.GetSide(Side.Front);
             }
             return planet.GetSide(Side.Back);
         }
     }
 
-    public static WorldPositionToGlobalIJK(
+    public static PlanetPositionToGlobalIJK(
         planetSide: PlanetSide,
-        worldPos: BABYLON.Vector3
+        planetPos: BABYLON.Vector3
     ): { i: number; j: number; k: number } {
-        let invert: BABYLON.Matrix = new BABYLON.Matrix();
-        planetSide.computeWorldMatrix(true).invertToRef(invert);
-        let localPos: BABYLON.Vector3 = BABYLON.Vector3.TransformCoordinates(worldPos, invert);
+        let localPos: BABYLON.Vector3 = BABYLON.Vector3.Zero();
+        VMath.RotateVectorByQuaternionToRef(planetPos, planetSide.rotationQuaternion.conjugate(), localPos);
         let r: number = localPos.length();
 
         if (Math.abs(localPos.x) > 1) {
@@ -323,18 +322,29 @@ class PlanetTools {
         planet: Planet,
         worldPos: BABYLON.Vector3
     ): { planetChunck: PlanetChunck; i: number; j: number; k: number } {
-        let planetSide = PlanetTools.WorldPositionToPlanetSide(planet, worldPos);
-        let globalIJK = PlanetTools.WorldPositionToGlobalIJK(planetSide, worldPos);
+        return PlanetTools.PlanetPositionToLocalIJK(planet, worldPos.subtract(planet.position));
+    }
+
+    public static PlanetPositionToLocalIJK(
+        planet: Planet,
+        planetPos: BABYLON.Vector3
+    ): { planetChunck: PlanetChunck; i: number; j: number; k: number } {
+        let planetSide = PlanetTools.PlanetPositionToPlanetSide(planet, planetPos);
+        let globalIJK = PlanetTools.PlanetPositionToGlobalIJK(planetSide, planetPos);
         let localIJK = PlanetTools.GlobalIJKToLocalIJK(planetSide, globalIJK);
         return localIJK;
     }
 
     public static WorldPositionToChunck(planet: Planet, worldPos: BABYLON.Vector3): PlanetChunck {
-        let localIJK = PlanetTools.WorldPositionToLocalIJK(planet, worldPos);
+        return PlanetTools.PlanetPositionToChunck(planet, worldPos.subtract(planet.position));
+    }
+
+    public static PlanetPositionToChunck(planet: Planet, planetPos: BABYLON.Vector3): PlanetChunck {
+        let localIJK = PlanetTools.PlanetPositionToLocalIJK(planet, planetPos);
         return localIJK ? localIJK.planetChunck : undefined;
     }
 
-    public static GlobalIJKToWorldPosition(planetSide: PlanetSide, globalIJK: { i: number; j: number; k: number }, middleAltitude?: boolean): BABYLON.Vector3 {
+    public static GlobalIJKToPlanetPosition(planetSide: PlanetSide, globalIJK: { i: number; j: number; k: number }, middleAltitude?: boolean): BABYLON.Vector3 {
         let size = PlanetTools.DegreeToSize(PlanetTools.KGlobalToDegree(globalIJK.k));
         let p = PlanetTools.EvaluateVertex(size, globalIJK.i + 0.5, globalIJK.j + 0.5);
         if (middleAltitude) {
@@ -380,9 +390,9 @@ class PlanetTools {
         }
     }
 
-    public static LocalIJKToWorldPosition(planetChunck: PlanetChunck, localI: number, localJ: number, localK: number, middleAltitude?: boolean): BABYLON.Vector3;
-    public static LocalIJKToWorldPosition(localIJK: { planetChunck: PlanetChunck; i: number; j: number; k: number }, middleAltitude?: boolean): BABYLON.Vector3;
-    public static LocalIJKToWorldPosition(a: any, b: any, localJ?: number, localK?: number, middleAltitude?: boolean): BABYLON.Vector3 {
+    public static LocalIJKToPlanetPosition(planetChunck: PlanetChunck, localI: number, localJ: number, localK: number, middleAltitude?: boolean): BABYLON.Vector3;
+    public static LocalIJKToPlanetPosition(localIJK: { planetChunck: PlanetChunck; i: number; j: number; k: number }, middleAltitude?: boolean): BABYLON.Vector3;
+    public static LocalIJKToPlanetPosition(a: any, b: any, localJ?: number, localK?: number, middleAltitude?: boolean): BABYLON.Vector3 {
         let planetChunck: PlanetChunck;
         let localI: number;
         if (a instanceof PlanetChunck) {
@@ -397,7 +407,7 @@ class PlanetTools {
             middleAltitude = b;
         }
         let globalIJK = PlanetTools.LocalIJKToGlobalIJK(planetChunck, localI, localJ, localK);
-        return PlanetTools.GlobalIJKToWorldPosition(planetChunck.planetSide, globalIJK, middleAltitude);
+        return PlanetTools.GlobalIJKToPlanetPosition(planetChunck.planetSide, globalIJK, middleAltitude);
     }
 
     public static KGlobalToDegree(k: number): number {

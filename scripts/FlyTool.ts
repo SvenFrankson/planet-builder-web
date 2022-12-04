@@ -18,6 +18,7 @@ class FlyTool {
         
         flightPlan = FlyTool.SmoothFlightPlan(flightPlan);
         flightPlan = FlyTool.SmoothFlightPlan(flightPlan);
+        flightPlan = FlyTool.SmoothFlightPlan(flightPlan);
 
         return flightPlan;
     }
@@ -43,5 +44,28 @@ class FlyTool {
 
     public static ShowFlightPlan(flightPlan: BABYLON.Vector3[], scene: BABYLON.Scene): void {
         BABYLON.MeshBuilder.CreateLines("flightPlan", { points: flightPlan }, scene);
+    }
+
+    public static Fly(flightPlan: BABYLON.Vector3[], player: Player, scene: BABYLON.Scene): void {
+        let index = 1;
+        let step = () => {
+            let wp = flightPlan[index];
+            if (wp) {
+                let dir = wp.subtract(flightPlan[index - 1]).normalize();
+                if (BABYLON.Vector3.DistanceSquared(wp, player.position) < 1 || BABYLON.Vector3.Dot(wp.subtract(player.position), dir) <= 0) {
+                    index++;
+                    step();
+                }
+                else {
+                    VMath.StepToRef(player.position, wp, 15 / 60, player.position);
+                    requestAnimationFrame(step);
+                }
+            }
+            else {
+                player.lockInPlace = false;
+            }
+        }
+        player.lockInPlace = true;
+        step();
     }
 }

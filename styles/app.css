@@ -90,7 +90,7 @@ html, body {
 	z-index: 1;
 }
 
-#meshes-info {
+#debug-container {
 	position: fixed;
 	top: 35px;
 	right: 10px;
@@ -102,6 +102,7 @@ html, body {
 	font-family: monospace;
 	z-index: 1;
 	background-color: rgba(0, 0, 0, 50%);
+	pointer-events: none;
 }
 
 debug-display-frame-value {

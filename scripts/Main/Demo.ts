@@ -63,7 +63,7 @@ class Demo extends Main {
 			this.planetSky.setInvertLightDir((new BABYLON.Vector3(0.5, 2.5, 1.5)).normalize());
 			this.planetSky.initialize(this.scene);
 
-			this.player = new Player(new BABYLON.Vector3(0, (kPosMax + 1) * PlanetTools.CHUNCKSIZE * 0.8, 0), planetTest, this);
+			this.player = new Player(new BABYLON.Vector3(0, (kPosMax + 1) * PlanetTools.CHUNCKSIZE * 0.8, 0), this);
 			this.cameraManager.player = this.player;
 			this.player.lockInPlace = true;
             

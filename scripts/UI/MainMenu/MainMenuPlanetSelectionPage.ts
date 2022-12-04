@@ -139,6 +139,7 @@ class MainMenuPlanetSelectionPage extends MainMenuPanelPage {
             let flightPlan = FlyTool.CreateFlightPlan(this.mainMenuPanel.main.cameraManager.player.position, this.mainMenuPanel.main.planets[0], destinationPoint, destinationPlanet);
             console.log(flightPlan);
             FlyTool.ShowFlightPlan(flightPlan, this.mainMenuPanel.scene);
+            FlyTool.Fly(flightPlan, this.mainMenuPanel.main.cameraManager.player, this.mainMenuPanel.main.scene);
         }
         this.holoSlika.add(buttonGo);
 

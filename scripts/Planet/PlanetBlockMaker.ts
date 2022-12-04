@@ -10,8 +10,8 @@ class PlanetBlockMaker {
                     z = Math.min(z, radius);
                     if (x * x + y * y + z * z < radius * radius) {
                         let p = new BABYLON.Vector3(world.x + x, world.y + y, world.z + z);
-                        let planetSide = PlanetTools.WorldPositionToPlanetSide(planet, p);
-                        let globalIJK = PlanetTools.WorldPositionToGlobalIJK(planetSide, p);
+                        let planetSide = PlanetTools.PlanetPositionToPlanetSide(planet, p);
+                        let globalIJK = PlanetTools.PlanetPositionToGlobalIJK(planetSide, p);
                         let localIJK = PlanetTools.GlobalIJKToLocalIJK(planetSide, globalIJK);
                         let chunck = localIJK.planetChunck;
                         if (chunck) {
@@ -38,8 +38,8 @@ class PlanetBlockMaker {
             let z = from.z + (to.z - from.z) * i / count;
             
             let p = new BABYLON.Vector3(x, y, z);
-            let planetSide = PlanetTools.WorldPositionToPlanetSide(planet, p);
-            let globalIJK = PlanetTools.WorldPositionToGlobalIJK(planetSide, p);
+            let planetSide = PlanetTools.PlanetPositionToPlanetSide(planet, p);
+            let globalIJK = PlanetTools.PlanetPositionToGlobalIJK(planetSide, p);
             let localIJK = PlanetTools.GlobalIJKToLocalIJK(planetSide, globalIJK);
             let chunck = localIJK.planetChunck;
             if (chunck) {

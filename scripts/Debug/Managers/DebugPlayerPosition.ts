@@ -62,7 +62,7 @@ class DebugPlayerPosition {
 
         this._playerPosition.setValue(position);
 
-        let planetSide = PlanetTools.WorldPositionToPlanetSide(this.game.player.planet, position);
+        let planetSide = PlanetTools.PlanetPositionToPlanetSide(this.game.player.planet, position);
 
         let quat = planetSide.rotationQuaternion.clone();
         let localPos: BABYLON.Vector3 = position.clone()
@@ -70,7 +70,7 @@ class DebugPlayerPosition {
         this._playerLocalPosition.setValue(localPos);
         
         this._playerSide.setText(SideNames[planetSide.side]);
-        let globalIJK = PlanetTools.WorldPositionToGlobalIJK(planetSide, position);
+        let globalIJK = PlanetTools.PlanetPositionToGlobalIJK(planetSide, position);
         this._playerGlobalIJK.setValue(globalIJK);
 
         let localIJK = PlanetTools.GlobalIJKToLocalIJK(planetSide, globalIJK);

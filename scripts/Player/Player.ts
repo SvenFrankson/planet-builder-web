@@ -16,6 +16,9 @@ class Player extends BABYLON.Mesh {
     public currentAction: PlayerAction;
 
     public lockInPlace: boolean = false;
+    public planet: Planet;
+    public sqrDistToPlanet = Infinity;
+    public altitudeOnPlanet: number = 0;
 
     public get inputManager(): InputManager {
         return this.main.inputManager;
@@ -25,9 +28,8 @@ class Player extends BABYLON.Mesh {
         return this._scene;
     }
 
-    constructor(position: BABYLON.Vector3, public planet: Planet, public main: Main) {
+    constructor(position: BABYLON.Vector3, public main: Main) {
         super("Player", main.scene);
-        this.planet = planet;
         this.position = position;
         this.rotationQuaternion = BABYLON.Quaternion.Identity();
         this.camPos = new BABYLON.Mesh("Dummy", Game.Scene);
@@ -200,16 +202,29 @@ class Player extends BABYLON.Mesh {
         });
     }
 
+    public updatePlanet(): void {
+        this.sqrDistToPlanet = Infinity;
+        for (let i = 0; i < this.main.planets.length; i++) {
+            let p = this.main.planets[i];
+            let sqrDist = BABYLON.Vector3.DistanceSquared(this.position, p.position);
+            if (sqrDist < this.sqrDistToPlanet) {
+                this.planet = p;
+                this.sqrDistToPlanet = sqrDist;
+            }
+        }
+        this.altitudeOnPlanet = Math.sqrt(this.sqrDistToPlanet) - this.planet.seaAltitude;
+    }
+
     private _currentChunck: PlanetChunck;
     private _update = () => {
         if (this.main.cameraManager.cameraMode != CameraMode.Player) {
             return;
         }
+        this.updatePlanet();
+
         let deltaTime: number = this.main.engine.getDeltaTime() / 1000;
 
         this._jumpTimer = Math.max(this._jumpTimer - deltaTime, 0);
-
-        this._keepUp();
 
         let rotationPower: number = this.inputHeadRight * 0.05;
         let rotationCamPower: number = this.inputHeadUp * 0.05;
@@ -220,7 +235,6 @@ class Player extends BABYLON.Mesh {
         this.camPos.rotation.x = Math.max(this.camPos.rotation.x, -Math.PI / 2);
         this.camPos.rotation.x = Math.min(this.camPos.rotation.x, Math.PI / 2);
         
-        /*
         let chunck = PlanetTools.WorldPositionToChunck(this.planet, this.position);
         if (this._currentChunck) {
             this._currentChunck.unlit();
@@ -229,14 +243,9 @@ class Player extends BABYLON.Mesh {
         if (this._currentChunck) {
             this._currentChunck.highlight();
         }
-        */
 
         this.inputHeadRight *= 0.8;
         this.inputHeadUp *= 0.8;
-
-        if (this.lockInPlace) {
-            return;
-        }
 
         this._collisionPositions[0] = this._headPosition;
         this._collisionPositions[1] = this._feetPosition;
@@ -249,8 +258,10 @@ class Player extends BABYLON.Mesh {
         this._leftDirection.copyFrom(this._rightDirection);
         this._leftDirection.scaleInPlace(-1);
 
-        this._upDirection.copyFrom(this.position);
-        this._upDirection.normalize();
+        if (this.planet) {
+            this._upDirection.copyFrom(this.position).subtractInPlace(this.planet.position);
+            this._upDirection.normalize();
+        }
         this._downDirection.copyFrom(this._upDirection);
         this._downDirection.scaleInPlace(-1);
 
@@ -264,17 +275,27 @@ class Player extends BABYLON.Mesh {
         this._headPosition.copyFrom(this.position);
         this._headPosition.addInPlace(this._downDirection.scale(0.5));
 
-        // Add gravity and ground reaction.
-        this._gravityFactor.copyFrom(this._downDirection).scaleInPlace(9.8 * deltaTime);
-        this._groundFactor.copyFromFloats(0, 0, 0);
+        this._keepUp();
+
+        if (this.lockInPlace) {
+            return;
+        }
+
         let fVert = 1;
+        // Add gravity and ground reaction.
+        let gFactor = 1 - (this.altitudeOnPlanet / 100);
+        gFactor = Math.max(Math.min(gFactor, 1), 0) * 9.8;
+        this._gravityFactor.copyFrom(this._downDirection).scaleInPlace(gFactor * deltaTime);
+        this._groundFactor.copyFromFloats(0, 0, 0);
 
         this._chuncks.forEach((chunck) => {
             //chunck.unlit();
         });
         this._chuncks = [];
         this._meshes = [];
-        if (this._jumpTimer === 0) {
+
+        if (this._jumpTimer === 0 && this.planet) {
+
             let chunck = PlanetTools.WorldPositionToChunck(this.planet, this.position);
             if (chunck) {
                 this._chuncks.push(chunck);
@@ -394,12 +415,15 @@ class Player extends BABYLON.Mesh {
             return;
         }
         let currentUp: BABYLON.Vector3 = BABYLON.Vector3.Normalize(BABYLON.Vector3.TransformNormal(BABYLON.Axis.Y, this.getWorldMatrix()));
-        let targetUp: BABYLON.Vector3 = BABYLON.Vector3.Normalize(this.position);
-        let correctionAxis: BABYLON.Vector3 = BABYLON.Vector3.Cross(currentUp, targetUp);
+        let correctionAxis: BABYLON.Vector3 = BABYLON.Vector3.Cross(currentUp, this._upDirection);
         let correctionAngle: number = Math.abs(Math.asin(correctionAxis.length()));
+        
+        let gFactor = 1 - (this.altitudeOnPlanet / 100);
+        gFactor = Math.max(Math.min(gFactor, 1), 0);
+        gFactor = gFactor * gFactor;
 
         if (correctionAngle > 0.001) {
-            let rotation: BABYLON.Quaternion = BABYLON.Quaternion.RotationAxis(correctionAxis, correctionAngle / 5);
+            let rotation: BABYLON.Quaternion = BABYLON.Quaternion.RotationAxis(correctionAxis, gFactor * correctionAngle / 10);
             this.rotationQuaternion = rotation.multiply(this.rotationQuaternion);
         }
     }

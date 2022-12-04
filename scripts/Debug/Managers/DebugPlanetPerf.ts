@@ -23,10 +23,10 @@ class DebugPlanetPerf {
     }
 
     public initialize(): void {
-        this.debugContainer = document.querySelector("#meshes-info");
+        this.debugContainer = document.querySelector("#debug-container");
         if (!this.debugContainer) {
             this.debugContainer = document.createElement("div");
-            this.debugContainer.id = "meshes-info";
+            this.debugContainer.id = "debug-container";
             document.body.appendChild(this.debugContainer);
         }
 

@@ -89,7 +89,7 @@ class PlanetGeneratorHole extends PlanetGenerator {
 
                 for (let k: number = 0; k < PlanetTools.CHUNCKSIZE; k++) {
                     let globalK = k + chunck.kPos * PlanetTools.CHUNCKSIZE;
-                    let worldPos = PlanetTools.LocalIJKToWorldPosition(chunck, i, j, k, true);
+                    let worldPos = PlanetTools.LocalIJKToPlanetPosition(chunck, i, j, k, true);
                     let sqrDist = BABYLON.Vector3.DistanceSquared(this._holeWorldPosition, worldPos);
                     if (sqrDist < this._sqrRadius) {
                         refData[i - chunck.firstI][j - chunck.firstJ][k - chunck.firstK] = BlockType.None;
