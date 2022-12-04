@@ -4,6 +4,7 @@ precision highp float;
 uniform vec3 lightInvDirW;
 uniform vec3 terrainColors[9];
 uniform vec3 globalColor;
+uniform vec3 planetPos;
 uniform int useSeaLevelTexture;
 uniform sampler2D seaLevelTexture;
 uniform int useVertexColor;
@@ -16,7 +17,7 @@ in vec4 vColor;
 out vec4 outColor;
  
 void main() {
-   vec3 localUp = normalize(vPositionW);
+   vec3 localUp = normalize(vPositionW - planetPos);
    float flatness = dot(vNormalW, localUp);
 
    float cosAlphaZenith = dot(localUp, lightInvDirW);
@@ -46,7 +47,7 @@ void main() {
       color = texture(seaLevelTexture, vUv).rgb;
    }
    else if (useVertexColor == 1) {
-      color = vColor.rgb;
+      color = vec3(1., 0., 0.);
    }
    else {
       int d0 = int(vColor.a * 128. + 0.002);

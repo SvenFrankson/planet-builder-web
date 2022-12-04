@@ -121,9 +121,24 @@ class MainMenuPlanetSelectionPage extends MainMenuPanelPage {
             60
         );
         buttonGo.onPointerUp = async () => {
-            this.mainMenuPanel.animateTitleHeight(this.mainMenuPanel.planetPage.targetTitleHeight, 1);
-            await this.mainMenuPanel.graphicsPage.hide(0.5);
-            await this.mainMenuPanel.planetPage.show(0.5);
+            let destinationPlanet = this.mainMenuPanel.main.planets[this.currentPlanetIndex];
+            let destinationAltitude = PlanetTools.KGlobalToAltitude(Math.floor(destinationPlanet.generator.altitudeMap.getForSide(
+                Side.Top,
+                destinationPlanet.generator.altitudeMap.size * 0.5,
+                destinationPlanet.generator.altitudeMap.size * 0.5,
+            ) * destinationPlanet.kPosMax * PlanetTools.CHUNCKSIZE));
+            console.log("altitudeMap " + (destinationPlanet.generator.altitudeMap.getForSide(
+                Side.Top,
+                destinationPlanet.generator.altitudeMap.size * 0.5,
+                destinationPlanet.generator.altitudeMap.size * 0.5,
+            )))
+            console.log("generator size " + (destinationPlanet.generator.altitudeMap.size));
+            console.log("destination altitude " + destinationAltitude);
+            console.log("destination kposMax " + destinationPlanet.kPosMax);
+            let destinationPoint = BABYLON.Vector3.Up().scale(destinationAltitude).add(destinationPlanet.position);
+            let flightPlan = FlyTool.CreateFlightPlan(this.mainMenuPanel.main.cameraManager.player.position, this.mainMenuPanel.main.planets[0], destinationPoint, destinationPlanet);
+            console.log(flightPlan);
+            FlyTool.ShowFlightPlan(flightPlan, this.mainMenuPanel.scene);
         }
         this.holoSlika.add(buttonGo);
 

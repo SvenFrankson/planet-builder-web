@@ -28,11 +28,12 @@ class PlanetChunckGroup extends AbstractPlanetChunck {
         this.kOffsetNext = PlanetTools.DegreeToKOffset(this.degree + 1);
 
         let levelCoef = Math.pow(2, level);
-        console.log(this.size + " " + (PlanetTools.CHUNCKSIZE * (this.iPos + 0.5) * levelCoef) + " " + (PlanetTools.CHUNCKSIZE * (this.jPos + 0.5) * levelCoef))
+        let iCenter = PlanetTools.CHUNCKSIZE * (this.iPos + 0.5) * levelCoef;
+        let jCenter = PlanetTools.CHUNCKSIZE * (this.jPos + 0.5) * levelCoef;
         this._barycenter = PlanetTools.EvaluateVertex(
             this.size,
-            PlanetTools.CHUNCKSIZE * (this.iPos + 0.5) * levelCoef,
-            PlanetTools.CHUNCKSIZE * (this.jPos + 0.5) * levelCoef 
+            iCenter,
+            jCenter
         ).scale(
             PlanetTools.KGlobalToAltitude(Math.floor((this.kOffset + (this.kPos + 0.5) * levelCoef) * PlanetTools.CHUNCKSIZE))
         );
@@ -41,64 +42,64 @@ class PlanetChunckGroup extends AbstractPlanetChunck {
             planetSide.computeWorldMatrix(true)
         );
 
-        if ((this.kPos * levelCoef + this.kOffset) * PlanetTools.CHUNCKSIZE <= this.planetSide.planet.seaLevel) {
-            if (((this.kPos + 1) * levelCoef + this.kOffset) * PlanetTools.CHUNCKSIZE > this.planetSide.planet.seaLevel) {
-                this.isSeaLevel = true;
+        // Evaluate shellMesh center altitude.
+        let f = Math.pow(2, this.planet.degree - this.degree);
+        let hMed = 0;
+        for (let i = 0; i <= 1; i += 0.5) {
+            for (let j = 0; j <= 1; j += 0.5) {
+                hMed += this.planet.generator.altitudeMap.getForSide(
+                    this.side,
+                    (PlanetTools.CHUNCKSIZE * (this.iPos + i) * levelCoef) * f,
+                    (PlanetTools.CHUNCKSIZE * (this.jPos + j) * levelCoef) * f
+                ) * this.kPosMax * PlanetTools.CHUNCKSIZE;
             }
         }
-
-        if (this.isSeaLevel) {
-            this.drawMesh();
+        hMed = hMed / 9;
+        let hMin = PlanetTools.KGlobalToAltitude(Math.floor((this.kOffset + (this.kPos) * levelCoef) * PlanetTools.CHUNCKSIZE));
+        let hMax = PlanetTools.KGlobalToAltitude(Math.floor((this.kOffset + (this.kPos + 1) * levelCoef) * PlanetTools.CHUNCKSIZE));
+        if (hMed > hMin && hMed <= hMax) {
+            this.isShellLevel = true;
         }
 
         /*
-        if (this.degree === 4) {
-            this.mesh = BABYLON.MeshBuilder.CreateBox(this.name);
+        let p00 = PlanetTools.EvaluateVertex(chunck.size, i0, j0);
+        
+        let altOffset = 0;
+        if (i < 0) {
+            i0 = PlanetTools.CHUNCKSIZE * chunck.iPos * levelCoef;
+            altOffset = - 0.2;
         }
-        else  if (this.degree === 5) {
-            this.mesh = BABYLON.MeshBuilder.CreateSphere(this.name);
+        if (j < 0) {
+            j0 = PlanetTools.CHUNCKSIZE * chunck.jPos * levelCoef;
+            altOffset = - 0.2;
         }
-        else if (this.degree === 6) {
-            this.mesh = BABYLON.MeshBuilder.CreateBox(this.name, { width: 0.5, height: 2, depth: 0.5 });
+        if (i > vertexCount) {
+            i0 = PlanetTools.CHUNCKSIZE * (chunck.iPos + 1) * levelCoef;
+            altOffset = - 0.2;
         }
-        else  if (this.degree === 7) {
-            this.mesh = BABYLON.MeshBuilder.CreateSphere(this.name, { diameterY: 0.5, diameterX: 2, diameterZ: 0.2 });
+        if (j > vertexCount) {
+            j0 = PlanetTools.CHUNCKSIZE * (chunck.jPos + 1) * levelCoef;
+            altOffset = - 0.2;
         }
-        else {
-            this.mesh = BABYLON.MeshBuilder.CreateBox(this.name);
-        }
-
-        if (level === 1) {
-            let material = new BABYLON.StandardMaterial("red");
-            material.diffuseColor.copyFromFloats(1, 0, 0);
-            this.mesh.material = material;
-        }
-        if (level === 2) {
-            let material = new BABYLON.StandardMaterial("green");
-            material.diffuseColor.copyFromFloats(0, 1, 0);
-            this.mesh.material = material;
-        }
-        if (level === 3) {
-            let material = new BABYLON.StandardMaterial("blue");
-            material.diffuseColor.copyFromFloats(0, 0, 1);
-            this.mesh.material = material;
-        }
-        this.mesh.position = this._barycenter;
-        this.mesh.freezeWorldMatrix();
+        p00.scaleInPlace(PlanetTools.KGlobalToAltitude(h00 + 1) + altOffset);
         */
+
+        if (this.isShellLevel) {
+            this.drawMesh();
+        }
     }
 
     public drawMesh(): void {
         if (this.mesh) {
             this.mesh.dispose();
         }
-        this.mesh = BABYLON.MeshBuilder.CreateBox(this.name, { size: 4 });
+        this.mesh = new BABYLON.Mesh(this.name);
 
-        PlanetChunckMeshBuilder.BuildSeaLevelVertexData(this).applyToMesh(this.mesh);
+        PlanetChunckMeshBuilder.BuildShellLevelVertexData(this).applyToMesh(this.mesh);
         this.mesh.material = this.planetSide.seaLevelMaterial;
         this.mesh.parent = this.planetSide;
         
-        this.mesh.freezeWorldMatrix();
+        //this.mesh.freezeWorldMatrix();
     }
 
     public getPlanetChunck(iPos: number, jPos: number, kPos: number): PlanetChunck {
@@ -172,7 +173,7 @@ class PlanetChunckGroup extends AbstractPlanetChunck {
                             if (!chunck) {
                                 chunck = new PlanetChunckGroup(this.iPos * 2 + i, this.jPos * 2 + j, childKPos, this.planetSide, this, this.degree, this.level - 1);
                                 this.children[j + 2 * i + 4 * k] = chunck;
-                                if (chunck.isSeaLevel) {
+                                if (chunck.isShellLevel) {
                                     chunck.drawMesh();
                                 }
                             }
@@ -182,17 +183,6 @@ class PlanetChunckGroup extends AbstractPlanetChunck {
                 }
             }
         }
-        // debug
-        if (this.children.length === 8) {
-            let barycenterDisplacement = BABYLON.Vector3.Zero();
-            this.children.forEach(c => {
-                barycenterDisplacement.addInPlace(c.barycenter);
-                //let line = BABYLON.MeshBuilder.CreateLines("l", { points: [this.barycenter, c.barycenter ]});
-            })
-            barycenterDisplacement.scaleInPlace(1 / this.children.length);
-            console.log("barycenterDisplacement " + barycenterDisplacement.length().toFixed(2));
-        }
-        // debug done
 
         if (this.mesh) {
             this.mesh.dispose();
@@ -228,7 +218,7 @@ class PlanetChunckGroup extends AbstractPlanetChunck {
             }
         }
         this.children = [];
-        if (this.isSeaLevel) {
+        if (this.isShellLevel) {
             this.drawMesh();
         }
         this._subdivided = false;

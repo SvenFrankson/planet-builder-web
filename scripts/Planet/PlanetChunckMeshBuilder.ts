@@ -549,7 +549,7 @@ class PlanetChunckMeshBuilder {
         return [vertexData, waterVertexData];
     }
 
-    public static BuildSeaLevelVertexData(
+    public static BuildShellLevelVertexData(
         chunck: AbstractPlanetChunck
     ): BABYLON.VertexData {
         let vertexData = new BABYLON.VertexData();

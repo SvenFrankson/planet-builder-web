@@ -27,7 +27,7 @@ class Planet extends BABYLON.Mesh {
     ) {
         super(name, scene);
         this.position.copyFrom(position);
-        this.freezeWorldMatrix();
+        //this.freezeWorldMatrix();
         Planet.DEBUG_INSTANCE = this;
         
         this.kPosMax = kPosMax;

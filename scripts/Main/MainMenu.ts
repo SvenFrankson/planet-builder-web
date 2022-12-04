@@ -54,7 +54,7 @@ class MainMenu extends Main {
 			
 			this.player = new Player(new BABYLON.Vector3(0, 1.7 + this._testAltitude, - 0.8), mainMenuPlanet, this);
 			this.cameraManager.player = this.player;
-			this.cameraManager.setMode(CameraMode.Sky);
+			this.cameraManager.setMode(CameraMode.Player);
             
             let debugPlanetPerf = new DebugPlanetPerf(this, true);
             debugPlanetPerf.show();

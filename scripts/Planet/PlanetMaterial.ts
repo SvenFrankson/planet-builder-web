@@ -5,6 +5,7 @@ class PlanetMaterial extends BABYLON.ShaderMaterial {
     private _useSeaLevelTexture: number;
     private _seaLevelTexture: BABYLON.Texture;
     private _useVertexColor: number;
+    private _planetPos: BABYLON.Vector3 = BABYLON.Vector3.Zero();
 
     constructor(name: string, scene: BABYLON.Scene) {
         super(
@@ -16,7 +17,7 @@ class PlanetMaterial extends BABYLON.ShaderMaterial {
             },
             {
                 attributes: ["position", "normal", "uv", "color"],
-                uniforms: ["world", "worldView", "worldViewProjection", "view", "projection", "useSeaLevelTexture", "useVertexColor", "seaLevelTexture"]
+                uniforms: ["world", "worldView", "worldViewProjection", "view", "projection", "useSeaLevelTexture", "useVertexColor", "seaLevelTexture", "planetPos"]
             }
         );
         this.setVector3("lightInvDirW", (new BABYLON.Vector3(0.5, 2.5, 1.5)).normalize());
@@ -38,6 +39,7 @@ class PlanetMaterial extends BABYLON.ShaderMaterial {
         this.setColor3Array("terrainColors", this._terrainColors);
         this.setSeaLevelTexture(undefined);
         this.setInt("useVertexColor", 0);
+        this.setPlanetPos(BABYLON.Vector3.Zero());
     }
 
     public getGlobalColor(): BABYLON.Color3 {
@@ -82,6 +84,15 @@ class PlanetMaterial extends BABYLON.ShaderMaterial {
         
         this.setColor3Array("terrainColors", this._terrainColors);
     }
+
+    public getPlanetPos(): BABYLON.Vector3 {
+        return this._planetPos;
+    }
+
+    public setPlanetPos(p: BABYLON.Vector3): void {
+        this._planetPos.copyFrom(p);
+        this.setVector3("planetPos", this._planetPos);
+    }
 }
 
 class ToonMaterial extends BABYLON.ShaderMaterial {
@@ -96,7 +107,7 @@ class ToonMaterial extends BABYLON.ShaderMaterial {
             },
             {
                 attributes: ["position", "normal", "uv", "color"],
-                uniforms: ["world", "worldView", "worldViewProjection", "view", "projection"]
+                uniforms: ["world", "worldView", "worldViewProjection", "view", "projection", "useSeaLevelTexture", "useVertexColor", "seaLevelTexture", "planetPos"]
             }
         );
 

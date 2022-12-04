@@ -224,12 +224,25 @@ class PlanetChunck extends AbstractPlanetChunck {
         );
         this._normal = BABYLON.Vector3.Normalize(this.barycenter);
 
-        if (this.kPos * PlanetTools.CHUNCKSIZE <= this.planetSide.planet.seaLevel) {
-            if ((this.kPos + 1) * PlanetTools.CHUNCKSIZE > this.planetSide.planet.seaLevel) {
-                this.isSeaLevel = true;
+        let f = Math.pow(2, this.planet.degree - this.degree);
+        let hMed = 0;
+        for (let i = 0; i <= 1; i += 0.5) {
+            for (let j = 0; j <= 1; j += 0.5) {
+                hMed += this.planet.generator.altitudeMap.getForSide(
+                    this.side,
+                    PlanetTools.CHUNCKSIZE * (this.iPos + i) * f,
+                    PlanetTools.CHUNCKSIZE * (this.jPos + j) * f
+                ) * this.kPosMax * PlanetTools.CHUNCKSIZE;
             }
         }
-        if (this.isSeaLevel) {
+        hMed = hMed / 9;
+        let hMin = PlanetTools.KGlobalToAltitude(this.kPos * PlanetTools.CHUNCKSIZE);
+        let hMax = PlanetTools.KGlobalToAltitude((this.kPos + 1) * PlanetTools.CHUNCKSIZE);
+        if (hMed > hMin && hMed <= hMax) {
+            this.isShellLevel = true;
+        }
+
+        if (this.isShellLevel) {
             this.redrawSeaLevelMesh();
         }
         
@@ -515,7 +528,7 @@ class PlanetChunck extends AbstractPlanetChunck {
             this.mesh = new BABYLON.Mesh("chunck-" + this.iPos + "-" + this.jPos + "-" + this.kPos, this.scene);
         }
 
-        PlanetChunckMeshBuilder.BuildSeaLevelVertexData(this).applyToMesh(this.mesh);
+        PlanetChunckMeshBuilder.BuildShellLevelVertexData(this).applyToMesh(this.mesh);
         this.mesh.material = this.planetSide.seaLevelMaterial;
 
         this.mesh.parent = this.planetSide;

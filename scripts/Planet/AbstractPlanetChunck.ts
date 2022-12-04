@@ -36,7 +36,7 @@ abstract class AbstractPlanetChunck {
         return this.planetSide.kPosMax;
     }
 
-    public isSeaLevel: boolean = false;
+    public isShellLevel: boolean = false;
 
     private _registered: boolean = false;
     public get registered(): boolean {

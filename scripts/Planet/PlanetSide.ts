@@ -276,7 +276,7 @@ class PlanetSide extends BABYLON.Mesh {
         this.parent = planet;
         this._side = side;
         this.rotationQuaternion = PlanetTools.QuaternionForSide(this._side);
-        this.freezeWorldMatrix();
+        //this.freezeWorldMatrix();
 
         this.chunckGroups = [];
         for (let degree = PlanetTools.DEGREEMIN; degree <= PlanetTools.KPosToDegree(this.kPosMax); degree++) {
@@ -284,7 +284,9 @@ class PlanetSide extends BABYLON.Mesh {
         }
 
         let material = new PlanetMaterial(this.name, this.getScene());
+        //let material = new BABYLON.StandardMaterial(this.name, this.getScene());
         material.setSeaLevelTexture((this.planet.generator as PlanetGeneratorEarth).getTexture(this.side));
+        material.setPlanetPos(this.planet.position);
         this.seaLevelMaterial = material;
     }
     
