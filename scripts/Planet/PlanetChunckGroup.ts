@@ -59,15 +59,6 @@ class PlanetChunckGroup extends AbstractPlanetChunck {
             planetSide.computeWorldMatrix(true)
         );
 
-        // Evaluate shellMesh center altitude.
-        let hGlobalCenter = (this.kOffset + (this.kPos + 0.5)) * PlanetTools.CHUNCKSIZE;
-        let f = Math.pow(2, this.planet.degree - this.degree);
-        let kMed = this.planet.generator.altitudeMap.getForSide(
-            this.side,
-            (PlanetTools.CHUNCKSIZE * (this.iPos + 0.5) * levelCoef) * f,
-            (PlanetTools.CHUNCKSIZE * (this.jPos + 0.5) * levelCoef) * f
-        ) * this.kPosMax * PlanetTools.CHUNCKSIZE
-        let altMed = PlanetTools.KGlobalToAltitude(Math.floor(kMed));
         if (kMin <= this.planet.seaLevel && this.planet.seaLevel < kMax) {
             this.isShellLevel = true;
         }
@@ -110,6 +101,7 @@ class PlanetChunckGroup extends AbstractPlanetChunck {
         this.mesh.material = this.planetSide.seaLevelMaterial;
         this.mesh.parent = this.planetSide;
         
+        /*
         let pts: BABYLON.Vector3[] = [];
         let levelCoef = Math.pow(2, this.level);
 
@@ -178,6 +170,7 @@ class PlanetChunckGroup extends AbstractPlanetChunck {
         
         hitBox.layerMask = 0x10000000;
         hitBox.parent = this.mesh;
+        */
     }
 
     public getPlanetChunck(iPos: number, jPos: number, kPos: number): PlanetChunck {

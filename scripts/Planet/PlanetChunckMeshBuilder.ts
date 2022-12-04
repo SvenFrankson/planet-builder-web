@@ -591,12 +591,8 @@ class PlanetChunckMeshBuilder {
                 }
                 let h00 = Math.floor(chunck.planet.generator.altitudeMap.getForSide(chunck.side, i0 * f, j0 * f) * chunck.kPosMax * PlanetTools.CHUNCKSIZE);
                 p00.scaleInPlace(PlanetTools.KGlobalToAltitude(h00 + 1) + altOffset);
-                if (i > - 1 && j > - 1 && j < vertexCount + 1 && j < vertexCount + 1) {
-                    positions.push(p00.x, p00.y, p00.z);
-                }
-                else {
-                    positions.push(p00.x * 0.5, p00.y * 0.5, p00.z * 0.5);
-                }
+                positions.push(p00.x, p00.y, p00.z);
+                
                 uvs.push(i0 / chunck.size);
                 uvs.push(j0 / chunck.size);
 

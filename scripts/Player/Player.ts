@@ -283,7 +283,7 @@ class Player extends BABYLON.Mesh {
 
         let fVert = 1;
         // Add gravity and ground reaction.
-        let gFactor = 1 - (this.altitudeOnPlanet / 100);
+        let gFactor = 1 - (this.altitudeOnPlanet / 300);
         gFactor = Math.max(Math.min(gFactor, 1), 0) * 9.8;
         this._gravityFactor.copyFrom(this._downDirection).scaleInPlace(gFactor * deltaTime);
         this._groundFactor.copyFromFloats(0, 0, 0);
@@ -418,7 +418,7 @@ class Player extends BABYLON.Mesh {
         let correctionAxis: BABYLON.Vector3 = BABYLON.Vector3.Cross(currentUp, this._upDirection);
         let correctionAngle: number = Math.abs(Math.asin(correctionAxis.length()));
         
-        let gFactor = 1 - (this.altitudeOnPlanet / 100);
+        let gFactor = 1 - (this.altitudeOnPlanet / 300);
         gFactor = Math.max(Math.min(gFactor, 1), 0);
         gFactor = gFactor * gFactor;
 

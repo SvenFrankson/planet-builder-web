@@ -18,6 +18,8 @@ class Planet extends BABYLON.Mesh {
     public chunckManager: PlanetChunckManager;
     public generator: PlanetGenerator;
 
+    public chunckMaterial: PlanetMaterial;
+
     constructor(
         name: string,
         position: BABYLON.Vector3,
@@ -44,6 +46,9 @@ class Planet extends BABYLON.Mesh {
         if (name === "Paulita") {
             this.generator.showDebug();
         }
+
+        this.chunckMaterial = new PlanetMaterial(this.name + "-chunck-material", this.scene);
+        this.chunckMaterial.setPlanetPos(this.position);
 
         this.sides = [];
         this.sides[Side.Front] = new PlanetSide(Side.Front, this);

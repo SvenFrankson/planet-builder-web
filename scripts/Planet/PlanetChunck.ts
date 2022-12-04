@@ -224,21 +224,15 @@ class PlanetChunck extends AbstractPlanetChunck {
         );
         this._normal = BABYLON.Vector3.Normalize(this.barycenter);
 
+        let kMin = this.kPos * PlanetTools.CHUNCKSIZE;
+        let kMax = (this.kPos + 1) * PlanetTools.CHUNCKSIZE;
         let f = Math.pow(2, this.planet.degree - this.degree);
-        let hMed = 0;
-        for (let i = 0; i <= 1; i += 0.5) {
-            for (let j = 0; j <= 1; j += 0.5) {
-                hMed += this.planet.generator.altitudeMap.getForSide(
-                    this.side,
-                    PlanetTools.CHUNCKSIZE * (this.iPos + i) * f,
-                    PlanetTools.CHUNCKSIZE * (this.jPos + j) * f
-                ) * this.kPosMax * PlanetTools.CHUNCKSIZE;
-            }
-        }
-        hMed = hMed / 9;
-        let hMin = PlanetTools.KGlobalToAltitude(this.kPos * PlanetTools.CHUNCKSIZE);
-        let hMax = PlanetTools.KGlobalToAltitude((this.kPos + 1) * PlanetTools.CHUNCKSIZE);
-        if (hMed > hMin && hMed <= hMax) {
+        let kShell = Math.floor(this.planet.generator.altitudeMap.getForSide(
+            this.side,
+            (PlanetTools.CHUNCKSIZE * (this.iPos + 0.5)) * f,
+            (PlanetTools.CHUNCKSIZE * (this.jPos + 0.5)) * f
+        ) * this.kPosMax * PlanetTools.CHUNCKSIZE);
+        if (kMin <= kShell && kShell < kMax) {
             this.isShellLevel = true;
         }
 
@@ -499,7 +493,7 @@ class PlanetChunck extends AbstractPlanetChunck {
             let vertexData = vertexDatas[0];
             if (vertexData.positions.length > 0) {
                 vertexData.applyToMesh(this.mesh);
-                this.mesh.material = SharedMaterials.MainMaterial();
+                this.mesh.material = this.planet.chunckMaterial;
             }
             let waterVertexData = vertexDatas[1];
             if (waterVertexData) {
