@@ -143,6 +143,21 @@ class MainMenuPlanetSelectionPage extends MainMenuPanelPage {
         }
         this.holoSlika.add(buttonGo);
 
+        let buttonKillChunckManagers = new SlikaButton(
+            "K",
+            new SPosition(80, 270),
+            BABYLON.Color3.Red(),
+            100,
+            100,
+            80
+        );
+        buttonKillChunckManagers.onPointerUp = () => {
+            this.mainMenuPanel.main.planets.forEach(p => {
+                p.chunckManager.dispose();
+            });
+        }
+        this.holoSlika.add(buttonKillChunckManagers);
+
         this.elements.push(title1, buttonLeft, buttonRight, this.planetNameElement, planetImage, this.planetDescElement, buttonBack, buttonGo);
     }
 
