@@ -46,7 +46,7 @@ class Demo extends Main {
 
 			let kPosMax = 7;
 			let planetTest: Planet = PlanetGeneratorFactory.Create(BABYLON.Vector3.Zero(), PlanetGeneratorType.Mars, kPosMax, this.scene);
-			planetTest.initialize();
+			planetTest.instantiate();
 			//let moon: Planet = new Planet("Moon", 2, 0.60, this.scene);
 			//moon.position.x = 160;
 			//moon.initialize();

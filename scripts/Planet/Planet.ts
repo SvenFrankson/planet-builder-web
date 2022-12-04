@@ -2,9 +2,9 @@ class Planet extends BABYLON.Mesh {
 
     public static DEBUG_INSTANCE: Planet;
 
-    private sides: PlanetSide[];
+    private planetSides: PlanetSide[];
     public GetSide(side: Side): PlanetSide {
-        return this.sides[side];
+        return this.planetSides[side];
     }
 
     public degree: number;
@@ -35,6 +35,7 @@ class Planet extends BABYLON.Mesh {
         
         this.kPosMax = kPosMax;
         this.degree = PlanetTools.KPosToDegree(this.kPosMax);
+        console.log(this.name + " " + this.degree);
 
         this.seaLevel = Math.round(this.kPosMax * this.seaLevelRatio * PlanetTools.CHUNCKSIZE);
         this.seaAltitude = PlanetTools.KGlobalToAltitude(this.seaLevel);
@@ -43,33 +44,33 @@ class Planet extends BABYLON.Mesh {
         if (!this.generator) {
             debugger;
         }
-        if (name === "Paulita") {
-            this.generator.showDebug();
-        }
 
         this.chunckMaterial = new PlanetMaterial(this.name + "-chunck-material", this.scene);
         this.chunckMaterial.setPlanetPos(this.position);
 
-        this.sides = [];
-        this.sides[Side.Front] = new PlanetSide(Side.Front, this);
-        this.sides[Side.Right] = new PlanetSide(Side.Right, this);
-        this.sides[Side.Back] = new PlanetSide(Side.Back, this);
-        this.sides[Side.Left] = new PlanetSide(Side.Left, this);
-        this.sides[Side.Top] = new PlanetSide(Side.Top, this);
-        this.sides[Side.Bottom] = new PlanetSide(Side.Bottom, this);
+        this.planetSides = [];
+        this.planetSides[Side.Front] = new PlanetSide(Side.Front, this);
+        this.planetSides[Side.Right] = new PlanetSide(Side.Right, this);
+        this.planetSides[Side.Back] = new PlanetSide(Side.Back, this);
+        this.planetSides[Side.Left] = new PlanetSide(Side.Left, this);
+        this.planetSides[Side.Top] = new PlanetSide(Side.Top, this);
+        this.planetSides[Side.Bottom] = new PlanetSide(Side.Bottom, this);
 
         this.chunckManager = new PlanetChunckManager(this._scene);
     }
 
-    public initialize(): void {
+    public instantiate(): void {
         this.chunckManager.initialize();
+        this.planetSides.forEach(planetSide => {
+            planetSide.instantiate();
+        })
     }
 
     public register(): void {
         let chunckCount = 0;
         let t0 = performance.now();
-        for (let i = 0; i < this.sides.length; i++) {
-            chunckCount += this.sides[i].register();
+        for (let i = 0; i < this.planetSides.length; i++) {
+            chunckCount += this.planetSides[i].register();
         }
         let t1 = performance.now();
         console.log("Planet " + this.name + " registered in " + (t1 - t0).toFixed(1) + "ms");

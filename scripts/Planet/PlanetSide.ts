@@ -36,7 +36,23 @@ class PlanetSide extends BABYLON.Mesh {
     
     private chunckGroups: PlanetChunckGroup[];
 
-    public seaLevelMaterial: BABYLON.Material;
+    public shellMaterial: BABYLON.Material;
+    public onShellMaterialReady(callback: () => void): void {
+        if (this.shellMaterial && this.shellMaterial.isReady()) {
+            callback();
+        }
+        else {
+            let attempt = () => {
+                if (this.shellMaterial && this.shellMaterial.isReady()) {
+                    callback();
+                }
+                else {
+                    requestAnimationFrame(attempt);
+                }
+            }
+            attempt();
+        }
+    }
 
     public getChunck(iPos: number, jPos: number, kPos: number, degree: number): PlanetChunck | PlanetChunck[] {
         if (PlanetTools.KPosToDegree(kPos) === degree + 1) {
@@ -277,7 +293,9 @@ class PlanetSide extends BABYLON.Mesh {
         this._side = side;
         this.rotationQuaternion = PlanetTools.QuaternionForSide(this._side);
         //this.freezeWorldMatrix();
+    }
 
+    public instantiate(): void {
         this.chunckGroups = [];
         for (let degree = PlanetTools.DEGREEMIN; degree <= PlanetTools.KPosToDegree(this.kPosMax); degree++) {
             this.chunckGroups[degree] = new PlanetChunckGroup(0, 0, 0, this, undefined, degree, degree - (PlanetTools.DEGREEMIN - 1));
@@ -287,7 +305,7 @@ class PlanetSide extends BABYLON.Mesh {
         //let material = new BABYLON.StandardMaterial(this.name, this.getScene());
         material.setSeaLevelTexture((this.planet.generator as PlanetGeneratorEarth).getTexture(this.side));
         material.setPlanetPos(this.planet.position);
-        this.seaLevelMaterial = material;
+        this.shellMaterial = material;
     }
     
     public register(): number {

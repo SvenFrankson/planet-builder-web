@@ -58,7 +58,7 @@ class Game extends Main {
 		return new Promise<void>(resolve => {
 			let kPosMax = 7;
 			let planetTest: Planet = PlanetGeneratorFactory.Create(BABYLON.Vector3.Zero(), PlanetGeneratorType.Earth, kPosMax, this.scene);
-			planetTest.initialize();
+			planetTest.instantiate();
 			window["PlanetTest"] = planetTest;
 
 			Game.Player = new Player(new BABYLON.Vector3(0, (kPosMax + 1) * PlanetTools.CHUNCKSIZE * 0.8, 0), this);

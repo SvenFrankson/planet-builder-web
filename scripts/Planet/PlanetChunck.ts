@@ -523,7 +523,7 @@ class PlanetChunck extends AbstractPlanetChunck {
         }
 
         PlanetChunckMeshBuilder.BuildShellLevelVertexData(this).applyToMesh(this.mesh);
-        this.mesh.material = this.planetSide.seaLevelMaterial;
+        this.mesh.material = this.planetSide.shellMaterial;
 
         this.mesh.parent = this.planetSide;
         requestAnimationFrame(() => {

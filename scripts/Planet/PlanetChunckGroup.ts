@@ -35,6 +35,7 @@ class PlanetChunckGroup extends AbstractPlanetChunck {
 
         let kMin = Math.floor((this.kOffset + (this.kPos) * levelCoef) * PlanetTools.CHUNCKSIZE);
         let kMax = Math.floor((this.kOffset + (this.kPos + 1) * levelCoef) * PlanetTools.CHUNCKSIZE);
+        kMax = Math.min(kMax, Math.floor(this.kOffsetNext * PlanetTools.CHUNCKSIZE));
 
         let altMin = PlanetTools.KGlobalToAltitude(Math.floor((this.kOffset + (this.kPos) * levelCoef) * PlanetTools.CHUNCKSIZE));
         let altMax = PlanetTools.KGlobalToAltitude(Math.floor((this.kOffset + (this.kPos + 1) * levelCoef) * PlanetTools.CHUNCKSIZE));
@@ -59,7 +60,7 @@ class PlanetChunckGroup extends AbstractPlanetChunck {
             planetSide.computeWorldMatrix(true)
         );
 
-        if (kMin <= this.planet.seaLevel && this.planet.seaLevel < kMax) {
+        if (kMin < this.planet.seaLevel && this.planet.seaLevel < kMax) {
             this.isShellLevel = true;
         }
 
@@ -98,7 +99,11 @@ class PlanetChunckGroup extends AbstractPlanetChunck {
         this.mesh = new BABYLON.Mesh(this.name);
 
         PlanetChunckMeshBuilder.BuildShellLevelVertexData(this).applyToMesh(this.mesh);
-        this.mesh.material = this.planetSide.seaLevelMaterial;
+        this.planetSide.onShellMaterialReady(() => {
+            if (this.mesh && !this.mesh.isDisposed()) {
+                this.mesh.material = this.planetSide.shellMaterial;
+            }
+        })
         this.mesh.parent = this.planetSide;
         
         /*

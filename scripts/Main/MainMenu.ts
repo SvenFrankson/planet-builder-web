@@ -38,10 +38,8 @@ class MainMenu extends Main {
 			//testGrab.instantiate();
 			
 			let mainMenuPlanet: Planet = PlanetGeneratorFactory.Create(BABYLON.Vector3.Zero(), PlanetGeneratorType.Flat, 1, this.scene);
-			mainMenuPlanet.initialize();
+			mainMenuPlanet.instantiate();
 			this.planets = [mainMenuPlanet];
-
-			this.generatePlanets();
 
 			let mainPanel = new MainMenuPanel(100, this);
 			mainPanel.instantiate();
@@ -51,16 +49,19 @@ class MainMenu extends Main {
 			setTimeout(() => {
 				mainPanel.holoSlika.needRedraw = true;
 			}, 1000);
-			
-			this.player = new Player(new BABYLON.Vector3(0, 1.7 + this._testAltitude, - 0.8), this);
-			this.cameraManager.player = this.player;
-			this.cameraManager.setMode(CameraMode.Player);
             
             let debugPlanetPerf = new DebugPlanetPerf(this, true);
             debugPlanetPerf.show();
 
 			PlanetChunckVertexData.InitializeData().then(
 				() => {
+			
+					this.player = new Player(new BABYLON.Vector3(0, 1.7 + this._testAltitude + 1, - 0.8), this);
+					this.cameraManager.player = this.player;
+					this.cameraManager.setMode(CameraMode.Player);
+
+					this.generatePlanets();
+
 					this.planets.forEach(p => {
 						p.register();
 					})
@@ -71,8 +72,6 @@ class MainMenu extends Main {
 					resolve();
 				}
 			);
-
-			resolve();
 		})
 	}
 
@@ -80,7 +79,7 @@ class MainMenu extends Main {
 		
 	}
 
-	public generatePlanets(): void {
+	public async generatePlanets(): Promise<void> {
 		let orbitCount = 5;
 		let orbitRadius = 200;
 		let alpha = 0;
@@ -88,7 +87,7 @@ class MainMenu extends Main {
 			alpha += Math.PI * 0.5 + Math.PI * Math.random();
 			let kPosMax = Math.floor(3 + 5 * Math.random());
 			let planet: Planet = PlanetGeneratorFactory.Create(new BABYLON.Vector3(Math.cos(alpha) * orbitRadius * (i + 1), 0, Math.sin(alpha) * orbitRadius * (i + 1)), PlanetGeneratorType.Earth, kPosMax, this.scene);
-			planet.initialize();
+			planet.instantiate();
 			this.planets.push(planet);
 		}
 	}
