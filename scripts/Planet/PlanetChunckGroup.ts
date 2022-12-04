@@ -30,34 +30,45 @@ class PlanetChunckGroup extends AbstractPlanetChunck {
         let levelCoef = Math.pow(2, level);
         let iCenter = PlanetTools.CHUNCKSIZE * (this.iPos + 0.5) * levelCoef;
         let jCenter = PlanetTools.CHUNCKSIZE * (this.jPos + 0.5) * levelCoef;
-        this._barycenter = PlanetTools.EvaluateVertex(
-            this.size,
-            iCenter,
-            jCenter
-        ).scale(
-            PlanetTools.KGlobalToAltitude(Math.floor((this.kOffset + (this.kPos + 0.5) * levelCoef) * PlanetTools.CHUNCKSIZE))
-        );
+
+        let pts: BABYLON.Vector3[] = [];
+
+        let kMin = Math.floor((this.kOffset + (this.kPos) * levelCoef) * PlanetTools.CHUNCKSIZE);
+        let kMax = Math.floor((this.kOffset + (this.kPos + 1) * levelCoef) * PlanetTools.CHUNCKSIZE);
+
+        let altMin = PlanetTools.KGlobalToAltitude(Math.floor((this.kOffset + (this.kPos) * levelCoef) * PlanetTools.CHUNCKSIZE));
+        let altMax = PlanetTools.KGlobalToAltitude(Math.floor((this.kOffset + (this.kPos + 1) * levelCoef) * PlanetTools.CHUNCKSIZE));
+
+        pts.push(PlanetTools.EvaluateVertex(this.size, PlanetTools.CHUNCKSIZE * (this.iPos + 0) * levelCoef, PlanetTools.CHUNCKSIZE * (this.jPos + 0) * levelCoef).scale(altMin));
+        pts.push(PlanetTools.EvaluateVertex(this.size, PlanetTools.CHUNCKSIZE * (this.iPos + 1) * levelCoef, PlanetTools.CHUNCKSIZE * (this.jPos + 0) * levelCoef).scale(altMin));
+        pts.push(PlanetTools.EvaluateVertex(this.size, PlanetTools.CHUNCKSIZE * (this.iPos + 1) * levelCoef, PlanetTools.CHUNCKSIZE * (this.jPos + 1) * levelCoef).scale(altMin));
+        pts.push(PlanetTools.EvaluateVertex(this.size, PlanetTools.CHUNCKSIZE * (this.iPos + 0) * levelCoef, PlanetTools.CHUNCKSIZE * (this.jPos + 1) * levelCoef).scale(altMin));
+        pts.push(PlanetTools.EvaluateVertex(this.size, PlanetTools.CHUNCKSIZE * (this.iPos + 0) * levelCoef, PlanetTools.CHUNCKSIZE * (this.jPos + 0) * levelCoef).scale(altMax));
+        pts.push(PlanetTools.EvaluateVertex(this.size, PlanetTools.CHUNCKSIZE * (this.iPos + 1) * levelCoef, PlanetTools.CHUNCKSIZE * (this.jPos + 0) * levelCoef).scale(altMax));
+        pts.push(PlanetTools.EvaluateVertex(this.size, PlanetTools.CHUNCKSIZE * (this.iPos + 1) * levelCoef, PlanetTools.CHUNCKSIZE * (this.jPos + 1) * levelCoef).scale(altMax));
+        pts.push(PlanetTools.EvaluateVertex(this.size, PlanetTools.CHUNCKSIZE * (this.iPos + 0) * levelCoef, PlanetTools.CHUNCKSIZE * (this.jPos + 1) * levelCoef).scale(altMax));
+
+        this._barycenter = BABYLON.Vector3.Zero();
+        pts.forEach(p => {
+            this._barycenter.addInPlace(p);
+        })
+        this._barycenter.scaleInPlace(1 / pts.length);
+
         this._barycenter = BABYLON.Vector3.TransformCoordinates(
             this._barycenter,
             planetSide.computeWorldMatrix(true)
         );
 
         // Evaluate shellMesh center altitude.
+        let hGlobalCenter = (this.kOffset + (this.kPos + 0.5)) * PlanetTools.CHUNCKSIZE;
         let f = Math.pow(2, this.planet.degree - this.degree);
-        let hMed = 0;
-        for (let i = 0; i <= 1; i += 0.5) {
-            for (let j = 0; j <= 1; j += 0.5) {
-                hMed += this.planet.generator.altitudeMap.getForSide(
-                    this.side,
-                    (PlanetTools.CHUNCKSIZE * (this.iPos + i) * levelCoef) * f,
-                    (PlanetTools.CHUNCKSIZE * (this.jPos + j) * levelCoef) * f
-                ) * this.kPosMax * PlanetTools.CHUNCKSIZE;
-            }
-        }
-        hMed = hMed / 9;
-        let hMin = PlanetTools.KGlobalToAltitude(Math.floor((this.kOffset + (this.kPos) * levelCoef) * PlanetTools.CHUNCKSIZE));
-        let hMax = PlanetTools.KGlobalToAltitude(Math.floor((this.kOffset + (this.kPos + 1) * levelCoef) * PlanetTools.CHUNCKSIZE));
-        if (hMed > hMin && hMed <= hMax) {
+        let kMed = this.planet.generator.altitudeMap.getForSide(
+            this.side,
+            (PlanetTools.CHUNCKSIZE * (this.iPos + 0.5) * levelCoef) * f,
+            (PlanetTools.CHUNCKSIZE * (this.jPos + 0.5) * levelCoef) * f
+        ) * this.kPosMax * PlanetTools.CHUNCKSIZE
+        let altMed = PlanetTools.KGlobalToAltitude(Math.floor(kMed));
+        if (kMin <= this.planet.seaLevel && this.planet.seaLevel < kMax) {
             this.isShellLevel = true;
         }
 
@@ -99,7 +110,74 @@ class PlanetChunckGroup extends AbstractPlanetChunck {
         this.mesh.material = this.planetSide.seaLevelMaterial;
         this.mesh.parent = this.planetSide;
         
-        //this.mesh.freezeWorldMatrix();
+        let pts: BABYLON.Vector3[] = [];
+        let levelCoef = Math.pow(2, this.level);
+
+        let altMin = PlanetTools.KGlobalToAltitude(Math.floor((this.kOffset + (this.kPos) * levelCoef) * PlanetTools.CHUNCKSIZE));
+        let altMax = PlanetTools.KGlobalToAltitude(Math.floor((this.kOffset + (this.kPos + 1) * levelCoef) * PlanetTools.CHUNCKSIZE));
+
+        pts.push(PlanetTools.EvaluateVertex(this.size, PlanetTools.CHUNCKSIZE * (this.iPos + 0) * levelCoef, PlanetTools.CHUNCKSIZE * (this.jPos + 0) * levelCoef).scale(altMin));
+        pts.push(PlanetTools.EvaluateVertex(this.size, PlanetTools.CHUNCKSIZE * (this.iPos + 1) * levelCoef, PlanetTools.CHUNCKSIZE * (this.jPos + 0) * levelCoef).scale(altMin));
+        pts.push(PlanetTools.EvaluateVertex(this.size, PlanetTools.CHUNCKSIZE * (this.iPos + 1) * levelCoef, PlanetTools.CHUNCKSIZE * (this.jPos + 1) * levelCoef).scale(altMin));
+        pts.push(PlanetTools.EvaluateVertex(this.size, PlanetTools.CHUNCKSIZE * (this.iPos + 0) * levelCoef, PlanetTools.CHUNCKSIZE * (this.jPos + 1) * levelCoef).scale(altMin));
+        pts.push(PlanetTools.EvaluateVertex(this.size, PlanetTools.CHUNCKSIZE * (this.iPos + 0) * levelCoef, PlanetTools.CHUNCKSIZE * (this.jPos + 0) * levelCoef).scale(altMax));
+        pts.push(PlanetTools.EvaluateVertex(this.size, PlanetTools.CHUNCKSIZE * (this.iPos + 1) * levelCoef, PlanetTools.CHUNCKSIZE * (this.jPos + 0) * levelCoef).scale(altMax));
+        pts.push(PlanetTools.EvaluateVertex(this.size, PlanetTools.CHUNCKSIZE * (this.iPos + 1) * levelCoef, PlanetTools.CHUNCKSIZE * (this.jPos + 1) * levelCoef).scale(altMax));
+        pts.push(PlanetTools.EvaluateVertex(this.size, PlanetTools.CHUNCKSIZE * (this.iPos + 0) * levelCoef, PlanetTools.CHUNCKSIZE * (this.jPos + 1) * levelCoef).scale(altMax));
+
+        let f = 0.99;
+
+        let color = new BABYLON.Color4(1, 1, 1, 1);
+        if (this.level === 1) {
+            color = new BABYLON.Color4(1, 0, 0, 1);
+            //this.mesh.material = SharedMaterials.RedMaterial();
+            f = 0.99;
+        }
+        if (this.level === 2) {
+            color = new BABYLON.Color4(0, 1, 0, 1);
+            //this.mesh.material = SharedMaterials.GreenMaterial();
+            f = 0.98;
+        }
+        if (this.level === 3) {
+            color = new BABYLON.Color4(0, 0, 1, 1);
+            //this.mesh.material = SharedMaterials.BlueMaterial();
+            f = 0.97;
+        }
+        if (this.level === 4) {
+            color = new BABYLON.Color4(0, 1, 1, 1);
+            f = 0.96;
+        }
+
+        f = 1;
+        for (let i = 0; i < pts.length; i++) {
+            pts[i] = pts[i].scale(f).add(this.barycenter.scale(1 - f));
+        }
+
+        let hitBox = BABYLON.MeshBuilder.CreateLineSystem(
+            "hitbox",
+            {
+                lines: [
+                    [pts[0], pts[1], pts[2], pts[3], pts[0]],
+                    [pts[4], pts[5], pts[6], pts[7], pts[4]],
+                    [pts[0], pts[4]],
+                    [pts[1], pts[5]],
+                    [pts[2], pts[6]],
+                    [pts[3], pts[7]]
+                ],
+                colors: [
+                    [color, color, color, color, color],
+                    [color, color, color, color, color],
+                    [color, color],
+                    [color, color],
+                    [color, color],
+                    [color, color]
+                ]
+            },
+            this.scene
+        );
+        
+        hitBox.layerMask = 0x10000000;
+        hitBox.parent = this.mesh;
     }
 
     public getPlanetChunck(iPos: number, jPos: number, kPos: number): PlanetChunck {
