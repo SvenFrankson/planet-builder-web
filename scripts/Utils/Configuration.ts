@@ -108,20 +108,20 @@ class Configuration {
     public controlConfiguration: ConfigurationControl = new ConfigurationControl();
 
     public setConfHighPreset(): void {
-        this.performanceConfiguration.setLodCount(3);
+        this.performanceConfiguration.setLodCount(3, true);
         this.performanceConfiguration.setLodMin(0);
         this.performanceConfiguration.setHoloScreenFactor(1);
         
     }
     
     public setConfMediumPreset(): void {
-        this.performanceConfiguration.setLodCount(2);
+        this.performanceConfiguration.setLodCount(2, true);
         this.performanceConfiguration.setLodMin(1);
         this.performanceConfiguration.setHoloScreenFactor(0.75);
     }
     
     public setConfLowPreset(): void {
-        this.performanceConfiguration.setLodCount(1);
+        this.performanceConfiguration.setLodCount(1, true);
         this.performanceConfiguration.setLodMin(2);
         this.performanceConfiguration.setHoloScreenFactor(0.5);
     }

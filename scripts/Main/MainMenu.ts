@@ -52,7 +52,7 @@ class MainMenu extends Main {
 			}, 1000);
             
 			
-			this.player = new Player(new BABYLON.Vector3(0, 1.7 + this._testAltitude + 1, - 0.8), this);
+			this.player = new Player(new BABYLON.Vector3(0, 1.7 + this._testAltitude + 3, - 0.8), this);
 			this.cameraManager.player = this.player;
 			this.cameraManager.setMode(CameraMode.Player);
 
@@ -93,7 +93,7 @@ class MainMenu extends Main {
 		for (let i = 0; i < orbitCount; i++) {
 			alpha += Math.PI * 0.5 + Math.PI * Math.random();
 			let kPosMax = Math.floor(3 + 5 * Math.random());
-			let planet: Planet = PlanetGeneratorFactory.Create(new BABYLON.Vector3(Math.cos(alpha) * orbitRadius * (i + 1), 0, Math.sin(alpha) * orbitRadius * (i + 1)), PlanetGeneratorType.Earth, kPosMax, this.scene);
+			let planet: Planet = PlanetGeneratorFactory.Create(new BABYLON.Vector3(Math.cos(alpha) * orbitRadius * (i + 1), 0, Math.sin(alpha) * orbitRadius * (i + 1)), Math.floor(Math.random() * 2 + 1), kPosMax, this.scene);
 			planet.instantiate();
 			this.planets.push(planet);
 		}
