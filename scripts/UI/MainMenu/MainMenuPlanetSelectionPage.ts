@@ -41,7 +41,7 @@ class MainMenuPlanetSelectionPage extends MainMenuPanelPage {
         let buttonLeft = new SlikaButton(
             "<",
             new SPosition(80, 470),
-            BABYLON.Color3.FromHexString("#8dd6c0"),
+            SlikaButtonState.Enabled,
             100,
             100,
             80
@@ -55,7 +55,7 @@ class MainMenuPlanetSelectionPage extends MainMenuPanelPage {
         let buttonRight = new SlikaButton(
             ">",
             new SPosition(820, 470),
-            BABYLON.Color3.FromHexString("#8dd6c0"),
+            SlikaButtonState.Enabled,
             100,
             100,
             80
@@ -100,7 +100,7 @@ class MainMenuPlanetSelectionPage extends MainMenuPanelPage {
         let buttonBack = new SlikaButton(
             "BACK",
             new SPosition(120, 820),
-            BABYLON.Color3.FromHexString("#8dd6c0"),
+            SlikaButtonState.Enabled,
             200,
             100,
             40
@@ -115,7 +115,7 @@ class MainMenuPlanetSelectionPage extends MainMenuPanelPage {
         let buttonGo = new SlikaButton(
             "GO !",
             new SPosition(600, 770),
-            BABYLON.Color3.FromHexString("#8dd6c0"),
+            SlikaButtonState.Enabled,
             300,
             150,
             60
@@ -143,10 +143,11 @@ class MainMenuPlanetSelectionPage extends MainMenuPanelPage {
         }
         this.holoSlika.add(buttonGo);
 
+        /*
         let buttonKillChunckManagers = new SlikaButton(
             "K",
             new SPosition(80, 270),
-            BABYLON.Color3.Red(),
+            SlikaButtonState.Red,
             100,
             100,
             80
@@ -157,6 +158,7 @@ class MainMenuPlanetSelectionPage extends MainMenuPanelPage {
             });
         }
         this.holoSlika.add(buttonKillChunckManagers);
+        */
 
         this.elements.push(title1, buttonLeft, buttonRight, this.planetNameElement, planetImage, this.planetDescElement, buttonBack, buttonGo);
     }

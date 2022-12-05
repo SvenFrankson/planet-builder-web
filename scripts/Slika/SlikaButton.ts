@@ -1,16 +1,18 @@
 enum SlikaButtonState {
     Enabled,
     Disabled,
-    Active
+    Active,
+    Red
 }
 
 class SlikaButton extends SlikaElement {
 
-    public state: SlikaButtonState = SlikaButtonState.Enabled;
+    public color: BABYLON.Color3 = BABYLON.Color3.White();
     public colors: BABYLON.Color3[] = [
         BABYLON.Color3.FromHexString("#8dd6c0"),
         BABYLON.Color3.FromHexString("#a0bab2"),
-        BABYLON.Color3.FromHexString("#cc8a2d")
+        BABYLON.Color3.FromHexString("#cc8a2d"),
+        BABYLON.Color3.FromHexString("#ff0000")
     ];
 
     private _text: SlikaText;
@@ -33,7 +35,7 @@ class SlikaButton extends SlikaElement {
     constructor(
         public label: string,
         public position: SPosition,
-        public color: BABYLON.Color3 = BABYLON.Color3.White(),
+        public state: SlikaButtonState = SlikaButtonState.Enabled,
         public w = 450,
         public h = 160,
         public fontSize: number = 80
@@ -42,7 +44,8 @@ class SlikaButton extends SlikaElement {
         this.isPickable = true;
         this.hitBox = SRect.WidthHeight(this.position.x, this.position.y, 360, 132);
 
-        let hexColor = color.toHexString();
+        this.color.copyFrom(this.colors[this.state]);
+        let hexColor = this.color.toHexString();
 
         this._text = new SlikaText(
             {
@@ -50,7 +53,7 @@ class SlikaButton extends SlikaElement {
                 x: this.position.x + w * 0.5,
                 y: this.position.y + h * 0.5 + this.fontSize * 0.3,
                 textAlign: "center",
-                color: color,
+                color: this.color,
                 fontSize: this.fontSize,
                 fontFamily: "XoloniumRegular",
                 highlightRadius: 20

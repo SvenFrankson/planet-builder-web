@@ -25,7 +25,7 @@ class MainMenuPanelGraphicsPage extends MainMenuPanelPage {
         let buttonHigh = new SlikaButton(
             "HIGH",
             new SPosition(120, 250),
-            BABYLON.Color3.FromHexString("#8dd6c0"),
+            SlikaButtonState.Enabled,
             350,
             120,
             50
@@ -48,7 +48,7 @@ class MainMenuPanelGraphicsPage extends MainMenuPanelPage {
         let buttonMedium = new SlikaButton(
             "MEDIUM",
             new SPosition(120, 420),
-            BABYLON.Color3.FromHexString("#8dd6c0"),
+            SlikaButtonState.Enabled,
             350,
             120,
             50
@@ -71,7 +71,7 @@ class MainMenuPanelGraphicsPage extends MainMenuPanelPage {
         let buttonLow = new SlikaButton(
             "LOW",
             new SPosition(120, 590),
-            BABYLON.Color3.FromHexString("#8dd6c0"),
+            SlikaButtonState.Enabled,
             350,
             120,
             50
@@ -113,7 +113,7 @@ class MainMenuPanelGraphicsPage extends MainMenuPanelPage {
         let buttonBack = new SlikaButton(
             "BACK",
             new SPosition(120, 820),
-            BABYLON.Color3.FromHexString("#8dd6c0"),
+            SlikaButtonState.Enabled,
             200,
             100,
             40
@@ -128,7 +128,7 @@ class MainMenuPanelGraphicsPage extends MainMenuPanelPage {
         let buttonNext = new SlikaButton(
             "NEXT",
             new SPosition(700, 820),
-            BABYLON.Color3.FromHexString("#8dd6c0"),
+            SlikaButtonState.Disabled,
             200,
             100,
             40

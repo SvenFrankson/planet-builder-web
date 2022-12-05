@@ -65,7 +65,7 @@ class MainMenuPanelIntroPage extends MainMenuPanelPage {
         let buttonPlay = new SlikaButton(
             "Enter",
             new SPosition(275, 550),
-            BABYLON.Color3.FromHexString("#8dd6c0")
+            SlikaButtonState.Enabled
         );
         buttonPlay.onPointerUp = async () => {
             this.mainMenuPanel.animateTitleHeight(this.mainMenuPanel.graphicsPage.targetTitleHeight, 1);
