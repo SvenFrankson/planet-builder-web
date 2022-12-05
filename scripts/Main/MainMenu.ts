@@ -3,6 +3,7 @@
 class MainMenu extends Main {
 
 	public player: Player;
+	public planetSky: PlanetSky;
 	private _testAltitude = 20.7;
 
 	public createScene(): void {
@@ -50,15 +51,21 @@ class MainMenu extends Main {
 				mainPanel.holoSlika.needRedraw = true;
 			}, 1000);
             
+			
+			this.player = new Player(new BABYLON.Vector3(0, 1.7 + this._testAltitude + 1, - 0.8), this);
+			this.cameraManager.player = this.player;
+			this.cameraManager.setMode(CameraMode.Player);
+
             let debugPlanetPerf = new DebugPlanetPerf(this, true);
             debugPlanetPerf.show();
 
+			this.planetSky = new PlanetSky(this.scene);
+			this.planetSky.setInvertLightDir((new BABYLON.Vector3(0.5, 2.5, 1.5)).normalize());
+			this.planetSky.initialize();
+			this.planetSky.player = this.player;
+
 			PlanetChunckVertexData.InitializeData().then(
 				() => {
-			
-					this.player = new Player(new BABYLON.Vector3(0, 1.7 + this._testAltitude + 1, - 0.8), this);
-					this.cameraManager.player = this.player;
-					this.cameraManager.setMode(CameraMode.Player);
 
 					this.generatePlanets();
 

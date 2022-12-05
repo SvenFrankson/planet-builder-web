@@ -146,7 +146,7 @@ class Player extends BABYLON.Mesh {
 
     private _rightDirection: BABYLON.Vector3 = new BABYLON.Vector3(1, 0, 0);
     private _leftDirection: BABYLON.Vector3 = new BABYLON.Vector3(-1, 0, 0);
-    private _upDirection: BABYLON.Vector3 = new BABYLON.Vector3(0, 1, 0);
+    public upDirection: BABYLON.Vector3 = new BABYLON.Vector3(0, 1, 0);
     private _downDirection: BABYLON.Vector3 = new BABYLON.Vector3(0, -1, 0);
     private _forwardDirection: BABYLON.Vector3 = new BABYLON.Vector3(0, 0, 1);
     private _backwardDirection: BABYLON.Vector3 = new BABYLON.Vector3(0, 0, -1);
@@ -259,10 +259,10 @@ class Player extends BABYLON.Mesh {
         this._leftDirection.scaleInPlace(-1);
 
         if (this.planet) {
-            this._upDirection.copyFrom(this.position).subtractInPlace(this.planet.position);
-            this._upDirection.normalize();
+            this.upDirection.copyFrom(this.position).subtractInPlace(this.planet.position);
+            this.upDirection.normalize();
         }
-        this._downDirection.copyFrom(this._upDirection);
+        this._downDirection.copyFrom(this.upDirection);
         this._downDirection.scaleInPlace(-1);
 
         this.getDirectionToRef(BABYLON.Axis.Z, this._forwardDirection);
@@ -415,7 +415,7 @@ class Player extends BABYLON.Mesh {
             return;
         }
         let currentUp: BABYLON.Vector3 = BABYLON.Vector3.Normalize(BABYLON.Vector3.TransformNormal(BABYLON.Axis.Y, this.getWorldMatrix()));
-        let correctionAxis: BABYLON.Vector3 = BABYLON.Vector3.Cross(currentUp, this._upDirection);
+        let correctionAxis: BABYLON.Vector3 = BABYLON.Vector3.Cross(currentUp, this.upDirection);
         let correctionAngle: number = Math.abs(Math.asin(correctionAxis.length()));
         
         let gFactor = 1 - (this.altitudeOnPlanet / 300);
