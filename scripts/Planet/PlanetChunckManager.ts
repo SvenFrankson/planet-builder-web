@@ -147,11 +147,9 @@ class PlanetChunckManager {
         }
         else {
             if (chunck instanceof PlanetChunck) {
-                if (layerIndex < Config.performanceConfiguration.lodCount - 1) {
-                    this.cancelDraw(chunck);
-                    chunck.collapse();
-                    return;
-                }
+                this.cancelDraw(chunck);
+                chunck.collapse();
+                return;
             }
             else if (chunck instanceof PlanetChunckGroup) {
                 let expectedLevel = layerIndex - (Config.performanceConfiguration.lodCount - 1);
@@ -160,7 +158,7 @@ class PlanetChunckManager {
                     chunck.subdivide();
                     return;
                 }
-                else if (chunck.level < expectedLevel - 1) {
+                else if (chunck.level < expectedLevel) {
                     //console.log("col " + chunck.name + " expected " + expectedLevel + " " + chunck.sqrDistanceToViewpoint.toFixed(0));
                     chunck.collapse();
                     return;

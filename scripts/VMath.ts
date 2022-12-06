@@ -52,6 +52,13 @@ class VMath {
         return ref;
     }
 
+    private static _Tmp5: BABYLON.Vector3 = BABYLON.Vector3.One();
+    public static ForceDistanceInPlace(point: BABYLON.Vector3, origin: BABYLON.Vector3, distance: number): BABYLON.Vector3 {
+        VMath._Tmp5.copyFrom(point).subtractInPlace(origin).normalize().scaleInPlace(distance);
+        point.copyFrom(origin).addInPlace(VMath._Tmp5);
+        return point;
+    }
+
     private static _Tmp4: BABYLON.Vector3 = BABYLON.Vector3.Zero();
     public static RotateVectorByQuaternionToRef(v: BABYLON.Vector3, q: BABYLON.Quaternion, ref: BABYLON.Vector3): BABYLON.Vector3 {
         let u = VMath._Tmp4.copyFromFloats(q.x, q.y, q.z);

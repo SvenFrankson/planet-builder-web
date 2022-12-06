@@ -232,7 +232,7 @@ class PlanetChunck extends AbstractPlanetChunck {
             (PlanetTools.CHUNCKSIZE * (this.iPos + 0.5)) * f,
             (PlanetTools.CHUNCKSIZE * (this.jPos + 0.5)) * f
         ) * this.kPosMax * PlanetTools.CHUNCKSIZE);
-        if (kMin <= kShell && kShell < kMax) {
+        if (kMin <= this.planet.seaLevel && this.planet.seaLevel < kMax) {
             this.isShellLevel = true;
         }
 

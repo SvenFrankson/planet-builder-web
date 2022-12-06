@@ -135,7 +135,7 @@ class MainMenuPlanetSelectionPage extends MainMenuPanelPage {
                 global.i,
                 global.j,
             ) * destinationPlanet.kPosMax * PlanetTools.CHUNCKSIZE));
-            let destinationPoint = randomPosition.normalize().scale(destinationAltitude).add(destinationPlanet.position);
+            let destinationPoint = randomPosition.normalize().scale(destinationAltitude + 1).add(destinationPlanet.position);
             let flightPlan = FlyTool.CreateFlightPlan(this.mainMenuPanel.main.cameraManager.player.position, this.mainMenuPanel.main.planets[0], destinationPoint, destinationPlanet);
             console.log(flightPlan);
             FlyTool.ShowWaypoints(flightPlan.waypoints, this.mainMenuPanel.scene);
