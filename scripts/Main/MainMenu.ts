@@ -87,7 +87,7 @@ class MainMenu extends Main {
 	}
 
 	public async generatePlanets(): Promise<void> {
-		let orbitCount = 5;
+		let orbitCount = 3;
 		let orbitRadius = 200;
 		let alpha = 0;
 		for (let i = 0; i < orbitCount; i++) {

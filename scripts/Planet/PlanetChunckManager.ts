@@ -62,9 +62,12 @@ class PlanetChunckManager {
         this.scene.onBeforeRenderObservable.add(this._update);
 
         Config.performanceConfiguration.onLodConfigChangedCallbacks.push(() => {
-            for (let layerIndex = 0; layerIndex < this._layersCount; layerIndex++) {
-                this._layers[this._layers.length - 1].push(...this._layers[layerIndex]);
-                this._layers[layerIndex] = [];
+            for (let layerIndex = 0; layerIndex < this._layersCount - 1; layerIndex++) {
+                let layer = this._layers[layerIndex];
+                if (layer && layer[0] && layer[0] instanceof PlanetChunck) {
+                    this._layers[this._layers.length - 1].push(...layer);
+                    layer.length = 0;
+                }
             }
         });
     }

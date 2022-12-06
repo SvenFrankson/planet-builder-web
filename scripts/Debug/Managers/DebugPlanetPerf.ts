@@ -82,7 +82,7 @@ class DebugPlanetPerf {
 
         if (this._showLayer) {
             this._layerCounts = [];
-            for (let i = 0; i < 6; i++) {
+            for (let i = 0; i < Config.performanceConfiguration.lodRanges.length; i++) {
                 let id = "#layer-" + i + "-count";
                 this._layerCounts[i] = document.querySelector(id) as DebugDisplayTextValue;
                 if (!this._layerCounts[i]) {
