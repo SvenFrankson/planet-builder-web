@@ -13,7 +13,9 @@ Exporter version: 6.4.5, Blender version: 2.90.1
 	Python World class constructor completed
 	WARNING: No active camera has been assigned, or is not in a currently selected Blender layer
 	processing begun of mesh:  0-arm
-		WARNING: No materials have been assigned: 
+		processing begun of material:  Steel
+		processing begun of material:  ColoredSteel
+		processing begun of multimaterial:  arm.Multimaterial#0
 		num positions      :  466
 		num normals        :  466
 		num tangents       :  0
@@ -22,7 +24,12 @@ Exporter version: 6.4.5, Blender version: 2.90.1
 		num colors         :  1864
 		num triangles      :  190
 	processing begun of mesh:  2-foreArm
-		WARNING: No materials have been assigned: 
+		processing begun of material:  Steel
+		processing begun of material:  ColoredSteel
+		processing begun of material:  DarkSteel
+		registered as also a user of material:  Steel
+		registered as also a user of material:  ColoredSteel
+		processing begun of multimaterial:  arm.Multimaterial#1
 		num positions      :  566
 		num normals        :  566
 		num tangents       :  0
@@ -31,7 +38,11 @@ Exporter version: 6.4.5, Blender version: 2.90.1
 		num colors         :  2264
 		num triangles      :  230
 	processing begun of mesh:  1-elbow
-		WARNING: No materials have been assigned: 
+		processing begun of material:  Steel
+		processing begun of material:  ColoredSteel
+		registered as also a user of material:  Steel
+		registered as also a user of material:  ColoredSteel
+		processing begun of multimaterial:  arm.Multimaterial#2
 		num positions      :  320
 		num normals        :  320
 		num tangents       :  0
@@ -40,7 +51,11 @@ Exporter version: 6.4.5, Blender version: 2.90.1
 		num colors         :  1280
 		num triangles      :  122
 	processing begun of mesh:  3-wrist
-		WARNING: No materials have been assigned: 
+		processing begun of material:  Steel
+		processing begun of material:  ColoredSteel
+		registered as also a user of material:  Steel
+		registered as also a user of material:  ColoredSteel
+		processing begun of multimaterial:  arm.Multimaterial#3
 		num positions      :  294
 		num normals        :  294
 		num tangents       :  0
@@ -49,7 +64,11 @@ Exporter version: 6.4.5, Blender version: 2.90.1
 		num colors         :  1176
 		num triangles      :  116
 	processing begun of mesh:  4-hand
-		WARNING: No materials have been assigned: 
+		processing begun of material:  Steel
+		processing begun of material:  ColoredSteel
+		registered as also a user of material:  Steel
+		registered as also a user of material:  ColoredSteel
+		processing begun of multimaterial:  arm.Multimaterial#4
 		num positions      :  350
 		num normals        :  350
 		num tangents       :  0
@@ -58,7 +77,11 @@ Exporter version: 6.4.5, Blender version: 2.90.1
 		num colors         :  1400
 		num triangles      :  124
 	processing begun of mesh:  5-finger
-		WARNING: No materials have been assigned: 
+		processing begun of material:  Steel
+		processing begun of material:  ColoredSteel
+		registered as also a user of material:  Steel
+		registered as also a user of material:  ColoredSteel
+		processing begun of multimaterial:  arm.Multimaterial#5
 		num positions      :  241
 		num normals        :  241
 		num tangents       :  0
@@ -67,7 +90,11 @@ Exporter version: 6.4.5, Blender version: 2.90.1
 		num colors         :  964
 		num triangles      :  94
 	processing begun of mesh:  6-finger-tip
-		WARNING: No materials have been assigned: 
+		processing begun of material:  Steel
+		processing begun of material:  ColoredSteel
+		registered as also a user of material:  Steel
+		registered as also a user of material:  ColoredSteel
+		processing begun of multimaterial:  arm.Multimaterial#6
 		num positions      :  405
 		num normals        :  405
 		num tangents       :  0
@@ -76,41 +103,13 @@ Exporter version: 6.4.5, Blender version: 2.90.1
 		num colors         :  1620
 		num triangles      :  150
 	processing begun of mesh:  A-finger
-		WARNING: No materials have been assigned: 
-		num positions      :  241
-		num normals        :  241
-		num tangents       :  0
-		num uvs            :  482
-		num uvs2           :  0
-		num colors         :  964
-		num triangles      :  94
+		mesh is an instance of :  5-finger.  Processing halted.
 	processing begun of mesh:  B-finger
-		WARNING: No materials have been assigned: 
-		num positions      :  241
-		num normals        :  241
-		num tangents       :  0
-		num uvs            :  482
-		num uvs2           :  0
-		num colors         :  964
-		num triangles      :  94
+		mesh is an instance of :  5-finger.  Processing halted.
 	processing begun of mesh:  C-finger
-		WARNING: No materials have been assigned: 
-		num positions      :  241
-		num normals        :  241
-		num tangents       :  0
-		num uvs            :  482
-		num uvs2           :  0
-		num colors         :  964
-		num triangles      :  94
+		mesh is an instance of :  5-finger.  Processing halted.
 	processing begun of mesh:  Z-finger.004
-		WARNING: No materials have been assigned: 
-		num positions      :  241
-		num normals        :  241
-		num tangents       :  0
-		num uvs            :  482
-		num uvs2           :  0
-		num colors         :  964
-		num triangles      :  94
+		mesh is an instance of :  5-finger.  Processing halted.
 ========= Writing of JSON file started =========
 	writing mesh:  0-arm
 	writing mesh:  2-foreArm
@@ -119,10 +118,6 @@ Exporter version: 6.4.5, Blender version: 2.90.1
 	writing mesh:  4-hand
 	writing mesh:  5-finger
 	writing mesh:  6-finger-tip
-	writing mesh:  A-finger
-	writing mesh:  B-finger
-	writing mesh:  C-finger
-	writing mesh:  Z-finger.004
 ========= Writing of JSON file completed =========
 ========= end of processing =========
-elapsed time:  0 min, 0.1167 secs
+elapsed time:  0 min, 0.1586 secs
