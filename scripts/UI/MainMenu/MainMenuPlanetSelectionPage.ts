@@ -122,23 +122,23 @@ class MainMenuPlanetSelectionPage extends MainMenuPanelPage {
         );
         buttonGo.onPointerUp = async () => {
             let destinationPlanet = this.mainMenuPanel.main.planets[this.currentPlanetIndex];
+            let randomPosition = new BABYLON.Vector3(
+                Math.random() - 0.5,
+                Math.random() - 0.5,
+                Math.random() - 0.5,
+            ).normalize();
+            randomPosition.scaleInPlace(destinationPlanet.seaAltitude);
+            let local = PlanetTools.PlanetPositionToLocalIJK(destinationPlanet, randomPosition);
+            let global = PlanetTools.LocalIJKToGlobalIJK(local);
             let destinationAltitude = PlanetTools.KGlobalToAltitude(Math.floor(destinationPlanet.generator.altitudeMap.getForSide(
-                Side.Top,
-                destinationPlanet.generator.altitudeMap.size * 0.5,
-                destinationPlanet.generator.altitudeMap.size * 0.5,
+                local.planetChunck.side,
+                global.i,
+                global.j,
             ) * destinationPlanet.kPosMax * PlanetTools.CHUNCKSIZE));
-            console.log("altitudeMap " + (destinationPlanet.generator.altitudeMap.getForSide(
-                Side.Top,
-                destinationPlanet.generator.altitudeMap.size * 0.5,
-                destinationPlanet.generator.altitudeMap.size * 0.5,
-            )))
-            console.log("generator size " + (destinationPlanet.generator.altitudeMap.size));
-            console.log("destination altitude " + destinationAltitude);
-            console.log("destination kposMax " + destinationPlanet.kPosMax);
-            let destinationPoint = BABYLON.Vector3.Up().scale(destinationAltitude).add(destinationPlanet.position);
+            let destinationPoint = randomPosition.normalize().scale(destinationAltitude).add(destinationPlanet.position);
             let flightPlan = FlyTool.CreateFlightPlan(this.mainMenuPanel.main.cameraManager.player.position, this.mainMenuPanel.main.planets[0], destinationPoint, destinationPlanet);
             console.log(flightPlan);
-            FlyTool.ShowFlightPlan(flightPlan, this.mainMenuPanel.scene);
+            FlyTool.ShowWaypoints(flightPlan.waypoints, this.mainMenuPanel.scene);
             FlyTool.Fly(flightPlan, this.mainMenuPanel.main.cameraManager.player, this.mainMenuPanel.main.scene);
         }
         this.holoSlika.add(buttonGo);

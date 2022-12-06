@@ -1,6 +1,19 @@
+class FlightPlan {
+    
+    constructor(
+        public from: BABYLON.Vector3,
+        public fromPlanet: Planet,
+        public to: BABYLON.Vector3,
+        public toPlanet: Planet,
+        public waypoints: BABYLON.Vector3[]
+    ) {
+
+    }
+}
+
 class FlyTool {
 
-    public static CreateFlightPlan(from: BABYLON.Vector3, fromPlanet: Planet, to: BABYLON.Vector3, toPlanet: Planet): BABYLON.Vector3[] {
+    public static CreateFlightPlan(from: BABYLON.Vector3, fromPlanet: Planet, to: BABYLON.Vector3, toPlanet: Planet): FlightPlan {
 
         let dir = to.subtract(from).normalize();
         console.log("from " + from.toString());
@@ -14,13 +27,19 @@ class FlyTool {
         let landingUp = to.subtract(toPlanet.position).normalize();
         let landingPoint = to.subtract(dir.scale(30)).add(landingUp.scale(30));
 
-        let flightPlan = [from.clone(), takeOffPoint, landingPoint, to.clone()];
+        let waypoints = [from.clone(), takeOffPoint, landingPoint, to.clone()];
         
-        flightPlan = FlyTool.SmoothFlightPlan(flightPlan);
-        flightPlan = FlyTool.SmoothFlightPlan(flightPlan);
-        flightPlan = FlyTool.SmoothFlightPlan(flightPlan);
+        waypoints = FlyTool.SmoothFlightPlan(waypoints);
+        waypoints = FlyTool.SmoothFlightPlan(waypoints);
+        waypoints = FlyTool.SmoothFlightPlan(waypoints);
 
-        return flightPlan;
+        return new FlightPlan(
+            from.clone(),
+            fromPlanet,
+            to.clone(),
+            toPlanet,
+            waypoints
+        );
     }
 
     public static SmoothFlightPlan(flightPlan: BABYLON.Vector3[]): BABYLON.Vector3[] {
@@ -42,22 +61,34 @@ class FlyTool {
         return smoothedFlightPlan;
     }
 
-    public static ShowFlightPlan(flightPlan: BABYLON.Vector3[], scene: BABYLON.Scene): void {
+    public static ShowWaypoints(flightPlan: BABYLON.Vector3[], scene: BABYLON.Scene): void {
         BABYLON.MeshBuilder.CreateLines("flightPlan", { points: flightPlan }, scene);
     }
 
-    public static Fly(flightPlan: BABYLON.Vector3[], player: Player, scene: BABYLON.Scene): void {
+    public static Fly(flightPlan: FlightPlan, player: Player, scene: BABYLON.Scene): void {
         let index = 1;
+        let takeOffUp = flightPlan.from.subtract(flightPlan.fromPlanet.position).normalize();
+        let landingUp = flightPlan.to.subtract(flightPlan.toPlanet.position).normalize();
+        let totalDist = BABYLON.Vector3.Distance(flightPlan.from, flightPlan.to);
+        let totalDir = flightPlan.to.subtract(flightPlan.from).normalize();
+
         let step = () => {
-            let wp = flightPlan[index];
+            let wp = flightPlan.waypoints[index];
             if (wp) {
-                let dir = wp.subtract(flightPlan[index - 1]).normalize();
+                let dir = wp.subtract(flightPlan.waypoints[index - 1]).normalize();
+                let dist = BABYLON.Vector3.Dot(player.position.subtract(flightPlan.from), totalDir);
+                let f = dist / totalDist;
+                let speed = Math.sin(f * Math.PI) * 25 + 5;
+
+                let up = takeOffUp.scale(1 - f).add(landingUp.scale(f)).normalize();
+
                 if (BABYLON.Vector3.DistanceSquared(wp, player.position) < 1 || BABYLON.Vector3.Dot(wp.subtract(player.position), dir) <= 0) {
                     index++;
                     step();
                 }
                 else {
-                    VMath.StepToRef(player.position, wp, 15 / 60, player.position);
+                    VMath.StepToRef(player.position, wp, speed / 60, player.position);
+                    player.upDirection.copyFrom(up);
                     requestAnimationFrame(step);
                 }
             }

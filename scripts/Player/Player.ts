@@ -258,7 +258,7 @@ class Player extends BABYLON.Mesh {
         this._leftDirection.copyFrom(this._rightDirection);
         this._leftDirection.scaleInPlace(-1);
 
-        if (this.planet) {
+        if (this.planet && !this.lockInPlace) {
             this.upDirection.copyFrom(this.position).subtractInPlace(this.planet.position);
             this.upDirection.normalize();
         }
