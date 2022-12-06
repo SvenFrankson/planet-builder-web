@@ -15,6 +15,10 @@ class PlayerArmManager {
         return this.leftArm;
     }
 
+    private _tmpDP: BABYLON.Vector3 = BABYLON.Vector3.Zero();
+    private _dpLeftArm: BABYLON.Vector3 = BABYLON.Vector3.Zero();
+    private _dpRightArm: BABYLON.Vector3 = BABYLON.Vector3.Zero();
+
     public get inputManager(): InputManager {
         return this.player.inputManager;
     }
@@ -46,10 +50,19 @@ class PlayerArmManager {
     private mode: ArmManagerMode = ArmManagerMode.Idle;
 
     private _update = () => {
-        this.leftArm.position = BABYLON.Vector3.TransformCoordinates(new BABYLON.Vector3(- 0.2, 0.7, 0), this.player.getWorldMatrix());
+        this._dpLeftArm.copyFrom(this.leftArm.position);
+        BABYLON.Vector3.TransformCoordinatesToRef(new BABYLON.Vector3(- 0.2, 0.7, 0), this.player.getWorldMatrix(), this._tmpDP);
+        this.leftArm.position.copyFrom(this._tmpDP);
+        this._dpLeftArm.subtractInPlace(this.leftArm.position).scaleInPlace(-1);
         this.leftArm.rotationQuaternion.copyFrom(this.player.rotationQuaternion);
-        this.rightArm.position = BABYLON.Vector3.TransformCoordinates(new BABYLON.Vector3(0.2, 0.7, 0), this.player.getWorldMatrix());
+        this.leftArm.targetPosition.addInPlace(this._dpLeftArm);
+
+        this._dpRightArm.copyFrom(this.rightArm.position);
+        BABYLON.Vector3.TransformCoordinatesToRef(new BABYLON.Vector3(0.2, 0.7, 0), this.player.getWorldMatrix(), this._tmpDP);
+        this.rightArm.position.copyFrom(this._tmpDP);
+        this._dpRightArm.subtractInPlace(this.rightArm.position).scaleInPlace(-1);
         this.rightArm.rotationQuaternion.copyFrom(this.player.rotationQuaternion);
+        this.rightArm.targetPosition.addInPlace(this._dpRightArm);
 
         if (this.mode === ArmManagerMode.Idle) {
             this._updateIdle();
