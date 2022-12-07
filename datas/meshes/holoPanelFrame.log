@@ -1,4 +1,4 @@
-Exporter version: 6.4.3, Blender version: 2.82 (sub 7)
+Exporter version: 6.4.5, Blender version: 2.90.1
 ========= Conversion from Blender to Babylon.js =========
 	Scene settings used :
 		Inline textures     :  false
@@ -9,30 +9,39 @@ Exporter version: 6.4.3, Blender version: 2.82 (sub 7)
 		Vert Color Precision:  3
 		Mat Weight Precision:  2
 		Keep Z-up r-handed  :  no
-		Texture directory   :  C:\Users\staton\Documents\GitHub\planet-builder-web\datas\meshes\
+		Texture directory   :  C:\Users\svent\Documents\Sven Frankson\planet-builder-web\datas\meshes\
 	Python World class constructor completed
 	WARNING: No active camera has been assigned, or is not in a currently selected Blender layer
 	processing begun of mesh:  frame-1
-		WARNING: No materials have been assigned: 
-		num positions      :  162
-		num normals        :  162
+		processing begun of material:  Steel
+		processing begun of material:  SteelDark
+		processing begun of material:  Light
+		processing begun of multimaterial:  holoPanelFrame.Multimaterial#0
+		num positions      :  214
+		num normals        :  214
 		num tangents       :  0
-		num uvs            :  324
+		num uvs            :  428
 		num uvs2           :  0
 		num colors         :  0
-		num triangles      :  64
-	processing begun of mesh:  frame-04
-		WARNING: No materials have been assigned: 
-		num positions      :  105
-		num normals        :  105
+		num triangles      :  134
+	processing begun of mesh:  frame-0
+		processing begun of material:  Steel
+		processing begun of material:  SteelDark
+		processing begun of material:  Light
+		registered as also a user of material:  Steel
+		registered as also a user of material:  SteelDark
+		registered as also a user of material:  Light
+		processing begun of multimaterial:  holoPanelFrame.Multimaterial#1
+		num positions      :  336
+		num normals        :  336
 		num tangents       :  0
-		num uvs            :  210
+		num uvs            :  672
 		num uvs2           :  0
 		num colors         :  0
-		num triangles      :  40
+		num triangles      :  228
 ========= Writing of JSON file started =========
 	writing mesh:  frame-1
-	writing mesh:  frame-04
+	writing mesh:  frame-0
 ========= Writing of JSON file completed =========
 ========= end of processing =========
-elapsed time:  0 min, 0.03 secs
+elapsed time:  0 min, 0.0319 secs

@@ -16,7 +16,7 @@ class MainMenuPanelGraphicsPage extends MainMenuPanelPage {
             x: 500,
             y: 110,
             textAlign: "center",
-            color: BABYLON.Color3.FromHexString("#8dd6c0"),
+            color: BABYLON.Color3.FromHexString(Config.uiConfiguration.holoScreenBaseColor),
             fontSize: 60,
             fontFamily: "XoloniumRegular",
             highlightRadius: 20
@@ -38,7 +38,7 @@ class MainMenuPanelGraphicsPage extends MainMenuPanelPage {
             y: 265,
             w: 400,
             h: 90,
-            color: BABYLON.Color3.FromHexString("#8dd6c0"),
+            color: BABYLON.Color3.FromHexString(Config.uiConfiguration.holoScreenBaseColor),
             fontFamily: "XoloniumRegular",
             fontSize: 20,
             highlightRadius: 4
@@ -61,7 +61,7 @@ class MainMenuPanelGraphicsPage extends MainMenuPanelPage {
             y: 450,
             w: 400,
             h: 50,
-            color: BABYLON.Color3.FromHexString("#8dd6c0"),
+            color: BABYLON.Color3.FromHexString(Config.uiConfiguration.holoScreenBaseColor),
             fontFamily: "XoloniumRegular",
             fontSize: 20,
             highlightRadius: 4
@@ -84,7 +84,7 @@ class MainMenuPanelGraphicsPage extends MainMenuPanelPage {
             y: 605,
             w: 400,
             h: 90,
-            color: BABYLON.Color3.FromHexString("#8dd6c0"),
+            color: BABYLON.Color3.FromHexString(Config.uiConfiguration.holoScreenBaseColor),
             fontFamily: "XoloniumRegular",
             fontSize: 20,
             highlightRadius: 4

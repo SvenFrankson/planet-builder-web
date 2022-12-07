@@ -110,14 +110,14 @@ class MainMenuPanel extends HoloPanel {
                     
                     M + L1, M,
                 ]),
-                new SlikaShapeStyle("#8dd6c0", 1, "none", 1, 3, "#8dd6c0", 10)
+                new SlikaShapeStyle(Config.uiConfiguration.holoScreenBaseColor, 1, "none", 1, 3, Config.uiConfiguration.holoScreenBaseColor, 10)
             )
         );
         
-        this.titleLine1 = SlikaPath.CreatePan(M + L2, 1000 - M - L2, 0, 3, 15, 0.30, true, false, new SlikaShapeStyle("none", 1, "#8dd6c0", 1, 0, "#8dd6c0", 10));
+        this.titleLine1 = SlikaPath.CreatePan(M + L2, 1000 - M - L2, 0, 3, 15, 0.30, true, false, new SlikaShapeStyle("none", 1, Config.uiConfiguration.holoScreenBaseColor, 1, 0, Config.uiConfiguration.holoScreenBaseColor, 10));
         this.titleLine1.posY = this.titleHeight;
         this.holoSlika.add(this.titleLine1);
-        this.titleLine2 = SlikaPath.CreatePan(M + L2, 1000 - M - L2, 30, 3, 15, 0.30, false, true, new SlikaShapeStyle("none", 1, "#8dd6c0", 1, 0, "#8dd6c0", 10));
+        this.titleLine2 = SlikaPath.CreatePan(M + L2, 1000 - M - L2, 30, 3, 15, 0.30, false, true, new SlikaShapeStyle("none", 1, Config.uiConfiguration.holoScreenBaseColor, 1, 0, Config.uiConfiguration.holoScreenBaseColor, 10));
         this.titleLine2.posY = this.titleHeight;
         this.holoSlika.add(this.titleLine2);
 
@@ -130,7 +130,7 @@ class MainMenuPanel extends HoloPanel {
                     500 + L5 * 0.5, M + L2,
                     500 - L5 * 0.5, M + L2,
                 ]),
-                new SlikaShapeStyle("none", 1, "#8dd6c0", 1, 0, "#8dd6c0", 10)
+                new SlikaShapeStyle("none", 1, Config.uiConfiguration.holoScreenBaseColor, 1, 0, Config.uiConfiguration.holoScreenBaseColor, 10)
             )
         );
 
@@ -143,7 +143,7 @@ class MainMenuPanel extends HoloPanel {
                     500 + L5 * 0.5, 1000 - (M + L2),
                     500 - L5 * 0.5, 1000 - (M + L2),
                 ]),
-                new SlikaShapeStyle("none", 1, "#8dd6c0", 1, 0, "#8dd6c0", 10)
+                new SlikaShapeStyle("none", 1, Config.uiConfiguration.holoScreenBaseColor, 1, 0, Config.uiConfiguration.holoScreenBaseColor, 10)
             )
         );
 
@@ -156,7 +156,7 @@ class MainMenuPanel extends HoloPanel {
                     M, 500 + L6 * 0.5,
                     M, 500 - L6 * 0.5,
                 ]),
-                new SlikaShapeStyle("none", 1, "#8dd6c0", 1, 0, "#8dd6c0", 10)
+                new SlikaShapeStyle("none", 1, Config.uiConfiguration.holoScreenBaseColor, 1, 0, Config.uiConfiguration.holoScreenBaseColor, 10)
             )
         );
 
@@ -169,7 +169,7 @@ class MainMenuPanel extends HoloPanel {
                     1000 - M, 500 + L6 * 0.5,
                     1000 - M, 500 - L6 * 0.5,
                 ]),
-                new SlikaShapeStyle("none", 1, "#8dd6c0", 1, 0, "#8dd6c0", 10)
+                new SlikaShapeStyle("none", 1, Config.uiConfiguration.holoScreenBaseColor, 1, 0, Config.uiConfiguration.holoScreenBaseColor, 10)
             )
         );
 

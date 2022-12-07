@@ -14,7 +14,7 @@ class MainMenuPanelIntroPage extends MainMenuPanelPage {
             x: 500,
             y: 110,
             textAlign: "center",
-            color: BABYLON.Color3.FromHexString("#8dd6c0"),
+            color: BABYLON.Color3.FromHexString(Config.uiConfiguration.holoScreenBaseColor),
             fontSize: 60,
             fontFamily: "XoloniumRegular",
             highlightRadius: 20
@@ -25,7 +25,7 @@ class MainMenuPanelIntroPage extends MainMenuPanelPage {
             x: 500,
             y: 180,
             textAlign: "center",
-            color: BABYLON.Color3.FromHexString("#8dd6c0"),
+            color: BABYLON.Color3.FromHexString(Config.uiConfiguration.holoScreenBaseColor),
             fontSize: 60,
             fontFamily: "XoloniumRegular",
             highlightRadius: 20
@@ -36,7 +36,7 @@ class MainMenuPanelIntroPage extends MainMenuPanelPage {
             x: 550,
             y: 370,
             textAlign: "end",
-            color: BABYLON.Color3.FromHexString("#8dd6c0"),
+            color: BABYLON.Color3.FromHexString(Config.uiConfiguration.holoScreenBaseColor),
             fontSize: 50,
             fontFamily: "XoloniumRegular",
             highlightRadius: 20
@@ -47,13 +47,13 @@ class MainMenuPanelIntroPage extends MainMenuPanelPage {
             x: 550,
             y: 430,
             textAlign: "end",
-            color: BABYLON.Color3.FromHexString("#8dd6c0"),
+            color: BABYLON.Color3.FromHexString(Config.uiConfiguration.holoScreenBaseColor),
             fontSize: 50,
             fontFamily: "XoloniumRegular",
             highlightRadius: 20
         }));
 
-        let textDecoy = this.holoSlika.add(SlikaPath.CreatePan(100, 620, 460, 3, 30, 0.15, false, true, new SlikaShapeStyle("none", 1, "#8dd6c0", 1, 0, "#8dd6c0", 10)));
+        let textDecoy = this.holoSlika.add(SlikaPath.CreatePan(100, 620, 460, 3, 30, 0.15, false, true, new SlikaShapeStyle("none", 1, Config.uiConfiguration.holoScreenBaseColor, 1, 0, Config.uiConfiguration.holoScreenBaseColor, 10)));
 
         let planetImage = this.holoSlika.add(new SlikaImage(
             new SPosition(750, 390),
@@ -79,7 +79,7 @@ class MainMenuPanelIntroPage extends MainMenuPanelPage {
             x: 500,
             y: 740,
             textAlign: "center",
-            color: BABYLON.Color3.FromHexString("#8dd6c0"),
+            color: BABYLON.Color3.FromHexString(Config.uiConfiguration.holoScreenBaseColor),
             fontSize: 30,
             fontFamily: "XoloniumRegular",
             highlightRadius: 20
@@ -90,7 +90,7 @@ class MainMenuPanelIntroPage extends MainMenuPanelPage {
             x: 850,
             y: 850,
             textAlign: "end",
-            color: BABYLON.Color3.FromHexString("#8dd6c0"),
+            color: BABYLON.Color3.FromHexString(Config.uiConfiguration.holoScreenBaseColor),
             fontSize: 40,
             fontFamily: "XoloniumRegular",
             highlightRadius: 20
@@ -108,7 +108,7 @@ class MainMenuPanelIntroPage extends MainMenuPanelPage {
             x: 940,
             y: 920,
             textAlign: "end",
-            color: BABYLON.Color3.FromHexString("#8dd6c0"),
+            color: BABYLON.Color3.FromHexString(Config.uiConfiguration.holoScreenBaseColor),
             fontSize: 40,
             fontFamily: "XoloniumRegular",
             highlightRadius: 20

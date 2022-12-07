@@ -113,21 +113,13 @@ class HoloPanel extends Pickable {
         super.instantiate();
         let h = this._angle * this._radius / this._w * this._h;
 
-        BABYLON.CreateCylinderVertexData({ height: 0.1, diameter: 0.5 }).applyToMesh(this);
         let frame = BABYLON.MeshBuilder.CreateBox("frame", { size: 0.05 });
         frame.parent = this;
         frame.position.y = this.height - h * 0.5;
         VertexDataLoader.instance.get("holoPanelFrame").then(vertexDatas => {
             let vData = vertexDatas[1];
-            if (this.size < 1) {
-                vData = vertexDatas[0];
-            }
             vData.applyToMesh(frame);
         })
-        let mat = new BABYLON.StandardMaterial("base-material", this.main.scene);
-        mat.diffuseColor.copyFromFloats(0.8, 0, 0.2);
-        mat.specularColor.copyFromFloats(0, 0, 0);
-        this.material = mat;
 
         this.holoMesh = new BABYLON.Mesh("text-page");
         this.holoMesh.layerMask = 0x10000000;

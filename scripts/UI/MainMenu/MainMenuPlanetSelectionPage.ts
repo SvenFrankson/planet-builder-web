@@ -32,7 +32,7 @@ class MainMenuPlanetSelectionPage extends MainMenuPanelPage {
             x: 500,
             y: 110,
             textAlign: "center",
-            color: BABYLON.Color3.FromHexString("#8dd6c0"),
+            color: BABYLON.Color3.FromHexString(Config.uiConfiguration.holoScreenBaseColor),
             fontSize: 60,
             fontFamily: "XoloniumRegular",
             highlightRadius: 20
@@ -71,7 +71,7 @@ class MainMenuPlanetSelectionPage extends MainMenuPanelPage {
             x: 500,
             y: 300,
             textAlign: "center",
-            color: BABYLON.Color3.FromHexString("#8dd6c0"),
+            color: BABYLON.Color3.FromHexString(Config.uiConfiguration.holoScreenBaseColor),
             fontSize: 60,
             fontFamily: "XoloniumRegular",
             highlightRadius: 20
@@ -90,7 +90,7 @@ class MainMenuPlanetSelectionPage extends MainMenuPanelPage {
             y: 370,
             w: 220,
             h: 300,
-            color: BABYLON.Color3.FromHexString("#8dd6c0"),
+            color: BABYLON.Color3.FromHexString(Config.uiConfiguration.holoScreenBaseColor),
             fontFamily: "XoloniumRegular",
             fontSize: 24,
             highlightRadius: 4

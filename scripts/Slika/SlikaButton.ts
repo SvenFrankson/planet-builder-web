@@ -9,7 +9,7 @@ class SlikaButton extends SlikaElement {
 
     public color: BABYLON.Color3 = BABYLON.Color3.White();
     public colors: BABYLON.Color3[] = [
-        BABYLON.Color3.FromHexString("#8dd6c0"),
+        BABYLON.Color3.FromHexString(Config.uiConfiguration.holoScreenBaseColor),
         BABYLON.Color3.FromHexString("#a0bab2"),
         BABYLON.Color3.FromHexString("#cc8a2d"),
         BABYLON.Color3.FromHexString("#ff0000")

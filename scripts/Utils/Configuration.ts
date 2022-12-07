@@ -101,11 +101,17 @@ class ConfigurationControl {
     public canLockPointer: boolean = false;
 }
 
+class ConfigurationUI {
+
+    public holoScreenBaseColor: string = "#24d1d1";
+}
+
 class Configuration {
 
     public chunckPartConfiguration: ConfigurationChunckPart = new ConfigurationChunckPart();
     public performanceConfiguration: ConfigurationPerformance = new ConfigurationPerformance();
     public controlConfiguration: ConfigurationControl = new ConfigurationControl();
+    public uiConfiguration: ConfigurationUI = new ConfigurationUI();
 
     public setConfHighPreset(): void {
         this.performanceConfiguration.setLodCount(3, true);
