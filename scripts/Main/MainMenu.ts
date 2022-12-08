@@ -30,7 +30,19 @@ class MainMenu extends Main {
 		Config.chunckPartConfiguration.setLodMax(2);
 		Config.chunckPartConfiguration.useXZAxisRotation = false;
 
-		Config.setConfMediumPreset();
+		let confPreset = window.localStorage.getItem("graphic-setting-preset");
+		if (confPreset === ConfigurationPreset.Low) {
+			Config.setConfLowPreset();
+		}
+		else if (confPreset === ConfigurationPreset.Medium) {
+			Config.setConfMediumPreset();
+		}
+		else if (confPreset === ConfigurationPreset.High) {
+			Config.setConfHighPreset();
+		}
+		else {
+			window.localStorage.setItem("graphic-setting-preset", ConfigurationPreset.None);
+		}
 
 		return new Promise<void>(resolve => {
 

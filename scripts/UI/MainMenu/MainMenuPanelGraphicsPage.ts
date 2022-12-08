@@ -10,6 +10,7 @@ class MainMenuPanelGraphicsPage extends MainMenuPanelPage {
         super(mainMenuPanel);
 
         this.targetTitleHeight = 150;
+		let confPreset = window.localStorage.getItem("graphic-setting-preset");
 
         let title1 = this.holoSlika.add(new SlikaText({
             text: "GRAPHIC SETTINGS",
@@ -25,7 +26,7 @@ class MainMenuPanelGraphicsPage extends MainMenuPanelPage {
         let buttonHigh = new SlikaButton(
             "HIGH",
             new SPosition(120, 250),
-            SlikaButtonState.Enabled,
+            confPreset === ConfigurationPreset.High ? SlikaButtonState.Active : SlikaButtonState.Enabled,
             350,
             120,
             50
@@ -48,7 +49,7 @@ class MainMenuPanelGraphicsPage extends MainMenuPanelPage {
         let buttonMedium = new SlikaButton(
             "MEDIUM",
             new SPosition(120, 420),
-            SlikaButtonState.Enabled,
+            confPreset === ConfigurationPreset.Medium ? SlikaButtonState.Active : SlikaButtonState.Enabled,
             350,
             120,
             50
@@ -71,7 +72,7 @@ class MainMenuPanelGraphicsPage extends MainMenuPanelPage {
         let buttonLow = new SlikaButton(
             "LOW",
             new SPosition(120, 590),
-            SlikaButtonState.Enabled,
+            confPreset === ConfigurationPreset.Low ? SlikaButtonState.Active : SlikaButtonState.Enabled,
             350,
             120,
             50
@@ -90,25 +91,6 @@ class MainMenuPanelGraphicsPage extends MainMenuPanelPage {
             highlightRadius: 4
         })
         this.holoSlika.add(buttonLowExplain);
-        
-        buttonHigh.onPointerUp = () => {
-            buttonHigh.setStatus(SlikaButtonState.Active);
-            buttonMedium.setStatus(SlikaButtonState.Enabled);
-            buttonLow.setStatus(SlikaButtonState.Enabled);
-            Config.setConfHighPreset();
-        }
-        buttonMedium.onPointerUp = () => {
-            buttonHigh.setStatus(SlikaButtonState.Enabled);
-            buttonMedium.setStatus(SlikaButtonState.Active);
-            buttonLow.setStatus(SlikaButtonState.Enabled);
-            Config.setConfMediumPreset();
-        }
-        buttonLow.onPointerUp = () => {
-            buttonHigh.setStatus(SlikaButtonState.Enabled);
-            buttonMedium.setStatus(SlikaButtonState.Enabled);
-            buttonLow.setStatus(SlikaButtonState.Active);
-            Config.setConfLowPreset();
-        }
 
         let buttonBack = new SlikaButton(
             "BACK",
@@ -118,28 +100,52 @@ class MainMenuPanelGraphicsPage extends MainMenuPanelPage {
             100,
             40
         );
+        this.holoSlika.add(buttonBack);
+
+        console.log(confPreset);
+        let buttonNext = new SlikaButton(
+            "NEXT",
+            new SPosition(700, 820),
+            confPreset === ConfigurationPreset.None ? SlikaButtonState.Disabled : SlikaButtonState.Enabled,
+            200,
+            100,
+            40
+        );
+        this.holoSlika.add(buttonNext);
+        
+        buttonHigh.onPointerUp = () => {
+            buttonHigh.setStatus(SlikaButtonState.Active);
+            buttonMedium.setStatus(SlikaButtonState.Enabled);
+            buttonLow.setStatus(SlikaButtonState.Enabled);
+            buttonNext.setStatus(SlikaButtonState.Enabled);
+            Config.setConfHighPreset();
+        }
+        buttonMedium.onPointerUp = () => {
+            buttonHigh.setStatus(SlikaButtonState.Enabled);
+            buttonMedium.setStatus(SlikaButtonState.Active);
+            buttonLow.setStatus(SlikaButtonState.Enabled);
+            buttonNext.setStatus(SlikaButtonState.Enabled);
+            Config.setConfMediumPreset();
+        }
+        buttonLow.onPointerUp = () => {
+            buttonHigh.setStatus(SlikaButtonState.Enabled);
+            buttonMedium.setStatus(SlikaButtonState.Enabled);
+            buttonLow.setStatus(SlikaButtonState.Active);
+            buttonNext.setStatus(SlikaButtonState.Enabled);
+            Config.setConfLowPreset();
+        }
         buttonBack.onPointerUp = async () => {
             this.mainMenuPanel.animateTitleHeight(this.mainMenuPanel.introPage.targetTitleHeight, 1);
             await this.mainMenuPanel.graphicsPage.hide(0.5);
             await this.mainMenuPanel.introPage.show(0.5);
         }
-        this.holoSlika.add(buttonBack);
-
-        let buttonNext = new SlikaButton(
-            "NEXT",
-            new SPosition(700, 820),
-            SlikaButtonState.Disabled,
-            200,
-            100,
-            40
-        );
         buttonNext.onPointerUp = async () => {
-            this.mainMenuPanel.animateTitleHeight(this.mainMenuPanel.planetPage.targetTitleHeight, 1);
-            await this.mainMenuPanel.graphicsPage.hide(0.5);
-            await this.mainMenuPanel.planetPage.show(0.5);
+            if (buttonNext.state === SlikaButtonState.Enabled) {
+                this.mainMenuPanel.animateTitleHeight(this.mainMenuPanel.planetPage.targetTitleHeight, 1);
+                await this.mainMenuPanel.graphicsPage.hide(0.5);
+                await this.mainMenuPanel.planetPage.show(0.5);
+            }
         }
-        this.holoSlika.add(buttonNext);
-        buttonNext.setStatus(SlikaButtonState.Disabled);
 
         this.elements.push(title1, buttonHigh, buttonHighExplain, buttonMedium, buttonMediumExplain, buttonLow, buttonLowExplain, buttonBack, buttonNext);
     }

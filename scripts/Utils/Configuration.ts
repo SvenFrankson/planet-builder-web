@@ -106,7 +106,17 @@ class ConfigurationUI {
     public holoScreenBaseColor: string = "#24d1d1";
 }
 
+enum ConfigurationPreset {
+    None = "none",
+    Low = "low",
+    Medium = "medium",
+    High = "high",
+    Custom = "custom"
+}
+
 class Configuration {
+
+    public confPreset: ConfigurationPreset = ConfigurationPreset.None;
 
     public chunckPartConfiguration: ConfigurationChunckPart = new ConfigurationChunckPart();
     public performanceConfiguration: ConfigurationPerformance = new ConfigurationPerformance();
@@ -117,19 +127,24 @@ class Configuration {
         this.performanceConfiguration.setLodCount(3, true);
         this.performanceConfiguration.setLodMin(0);
         this.performanceConfiguration.setHoloScreenFactor(1);
-        
+        this.confPreset = ConfigurationPreset.High;
+        window.localStorage.setItem("graphic-setting-preset", this.confPreset);
     }
     
     public setConfMediumPreset(): void {
         this.performanceConfiguration.setLodCount(2, true);
         this.performanceConfiguration.setLodMin(1);
         this.performanceConfiguration.setHoloScreenFactor(0.75);
+        this.confPreset = ConfigurationPreset.Medium;
+        window.localStorage.setItem("graphic-setting-preset", this.confPreset);
     }
     
     public setConfLowPreset(): void {
         this.performanceConfiguration.setLodCount(1, true);
         this.performanceConfiguration.setLodMin(2);
         this.performanceConfiguration.setHoloScreenFactor(0.5);
+        this.confPreset = ConfigurationPreset.Low;
+        window.localStorage.setItem("graphic-setting-preset", this.confPreset);
     }
 }
 
