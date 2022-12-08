@@ -235,6 +235,7 @@ class Player extends BABYLON.Mesh {
         this.camPos.rotation.x = Math.max(this.camPos.rotation.x, -Math.PI / 2);
         this.camPos.rotation.x = Math.min(this.camPos.rotation.x, Math.PI / 2);
         
+        /*
         let chunck = PlanetTools.WorldPositionToChunck(this.planet, this.position);
         if (this._currentChunck) {
             this._currentChunck.unlit();
@@ -243,6 +244,7 @@ class Player extends BABYLON.Mesh {
         if (this._currentChunck) {
             this._currentChunck.highlight();
         }
+        */
 
         this.inputHeadRight *= 0.8;
         this.inputHeadUp *= 0.8;

@@ -13,10 +13,8 @@ class PlanetGeneratorEarth extends PlanetGenerator {
 
         this._treeMap = PlanetHeightMap.CreateConstantMap(planet.degree, 0);
         for (let i = 0; i < 200; i++) {
-            this._treeMap.setRandomDisc(1, 4, 5);
+            this._treeMap.setRandomDisc(1, 2, 3, 2);
         }
-        this._treeMap.smooth();
-        this._treeMap.smooth();
 
         this._tunnelMap = PlanetHeightMap.CreateMap(
             planet.degree,
@@ -139,7 +137,7 @@ class PlanetGeneratorEarth extends PlanetGenerator {
                         if (globalK > altitude + 4 && globalK <= altitude + 4 + tree) {
                             refData[i - chunck.firstI][j - chunck.firstJ][k - chunck.firstK] = BlockType.Leaf;
                         }
-                        else if (tree > 3 && globalK > altitude && globalK <= altitude + 4) {
+                        else if (tree > 3.9 && globalK > altitude && globalK <= altitude + 4) {
                             refData[i - chunck.firstI][j - chunck.firstJ][k - chunck.firstK] = BlockType.Wood;
                         }
                     }
