@@ -1,4 +1,6 @@
-class GeneratorSegment {
+/// <reference path="./GeneratorElement.ts"/>
+
+class GeneratorSegment extends GeneratorElement {
 
     public l: number;
     public u: BABYLON.Vector3;
@@ -9,6 +11,14 @@ class GeneratorSegment {
         public p1: BABYLON.Vector3,
         public radius: number
     ) {
+        super();
+        this.aabbMin.x = Math.min(p0.x - radius, p1.x - radius, this.aabbMin.x);
+        this.aabbMin.y = Math.min(p0.y - radius, p1.y - radius, this.aabbMin.y);
+        this.aabbMin.z = Math.min(p0.z - radius, p1.z - radius, this.aabbMin.z);
+        this.aabbMax.x = Math.max(p0.x + radius, p1.x + radius, this.aabbMax.x);
+        this.aabbMax.y = Math.max(p0.y + radius, p1.y + radius, this.aabbMax.y);
+        this.aabbMax.z = Math.max(p0.z + radius, p1.z + radius, this.aabbMax.z);
+
         this.l = BABYLON.Vector3.Distance(p0, p1);
         this.u = p1.subtract(p0).scaleInPlace(1 / this.l);
     }

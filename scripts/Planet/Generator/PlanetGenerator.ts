@@ -41,12 +41,41 @@ abstract class PlanetGenerator {
     public heightMaps: PlanetHeightMap[];
     public altitudeMap: PlanetHeightMap;
 
+    public elements: GeneratorElement[] = [];
+
     constructor(
         public planet: Planet
     ) {
 
     }
 
+    public getIntersectingElements(chunck: PlanetChunck): GeneratorElement[] {
+        let intersectingElements: GeneratorElement[] = [];
+        for (let i = 0; i < this.elements.length; i++) {
+            let e = this.elements[i];
+            if (chunck.aabbMax.x < e.aabbMin.x) {
+                continue;
+            }
+            if (chunck.aabbMax.y < e.aabbMin.y) {
+                continue;
+            }
+            if (chunck.aabbMax.z < e.aabbMin.z) {
+                continue;
+            }
+            if (chunck.aabbMin.x > e.aabbMax.x) {
+                continue;
+            }
+            if (chunck.aabbMin.y > e.aabbMax.y) {
+                continue;
+            }
+            if (chunck.aabbMin.z > e.aabbMax.z) {
+                continue;
+            }
+            intersectingElements.push(e);
+        }
+        return intersectingElements;
+    }
+    
     public abstract makeData(chunck: PlanetChunck, refData: number[][][], refProcedural: ProceduralTree[]): void;
 
     public showDebug(): void {

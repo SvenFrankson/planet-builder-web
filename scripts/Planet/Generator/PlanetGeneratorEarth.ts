@@ -4,7 +4,6 @@ class PlanetGeneratorEarth extends PlanetGenerator {
     private _tunnelMap: PlanetHeightMap;
     private _tunnelAltitudeMap: PlanetHeightMap;
     private _rockMap: PlanetHeightMap;
-    private _treeMap: PlanetHeightMap;
 
     public spheres: GeneratorSphere[] = [];
 
@@ -12,13 +11,14 @@ class PlanetGeneratorEarth extends PlanetGenerator {
         super(planet);
         console.log("Generator Degree = " + planet.degree);
         this._mainHeightMap = PlanetHeightMap.CreateMap(planet.degree);
-
-        this._treeMap = PlanetHeightMap.CreateConstantMap(planet.degree, 0);
+        
         for (let i = 0; i < 100; i++) {
             let p = new BABYLON.Vector3(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5);
             p.normalize();
-            p.scaleInPlace(planet.seaAltitude);
-            this.spheres.push(new GeneratorSphere(BlockType.Leaf, p, 10));
+            let pBase = p.scale(planet.seaAltitude);
+            p.scaleInPlace(planet.seaAltitude + 5);
+            this.elements.push(new GeneratorSegment(BlockType.Wood, pBase, p, 0.5));
+            this.elements.push(new GeneratorSphere(BlockType.Leaf, p, 3));
         }
 
         this._tunnelMap = PlanetHeightMap.CreateMap(
@@ -76,6 +76,8 @@ class PlanetGeneratorEarth extends PlanetGenerator {
     public makeData(chunck: PlanetChunck, refData: number[][][], refProcedural: ProceduralTree[]): void {
         let f = Math.pow(2, this._mainHeightMap.degree - chunck.degree);
 
+        let intersectingElements: GeneratorElement[] = this.getIntersectingElements(chunck);
+
         for (let i: number = 0; i < PlanetTools.CHUNCKSIZE; i++) {
             refData[i - chunck.firstI] = [];
             for (let j: number = 0; j < PlanetTools.CHUNCKSIZE; j++) {
@@ -112,17 +114,17 @@ class PlanetGeneratorEarth extends PlanetGenerator {
 
                 for (let k: number = 0; k < PlanetTools.CHUNCKSIZE; k++) {
                     let globalK = k + chunck.kPos * PlanetTools.CHUNCKSIZE;
-                    /*
-                    let pPos = PlanetTools.LocalIJKToPlanetPosition(chunck, i, j, k, true);
-                    
-                    for (let n = 0; n < this.spheres.length; n++) {
-                        let sV = this.spheres[n].getData(pPos);
-                        if (sV != BlockType.Unknown) {
-                            console.log("!");
-                            refData[i - chunck.firstI][j - chunck.firstJ][k - chunck.firstK] = sV;
+
+                    if (intersectingElements.length > 0) {
+                        let pPos = PlanetTools.LocalIJKToPlanetPosition(chunck, i, j, k, true);
+                        
+                        for (let n = 0; n < intersectingElements.length; n++) {
+                            let sV = intersectingElements[n].getData(pPos);
+                            if (sV != BlockType.Unknown) {
+                                refData[i - chunck.firstI][j - chunck.firstJ][k - chunck.firstK] = sV;
+                            }
                         }
                     }
-                    */
 
                     if (globalK < this.planet.seaLevel) {
                         refData[i - chunck.firstI][j - chunck.firstJ][k - chunck.firstK] = BlockType.Water;

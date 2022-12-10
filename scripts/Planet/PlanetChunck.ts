@@ -165,6 +165,9 @@ class PlanetChunck extends AbstractPlanetChunck {
     }
     public waterMesh: BABYLON.Mesh;
 
+    public aabbMin: BABYLON.Vector3 = new BABYLON.Vector3(Infinity, Infinity, Infinity);
+    public aabbMax: BABYLON.Vector3 = new BABYLON.Vector3(- Infinity, - Infinity, - Infinity);
+
     public static _DEBUG_NICE_CHUNCK_COUNT: number = 0;
     public static _DEBUG_CHUNCK_COUNT: number = 0;
     public static CreateChunck(
@@ -224,14 +227,36 @@ class PlanetChunck extends AbstractPlanetChunck {
         );
         this._normal = BABYLON.Vector3.Normalize(this.barycenter);
 
+        for (let i = 0; i <= 1; i++) {
+            for (let j = 0; j <= 1; j++) {
+                let v = PlanetTools.EvaluateVertex(
+                    this.size,
+                    PlanetTools.CHUNCKSIZE * (this.iPos + i),
+                    PlanetTools.CHUNCKSIZE * (this.jPos + j)
+                );
+                for (let k = 0; k <= 1; k++) {
+                    let p = v.scale(PlanetTools.KGlobalToAltitude((this.kPos + k) * PlanetTools.CHUNCKSIZE));
+                    VMath.RotateVectorByQuaternionToRef(p, this.planetSide.rotationQuaternion, p);
+                    this.aabbMin.x = Math.min(p.x, this.aabbMin.x);
+                    this.aabbMin.y = Math.min(p.y, this.aabbMin.y);
+                    this.aabbMin.z = Math.min(p.z, this.aabbMin.z);
+                    this.aabbMax.x = Math.max(p.x, this.aabbMax.x);
+                    this.aabbMax.y = Math.max(p.y, this.aabbMax.y);
+                    this.aabbMax.z = Math.max(p.z, this.aabbMax.z);
+                }
+            }
+        }
+
         let kMin = this.kPos * PlanetTools.CHUNCKSIZE;
         let kMax = (this.kPos + 1) * PlanetTools.CHUNCKSIZE;
+        /*
         let f = Math.pow(2, this.planet.degree - this.degree);
         let kShell = Math.floor(this.planet.generator.altitudeMap.getForSide(
             this.side,
             (PlanetTools.CHUNCKSIZE * (this.iPos + 0.5)) * f,
             (PlanetTools.CHUNCKSIZE * (this.jPos + 0.5)) * f
         ) * this.kPosMax * PlanetTools.CHUNCKSIZE);
+        */
         if (kMin <= this.planet.seaLevel && this.planet.seaLevel < kMax) {
             this.isShellLevel = true;
         }
