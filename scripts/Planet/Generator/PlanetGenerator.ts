@@ -15,7 +15,7 @@ class PlanetGeneratorFactory {
             name,
             position,
             kPosMax,
-            0.65,
+            0.4,
             scene, 
             (p) => {
                 if (type === PlanetGeneratorType.Flat) {
