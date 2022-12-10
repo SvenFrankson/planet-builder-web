@@ -363,7 +363,7 @@ class PlanetTools {
         else {
             p.scaleInPlace(PlanetTools.KGlobalToAltitude(globalIJK.k));
         }
-        p = BABYLON.Vector3.TransformCoordinates(p, planetSide.computeWorldMatrix(true));
+        VMath.RotateVectorByQuaternionToRef(p, planetSide.rotationQuaternion, p);
         return p;
     }
 

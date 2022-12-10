@@ -17,7 +17,7 @@ class PlanetGeneratorEarth extends PlanetGenerator {
             p.normalize();
             let pBase = p.scale(planet.seaAltitude);
             p.scaleInPlace(planet.seaAltitude + 5);
-            this.elements.push(new GeneratorSegment(BlockType.Wood, pBase, p, 0.5));
+            this.elements.push(new GeneratorSegment(BlockType.Wood, pBase, p, 1));
             this.elements.push(new GeneratorSphere(BlockType.Leaf, p, 3));
         }
 
