@@ -165,6 +165,7 @@ class PlanetChunck extends AbstractPlanetChunck {
     }
     public waterMesh: BABYLON.Mesh;
 
+    // AABBoxes relative to planet origin
     public aabbMin: BABYLON.Vector3 = new BABYLON.Vector3(Infinity, Infinity, Infinity);
     public aabbMax: BABYLON.Vector3 = new BABYLON.Vector3(- Infinity, - Infinity, - Infinity);
 

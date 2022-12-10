@@ -1,5 +1,5 @@
 enum PlanetGeneratorType {
-    Flat,
+    Moon,
     Earth,
     Mars
 }
@@ -18,8 +18,8 @@ class PlanetGeneratorFactory {
             0.4,
             scene, 
             (p) => {
-                if (type === PlanetGeneratorType.Flat) {
-                    return new PlanetGeneratorFlat(p);
+                if (type === PlanetGeneratorType.Moon) {
+                    return new PlanetGeneratorMoon(p);
                 }
                 else if (type === PlanetGeneratorType.Earth) {
                     return new PlanetGeneratorEarth(p, 0.15);
@@ -75,7 +75,7 @@ abstract class PlanetGenerator {
         }
         return intersectingElements;
     }
-    
+
     public abstract makeData(chunck: PlanetChunck, refData: number[][][], refProcedural: ProceduralTree[]): void;
 
     public showDebug(): void {

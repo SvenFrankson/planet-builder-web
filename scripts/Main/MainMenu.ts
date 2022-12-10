@@ -50,7 +50,7 @@ class MainMenu extends Main {
 			//testGrab.position = new BABYLON.Vector3(- 0.3, this._testAltitude + 1.1, - 0.1);
 			//testGrab.instantiate();
 			
-			let mainMenuPlanet: Planet = PlanetGeneratorFactory.Create(BABYLON.Vector3.Zero(), PlanetGeneratorType.Earth, 3, this.scene);
+			let mainMenuPlanet: Planet = PlanetGeneratorFactory.Create(BABYLON.Vector3.Zero(), PlanetGeneratorType.Moon, 1, this.scene);
 			mainMenuPlanet.instantiate();
 			this.planets = [mainMenuPlanet];
 
@@ -59,10 +59,11 @@ class MainMenu extends Main {
 			mainPanel.setPosition(new BABYLON.Vector3(0, this._testAltitude, 0.2));
 			mainPanel.setTarget(new BABYLON.Vector3(0, 1.7 + this._testAltitude, - 0.8));
 			mainPanel.open();
-			setTimeout(() => {
-				mainPanel.holoSlika.needRedraw = true;
-			}, 1000);
-            
+			
+			let side = PlanetTools.PlanetPositionToPlanetSide(mainMenuPlanet, BABYLON.Vector3.Up());
+			let globalIJK = PlanetTools.PlanetDirectionToGlobalIJK(mainMenuPlanet, BABYLON.Vector3.Up());
+			let pos = PlanetTools.GlobalIJKToPlanetPosition(side, globalIJK);
+			mainPanel.setPosition(pos);
 			
 			this.player = new Player(new BABYLON.Vector3(0, 1.7 + this._testAltitude + 3, - 0.8), this);
 			this.cameraManager.player = this.player;

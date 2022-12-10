@@ -1,4 +1,4 @@
-class PlanetGeneratorFlat extends PlanetGenerator {
+class PlanetGeneratorMoon extends PlanetGenerator {
 
     private _craterMap: PlanetHeightMap;
 
@@ -13,15 +13,6 @@ class PlanetGeneratorFlat extends PlanetGenerator {
         }
         this._craterMap.smooth();
         this._craterMap.smooth();
-
-        for (let i = 0; i < 5; i++) {
-            let p = new BABYLON.Vector3(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5);
-            p.normalize();
-            let pBase = p.scale(planet.seaAltitude);
-            p.scaleInPlace(planet.seaAltitude + 5);
-            this.elements.push(new GeneratorSegment(BlockType.Wood, pBase, p, 0.5));
-            this.elements.push(new GeneratorSphere(BlockType.Leaf, p, 3));
-        }
     }
     
 

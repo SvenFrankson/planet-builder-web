@@ -45,6 +45,7 @@ abstract class AbstractPlanetChunck {
     public sqrDistanceToViewpoint: number;
     public lod: number = NaN;
 
+    // Barycenter relative to world origin
     protected _barycenter: BABYLON.Vector3;
     public get barycenter(): BABYLON.Vector3 {
         return this._barycenter;

@@ -325,6 +325,16 @@ class PlanetTools {
         return PlanetTools.PlanetPositionToLocalIJK(planet, worldPos.subtract(planet.position));
     }
 
+    public static PlanetDirectionToGlobalIJK(
+        planet: Planet,
+        planetDirection: BABYLON.Vector3
+    ): { i: number; j: number; k: number } {
+        let planetSide = PlanetTools.PlanetPositionToPlanetSide(planet, planetDirection);
+        let globalIJK = PlanetTools.PlanetPositionToGlobalIJK(planetSide, planetDirection);
+        globalIJK.k = Math.floor(planet.generator.altitudeMap.getForSide(planetSide.side, globalIJK.i, globalIJK.j) * planet.kPosMax * PlanetTools.CHUNCKSIZE);
+        return globalIJK;
+    }
+
     public static PlanetPositionToLocalIJK(
         planet: Planet,
         planetPos: BABYLON.Vector3
