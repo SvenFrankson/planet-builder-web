@@ -394,8 +394,8 @@ class PlanetHeightMap {
 
     public getForPosition(p: BABYLON.Vector3): number {
         let side = PlanetTools.PlanetPositionToSide(p);
-        let ijk = PlanetTools.PlanetPositionToGlobalIJK(side, p);
-        return this.getForSide(side, ijk.i, ijk.j);
+        let ij = PlanetTools.PlanetDirectionToGlobalIJ(side, this.size, p);
+        return this.getForSide(side, ij.i, ij.j);
     }
 
     public enumerate(callback: (i: number, j: number, k: number) => void): void {

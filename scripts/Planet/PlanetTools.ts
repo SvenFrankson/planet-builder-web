@@ -329,6 +329,45 @@ class PlanetTools {
 
         return { i: i, j: j, k: k };
     }
+    
+    public static PlanetDirectionToGlobalIJ(side: Side, size: number, planetPos: BABYLON.Vector3): { i: number; j: number }
+    public static PlanetDirectionToGlobalIJ(planetSide: PlanetSide, planetPos: BABYLON.Vector3): { i: number; j: number };
+    public static PlanetDirectionToGlobalIJ(a: any, b: any, c?: any): { i: number; j: number } {
+        let localPos: BABYLON.Vector3 = BABYLON.Vector3.Zero();
+        let planetPos: BABYLON.Vector3;
+        let q: BABYLON.Quaternion;
+        let size: number;
+        if (a instanceof PlanetSide) {
+            size = PlanetTools.DegreeToSize(a.planet.degree);
+            planetPos = b;
+            q = a.rotationQuaternion.conjugate();
+        }
+        else {
+            size = b;
+            planetPos = c;
+            q = PlanetTools.QuaternionForSide(a).conjugate();
+        }
+        VMath.RotateVectorByQuaternionToRef(planetPos, q, localPos);
+        let r: number = localPos.length();
+
+        if (Math.abs(localPos.x) > 1) {
+            localPos.scaleInPlace(Math.abs(1 / localPos.x));
+        }
+        if (Math.abs(localPos.y) > 1) {
+            localPos.scaleInPlace(Math.abs(1 / localPos.y));
+        }
+        if (Math.abs(localPos.z) > 1) {
+            localPos.scaleInPlace(Math.abs(1 / localPos.z));
+        }
+
+        let xDeg: number = (Math.atan(localPos.x) / Math.PI) * 180;
+        let zDeg: number = (Math.atan(localPos.z) / Math.PI) * 180;
+
+        let i: number = Math.floor(((xDeg + 45) / 90) * size);
+        let j: number = Math.floor(((zDeg + 45) / 90) * size);
+
+        return { i: i, j: j };
+    }
 
     public static WorldPositionToLocalIJK(
         planet: Planet,
@@ -342,9 +381,10 @@ class PlanetTools {
         planetDirection: BABYLON.Vector3
     ): { i: number; j: number; k: number } {
         let planetSide = PlanetTools.PlanetPositionToPlanetSide(planet, planetDirection);
-        let globalIJK = PlanetTools.PlanetPositionToGlobalIJK(planetSide, planetDirection);
-        globalIJK.k = Math.floor(planet.generator.altitudeMap.getForSide(planetSide.side, globalIJK.i, globalIJK.j) * planet.kPosMax * PlanetTools.CHUNCKSIZE);
-        return globalIJK;
+        let globalIJ = PlanetTools.PlanetDirectionToGlobalIJ(planetSide, planetDirection);
+        let k = Math.ceil(planet.generator.altitudeMap.getForSide(planetSide.side, globalIJ.i, globalIJ.j) * planet.kPosMax * PlanetTools.CHUNCKSIZE);
+        let f = Math.pow(2, planet.degree - PlanetTools.KGlobalToDegree(k));
+        return { i: Math.floor(globalIJ.i / f), j: Math.floor(globalIJ.j / f), k: k };
     }
 
     public static PlanetPositionToLocalIJK(

@@ -60,9 +60,14 @@ class MainMenu extends Main {
 			mainPanel.setTarget(new BABYLON.Vector3(0, 1.7 + this._testAltitude, - 0.8));
 			mainPanel.open();
 			
-			let side = PlanetTools.PlanetPositionToPlanetSide(mainMenuPlanet, BABYLON.Vector3.Up());
+			let dir = new BABYLON.Vector3(
+				Math.random() - 0.5,
+				Math.random() - 0.5,
+				Math.random() - 0.5
+			);
+			let side = PlanetTools.PlanetPositionToPlanetSide(mainMenuPlanet, dir);
 			console.log(side);
-			let globalIJK = PlanetTools.PlanetDirectionToGlobalIJK(mainMenuPlanet, BABYLON.Vector3.Up());
+			let globalIJK = PlanetTools.PlanetDirectionToGlobalIJK(mainMenuPlanet, dir);
 			console.log(globalIJK);
 			let pos = PlanetTools.GlobalIJKToPlanetPosition(side, globalIJK);
 			console.log(pos.toString());
@@ -110,7 +115,7 @@ class MainMenu extends Main {
 	}
 
 	public async generatePlanets(): Promise<void> {
-		let orbitCount = 1;
+		let orbitCount = 0;
 		let orbitRadius = 200;
 		let alpha = 0;
 		for (let i = 0; i < orbitCount; i++) {

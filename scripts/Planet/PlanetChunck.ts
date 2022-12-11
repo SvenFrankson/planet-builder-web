@@ -520,6 +520,7 @@ class PlanetChunck extends AbstractPlanetChunck {
             if (vertexData.positions.length > 0) {
                 vertexData.applyToMesh(this.mesh);
                 this.mesh.material = this.planet.chunckMaterial;
+                //this.mesh.material = SharedMaterials.WaterMaterial();
             }
             let waterVertexData = vertexDatas[1];
             if (waterVertexData) {

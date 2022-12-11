@@ -39,13 +39,16 @@ class PlanetGeneratorEarth extends PlanetGenerator {
             let p = new BABYLON.Vector3(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5);
             p.normalize();
             
-            let kGlobal = Math.floor(this.altitudeMap.getForPosition(p) * PlanetTools.CHUNCKSIZE * this.planet.kPosMax);
-            if (kGlobal > planet.seaLevel) {
-                let alt = PlanetTools.KGlobalToAltitude(kGlobal);
-                let pBase = p.scale(alt);
-                p.scaleInPlace(alt + 5);
+            let side = PlanetTools.PlanetPositionToSide(p);
+            let ij = PlanetTools.PlanetDirectionToGlobalIJ(side, PlanetTools.DegreeToSize(planet.degree), p);
+            let kGlobal = Math.floor(this.altitudeMap.getForSide(side, ij.i, ij.j) * PlanetTools.CHUNCKSIZE * this.planet.kPosMax);
+
+            if (kGlobal > planet.seaLevel + 1) {
+                let pBase = p.scale(PlanetTools.KGlobalToAltitude(kGlobal));
+                p.scaleInPlace(PlanetTools.KGlobalToAltitude(kGlobal + 7));
                 this.elements.push(new GeneratorSegment(BlockType.Wood, pBase, p, 1));
                 this.elements.push(new GeneratorSphere(BlockType.Leaf, p, 3));
+                //BABYLON.MeshBuilder.CreateLines("line", { points: [p, pBase]});
             }
         }
     }
