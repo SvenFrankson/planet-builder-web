@@ -263,39 +263,51 @@ class PlanetTools {
         return hexString;
     }
 
-    public static PlanetPositionToPlanetSide(
-        planet: Planet,
+    public static PlanetPositionToSide(
         planetPos: BABYLON.Vector3
-    ): PlanetSide {
+    ): Side {
         let ax = Math.abs(planetPos.x);
         let ay = Math.abs(planetPos.y);
         let az = Math.abs(planetPos.z);
         if (ax >= ay && ax >= az) {
             if (planetPos.x >= 0) {
-                return planet.GetSide(Side.Right);
+                return Side.Right;
             }
-            return planet.GetSide(Side.Left);
+            return Side.Left;
         }
         if (ay >= ax && ay >= az) {
             if (planetPos.y >= 0) {
-                return planet.GetSide(Side.Top);
+                return Side.Top;
             }
-            return planet.GetSide(Side.Bottom);
+            return Side.Bottom;
         }
         if (az >= ax && az >= ay) {
             if (planetPos.z >= 0) {
-                return planet.GetSide(Side.Front);
+                return Side.Front;
             }
-            return planet.GetSide(Side.Back);
+            return Side.Back;
         }
     }
 
-    public static PlanetPositionToGlobalIJK(
-        planetSide: PlanetSide,
+    public static PlanetPositionToPlanetSide(
+        planet: Planet,
         planetPos: BABYLON.Vector3
-    ): { i: number; j: number; k: number } {
+    ): PlanetSide {
+        return planet.GetSide(PlanetTools.PlanetPositionToSide(planetPos));
+    }
+
+    public static PlanetPositionToGlobalIJK(side: Side, planetPos: BABYLON.Vector3): { i: number; j: number; k: number }
+    public static PlanetPositionToGlobalIJK(planetSide: PlanetSide, planetPos: BABYLON.Vector3): { i: number; j: number; k: number };
+    public static PlanetPositionToGlobalIJK(a: any, planetPos: BABYLON.Vector3): { i: number; j: number; k: number } {
         let localPos: BABYLON.Vector3 = BABYLON.Vector3.Zero();
-        VMath.RotateVectorByQuaternionToRef(planetPos, planetSide.rotationQuaternion.conjugate(), localPos);
+        let q: BABYLON.Quaternion;
+        if (a instanceof PlanetSide) {
+            q = a.rotationQuaternion.conjugate();
+        }
+        else {
+            q = PlanetTools.QuaternionForSide(a).conjugate();
+        }
+        VMath.RotateVectorByQuaternionToRef(planetPos, q, localPos);
         let r: number = localPos.length();
 
         if (Math.abs(localPos.x) > 1) {

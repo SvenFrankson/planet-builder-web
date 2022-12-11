@@ -1,9 +1,9 @@
 class PlanetGeneratorEarth extends PlanetGenerator {
 
     private _mainHeightMap: PlanetHeightMap;
-    private _tunnelMap: PlanetHeightMap;
-    private _tunnelAltitudeMap: PlanetHeightMap;
-    private _rockMap: PlanetHeightMap;
+    //private _tunnelMap: PlanetHeightMap;
+    //private _tunnelAltitudeMap: PlanetHeightMap;
+    //private _rockMap: PlanetHeightMap;
 
     public spheres: GeneratorSphere[] = [];
 
@@ -11,16 +11,8 @@ class PlanetGeneratorEarth extends PlanetGenerator {
         super(planet);
         console.log("Generator Degree = " + planet.degree);
         this._mainHeightMap = PlanetHeightMap.CreateMap(planet.degree);
-        
-        for (let i = 0; i < 100; i++) {
-            let p = new BABYLON.Vector3(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5);
-            p.normalize();
-            let pBase = p.scale(planet.seaAltitude);
-            p.scaleInPlace(planet.seaAltitude + 5);
-            this.elements.push(new GeneratorSegment(BlockType.Wood, pBase, p, 1));
-            this.elements.push(new GeneratorSphere(BlockType.Leaf, p, 3));
-        }
 
+        /*
         this._tunnelMap = PlanetHeightMap.CreateMap(
             planet.degree,
             {
@@ -38,9 +30,24 @@ class PlanetGeneratorEarth extends PlanetGenerator {
         this._tunnelMap.smooth();
         this._tunnelAltitudeMap = PlanetHeightMap.CreateMap(planet.degree);
         this._rockMap = PlanetHeightMap.CreateMap(planet.degree, { firstNoiseDegree : planet.degree - 3});
+        */
 
         this.altitudeMap = PlanetHeightMap.CreateConstantMap(planet.degree, 0).addInPlace(this._mainHeightMap).multiplyInPlace(_mountainHeight).addInPlace(PlanetHeightMap.CreateConstantMap(planet.degree, this.planet.seaLevelRatio));
-        this.altitudeMap.maxInPlace(PlanetHeightMap.CreateConstantMap(planet.degree, this.planet.seaLevelRatio - 0.01));
+        this.altitudeMap.maxInPlace(PlanetHeightMap.CreateConstantMap(planet.degree, this.planet.seaLevelRatio));
+        
+        for (let i = 0; i < 100; i++) {
+            let p = new BABYLON.Vector3(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5);
+            p.normalize();
+            
+            let kGlobal = Math.floor(this.altitudeMap.getForPosition(p) * PlanetTools.CHUNCKSIZE * this.planet.kPosMax);
+            if (kGlobal > planet.seaLevel) {
+                let alt = PlanetTools.KGlobalToAltitude(kGlobal);
+                let pBase = p.scale(alt);
+                p.scaleInPlace(alt + 5);
+                this.elements.push(new GeneratorSegment(BlockType.Wood, pBase, p, 1));
+                this.elements.push(new GeneratorSphere(BlockType.Leaf, p, 3));
+            }
+        }
     }
 
     public getTexture(side: Side, size: number = 256): BABYLON.Texture {
@@ -85,14 +92,14 @@ class PlanetGeneratorEarth extends PlanetGenerator {
 
                 let v = this._mainHeightMap.getForSide(chunck.side, (chunck.iPos * PlanetTools.CHUNCKSIZE + i) * f, (chunck.jPos * PlanetTools.CHUNCKSIZE + j) * f);
                 let altitude = this.planet.seaLevel + Math.floor((v * this._mountainHeight) * this.planet.kPosMax * PlanetTools.CHUNCKSIZE);
-                let rock = this._rockMap.getForSide(chunck.side, (chunck.iPos * PlanetTools.CHUNCKSIZE + i) * f, (chunck.jPos * PlanetTools.CHUNCKSIZE + j) * f);
-                let rockAltitude = altitude + Math.round((rock - 0.4) * this._mountainHeight * this.planet.kPosMax * PlanetTools.CHUNCKSIZE);
+                //let rock = this._rockMap.getForSide(chunck.side, (chunck.iPos * PlanetTools.CHUNCKSIZE + i) * f, (chunck.jPos * PlanetTools.CHUNCKSIZE + j) * f);
+                //let rockAltitude = altitude + Math.round((rock - 0.4) * this._mountainHeight * this.planet.kPosMax * PlanetTools.CHUNCKSIZE);
 
                 //let tree = this._treeMap.getForSide(chunck.side, (chunck.iPos * PlanetTools.CHUNCKSIZE + i) * f, (chunck.jPos * PlanetTools.CHUNCKSIZE + j) * f) * 4;
                 
-                let tunnel = Math.floor(this._tunnelMap.getForSide(chunck.side, (chunck.iPos * PlanetTools.CHUNCKSIZE + i) * f, (chunck.jPos * PlanetTools.CHUNCKSIZE + j) * f) * 5);
-                let tunnelV = this._tunnelAltitudeMap.getForSide(chunck.side, (chunck.iPos * PlanetTools.CHUNCKSIZE + i) * f, (chunck.jPos * PlanetTools.CHUNCKSIZE + j) * f);
-                let tunnelAltitude = this.planet.seaLevel + Math.floor((2 * tunnelV * this._mountainHeight) * this.planet.kPosMax * PlanetTools.CHUNCKSIZE);
+                //let tunnel = Math.floor(this._tunnelMap.getForSide(chunck.side, (chunck.iPos * PlanetTools.CHUNCKSIZE + i) * f, (chunck.jPos * PlanetTools.CHUNCKSIZE + j) * f) * 5);
+                //let tunnelV = this._tunnelAltitudeMap.getForSide(chunck.side, (chunck.iPos * PlanetTools.CHUNCKSIZE + i) * f, (chunck.jPos * PlanetTools.CHUNCKSIZE + j) * f);
+                //let tunnelAltitude = this.planet.seaLevel + Math.floor((2 * tunnelV * this._mountainHeight) * this.planet.kPosMax * PlanetTools.CHUNCKSIZE);
 
                 /*
                 if (tree > 0.7 && treeCount < maxTree) {
@@ -143,6 +150,7 @@ class PlanetGeneratorEarth extends PlanetGenerator {
                             refData[i - chunck.firstI][j - chunck.firstJ][k - chunck.firstK] = BlockType.Rock;
                         }
                     }
+                    /*
                     else if (globalK <= rockAltitude) {
                         refData[i - chunck.firstI][j - chunck.firstJ][k - chunck.firstK] = BlockType.Rock;
                     }
@@ -151,6 +159,7 @@ class PlanetGeneratorEarth extends PlanetGenerator {
                             refData[i - chunck.firstI][j - chunck.firstJ][k - chunck.firstK] = BlockType.None;
                         }
                     }
+                    */
                     /*
                     if (tree > 0 && globalK > this.planet.seaLevel) {
                         if (globalK > altitude + 4 && globalK <= altitude + 4 + tree) {

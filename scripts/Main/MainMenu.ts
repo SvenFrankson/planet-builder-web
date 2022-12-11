@@ -50,7 +50,7 @@ class MainMenu extends Main {
 			//testGrab.position = new BABYLON.Vector3(- 0.3, this._testAltitude + 1.1, - 0.1);
 			//testGrab.instantiate();
 			
-			let mainMenuPlanet: Planet = PlanetGeneratorFactory.Create(BABYLON.Vector3.Zero(), PlanetGeneratorType.Moon, 1, this.scene);
+			let mainMenuPlanet: Planet = PlanetGeneratorFactory.Create(BABYLON.Vector3.Zero(), PlanetGeneratorType.Earth, 5, this.scene);
 			mainMenuPlanet.instantiate();
 			this.planets = [mainMenuPlanet];
 
@@ -61,16 +61,26 @@ class MainMenu extends Main {
 			mainPanel.open();
 			
 			let side = PlanetTools.PlanetPositionToPlanetSide(mainMenuPlanet, BABYLON.Vector3.Up());
+			console.log(side);
 			let globalIJK = PlanetTools.PlanetDirectionToGlobalIJK(mainMenuPlanet, BABYLON.Vector3.Up());
+			console.log(globalIJK);
 			let pos = PlanetTools.GlobalIJKToPlanetPosition(side, globalIJK);
+			console.log(pos.toString());
 			mainPanel.setPosition(pos);
 			
-			this.player = new Player(new BABYLON.Vector3(0, 1.7 + this._testAltitude + 3, - 0.8), this);
+			let cubeTest = BABYLON.MeshBuilder.CreateBox("cube-test");
+			cubeTest.position.copyFrom(pos);
+
+			pos = pos.clone();
+			this.player = new Player(pos, this);
 			this.cameraManager.player = this.player;
 			this.cameraManager.setMode(CameraMode.Player);
 
             let debugPlanetPerf = new DebugPlanetPerf(this, true);
             debugPlanetPerf.show();
+
+			let debugPlayerPosition = new DebugPlayerPosition(this.player);
+			debugPlayerPosition.show();
 
 			this.planetSky = new PlanetSky(this.scene);
 			this.planetSky.setInvertLightDir((new BABYLON.Vector3(0.5, 2.5, 1.5)).normalize());
@@ -100,7 +110,7 @@ class MainMenu extends Main {
 	}
 
 	public async generatePlanets(): Promise<void> {
-		let orbitCount = 3;
+		let orbitCount = 1;
 		let orbitRadius = 200;
 		let alpha = 0;
 		for (let i = 0; i < orbitCount; i++) {

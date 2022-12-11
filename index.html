@@ -12,5 +12,15 @@
 	</head>
 	<body>
 		<canvas id="renderCanvas"></canvas>
+		<div id="debug-container">				
+			<div id="debug-player-position" class="debug hidden">
+				<debug-display-text-value id="player-coordinates" label="Coordinates"></debug-display-text-value>
+				<debug-display-vector3-value id="player-position" label="Position" decimals="3"></debug-display-vector3-value>
+				<debug-display-vector3-value id="player-local-position" label="Local Position" decimals="3"></debug-display-vector3-value>
+				<debug-display-text-value id="player-planet-side" label="Side"></debug-display-text-value>
+				<debug-display-vector3-value id="player-global-ijk" label="Global" useIJK="true" decimals="0"></debug-display-vector3-value>
+				<debug-display-vector3-value id="player-chunck" label="Chunck" useIJK="true" decimals="0"></debug-display-vector3-value>
+				<debug-display-vector3-value id="player-local-ijk" label="Local" useIJK="true" decimals="0"></debug-display-vector3-value>
+			</div>
 	</body>
 </html>
