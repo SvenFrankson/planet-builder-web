@@ -22,6 +22,7 @@ class Player extends BABYLON.Mesh {
 
     public targetLook: BABYLON.Vector3;
     public targetDestination: BABYLON.Vector3;
+    private _lastDistToTarget: number;
 
     public get inputManager(): InputManager {
         return this.main.inputManager;
@@ -37,13 +38,13 @@ class Player extends BABYLON.Mesh {
         this.rotationQuaternion = BABYLON.Quaternion.Identity();
         this.camPos = new BABYLON.Mesh("Dummy", Game.Scene);
         this.camPos.parent = this;
-        this.camPos.position = new BABYLON.Vector3(0, 1, 0);
+        this.camPos.position = new BABYLON.Vector3(0, 1.7, 0);
         this.armManager = new PlayerArmManager(this);
-        //BABYLON.VertexData.CreateSphere({ diameterX: 1, diameterY: 2, diameterZ: 1 }).applyToMesh(this);
-        //let material = new BABYLON.StandardMaterial("material", this.getScene());
-        //material.alpha = 0.5;
-        //this.material = material;
-        //this.layerMask = 0x10000000;
+        BABYLON.CreateSphereVertexData({ diameter: 0.2 }).applyToMesh(this);
+        let material = new BABYLON.StandardMaterial("material", this.getScene());
+        material.alpha = 0.5;
+        this.material = material;
+        this.layerMask = 0x10000000;
     }
 
     private _initialized: boolean = false;
@@ -231,9 +232,20 @@ class Player extends BABYLON.Mesh {
 
         if (this.targetLook) {
             let forward = this.camPos.forward;
-            let targetForward = this.targetLook.subtract(this.camPos.absolutePosition);
-            this.inputHeadRight += VMath.AngleFromToAround(forward, targetForward, this.upDirection) / Math.PI * 0.5;
-            this.inputHeadUp += VMath.AngleFromToAround(forward, targetForward, this._rightDirection) / Math.PI * 0.5;
+            let targetForward = this.targetLook.subtract(this.camPos.absolutePosition).normalize();
+            if (!this.targetDestination && this.velocity.lengthSquared() < 0.01) {
+                if (BABYLON.Vector3.Dot(forward, targetForward) > 0.99) {
+                    this.targetLook = undefined;
+                }
+            }
+            let a = VMath.AngleFromToAround(forward, targetForward, this.upDirection) / Math.PI * 0.5;
+            if (isFinite(a)) {
+                this.inputHeadRight += a;
+            }
+            a = VMath.AngleFromToAround(forward, targetForward, this._rightDirection) / Math.PI * 0.5;
+            if (isFinite(a)) {
+                this.inputHeadUp += a;
+            }
         }
 
         let rotationPower: number = this.inputHeadRight * 0.05;
@@ -282,10 +294,10 @@ class Player extends BABYLON.Mesh {
         this._backwardDirection.scaleInPlace(-1);
 
         this._feetPosition.copyFrom(this.position);
-        this._feetPosition.addInPlace(this._downDirection.scale(-0.5));
+        this._feetPosition.addInPlace(this.upDirection.scale(0.5));
 
         this._headPosition.copyFrom(this.position);
-        this._headPosition.addInPlace(this._downDirection.scale(0.5));
+        this._headPosition.addInPlace(this.upDirection.scale(1.5));
 
         this._keepUp();
 
@@ -326,7 +338,7 @@ class Player extends BABYLON.Mesh {
                 this._chuncks.forEach((chunck) => {
                     //chunck.highlight();
                 });
-                let ray: BABYLON.Ray = new BABYLON.Ray(this.position.add(this.up), this._downDirection);
+                let ray: BABYLON.Ray = new BABYLON.Ray(this.camPos.absolutePosition, this._downDirection);
                 let hit: BABYLON.PickingInfo[] = ray.intersectsMeshes(this._meshes);
                 hit = hit.sort((h1, h2) => { return h1.distance - h2.distance; });
                 if (hit[0] && hit[0].pickedPoint) {
@@ -337,12 +349,12 @@ class Player extends BABYLON.Mesh {
                         this._debugCollisionGroundMesh.material = material;
                     }
                     this._debugCollisionGroundMesh.position.copyFrom(hit[0].pickedPoint);
-                    let d: number = BABYLON.Vector3.Dot(this.position.subtract(hit[0].pickedPoint), this.up) + 1;
-                    if (d > 0 && d < 2.5) {
+                    let d: number = BABYLON.Vector3.Dot(this.position.subtract(hit[0].pickedPoint), this.upDirection);
+                    if (d <= 0.05) {
                         this._groundFactor
                             .copyFrom(this._gravityFactor)
                             .scaleInPlace(-1)
-                            .scaleInPlace(1 / (d * 0.5));
+                            .scaleInPlace(1 - 10 * d);
                         fVert = 0.005;
                         this._isGrounded = true;
                     }
@@ -360,11 +372,12 @@ class Player extends BABYLON.Mesh {
             this._controlFactor.copyFrom(this.targetDestination);
             this._controlFactor.subtractInPlace(this.position);
             let dist = this._controlFactor.length();
-            if (dist < 0.01 && this.velocity.length() < 0.1) {
-                delete this.targetLook;
-                delete this.targetDestination;
+            if (dist > this._lastDistToTarget && this.velocity.length() < 0.1) {
+                this.targetDestination = undefined;
+                this._lastDistToTarget = undefined;
             }
             else {
+                this._lastDistToTarget = dist;
                 this._controlFactor.normalize();
                 this._controlFactor.scaleInPlace((dist * 10 / this.mass) * deltaTime);
                 fLat = 0.2;

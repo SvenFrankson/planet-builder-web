@@ -69,8 +69,10 @@ class MainMenu extends Main {
 
 			let mainPanel = new MainMenuPanel(100, this);
 			mainPanel.instantiate();
+			mainPanel.register();
+			mainPanel.planet = mainMenuPlanet;
 			mainPanel.setPosition(pos);
-			mainPanel.setTarget(new BABYLON.Vector3(0, 1.7 + this._testAltitude, - 0.8), true);
+			mainPanel.setTarget(new BABYLON.Vector3(0, 1.7 + this._testAltitude, - 0.8));
 			mainPanel.open();
 			
 			//let cubeTest = BABYLON.MeshBuilder.CreateBox("cube-test");

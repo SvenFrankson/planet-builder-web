@@ -51,14 +51,14 @@ class PlayerArmManager {
 
     private _update = () => {
         this._dpLeftArm.copyFrom(this.leftArm.position);
-        BABYLON.Vector3.TransformCoordinatesToRef(new BABYLON.Vector3(- 0.2, 0.7, 0), this.player.getWorldMatrix(), this._tmpDP);
+        BABYLON.Vector3.TransformCoordinatesToRef(new BABYLON.Vector3(- 0.2, 1.6, 0), this.player.getWorldMatrix(), this._tmpDP);
         this.leftArm.position.copyFrom(this._tmpDP);
         this._dpLeftArm.subtractInPlace(this.leftArm.position).scaleInPlace(-1);
         this.leftArm.rotationQuaternion.copyFrom(this.player.rotationQuaternion);
         this.leftArm.targetPosition.addInPlace(this._dpLeftArm);
 
         this._dpRightArm.copyFrom(this.rightArm.position);
-        BABYLON.Vector3.TransformCoordinatesToRef(new BABYLON.Vector3(0.2, 0.7, 0), this.player.getWorldMatrix(), this._tmpDP);
+        BABYLON.Vector3.TransformCoordinatesToRef(new BABYLON.Vector3(0.2, 1.6, 0), this.player.getWorldMatrix(), this._tmpDP);
         this.rightArm.position.copyFrom(this._tmpDP);
         this._dpRightArm.subtractInPlace(this.rightArm.position).scaleInPlace(-1);
         this.rightArm.rotationQuaternion.copyFrom(this.player.rotationQuaternion);

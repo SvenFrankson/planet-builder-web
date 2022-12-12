@@ -126,9 +126,8 @@ class HoloPanel extends Pickable {
         this.holoMesh = new BABYLON.Mesh("text-page");
         this.holoMesh.layerMask = 0x10000000;
         this.holoMesh.parent = this;
-        this.holoMesh.position.y = 0;
+        this.holoMesh.position.y = this.height;
         this.holoMesh.scaling.x = 0.1;
-        this.holoMesh.scaling.y = 0.1;
         this.holoMesh.alphaIndex = 1;
 
         this.pointerMesh = new BABYLON.Mesh("pointer-mesh");
@@ -140,7 +139,6 @@ class HoloPanel extends Pickable {
         this.interactionAnchor = new BABYLON.Mesh("interaction-anchor");
         BABYLON.CreateBoxVertexData({ size: 0.1 }).applyToMesh(this.interactionAnchor);
         this.interactionAnchor.material = SharedMaterials.RedMaterial();
-        this.interactionAnchor.position.y = 1;
         this.interactionAnchor.position.z = -1;
         this.interactionAnchor.parent = this;
 
@@ -225,6 +223,24 @@ class HoloPanel extends Pickable {
         });
     }
 
+    public register(): void {
+        this.inputManager.addMappedKeyUpListener(KeyInput.MAIN_MENU, async () => {
+            let player = this.inputManager.player;
+            if (player) {
+                await this.close();
+                let p = player.position.add(player.forward);
+                this.planet = player.planet;
+                this.setPosition(p);
+                this.setTarget(player.position);
+                requestAnimationFrame(() => {
+                    this.inputManager.player.targetLook = this.holoMesh.absolutePosition;
+                    this.inputManager.player.targetDestination = this.interactionAnchor.absolutePosition.clone();
+                })
+                await this.open();
+            }
+        })
+    }
+
     public refreshHSF(): void {
         let hsf = Config.performanceConfiguration.holoScreenFactor;
 
@@ -248,35 +264,11 @@ class HoloPanel extends Pickable {
     }
 
     public async open(): Promise<void> {
-        await this._animatePosY(this.height, 0.3);
         await this._animateScaleX(1, 0.2);
-        await this._animateScaleY(1, 0.2);
     }
 
     public async close(): Promise<void> {
-        await this._animateScaleY(0.05, 0.1);
         await this._animateScaleX(0.05, 0.1);
-        await this._animatePosY(0, 0.2);
-    }
-
-    public setPosition(position: BABYLON.Vector3): void {
-        if (this) {
-            this.position = position;
-        }
-    }
-
-    public setTarget(target: BABYLON.Vector3, usePlanetUp: boolean = false): void {
-        let y: BABYLON.Vector3;
-        if (usePlanetUp && this.position.lengthSquared() != 0) {
-            y = this.position.clone().normalize();
-        }
-        else {
-            y = BABYLON.Vector3.Up();
-        }
-        let z = target.subtract(this.position).normalize().scaleInPlace(-1);
-        let x = BABYLON.Vector3.Cross(y, z).normalize();
-        z = BABYLON.Vector3.Cross(x, y).normalize();
-        this.rotationQuaternion = BABYLON.Quaternion.RotationQuaternionFromAxis(x, y, z);
     }
 
     public redrawSVG(image: any): void {
@@ -289,7 +281,7 @@ class HoloPanel extends Pickable {
     }
 
     public onPointerDown(): void {
-        if (BABYLON.Vector3.DistanceSquared(this.inputManager.player.position, this.interactionAnchor.absolutePosition) < 0.1 * 0.1) {
+        if (BABYLON.Vector3.DistanceSquared(this.inputManager.player.position, this.interactionAnchor.absolutePosition) < 0.2 * 0.2) {
             let local = BABYLON.Vector3.TransformCoordinates(this.inputManager.aimedPosition, this.holoMesh.getWorldMatrix().clone().invert());
             let x = this.posXToXTexture(local.x);
             let y = this.posYToYTexture(local.y);
@@ -298,7 +290,7 @@ class HoloPanel extends Pickable {
     }
 
     public onPointerUp(): void {
-        if (BABYLON.Vector3.DistanceSquared(this.inputManager.player.position, this.interactionAnchor.absolutePosition) < 0.1 * 0.1) {
+        if (BABYLON.Vector3.DistanceSquared(this.inputManager.player.position, this.interactionAnchor.absolutePosition) < 0.2 * 0.2) {
             let local = BABYLON.Vector3.TransformCoordinates(this.inputManager.aimedPosition, this.holoMesh.getWorldMatrix().clone().invert());
             let x = this.posXToXTexture(local.x);
             let y = this.posYToYTexture(local.y);

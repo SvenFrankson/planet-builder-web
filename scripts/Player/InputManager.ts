@@ -15,7 +15,8 @@ enum KeyInput {
     MOVE_LEFT,
     MOVE_BACK,
     MOVE_RIGHT,
-    JUMP
+    JUMP,
+    MAIN_MENU,
 }
 
 class InputManager {
@@ -78,6 +79,7 @@ class InputManager {
         this.keyInputMap.set("KeyS", KeyInput.MOVE_BACK);
         this.keyInputMap.set("KeyD", KeyInput.MOVE_RIGHT);
         this.keyInputMap.set("Space", KeyInput.JUMP);
+        this.keyInputMap.set("Backquote", KeyInput.MAIN_MENU);
 
         window.addEventListener("keydown", (e) => {
             let keyInput = this.keyInputMap.get(e.code);
