@@ -119,12 +119,12 @@ class MainMenu extends Main {
 	}
 
 	public async generatePlanets(): Promise<void> {
-		let orbitCount = 0;
+		let orbitCount = 3;
 		let orbitRadius = 200;
 		let alpha = 0;
 		for (let i = 0; i < orbitCount; i++) {
 			alpha += Math.PI * 0.5 + Math.PI * Math.random();
-			let kPosMax = Math.floor(3 + 5 * Math.random());
+			let kPosMax = Math.floor(3 + 12 * Math.random());
 			let planet: Planet = PlanetGeneratorFactory.Create(new BABYLON.Vector3(Math.cos(alpha) * orbitRadius * (i + 1), 0, Math.sin(alpha) * orbitRadius * (i + 1)), Math.floor(Math.random() * 2 + 1), kPosMax, this.scene);
 			planet.instantiate();
 			this.planets.push(planet);

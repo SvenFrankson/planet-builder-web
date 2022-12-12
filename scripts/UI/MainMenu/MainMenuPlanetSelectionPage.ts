@@ -162,6 +162,15 @@ class MainMenuPlanetSelectionPage extends MainMenuPanelPage {
 
         this.elements.push(title1, buttonLeft, buttonRight, this.planetNameElement, planetImage, this.planetDescElement, buttonBack, buttonGo);
     }
+    
+    public async show(duration: number): Promise<void> {
+        this.planetNames = this.mainMenuPanel.main.planets.map(p => { return p.name; });
+        this.planetDescriptions = this.mainMenuPanel.main.planets.map(p => { return "\n- radius : " + p.seaAltitude.toFixed(0) + "m\n" });
+        this.planetDescElement.prop.text = this.planetDescriptions[this.currentPlanetIndex];
+        this.planetNameElement.prop.text = "id: " + this.planetNames[this.currentPlanetIndex];
+        /*"\n- radius : 623m\n\n- type : dry\n\n- moons : 0"*/
+        return super.show(duration);
+    }
 
     public async updateCurrentPlanetIndex(left?: boolean): Promise<void> {
         this.planetDescElement.animateAlpha(0, 0.3);
