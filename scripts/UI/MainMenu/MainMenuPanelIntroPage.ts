@@ -17,7 +17,7 @@ class MainMenuPanelIntroPage extends MainMenuPanelPage {
             color: BABYLON.Color3.FromHexString(Config.uiConfiguration.holoScreenBaseColor),
             fontSize: 60,
             fontFamily: "XoloniumRegular",
-            highlightRadius: 20
+            highlightRadius: 0
         }));
 
         let title2 = this.holoSlika.add(new SlikaText({
@@ -28,7 +28,7 @@ class MainMenuPanelIntroPage extends MainMenuPanelPage {
             color: BABYLON.Color3.FromHexString(Config.uiConfiguration.holoScreenBaseColor),
             fontSize: 60,
             fontFamily: "XoloniumRegular",
-            highlightRadius: 20
+            highlightRadius: 0
         }));
 
         let text1 = this.holoSlika.add(new SlikaText({
@@ -39,7 +39,7 @@ class MainMenuPanelIntroPage extends MainMenuPanelPage {
             color: BABYLON.Color3.FromHexString(Config.uiConfiguration.holoScreenBaseColor),
             fontSize: 50,
             fontFamily: "XoloniumRegular",
-            highlightRadius: 20
+            highlightRadius: 0
         }));
 
         let text2 = this.holoSlika.add(new SlikaText({
@@ -50,10 +50,10 @@ class MainMenuPanelIntroPage extends MainMenuPanelPage {
             color: BABYLON.Color3.FromHexString(Config.uiConfiguration.holoScreenBaseColor),
             fontSize: 50,
             fontFamily: "XoloniumRegular",
-            highlightRadius: 20
+            highlightRadius: 0
         }));
 
-        let textDecoy = this.holoSlika.add(SlikaPath.CreatePan(100, 620, 460, 3, 30, 0.15, false, true, new SlikaShapeStyle("none", 1, Config.uiConfiguration.holoScreenBaseColor, 1, 0, Config.uiConfiguration.holoScreenBaseColor, 10)));
+        let textDecoy = this.holoSlika.add(SlikaPath.CreatePan(100, 620, 460, 3, 30, 0.15, false, true, new SlikaShapeStyle("none", 1, Config.uiConfiguration.holoScreenBaseColor, 1, 0, Config.uiConfiguration.holoScreenBaseColor, 6)));
 
         let planetImage = this.holoSlika.add(new SlikaImage(
             new SPosition(750, 390),
@@ -77,12 +77,12 @@ class MainMenuPanelIntroPage extends MainMenuPanelPage {
         let buttonPlayLabel = this.holoSlika.add(new SlikaText({
             text: "(press to enter)",
             x: 500,
-            y: 740,
+            y: 750,
             textAlign: "center",
             color: BABYLON.Color3.FromHexString(Config.uiConfiguration.holoScreenBaseColor),
             fontSize: 30,
             fontFamily: "XoloniumRegular",
-            highlightRadius: 20
+            highlightRadius: 0
         }));
 
         let bottom1 = this.holoSlika.add(new SlikaText({
@@ -93,7 +93,7 @@ class MainMenuPanelIntroPage extends MainMenuPanelPage {
             color: BABYLON.Color3.FromHexString(Config.uiConfiguration.holoScreenBaseColor),
             fontSize: 40,
             fontFamily: "XoloniumRegular",
-            highlightRadius: 20
+            highlightRadius: 0
         }));
 
         let babylonIcon = this.holoSlika.add(new SlikaImage(
@@ -111,7 +111,7 @@ class MainMenuPanelIntroPage extends MainMenuPanelPage {
             color: BABYLON.Color3.FromHexString(Config.uiConfiguration.holoScreenBaseColor),
             fontSize: 40,
             fontFamily: "XoloniumRegular",
-            highlightRadius: 20
+            highlightRadius: 0
         }));
 
         this.elements.push(title1, title2, text1, text2, textDecoy, planetImage, buttonPlay, buttonPlayLabel, bottom1, babylonIcon, bottom2);

@@ -1,18 +1,20 @@
 class PlanetGeneratorMoon extends PlanetGenerator {
 
-    private _craterMap: PlanetHeightMap;
+    //private _craterMap: PlanetHeightMap;
 
     constructor(planet: Planet) {
         super(planet);
 
         this.altitudeMap = PlanetHeightMap.CreateConstantMap(planet.degree, this.planet.seaLevelRatio);
 
+        /*
         this._craterMap = PlanetHeightMap.CreateConstantMap(planet.degree, 0);
         for (let i = 0; i < 200; i++) {
             this._craterMap.setRandomDisc(1, 2, 4);
         }
         this._craterMap.smooth();
         this._craterMap.smooth();
+        */
     }
     
 
@@ -31,18 +33,18 @@ class PlanetGeneratorMoon extends PlanetGenerator {
     }
 
     public makeData(chunck: PlanetChunck, refData: number[][][], refProcedural: ProceduralTree[]): void {
-        let f = Math.pow(2, this._craterMap.degree - chunck.degree);
+        //let f = Math.pow(2, this._craterMap.degree - chunck.degree);
 
         let intersectingElements: GeneratorElement[] = this.getIntersectingElements(chunck);
 
         for (let i: number = 0; i < PlanetTools.CHUNCKSIZE; i++) {
             refData[i - chunck.firstI] = [];
             for (let j: number = 0; j < PlanetTools.CHUNCKSIZE; j++) {
-                let craterDepth = this._craterMap.getForSide(chunck.side, (chunck.iPos * PlanetTools.CHUNCKSIZE + i) * f, (chunck.jPos * PlanetTools.CHUNCKSIZE + j) * f) * 3;
+                //let craterDepth = this._craterMap.getForSide(chunck.side, (chunck.iPos * PlanetTools.CHUNCKSIZE + i) * f, (chunck.jPos * PlanetTools.CHUNCKSIZE + j) * f) * 3;
 
                 refData[i - chunck.firstI][j - chunck.firstJ] = [];
 
-                let altitude = this.planet.seaLevel - craterDepth;
+                let altitude = this.planet.seaLevel;
                 
                 for (let k: number = 0; k < PlanetTools.CHUNCKSIZE; k++) {
                     let globalK = k + chunck.kPos * PlanetTools.CHUNCKSIZE;
@@ -58,7 +60,7 @@ class PlanetGeneratorMoon extends PlanetGenerator {
                         }
                     }
 
-                    if (globalK <= altitude) {
+                    if (globalK < altitude) {
                         refData[i - chunck.firstI][j - chunck.firstJ][k - chunck.firstK] = BlockType.Rock;
                     }
                 }

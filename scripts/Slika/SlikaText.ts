@@ -57,7 +57,6 @@ class SlikaText extends SlikaElement {
         context.font = (this.prop.fontSize * hsf) + "px " + this.prop.fontFamily;
         context.shadowBlur = this.prop.highlightRadius * hsf;
         context.shadowColor = colorString + alphaString;
-        context.lineWidth = this.prop.highlightRadius * 0.2 * hsf;
         let offsetX = 0;
         if (this.prop.textAlign === "center") {
             offsetX = context.measureText(this.prop.text).width * 0.5 / hsf;
@@ -65,6 +64,9 @@ class SlikaText extends SlikaElement {
         else if (this.prop.textAlign === "end") {
             offsetX = context.measureText(this.prop.text).width / hsf;
         }
+        context.lineWidth = 6 * hsf;
+        context.strokeStyle = "#000000" + alphaString;
+        context.strokeText(this.prop.text, (this.prop.x - offsetX) * hsf, this.prop.y * hsf);
         context.fillText(this.prop.text, (this.prop.x - offsetX) * hsf, this.prop.y * hsf);
     }
 

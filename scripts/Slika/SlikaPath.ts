@@ -87,21 +87,26 @@ class SlikaPath extends SlikaElement {
         let hsf = Config.performanceConfiguration.holoScreenFactor;
 
         if (this.points.points.length > 0) {
+            let outlineStyle = "#000000";
             if (this.style.fill === "none") {
                 context.fillStyle = "none";
             }
             else {
                 context.fillStyle = this.style.fill + Math.floor((this.style.fillAlpha * this.alpha) * 255).toString(16).padStart(2, "0");
+                outlineStyle += Math.floor((this.style.fillAlpha * this.alpha) * 255).toString(16).padStart(2, "0");
             }
+            let ss = "";
             if (this.style.stroke === "none") {
-                context.strokeStyle = "none";
+                ss = "none";
             }
             else {
-                context.strokeStyle = this.style.stroke + Math.floor((this.style.strokeAlpha * this.alpha) * 255).toString(16).padStart(2, "0");
+                ss = this.style.stroke + Math.floor((this.style.strokeAlpha * this.alpha) * 255).toString(16).padStart(2, "0");
+                outlineStyle += Math.floor((this.style.strokeAlpha * this.alpha) * 255).toString(16).padStart(2, "0");
             }
             context.shadowBlur = this.style.highlightRadius * hsf;
+            context.shadowBlur = 0;
             context.shadowColor = this.style.highlightColor;
-            context.lineWidth = this.style.width * hsf;
+            let lw = this.style.width * hsf;
             context.beginPath();
             context.moveTo((this.points.points[0] + this.posX) * hsf, (this.points.points[1] + this.posY) * hsf);
             for (let i = 1; i < this.points.points.length / 2; i++) {
@@ -111,9 +116,21 @@ class SlikaPath extends SlikaElement {
                 context.closePath();
             }
             if (this.style.fill != "none") {
+                if (this.style.highlightRadius) {
+                    context.lineWidth = this.style.highlightRadius * hsf;
+                    context.strokeStyle = outlineStyle;
+                    context.stroke();
+                }
                 context.fill();
             }
             if (this.style.stroke != "none") {
+                if (this.style.highlightRadius > 0) {
+                    context.lineWidth = lw + this.style.highlightRadius * hsf;
+                    context.strokeStyle = outlineStyle;
+                    context.stroke();
+                }
+                context.lineWidth = lw;
+                context.strokeStyle = ss;
                 context.stroke();
             }
         }

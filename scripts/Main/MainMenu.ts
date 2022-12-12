@@ -50,33 +50,34 @@ class MainMenu extends Main {
 			//testGrab.position = new BABYLON.Vector3(- 0.3, this._testAltitude + 1.1, - 0.1);
 			//testGrab.instantiate();
 			
-			let mainMenuPlanet: Planet = PlanetGeneratorFactory.Create(BABYLON.Vector3.Zero(), PlanetGeneratorType.Earth, 5, this.scene);
+			let mainMenuPlanet: Planet = PlanetGeneratorFactory.Create(BABYLON.Vector3.Zero(), PlanetGeneratorType.Moon, 2, this.scene);
 			mainMenuPlanet.instantiate();
 			this.planets = [mainMenuPlanet];
-
-			let mainPanel = new MainMenuPanel(100, this);
-			mainPanel.instantiate();
-			mainPanel.setPosition(new BABYLON.Vector3(0, this._testAltitude, 0.2));
-			mainPanel.setTarget(new BABYLON.Vector3(0, 1.7 + this._testAltitude, - 0.8));
-			mainPanel.open();
 			
 			let dir = new BABYLON.Vector3(
 				Math.random() - 0.5,
 				Math.random() - 0.5,
 				Math.random() - 0.5
 			);
+			dir.copyFromFloats(0, 1, 0);
 			let side = PlanetTools.PlanetPositionToPlanetSide(mainMenuPlanet, dir);
 			console.log(side);
 			let globalIJK = PlanetTools.PlanetDirectionToGlobalIJK(mainMenuPlanet, dir);
 			console.log(globalIJK);
 			let pos = PlanetTools.GlobalIJKToPlanetPosition(side, globalIJK);
 			console.log(pos.toString());
+
+			let mainPanel = new MainMenuPanel(100, this);
+			mainPanel.instantiate();
 			mainPanel.setPosition(pos);
+			mainPanel.setTarget(new BABYLON.Vector3(0, 1.7 + this._testAltitude, - 0.8), true);
+			mainPanel.open();
 			
-			let cubeTest = BABYLON.MeshBuilder.CreateBox("cube-test");
-			cubeTest.position.copyFrom(pos);
+			//let cubeTest = BABYLON.MeshBuilder.CreateBox("cube-test");
+			//cubeTest.position.copyFrom(pos);
 
 			pos = pos.clone();
+			pos.z -= 2;
 			this.player = new Player(pos, this);
 			this.cameraManager.player = this.player;
 			this.cameraManager.setMode(CameraMode.Player);
@@ -99,7 +100,10 @@ class MainMenu extends Main {
 
 					this.planets.forEach(p => {
 						p.register();
-					})
+					});
+					
+					this.inputManager.initialize(this.player);
+					
 					this.player.initialize();
 					this.player.registerControl();
 					//moon.register();

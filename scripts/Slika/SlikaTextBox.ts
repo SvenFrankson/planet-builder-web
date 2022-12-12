@@ -64,7 +64,7 @@ class SlikaTextBox extends SlikaElement {
                     this.prop.x + this.prop.w, this.prop.y + this.prop.h,
                     this.prop.x, this.prop.y + this.prop.h
                 ], true),
-                new SlikaShapeStyle(this.prop.color.toHexString(), 1, "none", 1, 1, this.prop.color.toHexString(), 20)
+                new SlikaShapeStyle(this.prop.color.toHexString(), 1, "none", 1, 2, this.prop.color.toHexString(), 4)
         ));
         
         this._fills.push(
@@ -75,7 +75,7 @@ class SlikaTextBox extends SlikaElement {
                     this.prop.x + this.prop.w, this.prop.y + this.prop.h,
                     this.prop.x, this.prop.y + this.prop.h
                 ], true),
-                new SlikaShapeStyle("none", 1, this.prop.color.toHexString(), 0.05, 0, this.prop.color.toHexString(), 20)
+                new SlikaShapeStyle("none", 1, this.prop.color.toHexString(), 0.05, 0, this.prop.color.toHexString(), 0)
         ));
     }
 
@@ -98,7 +98,7 @@ class SlikaTextBox extends SlikaElement {
         context.font = (this.prop.fontSize * hsf) + "px " + this.prop.fontFamily;
         context.shadowBlur = this.prop.highlightRadius;
         context.shadowColor = outlineColorString + alphaString;
-        context.lineWidth = this.prop.highlightRadius * 0.2;
+        context.lineWidth = 5 * hsf;
 
         let l = "";
         let i = 1;
@@ -112,11 +112,15 @@ class SlikaTextBox extends SlikaElement {
                     split.splice(0, 1);
                 }
                 else {
+                    context.strokeStyle = "black";
+                    //context.strokeText(l, this.prop.x * hsf, (this.prop.y + i * this.prop.fontSize) * hsf);
                     context.fillText(l, this.prop.x * hsf, (this.prop.y + i * this.prop.fontSize) * hsf);
                     l = "";
                     i++
                 }
             }
+            context.strokeStyle = "black";
+            //context.strokeText(l, this.prop.x * hsf, (this.prop.y + i * this.prop.fontSize) * hsf);
             context.fillText(l, this.prop.x * hsf, (this.prop.y + i * this.prop.fontSize) * hsf);
             l = "";
             i++;

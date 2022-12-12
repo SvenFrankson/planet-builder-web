@@ -103,7 +103,7 @@ class ConfigurationControl {
 
 class ConfigurationUI {
 
-    public holoScreenBaseColor: string = "#24d1d1";
+    public holoScreenBaseColor: string = "#35b4d4";
 }
 
 enum ConfigurationPreset {

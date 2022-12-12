@@ -35,7 +35,7 @@ class MainMenuPlanetSelectionPage extends MainMenuPanelPage {
             color: BABYLON.Color3.FromHexString(Config.uiConfiguration.holoScreenBaseColor),
             fontSize: 60,
             fontFamily: "XoloniumRegular",
-            highlightRadius: 20
+            highlightRadius: 0
         }));
 
         let buttonLeft = new SlikaButton(
@@ -74,7 +74,7 @@ class MainMenuPlanetSelectionPage extends MainMenuPanelPage {
             color: BABYLON.Color3.FromHexString(Config.uiConfiguration.holoScreenBaseColor),
             fontSize: 60,
             fontFamily: "XoloniumRegular",
-            highlightRadius: 20
+            highlightRadius: 0
         })) as SlikaText;
 
         let planetImage = this.holoSlika.add(new SlikaImage(

@@ -9,7 +9,7 @@ class MainMenuPanel extends HoloPanel {
     public planetPage: MainMenuPlanetSelectionPage;
 
     constructor(public dpi: number, main: Main) {
-        super(0.6, 1.5, 1000, 1000, main);
+        super(0.6, 1.7, 1000, 1000, main);
     }
 
     public instantiate(): void {
@@ -51,25 +51,47 @@ class MainMenuPanel extends HoloPanel {
                     M + L1, M,
                     500 - L4 * 0.5 - L2, M,
                     500 - L4 * 0.5, M + L2,
+                    
+                    500 - L5 * 0.5, M + L2,
+                    500 - L5 * 0.5 + L3, M + L2 - L3,
+                    500 + L5 * 0.5 - L3, M + L2 - L3,
+                    500 + L5 * 0.5, M + L2,
+
                     500 + L4 * 0.5, M + L2,
                     500 + L4 * 0.5 + L2, M,
                     1000 - (L1 + M), M,
                     
                     1000 - M, M + L1,
+                    
+                    1000 - M, 500 - L6 * 0.5,
+                    1000 - (M + L3), 500 - L6 * 0.5 + L3,
+                    1000 - (M + L3), 500 + L6 * 0.5 - L3,
+                    1000 - M, 500 + L6 * 0.5,
+                    
                     1000 - M, 1000 - (M + L1),
                     
                     1000 - (L1 + M), 1000 - M,
                     500 + L4 * 0.5 + L2, 1000 - M,
                     500 + L4 * 0.5, 1000 - (M + L2),
+                    
+                    500 + L5 * 0.5, 1000 - (M + L2),
+                    500 + L5 * 0.5 - L3, 1000 - (M + L2 - L3),
+                    500 - L5 * 0.5 + L3, 1000 - (M + L2 - L3),
+                    500 - L5 * 0.5, 1000 - (M + L2),
+
                     500 - L4 * 0.5, 1000 - (M + L2),
                     500 - L4 * 0.5 - L2, 1000 - M,
                     M + L1, 1000 - M,
                     
                     M, 1000 - (M + L1),
-                    M, M + L1,
                     
-                    M + L1, M,
-                ]),
+                    M, 500 + L6 * 0.5,
+                    M + L3, 500 + L6 * 0.5 - L3,
+                    M + L3, 500 - L6 * 0.5 + L3,
+                    M, 500 - L6 * 0.5,
+
+                    M, M + L1,
+                ], true),
                 new SlikaShapeStyle("none", 1, "#292e2c", 0.75, 0, "white", 0)
             )
         );
@@ -91,94 +113,64 @@ class MainMenuPanel extends HoloPanel {
                     M + L1, M,
                     500 - L4 * 0.5 - L2, M,
                     500 - L4 * 0.5, M + L2,
+                    
+                    500 - L5 * 0.5, M + L2,
+                    500 - L5 * 0.5 + L3, M + L2 - L3,
+                    500 + L5 * 0.5 - L3, M + L2 - L3,
+                    500 + L5 * 0.5, M + L2,
+
                     500 + L4 * 0.5, M + L2,
                     500 + L4 * 0.5 + L2, M,
                     1000 - (L1 + M), M,
                     
                     1000 - M, M + L1,
+                    
+                    1000 - M, 500 - L6 * 0.5,
+                    1000 - (M + L3), 500 - L6 * 0.5 + L3,
+                    1000 - (M + L3), 500 + L6 * 0.5 - L3,
+                    1000 - M, 500 + L6 * 0.5,
+
                     1000 - M, 1000 - (M + L1),
                     
                     1000 - (L1 + M), 1000 - M,
                     500 + L4 * 0.5 + L2, 1000 - M,
                     500 + L4 * 0.5, 1000 - (M + L2),
+                    
+                    500 + L5 * 0.5, 1000 - (M + L2),
+                    500 + L5 * 0.5 - L3, 1000 - (M + L2 - L3),
+                    500 - L5 * 0.5 + L3, 1000 - (M + L2 - L3),
+                    500 - L5 * 0.5, 1000 - (M + L2),
+
                     500 - L4 * 0.5, 1000 - (M + L2),
                     500 - L4 * 0.5 - L2, 1000 - M,
                     M + L1, 1000 - M,
                     
                     M, 1000 - (M + L1),
-                    M, M + L1,
                     
-                    M + L1, M,
-                ]),
-                new SlikaShapeStyle(Config.uiConfiguration.holoScreenBaseColor, 1, "none", 1, 3, Config.uiConfiguration.holoScreenBaseColor, 10)
+                    M, 500 + L6 * 0.5,
+                    M + L3, 500 + L6 * 0.5 - L3,
+                    M + L3, 500 - L6 * 0.5 + L3,
+                    M, 500 - L6 * 0.5,
+
+                    M, M + L1,
+                ], true),
+                new SlikaShapeStyle(Config.uiConfiguration.holoScreenBaseColor, 1, "none", 1, 6, Config.uiConfiguration.holoScreenBaseColor, 6)
             )
         );
         
-        this.titleLine1 = SlikaPath.CreatePan(M + L2, 1000 - M - L2, 0, 3, 15, 0.30, true, false, new SlikaShapeStyle("none", 1, Config.uiConfiguration.holoScreenBaseColor, 1, 0, Config.uiConfiguration.holoScreenBaseColor, 10));
+        this.titleLine1 = SlikaPath.CreatePan(M + L2, 1000 - M - L2, 0, 3, 15, 0.30, true, false, new SlikaShapeStyle("none", 1, Config.uiConfiguration.holoScreenBaseColor, 1, 0, Config.uiConfiguration.holoScreenBaseColor, 6));
         this.titleLine1.posY = this.titleHeight;
         this.holoSlika.add(this.titleLine1);
-        this.titleLine2 = SlikaPath.CreatePan(M + L2, 1000 - M - L2, 30, 3, 15, 0.30, false, true, new SlikaShapeStyle("none", 1, Config.uiConfiguration.holoScreenBaseColor, 1, 0, Config.uiConfiguration.holoScreenBaseColor, 10));
+        this.titleLine2 = SlikaPath.CreatePan(M + L2, 1000 - M - L2, 30, 3, 15, 0.30, false, true, new SlikaShapeStyle("none", 1, Config.uiConfiguration.holoScreenBaseColor, 1, 0, Config.uiConfiguration.holoScreenBaseColor, 6));
         this.titleLine2.posY = this.titleHeight;
         this.holoSlika.add(this.titleLine2);
 
-        this.holoSlika.add(
-            new SlikaPath(
-                new SPoints([
-                    500 - L5 * 0.5, M + L2,
-                    500 - L5 * 0.5 + L3, M + L2 - L3,
-                    500 + L5 * 0.5 - L3, M + L2 - L3,
-                    500 + L5 * 0.5, M + L2,
-                    500 - L5 * 0.5, M + L2,
-                ]),
-                new SlikaShapeStyle("none", 1, Config.uiConfiguration.holoScreenBaseColor, 1, 0, Config.uiConfiguration.holoScreenBaseColor, 10)
-            )
-        );
-
-        this.holoSlika.add(
-            new SlikaPath(
-                new SPoints([
-                    500 - L5 * 0.5, 1000 - (M + L2),
-                    500 - L5 * 0.5 + L3, 1000 - (M + L2 - L3),
-                    500 + L5 * 0.5 - L3, 1000 - (M + L2 - L3),
-                    500 + L5 * 0.5, 1000 - (M + L2),
-                    500 - L5 * 0.5, 1000 - (M + L2),
-                ]),
-                new SlikaShapeStyle("none", 1, Config.uiConfiguration.holoScreenBaseColor, 1, 0, Config.uiConfiguration.holoScreenBaseColor, 10)
-            )
-        );
-
-        this.holoSlika.add(
-            new SlikaPath(
-                new SPoints([
-                    M, 500 - L6 * 0.5,
-                    M + L3, 500 - L6 * 0.5 + L3,
-                    M + L3, 500 + L6 * 0.5 - L3,
-                    M, 500 + L6 * 0.5,
-                    M, 500 - L6 * 0.5,
-                ]),
-                new SlikaShapeStyle("none", 1, Config.uiConfiguration.holoScreenBaseColor, 1, 0, Config.uiConfiguration.holoScreenBaseColor, 10)
-            )
-        );
-
-        this.holoSlika.add(
-            new SlikaPath(
-                new SPoints([
-                    1000 - M, 500 - L6 * 0.5,
-                    1000 - (M + L3), 500 - L6 * 0.5 + L3,
-                    1000 - (M + L3), 500 + L6 * 0.5 - L3,
-                    1000 - M, 500 + L6 * 0.5,
-                    1000 - M, 500 - L6 * 0.5,
-                ]),
-                new SlikaShapeStyle("none", 1, Config.uiConfiguration.holoScreenBaseColor, 1, 0, Config.uiConfiguration.holoScreenBaseColor, 10)
-            )
-        );
-
         this.introPage = new MainMenuPanelIntroPage(this);
-        this.introPage.hide(0.2);
+        this.introPage.show(0.2);
         this.graphicsPage = new MainMenuPanelGraphicsPage(this);
         this.graphicsPage.hide(0.2);
         this.planetPage = new MainMenuPlanetSelectionPage(this);
-        this.planetPage.show(0.2);
+        this.planetPage.hide(0.2);
     }
 
     public animateTitleHeight = AnimationFactory.CreateNumber(

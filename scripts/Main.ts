@@ -39,7 +39,7 @@ class Main {
 	}
 
     public async initialize(): Promise<void> {
-        this.inputManager.initialize();
+        
     }
 
     public update(): void {

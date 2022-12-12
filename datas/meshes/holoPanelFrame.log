@@ -17,13 +17,13 @@ Exporter version: 6.4.5, Blender version: 2.90.1
 		processing begun of material:  SteelDark
 		processing begun of material:  Light
 		processing begun of multimaterial:  holoPanelFrame.Multimaterial#0
-		num positions      :  214
-		num normals        :  214
+		num positions      :  166
+		num normals        :  166
 		num tangents       :  0
-		num uvs            :  428
+		num uvs            :  332
 		num uvs2           :  0
 		num colors         :  0
-		num triangles      :  134
+		num triangles      :  104
 	processing begun of mesh:  frame-0
 		processing begun of material:  Steel
 		processing begun of material:  SteelDark
@@ -44,4 +44,4 @@ Exporter version: 6.4.5, Blender version: 2.90.1
 	writing mesh:  frame-0
 ========= Writing of JSON file completed =========
 ========= end of processing =========
-elapsed time:  0 min, 0.0319 secs
+elapsed time:  0 min, 0.0948 secs
