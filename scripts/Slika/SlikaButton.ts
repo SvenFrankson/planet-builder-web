@@ -42,7 +42,7 @@ class SlikaButton extends SlikaElement {
     ) {
         super();
         this.isPickable = true;
-        this.hitBox = SRect.WidthHeight(this.position.x, this.position.y, 360, 132);
+        this.hitBox = SRect.WidthHeight(this.position.x, this.position.y, this.w, this.h);
 
         this.color.copyFrom(this.colors[this.state]);
         let hexColor = this.color.toHexString();

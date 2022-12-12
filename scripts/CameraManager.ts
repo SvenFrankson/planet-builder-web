@@ -42,6 +42,7 @@ class CameraManager {
             BABYLON.Vector3.Zero(),
             this.main.scene
         );
+        this.freeCamera.fov *= 1.2;
         this.freeCamera.rotationQuaternion = BABYLON.Quaternion.Identity();
         this.freeCamera.minZ = 0.1;
         this.freeCamera.maxZ = 1000;
@@ -55,6 +56,7 @@ class CameraManager {
                 BABYLON.Vector3.Zero(),
                 this.main.scene
             );
+            this.noOutlineCamera.fov *= 1.2;
             this.noOutlineCamera.minZ = 0.1;
             this.noOutlineCamera.maxZ = 1000;
             this.noOutlineCamera.layerMask = 0x10000000;

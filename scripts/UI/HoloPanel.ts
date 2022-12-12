@@ -141,7 +141,7 @@ class HoloPanel extends Pickable {
         BABYLON.CreateBoxVertexData({ size: 0.1 }).applyToMesh(this.interactionAnchor);
         this.interactionAnchor.material = SharedMaterials.RedMaterial();
         this.interactionAnchor.position.y = 1;
-        this.interactionAnchor.position.z = -0.8;
+        this.interactionAnchor.position.z = -1;
         this.interactionAnchor.parent = this;
 
         let data = new BABYLON.VertexData();
@@ -305,6 +305,7 @@ class HoloPanel extends Pickable {
             this.holoSlika.onPointerUp(x, y);
         }
         else {
+            this.inputManager.player.targetLook = this.holoMesh.absolutePosition;
             this.inputManager.player.targetDestination = this.interactionAnchor.absolutePosition.clone();
         }
     }
