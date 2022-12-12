@@ -30,6 +30,7 @@ class InputManager {
     public keyUpListeners: ((k: KeyInput) => any)[] = [];
     public mappedKeyUpListeners: Map<KeyInput,(() => any)[]> = new Map<KeyInput,(() => any)[]>();
 
+    public player: Player;
     public aimedElement: Pickable;
     public aimedPosition: BABYLON.Vector3;
     public aimedNormal: BABYLON.Vector3;
@@ -39,7 +40,9 @@ class InputManager {
         this.pickableElements = new UniqueList<Pickable>();
     }
 
-    public initialize(): void {
+    public initialize(player: Player): void {
+        this.player = player;
+        
         window.addEventListener("pointerdown", () => {
             this.isPointerDown = true;
             if (Config.controlConfiguration.canLockPointer) {

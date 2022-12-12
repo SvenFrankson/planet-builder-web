@@ -13,6 +13,8 @@ class HoloPanel extends Pickable {
     public pointerSlika: Slika;
     public pointerElement: SlikaPointer;
 
+    public interactionAnchor: BABYLON.Mesh;
+
     // 24 lines of 80 characters each
     public lines: string[] = [];
 
@@ -134,6 +136,13 @@ class HoloPanel extends Pickable {
         this.pointerMesh.position.z = - 0.005;
         this.pointerMesh.parent = this.holoMesh;
         this.pointerMesh.alphaIndex = 2;
+
+        this.interactionAnchor = new BABYLON.Mesh("interaction-anchor");
+        BABYLON.CreateBoxVertexData({ size: 0.1 }).applyToMesh(this.interactionAnchor);
+        this.interactionAnchor.material = SharedMaterials.RedMaterial();
+        this.interactionAnchor.position.y = 1;
+        this.interactionAnchor.position.z = -0.8;
+        this.interactionAnchor.parent = this;
 
         let data = new BABYLON.VertexData();
         let positions: number[] = [];
@@ -280,17 +289,24 @@ class HoloPanel extends Pickable {
     }
 
     public onPointerDown(): void {
-        let local = BABYLON.Vector3.TransformCoordinates(this.inputManager.aimedPosition, this.holoMesh.getWorldMatrix().clone().invert());
-        let x = this.posXToXTexture(local.x);
-        let y = this.posYToYTexture(local.y);
-        this.holoSlika.onPointerDown(x, y);
+        if (BABYLON.Vector3.DistanceSquared(this.inputManager.player.position, this.interactionAnchor.absolutePosition) < 0.1 * 0.1) {
+            let local = BABYLON.Vector3.TransformCoordinates(this.inputManager.aimedPosition, this.holoMesh.getWorldMatrix().clone().invert());
+            let x = this.posXToXTexture(local.x);
+            let y = this.posYToYTexture(local.y);
+            this.holoSlika.onPointerDown(x, y);
+        }
     }
 
     public onPointerUp(): void {
-        let local = BABYLON.Vector3.TransformCoordinates(this.inputManager.aimedPosition, this.holoMesh.getWorldMatrix().clone().invert());
-        let x = this.posXToXTexture(local.x);
-        let y = this.posYToYTexture(local.y);
-        this.holoSlika.onPointerUp(x, y);
+        if (BABYLON.Vector3.DistanceSquared(this.inputManager.player.position, this.interactionAnchor.absolutePosition) < 0.1 * 0.1) {
+            let local = BABYLON.Vector3.TransformCoordinates(this.inputManager.aimedPosition, this.holoMesh.getWorldMatrix().clone().invert());
+            let x = this.posXToXTexture(local.x);
+            let y = this.posYToYTexture(local.y);
+            this.holoSlika.onPointerUp(x, y);
+        }
+        else {
+            this.inputManager.player.targetDestination = this.interactionAnchor.absolutePosition.clone();
+        }
     }
 
     public onHoverStart(): void {

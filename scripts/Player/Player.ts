@@ -20,6 +20,8 @@ class Player extends BABYLON.Mesh {
     public sqrDistToPlanet = Infinity;
     public altitudeOnPlanet: number = 0;
 
+    public targetDestination: BABYLON.Vector3;
+
     public get inputManager(): InputManager {
         return this.main.inputManager;
     }
@@ -344,20 +346,35 @@ class Player extends BABYLON.Mesh {
         this.velocity.addInPlace(this._groundFactor);
 
         // Add input force.
+        let fLat = 1;
         this._controlFactor.copyFromFloats(0, 0, 0);
-        this._controlFactor.addInPlace(this._rightDirection.scale(this.inputRight));
-        this._controlFactor.addInPlace(this._forwardDirection.scale(this.inputForward));
-        if (this._controlFactor.lengthSquared() > 0.1) {
-            this._controlFactor.normalize();
+        if (this.targetDestination) {
+            this._controlFactor.copyFrom(this.targetDestination);
+            this._controlFactor.subtractInPlace(this.position);
+            let dist = this._controlFactor.length();
+            if (dist < 0.01 && this.velocity.length() < 0.1) {
+                delete this.targetDestination;
+            }
+            else {
+                this._controlFactor.normalize();
+                this._controlFactor.scaleInPlace((dist * 10 / this.mass) * deltaTime);
+                fLat = 0.2;
+            }
         }
-        this._controlFactor.scaleInPlace((20 / this.mass) * deltaTime);
-        if (this.godMode) {
-            this._controlFactor.scaleInPlace(5);
+        else {
+            this._controlFactor.addInPlace(this._rightDirection.scale(this.inputRight));
+            this._controlFactor.addInPlace(this._forwardDirection.scale(this.inputForward));
+            if (this._controlFactor.lengthSquared() > 0.1) {
+                this._controlFactor.normalize();
+            }
+            this._controlFactor.scaleInPlace((20 / this.mass) * deltaTime);
+            if (this.godMode) {
+                this._controlFactor.scaleInPlace(5);
+            }
         }
         this.velocity.addInPlace(this._controlFactor);
 
         // Check wall collisions.
-        let fLat = 1;
         this._surfaceFactor.copyFromFloats(0, 0, 0);
         if (!this.godMode) {
             for (let i = 0; i < this._collisionPositions.length; i++) {
