@@ -354,7 +354,7 @@ class Player extends BABYLON.Mesh {
                         this._groundFactor
                             .copyFrom(this._gravityFactor)
                             .scaleInPlace(-1)
-                            .scaleInPlace(1 - 10 * d);
+                            .scaleInPlace(10 * Math.abs(d));
                         fVert = 0.005;
                         this._isGrounded = true;
                     }
