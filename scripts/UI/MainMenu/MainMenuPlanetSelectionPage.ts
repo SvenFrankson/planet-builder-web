@@ -127,11 +127,10 @@ class MainMenuPlanetSelectionPage extends MainMenuPanelPage {
                 Math.random() - 0.5,
                 Math.random() - 0.5,
             ).normalize();
-            randomPosition.scaleInPlace(destinationPlanet.seaAltitude);
-            let local = PlanetTools.PlanetPositionToLocalIJK(destinationPlanet, randomPosition);
-            let global = PlanetTools.LocalIJKToGlobalIJK(local);
+            let planetSide = PlanetTools.PlanetPositionToPlanetSide(destinationPlanet, randomPosition);
+            let global = PlanetTools.PlanetDirectionToGlobalIJ(planetSide, randomPosition);
             let destinationAltitude = PlanetTools.KGlobalToAltitude(Math.floor(destinationPlanet.generator.altitudeMap.getForSide(
-                local.planetChunck.side,
+                planetSide.side,
                 global.i,
                 global.j,
             ) * destinationPlanet.kPosMax * PlanetTools.CHUNCKSIZE));
