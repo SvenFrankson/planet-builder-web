@@ -15,7 +15,7 @@ class PlanetGeneratorFactory {
             name,
             position,
             kPosMax,
-            0.4,
+            0.6,
             scene, 
             (p) => {
                 if (type === PlanetGeneratorType.Moon) {

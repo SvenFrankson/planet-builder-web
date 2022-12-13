@@ -79,7 +79,8 @@ class MainMenu extends Main {
 			//cubeTest.position.copyFrom(pos);
 
 			pos = pos.clone();
-			pos.z -= 2;
+			let l = pos.length();
+			pos.scaleInPlace((l + 1) / l);
 			this.player = new Player(pos, this);
 			this.cameraManager.player = this.player;
 			this.cameraManager.setMode(CameraMode.Player);
