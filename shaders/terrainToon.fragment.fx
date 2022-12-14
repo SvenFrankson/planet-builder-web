@@ -17,7 +17,8 @@ in vec4 vColor;
 out vec4 outColor;
  
 void main() {
-   vec3 localUp = normalize(vPositionW - planetPos);
+   float alt = length(vPositionW - planetPos);
+   vec3 localUp = (vPositionW - planetPos) / alt;
    float flatness = dot(vNormalW, localUp);
 
    float cosAlphaZenith = dot(localUp, lightInvDirW);
@@ -38,9 +39,9 @@ void main() {
       ambiantLightFactor = 0.4;
    }
 
-   float lightFactor = sunFactor * sunLightFactor * 0.5 + ambiantLightFactor * 0.5;
+   float lightFactor = sunLightFactor * 0.8 + 0.2;
 
-   lightFactor = round(lightFactor * 3.) / 3.;
+   //lightFactor = round(lightFactor * 5.) / 5.;
 
    vec3 color = vec3(0., 0., 0.);
    if (useSeaLevelTexture == 1) {

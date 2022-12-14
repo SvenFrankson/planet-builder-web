@@ -34,12 +34,17 @@ class ChunckTest extends Main {
 
     public async initialize(): Promise<void> {
 
-		Config.chunckPartConfiguration.setFilename("round-smooth-chunck-parts", false);
-		Config.chunckPartConfiguration.setLodMin(0, false);
-		Config.chunckPartConfiguration.setLodMax(1);
-		Config.chunckPartConfiguration.useXZAxisRotation = false;
+		//Config.chunckPartConfiguration.setFilename("round-smooth-chunck-parts", false);
+		//Config.chunckPartConfiguration.setLodMin(0, false);
+		//Config.chunckPartConfiguration.setLodMax(1);
+		//Config.chunckPartConfiguration.useXZAxisRotation = false;
 
-		let lod = 1;
+		Config.chunckPartConfiguration.setFilename("chunck-parts", false);
+		Config.chunckPartConfiguration.useXZAxisRotation = true;
+		Config.chunckPartConfiguration.setLodMin(0);
+		Config.chunckPartConfiguration.setLodMax(1);
+
+		let lod = 0;
 
 		let mainMaterial = new BABYLON.StandardMaterial("main-material");
 		mainMaterial.specularColor.copyFromFloats(0.1, 0.1, 0.1);

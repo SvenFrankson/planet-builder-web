@@ -20,7 +20,7 @@ class PlanetMaterial extends BABYLON.ShaderMaterial {
                 uniforms: ["world", "worldView", "worldViewProjection", "view", "projection", "useSeaLevelTexture", "useVertexColor", "seaLevelTexture", "planetPos"]
             }
         );
-        this.setVector3("lightInvDirW", (new BABYLON.Vector3(0.5, 2.5, 1.5)).normalize());
+        this.setVector3("lightInvDirW", BABYLON.Vector3.One().normalize());
 
         this._terrainColors = [];
         this._terrainColors[BlockType.None] = new BABYLON.Color3(0, 0, 0);
@@ -32,6 +32,8 @@ class PlanetMaterial extends BABYLON.ShaderMaterial {
         this._terrainColors[BlockType.Wood] = new BABYLON.Color3(0.600, 0.302, 0.020);
         this._terrainColors[BlockType.Leaf] = new BABYLON.Color3(0.431, 0.839, 0.020);
         this._terrainColors[BlockType.Laterite] = new BABYLON.Color3(0.839, 0.431, 0.020);
+        //this._terrainColors[BlockType.Grass] = BABYLON.Color3.FromHexString("#6C7237");
+        //this._terrainColors[BlockType.Dirt] = BABYLON.Color3.FromHexString("#6D4B3C");
 
         //this.setFlatColors();
 

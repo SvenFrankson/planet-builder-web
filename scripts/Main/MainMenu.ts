@@ -26,9 +26,10 @@ class MainMenu extends Main {
 		await super.initialize();
 
 		Config.chunckPartConfiguration.setFilename("round-smooth-chunck-parts", false);
-		Config.chunckPartConfiguration.setLodMin(0);
-		Config.chunckPartConfiguration.setLodMax(2);
 		Config.chunckPartConfiguration.useXZAxisRotation = false;
+		Config.chunckPartConfiguration.setLodMin(0);
+		Config.chunckPartConfiguration.setLodMax(1);
+		//Config.chunckPartConfiguration.useXZAxisRotation = false;
 
 		let confPreset = window.localStorage.getItem("graphic-setting-preset");
 		if (confPreset === ConfigurationPreset.Low) {
@@ -50,7 +51,7 @@ class MainMenu extends Main {
 			//testGrab.position = new BABYLON.Vector3(- 0.3, this._testAltitude + 1.1, - 0.1);
 			//testGrab.instantiate();
 			
-			let mainMenuPlanet: Planet = PlanetGeneratorFactory.Create(BABYLON.Vector3.Zero(), PlanetGeneratorType.Moon, 2, this.scene);
+			let mainMenuPlanet: Planet = PlanetGeneratorFactory.Create(BABYLON.Vector3.Zero(), PlanetGeneratorType.Earth, 6, this.scene);
 			mainMenuPlanet.instantiate();
 			this.planets = [mainMenuPlanet];
 			
@@ -92,7 +93,7 @@ class MainMenu extends Main {
 			debugPlayerPosition.show();
 
 			this.planetSky = new PlanetSky(this.scene);
-			this.planetSky.setInvertLightDir((new BABYLON.Vector3(0.5, 2.5, 1.5)).normalize());
+			this.planetSky.setInvertLightDir(BABYLON.Vector3.One().normalize());
 			this.planetSky.initialize();
 			this.planetSky.player = this.player;
 
@@ -122,8 +123,8 @@ class MainMenu extends Main {
 	}
 
 	public async generatePlanets(): Promise<void> {
-		let orbitCount = 3;
-		let orbitRadius = 200;
+		let orbitCount = 1;
+		let orbitRadius = 400;
 		let alpha = 0;
 		for (let i = 0; i < orbitCount; i++) {
 			alpha += Math.PI * 0.5 + Math.PI * Math.random();

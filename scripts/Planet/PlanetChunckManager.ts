@@ -249,7 +249,7 @@ class PlanetChunckManager {
         t0 = performance.now();
         while (this._needRedraw.length > 0 && (t - t0) < 1000 / 60) {
             let request = this._needRedraw.pop();
-            if (request.chunck.lod <= 1) {
+            if (request.chunck.lod === 0) {
                 request.chunck.initialize();
             }
             else {

@@ -1,4 +1,4 @@
-{"producer":{"name":"Blender","version":"2.82 (sub 7)","exporter_version":"6.4.3","file":"round_smooth_chunck_parts_lod_1.babylon"},
+{"producer":{"name":"Blender","version":"2.90.1","exporter_version":"6.4.5","file":"round_smooth_chunck_parts_lod_1.babylon"},
 "autoClear":true,"clearColor":[0.0509,0.0509,0.0509],"gravity":[0,-9.81,0],
 "materials":[{"name":"Green","id":"Green","customType":"BABYLON.PBRMaterial","backFaceCulling":true,"checkReadyOnlyOnce":false,"maxSimultaneousLights":4,"environmentIntensity":1,"albedo":[0.2434,0.8,0.1597],"reflectivity":[0.5,0.5,0.5],"metallic":0}],
 "multiMaterials":[],
@@ -11,11 +11,13 @@
 ,"subMeshes":[{"materialIndex":0,"verticesStart":0,"verticesCount":4,"indexStart":0,"indexCount":6}]
 ,"instances":[]}
 ,{"name":"10000000","id":"10000000","materialId":"Green","billboardMode":0,"position":[-1.5,0.5,0.5],"rotation":[0,0,0],"scaling":[1,1,1],"isVisible":true,"freezeWorldMatrix":false,"isEnabled":true,"checkCollisions":false,"receiveShadows":false,"pickable":true,"tags":""
-,"positions":[-0.5,0,-0.1442,-0.5,0,-0.5,-0.2484,0,-0.2484,-0.1442,0,-0.5,-0.5,-0.1414,0,-0.1464,-0.5,-0.1464,-0.5,-0.5,0,-0.1464,-0.1414,-0.1464,0,-0.1414,-0.5,0,-0.5,-0.5]
-,"normals":[0.184,0.876,0.445,0,1,0,0.32,0.891,0.32,0.445,0.876,0.184,0.361,0.333,0.871,0.707,0,0.707,0.383,0,0.924,0.66,0.357,0.66,0.871,0.333,0.361,0.924,0,0.383]
-,"uvs":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
-,"indices":[0,1,2,3,2,1,4,5,6,7,3,8,5,8,9,4,2,7,4,7,5,7,2,3,5,7,8,4,0,2]
-,"subMeshes":[{"materialIndex":0,"verticesStart":0,"verticesCount":10,"indexStart":0,"indexCount":30}]
+,"positions":[-0.5,0,-0.1442,-0.5,0,-0.5,-0.2484,0,-0.2484,-0.1442,0,-0.5,-0.5,-0.1414,0,-0.1464,-0.5,-0.1464,-0.5,-0.5,0,-0.1464,-0.1414,-0.1464,0,-0.1414,-0.5,-0.1464,-0.5,-0.1464,0,-0.1414,-0.5,0,-0.5,-0.5,-0.5,-0.1414,0,-0.1464,-0.1414,-0.1464,-0.1464,-0.5,-0.1464,-0.1464,-0.1414,-0.1464,0,-0.1414,-0.5
+,-0.5,-0.1414,0]
+,"normals":[0.184,0.876,0.445,0,1,0,0.32,0.891,0.32,0.445,0.876,0.184,0.361,0.333,0.871,0.707,0,0.707,0.383,0,0.924,0.66,0.357,0.66,0.871,0.333,0.361,0.707,0,0.707,0.871,0.333,0.361,0.924,0,0.383,0.361,0.333,0.871,0.66,0.357,0.66,0.707,0,0.707,0.66,0.357,0.66,0.871,0.333,0.361
+,0.361,0.333,0.871]
+,"uvs":[0,0.32,0,0,0.218,0.219,0.321,0,0.5,1,0,0.5,0.5,0.5,0.343,0.344,0.5,0,1,0.5,0.5,1,0.5,0.5,0,0.5,0,1,1,0.5,1,1,0.5,1,0,0.5]
+,"indices":[0,1,2,3,2,1,4,5,6,7,3,8,9,10,11,12,2,7,4,13,5,7,2,3,14,15,16,17,0,2]
+,"subMeshes":[{"materialIndex":0,"verticesStart":0,"verticesCount":18,"indexStart":0,"indexCount":30}]
 ,"instances":[]}
 ,{"name":"11001100","id":"11001100","materialId":"Green","billboardMode":0,"position":[4,0,4],"rotation":[0,0,0],"scaling":[1,1,1],"isVisible":true,"freezeWorldMatrix":false,"isEnabled":true,"checkCollisions":false,"receiveShadows":false,"pickable":true,"tags":""
 ,"positions":[0.5,-0.5,0,-0.5,0.5,0,0.5,0.5,0,-0.5,-0.5,0]

@@ -197,12 +197,6 @@ class PlanetChunckMeshBuilder {
         kPos: number
     ): BABYLON.VertexData[] {
         let lod = chunck.lod;
-        if (lod < Config.chunckPartConfiguration.lodMin) {
-            lod = Config.chunckPartConfiguration.lodMin;
-        }
-        if (lod > Config.chunckPartConfiguration.lodMax) {
-            lod = Config.chunckPartConfiguration.lodMax;
-        }
         let size = chunck.size;
         let vertexData: BABYLON.VertexData = new BABYLON.VertexData();
 
@@ -250,7 +244,10 @@ class PlanetChunckMeshBuilder {
         let norm = PCMB.tmpVertices[15];
         let blockCenter = PCMB.tmpVertices[16];
         let blockAxis = PCMB.tmpVertices[17];
-        let blockQuaternion = PCMB.tmpQuaternions[0];
+        let blockQuaternions = [PCMB.tmpQuaternions[0], PCMB.tmpQuaternions[1], PCMB.tmpQuaternions[2], PCMB.tmpQuaternions[3]];
+        let q1 = PCMB.tmpQuaternions[4];
+        let q2 = PCMB.tmpQuaternions[5];
+        let q = PCMB.tmpQuaternions[6];
 
         for (let i: number = chunck.firstI; i < PlanetTools.CHUNCKSIZE; i++) {
             for (let j: number = chunck.firstJ; j < chunck.lastJ; j++) {
@@ -415,6 +412,7 @@ class PlanetChunckMeshBuilder {
                         
                         let extendedpartVertexData = PlanetChunckVertexData.Get(lod + Config.performanceConfiguration.lodMin, ref);
                         if (!extendedpartVertexData) {
+                            console.log("fail " + lod + " " + Config.performanceConfiguration.lodMin);
                             continue;
                         }
                         let partVertexData = extendedpartVertexData.vertexData;
@@ -426,10 +424,12 @@ class PlanetChunckMeshBuilder {
                         PCMB.GetVertexToRef(2 * size, 2 * (iGlobal + 1) + 1, 2 * (jGlobal + 1) + 1, PCMB.tmpVertices[2]);
                         PCMB.GetVertexToRef(2 * size, 2 * (iGlobal) + 1, 2 * (jGlobal + 1) + 1, PCMB.tmpVertices[3]);
 
-                        blockCenter.copyFrom(PCMB.tmpVertices[0]).addInPlace(PCMB.tmpVertices[2]).scaleInPlace(0.5);
-                        let angle = VMath.Angle(BABYLON.Axis.Y, blockCenter);
-                        BABYLON.Vector3.CrossToRef(BABYLON.Axis.Y, blockCenter, blockAxis);
-                        BABYLON.Quaternion.RotationAxisToRef(blockAxis, angle, blockQuaternion);
+                        for (let i = 0; i < 4; i++) {
+                            blockCenter.copyFrom(PCMB.tmpVertices[i]).addInPlace(PCMB.tmpVertices[2]).scaleInPlace(0.5);
+                            let angle = VMath.Angle(BABYLON.Axis.Y, blockCenter);
+                            BABYLON.Vector3.CrossToRef(BABYLON.Axis.Y, blockCenter, blockAxis);
+                            BABYLON.Quaternion.RotationAxisToRef(blockAxis, angle, blockQuaternions[i]);
+                        }
     
                         let hGlobal = (k + kPos * PlanetTools.CHUNCKSIZE + 1);
                         let hLow = PlanetTools.KGlobalToAltitude(hGlobal - 1) * 0.5 + PlanetTools.KGlobalToAltitude(hGlobal) * 0.5;
@@ -507,7 +507,10 @@ class PlanetChunckMeshBuilder {
                             norm.y = partVertexData.normals[3 * n + 1];
                             norm.z = partVertexData.normals[3 * n + 2];
                             
-                            norm.rotateByQuaternionToRef(blockQuaternion, norm);
+                            BABYLON.Quaternion.SlerpToRef(blockQuaternions[0], blockQuaternions[1], x, q1);
+                            BABYLON.Quaternion.SlerpToRef(blockQuaternions[3], blockQuaternions[2], x, q2);
+                            BABYLON.Quaternion.SlerpToRef(q1, q2, z, q);
+                            norm.rotateByQuaternionToRef(q, norm);
 
                             normals.push(norm.x);
                             normals.push(norm.y);

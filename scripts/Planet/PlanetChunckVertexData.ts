@@ -470,18 +470,7 @@ class PlanetChunckVertexData {
             return false;
         }
         let data = BABYLON.VertexData.ExtractFromMesh(mesh);
-        data.positions = data.positions.map((p: number) => {
-            p += 0.5;
-            if (p < 0.01) {
-                p = - 0.001;
-            }
-            if (p > 0.99) {
-                p = 1.001;
-            }
-            return p;
-        });
-        data = PlanetChunckVertexData.SplitVertexDataTriangles(data);
-
+        
         let normals = []
         for (let j = 0; j < data.positions.length / 3; j++) {
             let x = data.positions[3 * j];
@@ -491,15 +480,20 @@ class PlanetChunckVertexData {
             let nx = data.normals[3 * j];
             let ny = data.normals[3 * j + 1];
             let nz = data.normals[3 * j + 2];
-            
-            if (x < 0.05 || x > 0.95) {
-                nx = 0;
-            }
-            if (y < 0.05 || y > 0.95) {
-                ny = 0;
-            }
-            if (z < 0.05 || z > 0.95) {
-                nz = 0;
+
+            if (Math.abs(x) > 0.49 && Math.abs(y) > 0.49 || Math.abs(x) > 0.49 && Math.abs(z) > 0.49 || Math.abs(y) > 0.49 && Math.abs(z) > 0.49) {
+                if (Math.abs(nx) > Math.abs(ny) && Math.abs(nx) > Math.abs(nz)) {
+                    ny = 0;
+                    nz = 0;
+                }
+                else if (Math.abs(ny) > Math.abs(nx) && Math.abs(ny) > Math.abs(nz)) {
+                    nx = 0;
+                    nz = 0;
+                }
+                else if (Math.abs(nz) > Math.abs(nx) && Math.abs(nz) > Math.abs(ny)) {
+                    nx = 0;
+                    ny = 0;
+                }
             }
 
             let l = Math.sqrt(nx * nx + ny * ny + nz * nz);
@@ -508,6 +502,12 @@ class PlanetChunckVertexData {
             normals[3 * j + 2] = nz / l;
         }
         data.normals = normals;
+
+        data.positions = data.positions.map((p: number) => {
+            p += 0.5;
+            return p;
+        });
+        data = PlanetChunckVertexData.SplitVertexDataTriangles(data);
         
         //data.positions = data.positions.map((n: number) => { return n * 0.98 + 0.01; });
 
@@ -557,6 +557,15 @@ class PlanetChunckVertexData {
     }
 
     private static _LoadComposedChunckVertexDatas(lod: number, useXZAxisRotation: boolean): void {
+        let ref13 = 0b10000010;
+        let baseData13A = PlanetChunckVertexData.Get(lod, 0b10000000);
+        let baseData13B = PlanetChunckVertexData.Get(lod, 0b00000010);
+        let data13 = PlanetChunckVertexData.Add(baseData13A.vertexData, baseData13B.vertexData);
+        if (!PlanetChunckVertexData._VertexDatas[lod].has(ref13)) {
+            PlanetChunckVertexData._VertexDatas[lod].set(ref13, new ExtendedVertexData(ref13, data13));
+        }
+        PlanetChunckVertexData._TryAddVariations(lod, ref13, data13, useXZAxisRotation);
+        
         let ref0 = 0b01111111;
         let baseData0 = PlanetChunckVertexData.Get(lod, 0b10000000);
         let data0 = PlanetChunckVertexData.Flip(baseData0.vertexData);
@@ -780,9 +789,14 @@ class PlanetChunckVertexData {
     }
 
     public static async InitializeData(): Promise<boolean> {
-        for (let lod = 0; lod <= 2; lod++) {
+        for (let lod = Config.chunckPartConfiguration.lodMin; lod <= Config.chunckPartConfiguration.lodMax; lod++) {
             await PlanetChunckVertexData._LoadChunckVertexDatasFromFile(lod, Config.chunckPartConfiguration.useXZAxisRotation);
-            PlanetChunckVertexData._LoadComposedChunckVertexDatasNoXZAxisRotation(lod, Config.chunckPartConfiguration.useXZAxisRotation);
+            if (Config.chunckPartConfiguration.useXZAxisRotation) {
+                PlanetChunckVertexData._LoadComposedChunckVertexDatas(lod, true);
+            }
+            else {
+                PlanetChunckVertexData._LoadComposedChunckVertexDatasNoXZAxisRotation(lod, Config.chunckPartConfiguration.useXZAxisRotation);
+            }
         }
 
         return true;

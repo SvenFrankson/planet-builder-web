@@ -497,7 +497,8 @@ class PlanetChunck extends AbstractPlanetChunck {
     }
 
     public redrawMesh(): void {
-        if (this.lod <= Config.performanceConfiguration.lodCount) {
+        if (this.lod < Config.performanceConfiguration.lodCount) {
+            console.log(this.lod);
             if (this.isEmptyOrHidden()) {
                 this.disposeMesh();
                 return;

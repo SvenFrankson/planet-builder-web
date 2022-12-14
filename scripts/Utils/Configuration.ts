@@ -124,7 +124,7 @@ class Configuration {
     public uiConfiguration: ConfigurationUI = new ConfigurationUI();
 
     public setConfHighPreset(): void {
-        this.performanceConfiguration.setLodCount(3, true);
+        this.performanceConfiguration.setLodCount(1, true);
         this.performanceConfiguration.setLodMin(0);
         this.performanceConfiguration.setHoloScreenFactor(1);
         this.confPreset = ConfigurationPreset.High;
@@ -132,7 +132,7 @@ class Configuration {
     }
     
     public setConfMediumPreset(): void {
-        this.performanceConfiguration.setLodCount(2, true);
+        this.performanceConfiguration.setLodCount(1, true);
         this.performanceConfiguration.setLodMin(1);
         this.performanceConfiguration.setHoloScreenFactor(0.75);
         this.confPreset = ConfigurationPreset.Medium;
