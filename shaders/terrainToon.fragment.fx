@@ -41,7 +41,10 @@ void main() {
 
    float lightFactor = sunLightFactor * 0.8 + 0.2;
 
-   //lightFactor = round(lightFactor * 5.) / 5.;
+   lightFactor = round(lightFactor * 3.) / 3.;
+   if (flatness < 0.6 && flatness > - 0.6) {
+      lightFactor += 0.1;
+   }
 
    vec3 color = vec3(0., 0., 0.);
    if (useSeaLevelTexture == 1) {
@@ -56,19 +59,19 @@ void main() {
       int d2 = int(vUv.y * 128. + 0.002);
 
       if (vColor.r >= vColor.g && vColor.r >= vColor.b) {
-         if (d0 == 2 && flatness < 0.7) {
+         if (d0 == 2 && flatness < 0.6) {
             d0 = 3;
          }
          color = terrainColors[d0];
       }
       else if (vColor.g >= vColor.r && vColor.g >= vColor.b) {
-         if (d1 == 2 && flatness < 0.7) {
+         if (d1 == 2 && flatness < 0.6) {
             d1 = 3;
          }
          color = terrainColors[d1];
       }
       else if (vColor.b >= vColor.r && vColor.b >= vColor.g) {
-         if (d2 == 2 && flatness < 0.7) {
+         if (d2 == 2 && flatness < 0.6) {
             d2 = 3;
          }
          color = terrainColors[d2];
