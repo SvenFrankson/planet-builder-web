@@ -41,7 +41,7 @@ void main() {
 
    float lightFactor = sunLightFactor * 0.8 + 0.2;
 
-   lightFactor = round(lightFactor * 3.) / 3.;
+   lightFactor = round(lightFactor * 5.) / 5.;
    if (flatness < 0.6 && flatness > - 0.6) {
       lightFactor += 0.1;
    }
@@ -54,6 +54,8 @@ void main() {
       color = vec3(1., 0., 0.);
    }
    else {
+      color = vec3(0.50, 0.96, 0.36);
+      /*
       int d0 = int(vColor.a * 128. + 0.002);
       int d1 = int(vUv.x * 128. + 0.002);
       int d2 = int(vUv.y * 128. + 0.002);
@@ -61,7 +63,7 @@ void main() {
       if (vColor.r >= vColor.g && vColor.r >= vColor.b) {
          if (d0 == 2 && flatness < 0.6) {
             d0 = 3;
-         }
+         } 
          color = terrainColors[d0];
       }
       else if (vColor.g >= vColor.r && vColor.g >= vColor.b) {
@@ -76,6 +78,7 @@ void main() {
          }
          color = terrainColors[d2];
       }
+      */
    }
 
    outColor = vec4(globalColor + color * lightFactor, 1.);

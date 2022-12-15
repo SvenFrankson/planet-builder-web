@@ -213,6 +213,7 @@ class PlanetChunckMeshBuilder {
             }
         }
         
+        let unstretchedPositions: { x: number, y: number, z: number }[] = [];
         let positions: number[] = [];
         let indices: number[] = [];
         let uvs: number[] = [];
@@ -424,12 +425,14 @@ class PlanetChunckMeshBuilder {
                         PCMB.GetVertexToRef(2 * size, 2 * (iGlobal + 1) + 1, 2 * (jGlobal + 1) + 1, PCMB.tmpVertices[2]);
                         PCMB.GetVertexToRef(2 * size, 2 * (iGlobal) + 1, 2 * (jGlobal + 1) + 1, PCMB.tmpVertices[3]);
 
+                        /*
                         for (let i = 0; i < 4; i++) {
                             blockCenter.copyFrom(PCMB.tmpVertices[i]).addInPlace(PCMB.tmpVertices[2]).scaleInPlace(0.5);
                             let angle = VMath.Angle(BABYLON.Axis.Y, blockCenter);
                             BABYLON.Vector3.CrossToRef(BABYLON.Axis.Y, blockCenter, blockAxis);
                             BABYLON.Quaternion.RotationAxisToRef(blockAxis, angle, blockQuaternions[i]);
                         }
+                        */
     
                         let hGlobal = (k + kPos * PlanetTools.CHUNCKSIZE + 1);
                         let hLow = PlanetTools.KGlobalToAltitude(hGlobal - 1) * 0.5 + PlanetTools.KGlobalToAltitude(hGlobal) * 0.5;
@@ -484,25 +487,55 @@ class PlanetChunckMeshBuilder {
                             uvs[2 * (l + n3) + 1] = v;
                         }
     
+                        let partIndexes = [...partVertexData.indices];
+                        let pIndex = l;
                         for (let n = 0; n < partVertexData.positions.length / 3; n++) {
                             let x = partVertexData.positions[3 * n];
                             let y = partVertexData.positions[3 * n + 1];
                             let z = partVertexData.positions[3 * n + 2];
+
+                            let unstretchedPosition = { x: x + i, y: y + k, z: z + j };
+                            let existingIndex = unstretchedPositions.findIndex(
+                                uP => {
+                                    return Math.abs(uP.x - unstretchedPosition.x) < 0.005 && 
+                                    Math.abs(uP.y - unstretchedPosition.y) < 0.005 &&
+                                    Math.abs(uP.z - unstretchedPosition.z) < 0.005;
+                                }
+                            );
                             
-                            v01.copyFrom(v1).subtractInPlace(v0).scaleInPlace(x).addInPlace(v0);
-                            v32.copyFrom(v2).subtractInPlace(v3).scaleInPlace(x).addInPlace(v3);
-                            v45.copyFrom(v5).subtractInPlace(v4).scaleInPlace(x).addInPlace(v4);
-                            v76.copyFrom(v6).subtractInPlace(v7).scaleInPlace(x).addInPlace(v7);
-    
-                            v0132.copyFrom(v32).subtractInPlace(v01).scaleInPlace(z).addInPlace(v01);
-                            v4576.copyFrom(v76).subtractInPlace(v45).scaleInPlace(z).addInPlace(v45);
-    
-                            v.copyFrom(v4576).subtractInPlace(v0132).scaleInPlace(y).addInPlace(v0132);
+                            if (existingIndex === - 1) {
+                                v01.copyFrom(v1).subtractInPlace(v0).scaleInPlace(x).addInPlace(v0);
+                                v32.copyFrom(v2).subtractInPlace(v3).scaleInPlace(x).addInPlace(v3);
+                                v45.copyFrom(v5).subtractInPlace(v4).scaleInPlace(x).addInPlace(v4);
+                                v76.copyFrom(v6).subtractInPlace(v7).scaleInPlace(x).addInPlace(v7);
+        
+                                v0132.copyFrom(v32).subtractInPlace(v01).scaleInPlace(z).addInPlace(v01);
+                                v4576.copyFrom(v76).subtractInPlace(v45).scaleInPlace(z).addInPlace(v45);
+        
+                                v.copyFrom(v4576).subtractInPlace(v0132).scaleInPlace(y).addInPlace(v0132);
+                                
+                                positions.push(v.x);
+                                positions.push(v.y);
+                                positions.push(v.z);
+
+                                unstretchedPositions.push(unstretchedPosition);
+
+                                for (let a = 0; a < partVertexData.indices.length; a++) {
+                                    if (partVertexData.indices[a] === n) {
+                                        partIndexes[a] = pIndex;
+                                    }
+                                }
+                                pIndex++
+                            }
+                            else {
+                                for (let a = 0; a < partVertexData.indices.length; a++) {
+                                    if (partVertexData.indices[a] === n) {
+                                        partIndexes[a] = existingIndex;
+                                    }
+                                }
+                            }
                             
-                            positions.push(v.x);
-                            positions.push(v.y);
-                            positions.push(v.z);
-                            
+                            /*
                             norm.x = partVertexData.normals[3 * n];
                             norm.y = partVertexData.normals[3 * n + 1];
                             norm.z = partVertexData.normals[3 * n + 2];
@@ -515,10 +548,10 @@ class PlanetChunckMeshBuilder {
                             normals.push(norm.x);
                             normals.push(norm.y);
                             normals.push(norm.z);
+                            */
                         }
-                        for (let n = 0; n < partVertexData.indices.length; n++) {
-                            indices.push(partVertexData.indices[n] + l);
-                        }
+
+                        indices.push(...partIndexes);
                     }
                 }
             }
@@ -532,7 +565,7 @@ class PlanetChunckMeshBuilder {
             debugger;
         }
 
-        //BABYLON.VertexData.ComputeNormals(positions, indices, normals);
+        BABYLON.VertexData.ComputeNormals(positions, indices, normals);
         vertexData.positions = positions;
         vertexData.indices = indices;
         vertexData.uvs = uvs;
