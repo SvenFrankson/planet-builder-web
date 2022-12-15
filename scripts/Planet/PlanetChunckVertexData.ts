@@ -351,12 +351,10 @@ class PlanetChunckVertexData {
                         if (Math.abs(ny) > Math.abs(nz)) {
                             ny = Math.sign(ny) * 0.582;
                             nz = 0;
-                            console.log("a");
                         }
                         else {
                             ny = 0;
                             nz = Math.sign(nz) * 0.582;
-                            console.log("b");
                         }
                     }
                     if (Math.abs(ny) > Math.abs(nx) && Math.abs(ny) > Math.abs(nz)) {
@@ -364,12 +362,10 @@ class PlanetChunckVertexData {
                         if (Math.abs(nx) > Math.abs(nz)) {
                             nx = Math.sign(nx) * 0.582;
                             nz = 0;
-                            console.log("c");
                         }
                         else {
                             nx = 0;
                             nz = Math.sign(nz) * 0.582;
-                            console.log("d");
                         }
                     }
                     if (Math.abs(nz) > Math.abs(nx) && Math.abs(nz) > Math.abs(ny)) {
@@ -377,12 +373,10 @@ class PlanetChunckVertexData {
                         if (Math.abs(nx) > Math.abs(ny)) {
                             nx = Math.sign(nx) * 0.582;
                             ny = 0;
-                            console.log("e");
                         }
                         else {
                             nx = 0;
                             ny = Math.sign(ny) * 0.582;
-                            console.log("f");
                         }
                     }
                 }

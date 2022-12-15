@@ -289,7 +289,7 @@ class PlanetChunckMeshBuilder {
                         }
                     }
                     
-                    if (cornerCase) { 
+                    if (cornerCase && false) { 
                         let d = chunck.GetData(i, j, k);
                         if (d > BlockType.Water) {
                             if (chunck.GetData(i, j, k + 1) === BlockType.None) {
@@ -462,8 +462,8 @@ class PlanetChunckMeshBuilder {
                         */
                         
                         let l = positions.length / 3;
-                        colors.push(...partVertexData.colors);
-                        uvs.push(...partVertexData.uvs);
+                        let partColors = [...partVertexData.colors];
+                        let partUvs = [...partVertexData.uvs];
                         for (let n = 0; n < partVertexData.indices.length / 3; n++) {
                             let n1 = partVertexData.indices[3 * n];
                             let n2 = partVertexData.indices[3 * n + 1];
@@ -473,18 +473,18 @@ class PlanetChunckMeshBuilder {
                             let u = blocks[extendedpartVertexData.blocks[n][1]] / 128;
                             let v = blocks[extendedpartVertexData.blocks[n][2]] / 128;
 
-                            colors[4 * (l + n1) + 3] = alpha;
-                            colors[4 * (l + n2) + 3] = alpha;
-                            colors[4 * (l + n3) + 3] = alpha;
+                            partColors[4 * n1 + 3] = alpha;
+                            partColors[4 * n2 + 3] = alpha;
+                            partColors[4 * n3 + 3] = alpha;
 
-                            uvs[2 * (l + n1)] = u;
-                            uvs[2 * (l + n1) + 1] = v;
+                            partUvs[2 * n1] = u;
+                            partUvs[2 * n1 + 1] = v;
 
-                            uvs[2 * (l + n2)] = u;
-                            uvs[2 * (l + n2) + 1] = v;
+                            partUvs[2 * n2] = u;
+                            partUvs[2 * n2 + 1] = v;
 
-                            uvs[2 * (l + n3)] = u;
-                            uvs[2 * (l + n3) + 1] = v;
+                            partUvs[2 * n3] = u;
+                            partUvs[2 * n3 + 1] = v;
                         }
     
                         let partIndexes = [...partVertexData.indices];
@@ -517,6 +517,14 @@ class PlanetChunckMeshBuilder {
                                 positions.push(v.x);
                                 positions.push(v.y);
                                 positions.push(v.z);
+
+                                colors.push(partColors[4 * n]);
+                                colors.push(partColors[4 * n + 1]);
+                                colors.push(partColors[4 * n + 2]);
+                                colors.push(partColors[4 * n + 3]);
+
+                                uvs.push(partUvs[2 * n]);
+                                uvs.push(partUvs[2 * n + 1]);
 
                                 unstretchedPositions.push(unstretchedPosition);
 
