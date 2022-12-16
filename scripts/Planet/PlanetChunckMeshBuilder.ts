@@ -216,6 +216,7 @@ class PlanetChunckMeshBuilder {
         let unstretchedPositions: { x: number, y: number, z: number }[] = [];
         let positions: number[] = [];
         let indices: number[] = [];
+        let trianglesData: number[] = [];
         let uvs: number[] = [];
         let normals: number[] = [];
         let colors: number[] = [];
@@ -401,8 +402,6 @@ class PlanetChunckMeshBuilder {
                             MeshTools.PushQuad(vertices, 0, 2, 3, 1, waterPositions, waterIndices);
                             MeshTools.PushWaterUvs(waterUvs);
                         }
-
-                        let blocks = [d0, d1, d2, d3, d4, d5, d6, d7];
     
                         if (ref === 0b0 || ref === 0b11111111) {
                             continue;
@@ -410,6 +409,7 @@ class PlanetChunckMeshBuilder {
                         //if (d4 > BlockType.Water && d5 > BlockType.Water && d6 > BlockType.Water && d7 > BlockType.Water) {
                         //    continue;
                         //}
+                        let dAsArray = [d0, d1, d2, d3, d4 ,d5, d6, d7];
                         
                         let extendedpartVertexData = PlanetChunckVertexData.Get(lod + Config.performanceConfiguration.lodMin, ref);
                         if (!extendedpartVertexData) {
@@ -464,28 +464,6 @@ class PlanetChunckMeshBuilder {
                         let l = positions.length / 3;
                         let partColors = [...partVertexData.colors];
                         let partUvs = [...partVertexData.uvs];
-                        for (let n = 0; n < partVertexData.indices.length / 3; n++) {
-                            let n1 = partVertexData.indices[3 * n];
-                            let n2 = partVertexData.indices[3 * n + 1];
-                            let n3 = partVertexData.indices[3 * n + 2];
-
-                            let alpha = blocks[extendedpartVertexData.blocks[n][0]] / 128;
-                            let u = blocks[extendedpartVertexData.blocks[n][1]] / 128;
-                            let v = blocks[extendedpartVertexData.blocks[n][2]] / 128;
-
-                            partColors[4 * n1 + 3] = alpha;
-                            partColors[4 * n2 + 3] = alpha;
-                            partColors[4 * n3 + 3] = alpha;
-
-                            partUvs[2 * n1] = u;
-                            partUvs[2 * n1 + 1] = v;
-
-                            partUvs[2 * n2] = u;
-                            partUvs[2 * n2 + 1] = v;
-
-                            partUvs[2 * n3] = u;
-                            partUvs[2 * n3 + 1] = v;
-                        }
     
                         let partIndexes = [...partVertexData.indices];
                         let pIndex = l;
@@ -560,6 +538,7 @@ class PlanetChunckMeshBuilder {
                         }
 
                         indices.push(...partIndexes);
+                        trianglesData.push(...extendedpartVertexData.trianglesData.map(tData => { return dAsArray[tData]; }));
                     }
                 }
             }
@@ -574,11 +553,55 @@ class PlanetChunckMeshBuilder {
         }
 
         BABYLON.VertexData.ComputeNormals(positions, indices, normals);
-        vertexData.positions = positions;
-        vertexData.indices = indices;
-        vertexData.uvs = uvs;
-        vertexData.colors = colors;
-        vertexData.normals = normals;
+
+        // Split by data
+        let splitPositions: number[] = [];
+        let splitIndices: number[] = [];
+        let splitNormals: number[] = [];
+        let splitUvs: number[] = [];
+        let splitColors: number[] = [];
+        while (trianglesData.length > 0) {
+            let data = trianglesData[0];
+            let pToSplitP: Map<number, number> = new Map<number, number>();
+
+            let tdi = 0;
+            while (tdi < trianglesData.length) {
+                if (trianglesData[tdi] === data) {
+                    trianglesData.splice(tdi, 1);
+                    for (let i = 0; i < 3; i++) {
+                        let index = indices.splice(3 * tdi, 1)[0];
+                        let splitIndex = pToSplitP.get(index);
+                        if (splitIndex === undefined) {
+                            splitIndex = splitPositions.length / 3;
+                            splitPositions.push(positions[3 * index]);
+                            splitPositions.push(positions[3 * index + 1]);
+                            splitPositions.push(positions[3 * index + 2]);
+        
+                            splitNormals.push(normals[3 * index]);
+                            splitNormals.push(normals[3 * index + 1]);
+                            splitNormals.push(normals[3 * index + 2]);
+
+                            splitColors.push(data / 128, 1, 1, 1);
+                            splitUvs.push(1, 1);
+        
+                            pToSplitP.set(index, splitIndex);
+                        }
+                        splitIndices.push(splitIndex);
+                    }
+                }
+                else {
+                    tdi++;
+                }
+            }
+
+            
+        }
+
+        vertexData.positions = splitPositions;
+        vertexData.indices = splitIndices;
+        vertexData.uvs = splitUvs;
+        vertexData.colors = splitColors;
+        vertexData.normals = splitNormals;
 
         let waterVertexData: BABYLON.VertexData;
         if (waterPositions.length > 0) {

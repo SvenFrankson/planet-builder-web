@@ -56,29 +56,11 @@ void main() {
    else {
       //color = vec3(0.50, 0.96, 0.36);
       
-      int d0 = int(vColor.a * 128. + 0.002);
-      int d1 = int(vUv.x * 128. + 0.002);
-      int d2 = int(vUv.y * 128. + 0.002);
-
-      if (vColor.r >= vColor.g && vColor.r >= vColor.b) {
-         if (d0 == 2 && flatness < 0.6) {
-            d0 = 3;
-         } 
-         color = terrainColors[d0];
-      }
-      else if (vColor.g >= vColor.r && vColor.g >= vColor.b) {
-         if (d1 == 2 && flatness < 0.6) {
-            d1 = 3;
-         }
-         color = terrainColors[d1];
-      }
-      else if (vColor.b >= vColor.r && vColor.b >= vColor.g) {
-         if (d2 == 2 && flatness < 0.6) {
-            d2 = 3;
-         }
-         color = terrainColors[d2];
-      }
-      
+      int d = int(vColor.r * 128. + 0.002);
+      if (d == 2 && flatness < 0.6) {
+         d = 3;
+      } 
+      color = terrainColors[d];
    }
 
    outColor = vec4(globalColor + color * lightFactor, 1.);
