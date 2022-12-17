@@ -476,7 +476,6 @@ class PlanetChunckMeshBuilder {
                             let z = partVertexData.positions[3 * n + 2];
 
                             let edgeCase: boolean = Math.abs(x - 0.5) <= 0.01 || Math.abs(y - 0.5) <= 0.01 || Math.abs(z - 0.5) <= 0.01;
-                            edgeCase = false;
                             if (edgeCase) {
                                 let unstretchedPosition = { x: x + i, y: y + k, z: z + j, index: pIndex };
                                 let existingIndex = - 1;
