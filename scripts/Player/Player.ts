@@ -24,6 +24,9 @@ class Player extends BABYLON.Mesh {
     public targetDestination: BABYLON.Vector3;
     private _lastDistToTarget: number;
 
+    private _debugBlockVData: BABYLON.VertexData;
+    private groundCollisionMesh: BABYLON.Mesh;
+
     public get inputManager(): InputManager {
         return this.main.inputManager;
     }
@@ -48,11 +51,12 @@ class Player extends BABYLON.Mesh {
     }
 
     private _initialized: boolean = false;
-    public initialize(): void {
+    public async initialize(): Promise<void> {
         if (!this._initialized) {
             Game.Scene.onBeforeRenderObservable.add(this._update);
             this.armManager.initialize();
             this._initialized = true;
+            this._debugBlockVData = (await this.main.vertexDataLoader.get("chunck-part"))[1];
         }
     }
 
@@ -320,36 +324,41 @@ class Player extends BABYLON.Mesh {
 
         if (this._jumpTimer === 0 && this.planet) {
 
-            let chunck = PlanetTools.WorldPositionToChunck(this.planet, this.position);
-            if (chunck) {
-                this._chuncks.push(chunck);
-                if (chunck.mesh) {
-                    this._meshes.push(chunck.mesh);
-                }
-                if (chunck.adjacentsAsArray) {
-                    for (let i = 0; i < chunck.adjacentsAsArray.length; i++) {
-                        let adjChunck = chunck.adjacentsAsArray[i];
-                        this._chuncks.push(adjChunck);
-                        if (adjChunck.mesh) {
-                            this._meshes.push(adjChunck.mesh);
+            let checkGroundCollision: boolean = false;
+            if (this._debugBlockVData) {
+                let localIJK = PlanetTools.WorldPositionToLocalIJK(this.planet, this.position.subtract(this.upDirection.scale(0.1)));
+                if (localIJK) {
+                    let data = localIJK.planetChunck.GetData(localIJK.i, localIJK.j, localIJK.k);
+                    if (data > BlockType.Water) {
+                        let globalIJK = PlanetTools.LocalIJKToGlobalIJK(localIJK);
+                        if (globalIJK) {
+                            if (!this.groundCollisionMesh) {
+                                this.groundCollisionMesh = BABYLON.MeshBuilder.CreateSphere("debug-current-block", { diameter: 1 });
+                                let material = new BABYLON.StandardMaterial("material");
+                                material.alpha = 0.25;
+                                this.groundCollisionMesh.material = material;
+                            }
+            
+                            PlanetTools.SkewVertexData(this._debugBlockVData, localIJK.planetChunck.size, globalIJK.i, globalIJK.j, globalIJK.k).applyToMesh(this.groundCollisionMesh);
+                            this.groundCollisionMesh.parent = localIJK.planetChunck.planetSide;
+                            checkGroundCollision = true;
                         }
                     }
                 }
-                this._chuncks.forEach((chunck) => {
-                    //chunck.highlight();
-                });
+            }
+
+            if (checkGroundCollision) {
                 let ray: BABYLON.Ray = new BABYLON.Ray(this.camPos.absolutePosition, this._downDirection);
-                let hit: BABYLON.PickingInfo[] = ray.intersectsMeshes(this._meshes);
-                hit = hit.sort((h1, h2) => { return h1.distance - h2.distance; });
-                if (hit[0] && hit[0].pickedPoint) {
+                let hit: BABYLON.PickingInfo = ray.intersectsMesh(this.groundCollisionMesh);
+                if (hit && hit.pickedPoint) {
                     if (!this._debugCollisionGroundMesh) {
                         this._debugCollisionGroundMesh = BABYLON.MeshBuilder.CreateSphere("debug-collision-mesh", { diameter: 0.2 }, this.getScene());
                         let material = new BABYLON.StandardMaterial("material", this.getScene());
                         material.alpha = 0.5;
                         this._debugCollisionGroundMesh.material = material;
                     }
-                    this._debugCollisionGroundMesh.position.copyFrom(hit[0].pickedPoint);
-                    let d: number = BABYLON.Vector3.Dot(this.position.subtract(hit[0].pickedPoint), this.upDirection);
+                    this._debugCollisionGroundMesh.position.copyFrom(hit.pickedPoint);
+                    let d: number = BABYLON.Vector3.Dot(this.position.subtract(hit.pickedPoint), this.upDirection);
                     if (d <= 0.05) {
                         this._groundFactor
                             .copyFrom(this._gravityFactor)
@@ -397,6 +406,7 @@ class Player extends BABYLON.Mesh {
         this.velocity.addInPlace(this._controlFactor);
 
         // Check wall collisions.
+        /*
         this._surfaceFactor.copyFromFloats(0, 0, 0);
         if (!this.godMode) {
             for (let i = 0; i < this._collisionPositions.length; i++) {
@@ -427,6 +437,7 @@ class Player extends BABYLON.Mesh {
             }
         }
         this.velocity.addInPlace(this._surfaceFactor);
+        */
 
         // Add friction
         let downVelocity = this._downDirection.scale(BABYLON.Vector3.Dot(this.velocity, this._downDirection));

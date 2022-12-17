@@ -289,6 +289,13 @@ class PlanetTools {
         }
     }
 
+    public static WorldPositionToPlanetSide(
+        planet: Planet,
+        worldPos: BABYLON.Vector3
+    ): PlanetSide {
+        return planet.GetSide(PlanetTools.PlanetPositionToSide(worldPos.subtract(planet.position)));
+    }
+
     public static PlanetPositionToPlanetSide(
         planet: Planet,
         planetPos: BABYLON.Vector3
@@ -367,6 +374,13 @@ class PlanetTools {
         let j: number = Math.floor(((zDeg + 45) / 90) * size);
 
         return { i: i, j: j };
+    }
+
+    public static WorldPositionToGlobalIJK(
+        planetSide: PlanetSide,
+        worldPos: BABYLON.Vector3
+    ): { i: number; j: number; k: number } {
+        return PlanetTools.PlanetPositionToGlobalIJK(planetSide, worldPos.subtract(planetSide.planet.position));
     }
 
     public static WorldPositionToLocalIJK(

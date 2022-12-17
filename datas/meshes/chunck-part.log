@@ -12,7 +12,16 @@ Exporter version: 6.4.5, Blender version: 2.90.1
 		Texture directory   :  C:\Users\svent\Documents\Sven Frankson\planet-builder-web\datas\meshes\
 	Python World class constructor completed
 	WARNING: No active camera has been assigned, or is not in a currently selected Blender layer
-	processing begun of mesh:  10000000
+	processing begun of mesh:  2-ground-collider
+		WARNING: No materials have been assigned: 
+		num positions      :  29
+		num normals        :  29
+		num tangents       :  0
+		num uvs            :  58
+		num uvs2           :  0
+		num colors         :  0
+		num triangles      :  12
+	processing begun of mesh:  1-block
 		processing begun of material:  Green
 		num positions      :  56
 		num normals        :  56
@@ -22,7 +31,8 @@ Exporter version: 6.4.5, Blender version: 2.90.1
 		num colors         :  0
 		num triangles      :  108
 ========= Writing of JSON file started =========
-	writing mesh:  10000000
+	writing mesh:  2-ground-collider
+	writing mesh:  1-block
 ========= Writing of JSON file completed =========
 ========= end of processing =========
-elapsed time:  0 min, 0.009 secs
+elapsed time:  0 min, 0.0168 secs
