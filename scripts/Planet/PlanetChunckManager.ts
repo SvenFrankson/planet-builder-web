@@ -247,7 +247,7 @@ class PlanetChunckManager {
         this._needRedraw = this._needRedraw.sort((r1, r2) => { return r2.chunck.sqrDistanceToViewpoint - r1.chunck.sqrDistanceToViewpoint; });
         // Recalculate chunck meshes.
         t0 = performance.now();
-        while (this._needRedraw.length > 0 && (t - t0) < 1000 / 60) {
+        while (this._needRedraw.length > 0 && (t - t0) < 1000 / 120) {
             let request = this._needRedraw.pop();
             if (request.chunck.lod === 0) {
                 request.chunck.initialize();

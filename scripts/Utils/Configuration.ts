@@ -77,7 +77,10 @@ class ConfigurationPerformance {
             });
         }
     }
-    public seaLevelMeshVertexCount: number = 16;
+
+    public shellMeshVertexCount: number = 16;
+    public shellMeshTextureSize: number = 64;
+
     private _holoScreenFactor: number = 0.4;
     public get holoScreenFactor(): number {
         return this._holoScreenFactor;

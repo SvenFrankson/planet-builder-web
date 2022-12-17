@@ -550,14 +550,17 @@ class PlanetChunck extends AbstractPlanetChunck {
         }
 
         PlanetChunckMeshBuilder.BuildShellLevelVertexData(this).applyToMesh(this.mesh);
-        /*
-        this.planetSide.onShellMaterialReady(() => {
-            if (this.mesh && !this.mesh.isDisposed() && this.mesh.material != this.planet.chunckMaterial) {
-                this.mesh.material = this.planetSide.shellMaterial;
-            }
-        });
-        */
-        this.mesh.material = SharedMaterials.RedMaterial();
+        
+        if (DebugDefine.USE_CHUNCK_LEVEL_DEBUG_COLORS) {
+            this.mesh.material = SharedMaterials.RedMaterial();
+        }
+        else {
+            this.planetSide.onShellMaterialReady(() => {
+                if (this.mesh && !this.mesh.isDisposed() && this.mesh.material != this.planet.chunckMaterial) {
+                    this.mesh.material = this.planetSide.shellMaterial;
+                }
+            });
+        }
 
         this.mesh.parent = this.planetSide;
         requestAnimationFrame(() => {

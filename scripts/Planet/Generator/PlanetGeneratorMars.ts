@@ -13,26 +13,52 @@ class PlanetGeneratorMars extends PlanetGenerator {
         this.altitudeMap = PlanetHeightMap.CreateConstantMap(planet.degree, 0).addInPlace(this._mainHeightMap).multiplyInPlace(_mountainHeight).addInPlace(PlanetHeightMap.CreateConstantMap(planet.degree, this.planet.seaLevelRatio));
     }
 
-    public getTexture(side: Side, size: number = 256): BABYLON.Texture {
+    public getTexture(side: Side, size: number): BABYLON.Texture {
+        let timers: number[];
+        let logOutput: string;
+        let useLog = DebugDefine.LOG_PLANETMAP_PERFORMANCE;
+        if (useLog) {
+            timers = [];
+            timers.push(performance.now());
+            logOutput = "PlanetGeneratorMars getTexture for " + this.planet.name;
+        }
         let texture = new BABYLON.DynamicTexture("texture-" + side, size);
         let context = texture.getContext();
 
         let f = Math.pow(2, this._mainHeightMap.degree) / size;
 
+        let mainMaterial = SharedMaterials.MainMaterial();
+
+        context.fillStyle = mainMaterial.getFillStyle(BlockType.Laterite);
+        context.fillRect(0, 0, size, size);
+
+        /*
         for (let i = 0; i < size; i++) {
             for (let j = 0; j < size; j++) {
-                //let v = Math.floor(this.altitudeMap.getForSide(side, Math.floor(i * f), Math.floor(j * f)) * PlanetTools.CHUNCKSIZE * this.planet.kPosMax);
-                let color: BABYLON.Color3;
-                if (true) {
-                    color = SharedMaterials.MainMaterial().getColor(BlockType.Laterite);
+                let v = Math.floor(this.altitudeMap.getForSide(side, Math.floor(i * f), Math.floor(j * f)) * PlanetTools.CHUNCKSIZE * this.planet.kPosMax);
+                let blockType: BlockType = BlockType.None;
+                
+                if (blockType != BlockType.None) {
+                    context.fillStyle = mainMaterial.getFillStyle(blockType);
+                    context.fillRect(i, j, 1, 1);
                 }
-
-                context.fillStyle = "rgb(" + (color.r * 255).toFixed(0) + ", " + (color.g * 255).toFixed(0) + ", " + (color.b * 255).toFixed(0) + ")";
-                context.fillRect(i, j, 1, 1);
             }
+        }
+        */
+
+        if (useLog) {
+            timers.push(performance.now());
+            logOutput += "\n context filled in " + (timers[timers.length - 1] - timers[timers.length - 2]).toFixed(0) + " ms";
         }
 
         texture.update(false);
+
+        if (useLog) {
+            timers.push(performance.now());
+            logOutput += "\n  texture updated in " + (timers[timers.length - 1] - timers[timers.length - 2]).toFixed(0) + " ms";
+            logOutput += "\nPlanetGeneratorMars getTexture completed in " + (timers[timers.length - 1] - timers[0]).toFixed(0) + " ms";
+            console.log(logOutput);
+        }
 
         return texture;
     }

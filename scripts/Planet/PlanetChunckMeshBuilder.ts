@@ -693,7 +693,7 @@ class PlanetChunckMeshBuilder {
             levelCoef = Math.pow(2, chunck.level);
         }
 
-        let vertexCount: number = Config.performanceConfiguration.seaLevelMeshVertexCount;
+        let vertexCount: number = Config.performanceConfiguration.shellMeshVertexCount;
         let f = Math.pow(2, chunck.planet.degree - chunck.degree);
         for (let i = - 1; i <= vertexCount + 1; i++) {
             for (let j = - 1; j <= vertexCount + 1; j++) {
@@ -705,19 +705,19 @@ class PlanetChunckMeshBuilder {
                 let altOffset = 0;
                 if (i < 0) {
                     i0 = PlanetTools.CHUNCKSIZE * chunck.iPos * levelCoef;
-                    altOffset = - 0.2;
+                    altOffset = - 0.2 * levelCoef;
                 }
                 if (j < 0) {
                     j0 = PlanetTools.CHUNCKSIZE * chunck.jPos * levelCoef;
-                    altOffset = - 0.2;
+                    altOffset = - 0.2 * levelCoef;
                 }
                 if (i > vertexCount) {
                     i0 = PlanetTools.CHUNCKSIZE * (chunck.iPos + 1) * levelCoef;
-                    altOffset = - 0.2;
+                    altOffset = - 0.2 * levelCoef;
                 }
                 if (j > vertexCount) {
                     j0 = PlanetTools.CHUNCKSIZE * (chunck.jPos + 1) * levelCoef;
-                    altOffset = - 0.2;
+                    altOffset = - 0.2 * levelCoef;
                 }
                 let h00 = Math.floor(chunck.planet.generator.altitudeMap.getForSide(chunck.side, i0 * f, j0 * f) * chunck.kPosMax * PlanetTools.CHUNCKSIZE);
                 p00.scaleInPlace(PlanetTools.KGlobalToAltitude(h00 + 1) + altOffset);

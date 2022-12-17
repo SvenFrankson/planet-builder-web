@@ -75,7 +75,7 @@ class PlanetGeneratorEarth extends PlanetGenerator {
         }
     }
 
-    public getTexture(side: Side, size: number = 256): BABYLON.Texture {
+    public getTexture(side: Side, size: number): BABYLON.Texture {
         let timers: number[];
         let logOutput: string;
         let useLog = DebugDefine.LOG_PLANETMAP_PERFORMANCE;
@@ -91,22 +91,24 @@ class PlanetGeneratorEarth extends PlanetGenerator {
 
         let mainMaterial = SharedMaterials.MainMaterial();
 
+        context.fillStyle = mainMaterial.getFillStyle(BlockType.Water);
+        context.fillRect(0, 0, size, size);
+
         for (let i = 0; i < size; i++) {
             for (let j = 0; j < size; j++) {
                 let v = Math.floor(this.altitudeMap.getForSide(side, Math.floor(i * f), Math.floor(j * f)) * PlanetTools.CHUNCKSIZE * this.planet.kPosMax);
                 let blockType: BlockType = BlockType.None;
-                if (v < this.planet.seaLevel - 1) {
-                    blockType = BlockType.Water;
-                }
-                else if (v < this.planet.seaLevel) {
+                if (v === this.planet.seaLevel) {
                     blockType = BlockType.Sand;
                 }
-                else {
+                else if (v > this.planet.seaLevel) {
                     blockType = BlockType.Grass;
                 }
 
-                context.fillStyle = mainMaterial.getFillStyle(blockType);
-                context.fillRect(i, j, 1, 1);
+                if (blockType != BlockType.None) {
+                    context.fillStyle = mainMaterial.getFillStyle(blockType);
+                    context.fillRect(i, j, 1, 1);
+                }
             }
         }
 

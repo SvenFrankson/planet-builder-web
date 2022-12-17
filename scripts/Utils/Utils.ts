@@ -51,7 +51,7 @@ class Utils {
 					let debugPlanetSide = meshes[0];
 					if (debugPlanetSide instanceof(BABYLON.Mesh)) {
 						let debugPlanetSideMaterial = new BABYLON.StandardMaterial("debub-planet-side-material", scene);
-						debugPlanetSideMaterial.diffuseTexture = generator.getTexture(i);
+						debugPlanetSideMaterial.diffuseTexture = generator.getTexture(i, Config.performanceConfiguration.shellMeshTextureSize);
 						debugPlanetSideMaterial.emissiveColor = BABYLON.Color3.White();
 						debugPlanetSideMaterial.specularColor = BABYLON.Color3.Black();
 						debugPlanetSide.material = debugPlanetSideMaterial;

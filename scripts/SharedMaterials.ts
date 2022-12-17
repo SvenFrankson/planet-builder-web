@@ -79,4 +79,13 @@ class SharedMaterials {
         }
         return SharedMaterials.yellowMaterial;
     }
+
+    private static cyanMaterial: BABYLON.StandardMaterial;
+    public static CyanMaterial(): BABYLON.StandardMaterial {
+        if (!SharedMaterials.cyanMaterial) {
+            SharedMaterials.cyanMaterial = new BABYLON.StandardMaterial("cyanMaterial", Game.Scene);
+            SharedMaterials.cyanMaterial.diffuseColor.copyFromFloats(0, 1, 1);
+        }
+        return SharedMaterials.cyanMaterial;
+    }
 }

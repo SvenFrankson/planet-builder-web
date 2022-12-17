@@ -77,6 +77,8 @@ abstract class PlanetGenerator {
     }
 
     public abstract makeData(chunck: PlanetChunck, refData: number[][][], refProcedural: ProceduralTree[]): void;
+    
+    public abstract getTexture(side: Side, size: number): BABYLON.Texture;
 
     public showDebug(): void {
         for (let i = 0; i < this.heightMaps.length; i++) {
@@ -92,6 +94,7 @@ abstract class PlanetGenerator {
     }
 }
 
+/*
 class PlanetGeneratorHole extends PlanetGenerator {
 
     private _mainHeightMap: PlanetHeightMap;
@@ -246,3 +249,4 @@ class PlanetGeneratorDebug4 extends PlanetGenerator {
         );
     }
 }
+*/

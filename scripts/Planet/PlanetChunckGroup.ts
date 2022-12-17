@@ -99,24 +99,36 @@ class PlanetChunckGroup extends AbstractPlanetChunck {
         this.mesh = new BABYLON.Mesh(this.name);
 
         PlanetChunckMeshBuilder.BuildShellLevelVertexData(this).applyToMesh(this.mesh);
-        /*
-        this.planetSide.onShellMaterialReady(() => {
-            if (this.mesh && !this.mesh.isDisposed()) {
-                this.mesh.material = this.planetSide.shellMaterial;
+        
+        if (DebugDefine.USE_CHUNCK_LEVEL_DEBUG_COLORS) {
+            if (this.level === 1) {
+                this.mesh.material = SharedMaterials.GreenMaterial();
             }
-        })
-        */
-        if (this.level === 1) {
-            this.mesh.material = SharedMaterials.GreenMaterial();
+            else if (this.level === 2) {
+                this.mesh.material = SharedMaterials.BlueMaterial();
+            }
+            else if (this.level === 3) {
+                this.mesh.material = SharedMaterials.MagentaMaterial();
+            }
+            else if (this.level === 4) {
+                this.mesh.material = SharedMaterials.YellowMaterial();
+            }
+            else if (this.level === 5) {
+                this.mesh.material = SharedMaterials.CyanMaterial();
+            }
+            else if (this.level === 6) {
+                this.mesh.material = SharedMaterials.RedMaterial();
+            }
+            else if (this.level === 7) {
+                this.mesh.material = SharedMaterials.GreenMaterial();
+            }
         }
-        if (this.level === 2) {
-            this.mesh.material = SharedMaterials.BlueMaterial();
-        }
-        if (this.level === 3) {
-            this.mesh.material = SharedMaterials.MagentaMaterial();
-        }
-        if (this.level === 4) {
-            this.mesh.material = SharedMaterials.YellowMaterial();
+        else {
+            this.planetSide.onShellMaterialReady(() => {
+                if (this.mesh && !this.mesh.isDisposed()) {
+                    this.mesh.material = this.planetSide.shellMaterial;
+                }
+            })
         }
         this.mesh.parent = this.planetSide;
         this.mesh.freezeWorldMatrix();
