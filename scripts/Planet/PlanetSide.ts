@@ -292,7 +292,7 @@ class PlanetSide extends BABYLON.Mesh {
         this.parent = planet;
         this._side = side;
         this.rotationQuaternion = PlanetTools.QuaternionForSide(this._side);
-        //this.freezeWorldMatrix();
+        this.freezeWorldMatrix();
     }
 
     public instantiate(): void {

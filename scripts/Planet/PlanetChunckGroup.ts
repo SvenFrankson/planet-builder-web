@@ -105,6 +105,7 @@ class PlanetChunckGroup extends AbstractPlanetChunck {
             }
         })
         this.mesh.parent = this.planetSide;
+        this.mesh.freezeWorldMatrix();
         
         /*
         let pts: BABYLON.Vector3[] = [];
