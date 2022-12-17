@@ -41,7 +41,7 @@ void main() {
 
    float lightFactor = sunLightFactor * 0.8 + 0.2;
 
-   lightFactor = round(lightFactor * 5.) / 5.;
+   //lightFactor = round(lightFactor * 5.) / 5.;
    if (flatness < 0.6 && flatness > - 0.6) {
       lightFactor += 0.1;
    }

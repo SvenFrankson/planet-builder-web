@@ -3,6 +3,7 @@ class PlanetChunckMeshBuilder {
     private static cachedVertices: BABYLON.Vector3[][][];
     private static tmpVertices: BABYLON.Vector3[];
     private static tmpQuaternions: BABYLON.Quaternion[];
+    private static unstretchedPositionNull = { x: NaN, y: NaN, z: NaN, index: - 1 };
 
     private static _BlockColor: Map<number, BABYLON.Color3>;
     public static get BlockColor(): Map<number, BABYLON.Color3> {
@@ -213,7 +214,9 @@ class PlanetChunckMeshBuilder {
             }
         }
         
-        let unstretchedPositions: { x: number, y: number, z: number }[] = [];
+        let unstretchedPositionsX: { x: number, y: number, z: number, index: number }[] = [];
+        let unstretchedPositionsY: { x: number, y: number, z: number, index: number }[] = [];
+        let unstretchedPositionsZ: { x: number, y: number, z: number, index: number }[] = [];
         let positions: number[] = [];
         let indices: number[] = [];
         let trianglesData: number[] = [];
@@ -472,16 +475,101 @@ class PlanetChunckMeshBuilder {
                             let y = partVertexData.positions[3 * n + 1];
                             let z = partVertexData.positions[3 * n + 2];
 
-                            let unstretchedPosition = { x: x + i, y: y + k, z: z + j };
-                            let existingIndex = unstretchedPositions.findIndex(
-                                uP => {
-                                    return Math.abs(uP.x - unstretchedPosition.x) < 0.005 && 
-                                    Math.abs(uP.y - unstretchedPosition.y) < 0.005 &&
-                                    Math.abs(uP.z - unstretchedPosition.z) < 0.005;
+                            let edgeCase: boolean = Math.abs(x - 0.5) <= 0.01 || Math.abs(y - 0.5) <= 0.01 || Math.abs(z - 0.5) <= 0.01;
+                            edgeCase = false;
+                            if (edgeCase) {
+                                let unstretchedPosition = { x: x + i, y: y + k, z: z + j, index: pIndex };
+                                let existingIndex = - 1;
+                                let edge = 0;
+                                if (Math.abs(x - 0.5) <= 0.01) {
+                                    edge = 1;
+                                    let existing = unstretchedPositionsX.find(
+                                        uP => {
+                                            return Math.abs(uP.x - unstretchedPosition.x) < 0.01 && 
+                                            Math.abs(uP.y - unstretchedPosition.y) < 0.01 &&
+                                            Math.abs(uP.z - unstretchedPosition.z) < 0.01;
+                                        }
+                                    );
+                                    if (existing) {
+                                        existingIndex = existing.index;
+                                    }
                                 }
-                            );
-                            
-                            if (existingIndex === - 1) {
+                                else if (Math.abs(y - 0.5) <= 0.01) {
+                                    edge = 2;
+                                    let existing = unstretchedPositionsY.find(
+                                        uP => {
+                                            return Math.abs(uP.x - unstretchedPosition.x) < 0.01 && 
+                                            Math.abs(uP.y - unstretchedPosition.y) < 0.01 &&
+                                            Math.abs(uP.z - unstretchedPosition.z) < 0.01;
+                                        }
+                                    );
+                                    if (existing) {
+                                        existingIndex = existing.index;
+                                    }
+                                }
+                                else if (Math.abs(z - 0.5) <= 0.01) {
+                                    edge = 3;
+                                    let existing = unstretchedPositionsZ.find(
+                                        uP => {
+                                            return Math.abs(uP.x - unstretchedPosition.x) < 0.01 && 
+                                            Math.abs(uP.y - unstretchedPosition.y) < 0.01 &&
+                                            Math.abs(uP.z - unstretchedPosition.z) < 0.01;
+                                        }
+                                    );
+                                    if (existing) {
+                                        existingIndex = existing.index;
+                                    }
+                                }
+                                
+                                if (existingIndex === - 1) {
+                                    v01.copyFrom(v1).subtractInPlace(v0).scaleInPlace(x).addInPlace(v0);
+                                    v32.copyFrom(v2).subtractInPlace(v3).scaleInPlace(x).addInPlace(v3);
+                                    v45.copyFrom(v5).subtractInPlace(v4).scaleInPlace(x).addInPlace(v4);
+                                    v76.copyFrom(v6).subtractInPlace(v7).scaleInPlace(x).addInPlace(v7);
+            
+                                    v0132.copyFrom(v32).subtractInPlace(v01).scaleInPlace(z).addInPlace(v01);
+                                    v4576.copyFrom(v76).subtractInPlace(v45).scaleInPlace(z).addInPlace(v45);
+            
+                                    v.copyFrom(v4576).subtractInPlace(v0132).scaleInPlace(y).addInPlace(v0132);
+                                    
+                                    positions.push(v.x);
+                                    positions.push(v.y);
+                                    positions.push(v.z);
+
+                                    colors.push(partColors[4 * n]);
+                                    colors.push(partColors[4 * n + 1]);
+                                    colors.push(partColors[4 * n + 2]);
+                                    colors.push(partColors[4 * n + 3]);
+
+                                    uvs.push(partUvs[2 * n]);
+                                    uvs.push(partUvs[2 * n + 1]);
+
+                                    if (edge === 1) {
+                                        unstretchedPositionsX.push(unstretchedPosition);
+                                    }
+                                    else if (edge === 2) {
+                                        unstretchedPositionsY.push(unstretchedPosition);
+                                    }
+                                    else if (edge === 3) {
+                                        unstretchedPositionsZ.push(unstretchedPosition);
+                                    }
+
+                                    for (let a = 0; a < partVertexData.indices.length; a++) {
+                                        if (partVertexData.indices[a] === n) {
+                                            partIndexes[a] = pIndex;
+                                        }
+                                    }
+                                    pIndex++
+                                }
+                                else {
+                                    for (let a = 0; a < partVertexData.indices.length; a++) {
+                                        if (partVertexData.indices[a] === n) {
+                                            partIndexes[a] = existingIndex;
+                                        }
+                                    }
+                                }
+                            }
+                            else {
                                 v01.copyFrom(v1).subtractInPlace(v0).scaleInPlace(x).addInPlace(v0);
                                 v32.copyFrom(v2).subtractInPlace(v3).scaleInPlace(x).addInPlace(v3);
                                 v45.copyFrom(v5).subtractInPlace(v4).scaleInPlace(x).addInPlace(v4);
@@ -503,9 +591,7 @@ class PlanetChunckMeshBuilder {
 
                                 uvs.push(partUvs[2 * n]);
                                 uvs.push(partUvs[2 * n + 1]);
-
-                                unstretchedPositions.push(unstretchedPosition);
-
+                                
                                 for (let a = 0; a < partVertexData.indices.length; a++) {
                                     if (partVertexData.indices[a] === n) {
                                         partIndexes[a] = pIndex;
@@ -513,28 +599,6 @@ class PlanetChunckMeshBuilder {
                                 }
                                 pIndex++
                             }
-                            else {
-                                for (let a = 0; a < partVertexData.indices.length; a++) {
-                                    if (partVertexData.indices[a] === n) {
-                                        partIndexes[a] = existingIndex;
-                                    }
-                                }
-                            }
-                            
-                            /*
-                            norm.x = partVertexData.normals[3 * n];
-                            norm.y = partVertexData.normals[3 * n + 1];
-                            norm.z = partVertexData.normals[3 * n + 2];
-                            
-                            BABYLON.Quaternion.SlerpToRef(blockQuaternions[0], blockQuaternions[1], x, q1);
-                            BABYLON.Quaternion.SlerpToRef(blockQuaternions[3], blockQuaternions[2], x, q2);
-                            BABYLON.Quaternion.SlerpToRef(q1, q2, z, q);
-                            norm.rotateByQuaternionToRef(q, norm);
-
-                            normals.push(norm.x);
-                            normals.push(norm.y);
-                            normals.push(norm.z);
-                            */
                         }
 
                         indices.push(...partIndexes);
