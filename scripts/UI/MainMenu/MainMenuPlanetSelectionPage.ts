@@ -21,6 +21,7 @@ class MainMenuPlanetSelectionPage extends MainMenuPanelPage {
 
     public planetNameElement: SlikaText;
     public planetDescElement: SlikaTextBox;
+    public locationImage: SlikaImage;
 
     constructor(mainMenuPanel: MainMenuPanel) {
         super(mainMenuPanel);
@@ -83,6 +84,13 @@ class MainMenuPlanetSelectionPage extends MainMenuPanelPage {
             250,
             "datas/images/planet.png"
         ));
+
+        this.locationImage = this.holoSlika.add(new SlikaImage(
+            new SPosition(260, 390),
+            80, 
+            80,
+            "datas/images/location.png"
+        )) as SlikaImage;
 
         this.planetDescElement = new SlikaTextBox({
             text: this.planetDescriptions[this.currentPlanetIndex],
@@ -158,10 +166,17 @@ class MainMenuPlanetSelectionPage extends MainMenuPanelPage {
         this.holoSlika.add(buttonKillChunckManagers);
         */
 
-        this.elements.push(title1, buttonLeft, buttonRight, this.planetNameElement, planetImage, this.planetDescElement, buttonBack, buttonGo);
+        this.elements.push(title1, buttonLeft, buttonRight, this.planetNameElement, planetImage, this.locationImage, this.planetDescElement, buttonBack, buttonGo);
     }
     
     public async show(duration: number): Promise<void> {
+        let planet = this.mainMenuPanel.main.planets[this.currentPlanetIndex];
+        if (this.mainMenuPanel.main.cameraManager.player && this.mainMenuPanel.main.cameraManager.player.planet === planet) {
+            this.locationImage.display = true;
+        }
+        else {
+            this.locationImage.display = false;
+        }
         this.planetNames = this.mainMenuPanel.main.planets.map(p => { return p.name; });
         this.planetDescriptions = this.mainMenuPanel.main.planets.map(p => { return "\n- radius : " + p.seaAltitude.toFixed(0) + "m\n" });
         this.planetDescElement.prop.text = this.planetDescriptions[this.currentPlanetIndex];
@@ -171,6 +186,15 @@ class MainMenuPlanetSelectionPage extends MainMenuPanelPage {
     }
 
     public async updateCurrentPlanetIndex(left?: boolean): Promise<void> {
+        let planet = this.mainMenuPanel.main.planets[this.currentPlanetIndex];
+        if (this.mainMenuPanel.main.cameraManager.player && this.mainMenuPanel.main.cameraManager.player.planet === planet) {
+            this.locationImage.display = true;
+            this.locationImage.animateSize(1, 0.3);
+        }
+        else {
+            this.locationImage.display = true;
+            this.locationImage.animateSize(0, 0.3);
+        }
         this.planetDescElement.animateAlpha(0, 0.3);
         await this.planetNameElement.animatePosX(left ? 1500 : 0, 0.3);
         this.planetDescElement.prop.text = this.planetDescriptions[this.currentPlanetIndex];

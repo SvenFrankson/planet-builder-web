@@ -8,6 +8,7 @@ class PlanetGeneratorEarth extends PlanetGenerator {
     public spheres: GeneratorSphere[] = [];
 
     constructor(planet: Planet, private _mountainHeight: number) {
+        super(planet);
         let timers: number[];
         let logOutput: string;
         let useLog = DebugDefine.LOG_PLANETMAP_PERFORMANCE;
@@ -16,7 +17,6 @@ class PlanetGeneratorEarth extends PlanetGenerator {
             timers.push(performance.now());
             logOutput = "PlanetGeneratorEarth constructor for " + planet.name;
         }
-        super(planet);
         this._mainHeightMap = PlanetHeightMap.CreateMap(planet.degree);
         if (useLog) {
             timers.push(performance.now());

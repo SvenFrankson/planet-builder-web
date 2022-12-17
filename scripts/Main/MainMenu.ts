@@ -76,14 +76,6 @@ class MainMenu extends Main {
 			let side = PlanetTools.PlanetPositionToPlanetSide(mainMenuPlanet, dir);
 			let globalIJK = PlanetTools.PlanetDirectionToGlobalIJK(mainMenuPlanet, dir);
 			let pos = PlanetTools.GlobalIJKToPlanetPosition(side, globalIJK);
-
-			let mainPanel = new MainMenuPanel(100, this);
-			mainPanel.instantiate();
-			mainPanel.register();
-			mainPanel.planet = mainMenuPlanet;
-			mainPanel.setPosition(pos);
-			mainPanel.setTarget(new BABYLON.Vector3(0, 1.7 + this._testAltitude, - 0.8));
-			mainPanel.open();
 			
 			//let cubeTest = BABYLON.MeshBuilder.CreateBox("cube-test");
 			//cubeTest.position.copyFrom(pos);
@@ -107,7 +99,7 @@ class MainMenu extends Main {
 			this.planetSky.player = this.player;
 
 			PlanetChunckVertexData.InitializeData().then(
-				() => {
+				async () => {
 
 					this.generatePlanets();
 
@@ -117,9 +109,17 @@ class MainMenu extends Main {
 					
 					this.inputManager.initialize(this.player);
 					
-					this.player.initialize();
+					await this.player.initialize();
 					this.player.registerControl();
 					//moon.register();
+
+					let mainPanel = new MainMenuPanel(100, this);
+					mainPanel.instantiate();
+					mainPanel.register();
+					mainPanel.planet = mainMenuPlanet;
+					mainPanel.setPosition(pos);
+					mainPanel.setTarget(new BABYLON.Vector3(0, 1.7 + this._testAltitude, - 0.8));
+					mainPanel.open();
 
 					if (useLog) {
 						timers.push(performance.now());
