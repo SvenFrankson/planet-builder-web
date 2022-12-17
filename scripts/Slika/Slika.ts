@@ -227,7 +227,6 @@ class SlikaImage extends SlikaElement {
         super();
         this._img = new Image();
         this._img.src = url;
-        console.log(url);
         this._img.onload = () => {
             this._isLoaded = true;
         };

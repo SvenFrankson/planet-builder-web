@@ -23,7 +23,19 @@ class MainMenu extends Main {
 	private _textPage: HoloPanel;
 
     public async initialize(): Promise<void> {
+		let timers: number[];
+        let logOutput: string;
+        let useLog = DebugDefine.LOG_GLOBAL_START_TIME_PERFORMANCE;
+        if (useLog) {
+            timers = [];
+            timers.push(performance.now());
+            logOutput = "main initialize starts at " + timers[0].toFixed(0) + " ms";
+        }
 		await super.initialize();
+        if (useLog) {
+            timers.push(performance.now());
+            logOutput += "\n  super.initialize executed in " + (timers[timers.length - 1] - timers[timers.length - 2]).toFixed(0) + " ms";
+        }
 
 		Config.chunckPartConfiguration.setFilename("round-smooth-chunck-parts", false);
 		Config.chunckPartConfiguration.useXZAxisRotation = false;
@@ -62,11 +74,8 @@ class MainMenu extends Main {
 			);
 			dir.copyFromFloats(0, 1, 0);
 			let side = PlanetTools.PlanetPositionToPlanetSide(mainMenuPlanet, dir);
-			console.log(side);
 			let globalIJK = PlanetTools.PlanetDirectionToGlobalIJK(mainMenuPlanet, dir);
-			console.log(globalIJK);
 			let pos = PlanetTools.GlobalIJKToPlanetPosition(side, globalIJK);
-			console.log(pos.toString());
 
 			let mainPanel = new MainMenuPanel(100, this);
 			mainPanel.instantiate();
@@ -112,6 +121,11 @@ class MainMenu extends Main {
 					this.player.registerControl();
 					//moon.register();
 
+					if (useLog) {
+						timers.push(performance.now());
+						logOutput += "initialize executed in " + (timers[timers.length - 1] - timers[timers.length - 2]).toFixed(0) + " ms";
+						console.log(logOutput);
+					}
 					resolve();
 				}
 			);
@@ -123,8 +137,8 @@ class MainMenu extends Main {
 	}
 
 	public async generatePlanets(): Promise<void> {
-		let orbitCount = 1;
-		let orbitRadius = 400;
+		let orbitCount = 5;
+		let orbitRadius = 500;
 		let alpha = 0;
 		for (let i = 0; i < orbitCount; i++) {
 			alpha += Math.PI * 0.5 + Math.PI * Math.random();

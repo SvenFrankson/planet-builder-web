@@ -439,12 +439,15 @@ class PlanetTools {
     ): { planetChunck: PlanetChunck; i: number; j: number; k: number } {
         let kPos = Math.floor(global.k / PlanetTools.CHUNCKSIZE);
         let degree = PlanetTools.KPosToDegree(kPos);
-        return {
-            planetChunck: planetSide.getChunck(Math.floor(global.i / PlanetTools.CHUNCKSIZE), Math.floor(global.j / PlanetTools.CHUNCKSIZE), kPos, degree) as PlanetChunck,
-            i: global.i % PlanetTools.CHUNCKSIZE,
-            j: global.j % PlanetTools.CHUNCKSIZE,
-            k: global.k % PlanetTools.CHUNCKSIZE,
-        };
+        let chunck = planetSide.getChunck(Math.floor(global.i / PlanetTools.CHUNCKSIZE), Math.floor(global.j / PlanetTools.CHUNCKSIZE), kPos, degree) as PlanetChunck;
+        if (chunck) {
+            return {
+                planetChunck: chunck,
+                i: global.i % PlanetTools.CHUNCKSIZE,
+                j: global.j % PlanetTools.CHUNCKSIZE,
+                k: global.k % PlanetTools.CHUNCKSIZE,
+            };
+        }
     }
     public static LocalIJKToGlobalIJK(planetChunck: PlanetChunck, localI: number, localJ: number, localK: number): { i: number; j: number; k: number };
     public static LocalIJKToGlobalIJK(localIJK: { planetChunck: PlanetChunck; i: number; j: number; k: number }): { i: number; j: number; k: number };

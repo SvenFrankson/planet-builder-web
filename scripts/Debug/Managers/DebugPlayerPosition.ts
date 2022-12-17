@@ -108,8 +108,8 @@ class DebugPlayerPosition {
             this._playerGlobalIJK.setValue(globalIJK);
     
             let localIJK = PlanetTools.GlobalIJKToLocalIJK(planetSide, globalIJK);
-            let chunck = localIJK.planetChunck;
-            if (chunck) {
+            if (localIJK) {
+                let chunck = localIJK.planetChunck;
                 this._playerChunck.setValue(chunck.iPos, chunck.jPos, chunck.kPos);
                 this._playerLocalIJK.setValue(localIJK);
             }

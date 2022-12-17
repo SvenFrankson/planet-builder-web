@@ -61,4 +61,22 @@ class SharedMaterials {
         }
         return SharedMaterials.blueMaterial;
     }
+
+    private static magentaMaterial: BABYLON.StandardMaterial;
+    public static MagentaMaterial(): BABYLON.StandardMaterial {
+        if (!SharedMaterials.magentaMaterial) {
+            SharedMaterials.magentaMaterial = new BABYLON.StandardMaterial("magentaMaterial", Game.Scene);
+            SharedMaterials.magentaMaterial.diffuseColor.copyFromFloats(1, 0, 1);
+        }
+        return SharedMaterials.magentaMaterial;
+    }
+
+    private static yellowMaterial: BABYLON.StandardMaterial;
+    public static YellowMaterial(): BABYLON.StandardMaterial {
+        if (!SharedMaterials.yellowMaterial) {
+            SharedMaterials.yellowMaterial = new BABYLON.StandardMaterial("yellowMaterial", Game.Scene);
+            SharedMaterials.yellowMaterial.diffuseColor.copyFromFloats(1, 1, 0);
+        }
+        return SharedMaterials.yellowMaterial;
+    }
 }

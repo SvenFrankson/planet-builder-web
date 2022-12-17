@@ -2,6 +2,7 @@ class PlanetMaterial extends BABYLON.ShaderMaterial {
 
     private _globalColor: BABYLON.Color3 = BABYLON.Color3.Black();
     private _terrainColors: BABYLON.Color3[];
+    private _terrainFillStyles: string[];
     private _useSeaLevelTexture: number;
     private _seaLevelTexture: BABYLON.Texture;
     private _useVertexColor: number;
@@ -32,6 +33,14 @@ class PlanetMaterial extends BABYLON.ShaderMaterial {
         this._terrainColors[BlockType.Wood] = new BABYLON.Color3(0.600, 0.302, 0.020);
         this._terrainColors[BlockType.Leaf] = new BABYLON.Color3(0.431, 0.839, 0.020);
         this._terrainColors[BlockType.Laterite] = new BABYLON.Color3(0.839, 0.431, 0.020);
+
+        this._terrainFillStyles = [];
+        for (let i = 0; i < this._terrainColors.length; i++) {
+            let color = this._terrainColors[i];
+            let fillStyle = "rgb(" + (color.r * 255).toFixed(0) + ", " + (color.g * 255).toFixed(0) + ", " + (color.b * 255).toFixed(0) + ")";
+            this._terrainFillStyles[i] = fillStyle;
+
+        }
         //this._terrainColors[BlockType.Grass] = BABYLON.Color3.FromHexString("#6C7237");
         //this._terrainColors[BlockType.Dirt] = BABYLON.Color3.FromHexString("#6D4B3C");
 
@@ -59,6 +68,8 @@ class PlanetMaterial extends BABYLON.ShaderMaterial {
 
     public setColor(blockType: BlockType, color: BABYLON.Color3): void {
         this._terrainColors[blockType].copyFrom(color);
+        let fillStyle = "rgb(" + (color.r * 255).toFixed(0) + ", " + (color.g * 255).toFixed(0) + ", " + (color.b * 255).toFixed(0) + ")";
+        this._terrainFillStyles[blockType] = fillStyle;
         this.setColor3Array("terrainColors", this._terrainColors);
     }
 
@@ -94,5 +105,9 @@ class PlanetMaterial extends BABYLON.ShaderMaterial {
     public setPlanetPos(p: BABYLON.Vector3): void {
         this._planetPos.copyFrom(p);
         this.setVector3("planetPos", this._planetPos);
+    }
+
+    public getFillStyle(blockType: BlockType): string {
+        return this._terrainFillStyles[blockType];
     }
 }

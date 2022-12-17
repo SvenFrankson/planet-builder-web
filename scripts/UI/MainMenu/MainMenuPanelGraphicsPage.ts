@@ -102,7 +102,6 @@ class MainMenuPanelGraphicsPage extends MainMenuPanelPage {
         );
         this.holoSlika.add(buttonBack);
 
-        console.log(confPreset);
         let buttonNext = new SlikaButton(
             "NEXT",
             new SPosition(700, 820),

@@ -35,7 +35,6 @@ class Planet extends BABYLON.Mesh {
         
         this.kPosMax = kPosMax;
         this.degree = PlanetTools.KPosToDegree(this.kPosMax);
-        console.log(this.name + " " + this.degree);
 
         this.seaLevel = Math.round(this.kPosMax * this.seaLevelRatio * PlanetTools.CHUNCKSIZE);
         this.seaAltitude = PlanetTools.KGlobalToAltitude(this.seaLevel);
@@ -60,20 +59,34 @@ class Planet extends BABYLON.Mesh {
     }
 
     public instantiate(): void {
+        let timers: number[];
+        let logOutput: string;
+        let useLog = DebugDefine.LOG_PLANET_INSTANTIATE_PERFORMANCE;
+        if (useLog) {
+            timers = [];
+            timers.push(performance.now());
+            logOutput = "instantiate planet " + this.name;
+        }
         this.chunckManager.initialize();
+        if (useLog) {
+            timers.push(performance.now());
+            logOutput += "\n  chunckManager initialized in " + (timers[1] - timers[0]).toFixed(0) + " ms";
+        }
         this.planetSides.forEach(planetSide => {
             planetSide.instantiate();
-        })
+        });
+        if (useLog) {
+            timers.push(performance.now());
+            logOutput += "\n  planetsides instantiated in " + (timers[2] - timers[1]).toFixed(0) + " ms";
+            logOutput += "\nplanet " + this.name + " instantiated in " + (timers[2] - timers[0]).toFixed(0) + " ms";
+            console.log(logOutput);
+        }
     }
 
     public register(): void {
         let chunckCount = 0;
-        let t0 = performance.now();
         for (let i = 0; i < this.planetSides.length; i++) {
             chunckCount += this.planetSides[i].register();
         }
-        let t1 = performance.now();
-        console.log("Planet " + this.name + " registered in " + (t1 - t0).toFixed(1) + "ms");
-        console.log("Planet " + this.name + " has " + chunckCount.toFixed(0) + " chuncks");
     }
 }

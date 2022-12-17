@@ -8,9 +8,20 @@ class PlanetGeneratorEarth extends PlanetGenerator {
     public spheres: GeneratorSphere[] = [];
 
     constructor(planet: Planet, private _mountainHeight: number) {
+        let timers: number[];
+        let logOutput: string;
+        let useLog = DebugDefine.LOG_PLANETMAP_PERFORMANCE;
+        if (useLog) {
+            timers = [];
+            timers.push(performance.now());
+            logOutput = "PlanetGeneratorEarth constructor for " + planet.name;
+        }
         super(planet);
-        console.log("Generator Degree = " + planet.degree);
         this._mainHeightMap = PlanetHeightMap.CreateMap(planet.degree);
+        if (useLog) {
+            timers.push(performance.now());
+            logOutput += "\n  _mainHeightMap created in " + (timers[timers.length - 1] - timers[timers.length - 2]).toFixed(0) + " ms";
+        }
 
         /*
         this._tunnelMap = PlanetHeightMap.CreateMap(
@@ -34,6 +45,11 @@ class PlanetGeneratorEarth extends PlanetGenerator {
 
         this.altitudeMap = PlanetHeightMap.CreateConstantMap(planet.degree, 0).addInPlace(this._mainHeightMap).multiplyInPlace(_mountainHeight).addInPlace(PlanetHeightMap.CreateConstantMap(planet.degree, this.planet.seaLevelRatio));
         this.altitudeMap.maxInPlace(PlanetHeightMap.CreateConstantMap(planet.degree, this.planet.seaLevelRatio));
+
+        if (useLog) {
+            timers.push(performance.now());
+            logOutput += "\n  altitudeMap created in " + (timers[timers.length - 1] - timers[timers.length - 2]).toFixed(0) + " ms";
+        }
         
         for (let i = 0; i < 100; i++) {
             let p = new BABYLON.Vector3(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5);
@@ -51,34 +67,62 @@ class PlanetGeneratorEarth extends PlanetGenerator {
                 //BABYLON.MeshBuilder.CreateLines("line", { points: [p, pBase]});
             }
         }
+        if (useLog) {
+            timers.push(performance.now());
+            logOutput += "\n  segments and spheres created in " + (timers[timers.length - 1] - timers[timers.length - 2]).toFixed(0) + " ms";
+            logOutput += "\nPlanetGeneratorEarth constructed in " + (timers[timers.length - 1] - timers[0]).toFixed(0) + " ms";
+            console.log(logOutput);
+        }
     }
 
     public getTexture(side: Side, size: number = 256): BABYLON.Texture {
+        let timers: number[];
+        let logOutput: string;
+        let useLog = DebugDefine.LOG_PLANETMAP_PERFORMANCE;
+        if (useLog) {
+            timers = [];
+            timers.push(performance.now());
+            logOutput = "PlanetGeneratorEarth getTexture for " + this.planet.name;
+        }
         let texture = new BABYLON.DynamicTexture("texture-" + side, size);
         let context = texture.getContext();
 
         let f = Math.pow(2, this._mainHeightMap.degree) / size;
 
+        let mainMaterial = SharedMaterials.MainMaterial();
+
         for (let i = 0; i < size; i++) {
             for (let j = 0; j < size; j++) {
                 let v = Math.floor(this.altitudeMap.getForSide(side, Math.floor(i * f), Math.floor(j * f)) * PlanetTools.CHUNCKSIZE * this.planet.kPosMax);
-                let color: BABYLON.Color3;
+                let blockType: BlockType = BlockType.None;
                 if (v < this.planet.seaLevel - 1) {
-                    color = SharedMaterials.MainMaterial().getColor(BlockType.Water);
+                    blockType = BlockType.Water;
                 }
                 else if (v < this.planet.seaLevel) {
-                    color = SharedMaterials.MainMaterial().getColor(BlockType.Sand);
+                    blockType = BlockType.Sand;
                 }
                 else {
-                    color = SharedMaterials.MainMaterial().getColor(BlockType.Grass);
+                    blockType = BlockType.Grass;
                 }
 
-                context.fillStyle = "rgb(" + (color.r * 255).toFixed(0) + ", " + (color.g * 255).toFixed(0) + ", " + (color.b * 255).toFixed(0) + ")";
+                context.fillStyle = mainMaterial.getFillStyle(blockType);
                 context.fillRect(i, j, 1, 1);
             }
         }
 
+        if (useLog) {
+            timers.push(performance.now());
+            logOutput += "\n context filled in " + (timers[timers.length - 1] - timers[timers.length - 2]).toFixed(0) + " ms";
+        }
+
         texture.update(false);
+
+        if (useLog) {
+            timers.push(performance.now());
+            logOutput += "\n  texture updated in " + (timers[timers.length - 1] - timers[timers.length - 2]).toFixed(0) + " ms";
+            logOutput += "\nPlanetGeneratorEarth getTexture completed in " + (timers[timers.length - 1] - timers[0]).toFixed(0) + " ms";
+            console.log(logOutput);
+        }
 
         return texture;
     }

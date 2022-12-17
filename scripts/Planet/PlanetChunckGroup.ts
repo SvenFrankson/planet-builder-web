@@ -99,11 +99,25 @@ class PlanetChunckGroup extends AbstractPlanetChunck {
         this.mesh = new BABYLON.Mesh(this.name);
 
         PlanetChunckMeshBuilder.BuildShellLevelVertexData(this).applyToMesh(this.mesh);
+        /*
         this.planetSide.onShellMaterialReady(() => {
             if (this.mesh && !this.mesh.isDisposed()) {
                 this.mesh.material = this.planetSide.shellMaterial;
             }
         })
+        */
+        if (this.level === 1) {
+            this.mesh.material = SharedMaterials.GreenMaterial();
+        }
+        if (this.level === 2) {
+            this.mesh.material = SharedMaterials.BlueMaterial();
+        }
+        if (this.level === 3) {
+            this.mesh.material = SharedMaterials.MagentaMaterial();
+        }
+        if (this.level === 4) {
+            this.mesh.material = SharedMaterials.YellowMaterial();
+        }
         this.mesh.parent = this.planetSide;
         this.mesh.freezeWorldMatrix();
         

@@ -49,7 +49,6 @@ class VertexDataLoader {
                 return 0;
             }
         )
-        console.log(loadedFileMeshes.map(l => { return l.name; }));
         for (let i = 0; i < loadedFileMeshes.length; i++) {
             let loadedMesh = loadedFileMeshes[i];
             if (loadedMesh instanceof BABYLON.Mesh) {

@@ -99,7 +99,6 @@ class PlanetGeneratorHole extends PlanetGenerator {
 
     constructor(planet: Planet, number, private _mountainHeight: number, private _holeWorldPosition: BABYLON.Vector3, private _holeRadius: number) {
         super(planet);
-        console.log("Generator Degree = " + planet.degree);
         this._mainHeightMap = PlanetHeightMap.CreateMap(planet.degree);
         this._sqrRadius = this._holeRadius * this._holeRadius;
     }

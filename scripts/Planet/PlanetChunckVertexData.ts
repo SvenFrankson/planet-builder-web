@@ -675,6 +675,15 @@ class PlanetChunckVertexData {
     }
 
     public static async InitializeData(): Promise<boolean> {
+        
+        let timers: number[];
+        let logOutput: string;
+        let useLog = DebugDefine.LOG_CHUNCK_VERTEXDATA_INIT_PERFORMANCE;
+        if (useLog) {
+            timers = [];
+            timers.push(performance.now());
+            logOutput = "initialize chunck vertex data " + this.name;
+        }
         for (let lod = Config.chunckPartConfiguration.lodMin; lod <= Config.chunckPartConfiguration.lodMax; lod++) {
             await PlanetChunckVertexData._LoadChunckVertexDatasFromFile(lod, Config.chunckPartConfiguration.useXZAxisRotation);
             if (Config.chunckPartConfiguration.useXZAxisRotation) {
@@ -683,6 +692,15 @@ class PlanetChunckVertexData {
             else {
                 PlanetChunckVertexData._LoadComposedChunckVertexDatasNoXZAxisRotation(lod, Config.chunckPartConfiguration.useXZAxisRotation);
             }
+            if (useLog) {
+                timers.push(performance.now());
+                logOutput += "\n  lod " + lod + " loaded in " + (timers[timers.length - 1] - timers[timers.length - 2]).toFixed(0) + " ms";
+            }
+        }
+        if (useLog) {
+            timers.push(performance.now());
+            logOutput += "\nchunck vertex data initialized in " + (timers[timers.length - 1] - timers[0]).toFixed(0) + " ms";
+            console.log(logOutput);
         }
 
         return true;
