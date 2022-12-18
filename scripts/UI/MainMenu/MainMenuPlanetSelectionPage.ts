@@ -149,6 +149,7 @@ class MainMenuPlanetSelectionPage extends MainMenuPanelPage {
         }
         this.holoSlika.add(buttonGo);
 
+        /*
         let buttonKillChunckManagers = new SlikaButton(
             "K",
             new SPosition(80, 270),
@@ -163,6 +164,7 @@ class MainMenuPlanetSelectionPage extends MainMenuPanelPage {
             });
         }
         this.holoSlika.add(buttonKillChunckManagers);
+        */
 
         this.elements.push(title1, buttonLeft, buttonRight, this.planetNameElement, planetImage, this.locationImage, this.planetDescElement, buttonBack, buttonGo);
     }

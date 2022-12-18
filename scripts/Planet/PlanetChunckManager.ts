@@ -60,17 +60,17 @@ class PlanetChunckManager {
 
         this.scene.onBeforeRenderObservable.add(this._update);
 
-        /*
         Config.performanceConfiguration.onLodConfigChangedCallbacks.push(() => {
-            for (let layerIndex = 0; layerIndex < this._layersCount - 1; layerIndex++) {
-                let layer = this._layers[layerIndex];
-                if (layer && layer[0] && layer[0] instanceof PlanetChunck) {
-                    this._layers[this._layers.length - 1].push(...layer);
-                    layer.length = 0;
-                }
+            this._layersCount = Config.performanceConfiguration.lodRanges.length;
+            this._layersCursors = [];
+            this._lodLayersSqrDistances = [];
+            for (let i = 0; i < this._layersCount - 1; i++) {
+                this._layersCursors[i] = 0;
+                this._lodLayersSqrDistances[i] = Config.performanceConfiguration.lodRanges[i] * Config.performanceConfiguration.lodRanges[i];
             }
+            this._layersCursors[this._layersCount - 1] = 0;
+            this._lodLayersSqrDistances[this._layersCount - 1] = Infinity;
         });
-        */
     }
 
     public dispose(): void {

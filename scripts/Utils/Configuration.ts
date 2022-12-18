@@ -50,9 +50,17 @@ class ConfigurationChunckPart {
 
 class ConfigurationPerformance {
 
-    public lodRanges: number[] = [50, 100, 200, 400, 800, 1600];
+    public lodRanges: number[] = [40, 80, 160, 320, 640, 1280];
+    public setLodRanges(v: number[], ignoreCallback?: boolean): void {
+        this.lodRanges = v;
+        if (!ignoreCallback) {
+            this.onLodConfigChangedCallbacks.forEach(c => {
+                c();
+            });
+        }
+    }
 
-    private _lodMin: number = 0;
+    private _lodMin: number = 1;
     public get lodMin(): number {
         return this._lodMin;
     }
@@ -65,7 +73,7 @@ class ConfigurationPerformance {
         }
     }
 
-    private _lodCount: number = 2;
+    private _lodCount: number = 1;
     public get lodCount(): number {
         return this._lodCount;
     }
@@ -127,24 +135,21 @@ class Configuration {
     public uiConfiguration: ConfigurationUI = new ConfigurationUI();
 
     public setConfHighPreset(): void {
-        this.performanceConfiguration.setLodCount(1, true);
-        this.performanceConfiguration.setLodMin(0);
+        this.performanceConfiguration.setLodRanges([80, 160, 320, 640, 1280, 2560]);
         this.performanceConfiguration.setHoloScreenFactor(1);
         this.confPreset = ConfigurationPreset.High;
         window.localStorage.setItem("graphic-setting-preset", this.confPreset);
     }
     
     public setConfMediumPreset(): void {
-        this.performanceConfiguration.setLodCount(1, true);
-        this.performanceConfiguration.setLodMin(1);
+        this.performanceConfiguration.setLodRanges([60, 120, 240, 480, 960, 1920]);
         this.performanceConfiguration.setHoloScreenFactor(0.75);
         this.confPreset = ConfigurationPreset.Medium;
         window.localStorage.setItem("graphic-setting-preset", this.confPreset);
     }
     
     public setConfLowPreset(): void {
-        this.performanceConfiguration.setLodCount(1, true);
-        this.performanceConfiguration.setLodMin(2);
+        this.performanceConfiguration.setLodRanges([40, 80, 160, 320, 640, 1280]);
         this.performanceConfiguration.setHoloScreenFactor(0.5);
         this.confPreset = ConfigurationPreset.Low;
         window.localStorage.setItem("graphic-setting-preset", this.confPreset);
