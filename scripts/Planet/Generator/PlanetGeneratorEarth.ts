@@ -22,6 +22,7 @@ class PlanetGeneratorEarth extends PlanetGenerator {
             timers.push(performance.now());
             logOutput += "\n  _mainHeightMap created in " + (timers[timers.length - 1] - timers[timers.length - 2]).toFixed(0) + " ms";
         }
+        this._mainHeightMap.addInPlace(PlanetHeightMap.CreateConstantMap(planet.degree, 1 / planet.kPosMax));
 
         /*
         this._tunnelMap = PlanetHeightMap.CreateMap(
@@ -135,6 +136,7 @@ class PlanetGeneratorEarth extends PlanetGenerator {
         let intersectingElements: GeneratorElement[] = this.getIntersectingElements(chunck);
 
         for (let i: number = 0; i < PlanetTools.CHUNCKSIZE; i++) {
+            //let globalI = i + chunck.iPos * PlanetTools.CHUNCKSIZE;
             refData[i - chunck.firstI] = [];
             for (let j: number = 0; j < PlanetTools.CHUNCKSIZE; j++) {
                 refData[i - chunck.firstI][j - chunck.firstJ] = [];
@@ -168,6 +170,9 @@ class PlanetGeneratorEarth extends PlanetGenerator {
                 }
                 */
 
+                //let globalJ = j + chunck.jPos * PlanetTools.CHUNCKSIZE;
+                //let latitude = PlanetTools.GlobalIJToLatitude(chunck.planetSide, chunck.size, globalI, globalJ);
+
                 for (let k: number = 0; k < PlanetTools.CHUNCKSIZE; k++) {
                     let globalK = k + chunck.kPos * PlanetTools.CHUNCKSIZE;
 
@@ -182,7 +187,7 @@ class PlanetGeneratorEarth extends PlanetGenerator {
                         }
                     }
 
-                    if (globalK < this.planet.seaLevel) {
+                    if (globalK <= this.planet.seaLevel) {
                         refData[i - chunck.firstI][j - chunck.firstJ][k - chunck.firstK] = BlockType.Water;
                     }
 

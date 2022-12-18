@@ -433,6 +433,17 @@ class PlanetTools {
         return p;
     }
 
+    public static GlobalIJToLatitude(
+        planetSide: PlanetSide,
+        size: number,
+        globalI: number,
+        globalJ: number
+    ): number {
+        let planetDirection = PlanetTools.EvaluateVertex(size, globalI + 0.5, globalJ + 0.5);
+        VMath.RotateVectorByQuaternionToRef(planetDirection, planetSide.rotationQuaternion, planetDirection);
+        return Math.asin(planetDirection.y) / Math.PI * 180;
+    }
+
     public static GlobalIJKToLocalIJK(
         planetSide: PlanetSide,
         global: { i: number; j: number; k: number }

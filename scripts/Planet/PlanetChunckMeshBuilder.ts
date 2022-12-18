@@ -718,7 +718,7 @@ class PlanetChunckMeshBuilder {
                     altOffset = - 0.2 * levelCoef;
                 }
                 let h00 = Math.floor(chunck.planet.generator.altitudeMap.getForSide(chunck.side, i0 * f, j0 * f) * chunck.kPosMax * PlanetTools.CHUNCKSIZE);
-                p00.scaleInPlace(PlanetTools.KGlobalToAltitude(h00 + 1) + altOffset);
+                p00.scaleInPlace(PlanetTools.KGlobalToAltitude(h00) + altOffset);
                 positions.push(p00.x, p00.y, p00.z);
 
                 uvs.push(i0 / chunck.size);
