@@ -11,9 +11,9 @@ in vec4 vColor;
 out vec4 outColor;
  
 void main() {
-   float sunLightFactor = max(dot(vNormalW, lightInvDirW), 0.0);
+   float sunLightFactor = max((dot(vNormalW, lightInvDirW) + 0.5) / 1.5, 0.0);
 
-   float lightFactor = round(sunLightFactor * 4.) / 4.;
+   float lightFactor = round(sunLightFactor * 5.) / 5.;
 
    vec3 color = vColor.rgb;
 
