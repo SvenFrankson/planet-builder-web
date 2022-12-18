@@ -245,11 +245,11 @@ class Player extends BABYLON.Mesh {
                     this.targetLook = undefined;
                 }
             }
-            let a = VMath.AngleFromToAround(forward, targetForward, this.upDirection) / Math.PI * 0.5;
+            let a = VMath.AngleFromToAround(forward, targetForward, this.upDirection) / Math.PI;
             if (isFinite(a)) {
                 this.inputHeadRight += a;
             }
-            a = VMath.AngleFromToAround(forward, targetForward, this._rightDirection) / Math.PI * 0.5;
+            a = VMath.AngleFromToAround(forward, targetForward, this._rightDirection) / Math.PI;
             if (isFinite(a)) {
                 this.inputHeadUp += a;
             }
@@ -391,7 +391,7 @@ class Player extends BABYLON.Mesh {
             else {
                 this._lastDistToTarget = dist;
                 this._controlFactor.normalize();
-                this._controlFactor.scaleInPlace((dist * 10 / this.mass) * deltaTime);
+                this._controlFactor.scaleInPlace((dist * 20 / this.mass) * deltaTime);
                 fLat = 0.2;
             }
         }
