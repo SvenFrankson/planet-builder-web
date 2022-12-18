@@ -149,7 +149,6 @@ class MainMenuPlanetSelectionPage extends MainMenuPanelPage {
         }
         this.holoSlika.add(buttonGo);
 
-        /*
         let buttonKillChunckManagers = new SlikaButton(
             "K",
             new SPosition(80, 270),
@@ -164,7 +163,6 @@ class MainMenuPlanetSelectionPage extends MainMenuPanelPage {
             });
         }
         this.holoSlika.add(buttonKillChunckManagers);
-        */
 
         this.elements.push(title1, buttonLeft, buttonRight, this.planetNameElement, planetImage, this.locationImage, this.planetDescElement, buttonBack, buttonGo);
     }
@@ -178,7 +176,7 @@ class MainMenuPlanetSelectionPage extends MainMenuPanelPage {
             this.locationImage.display = false;
         }
         this.planetNames = this.mainMenuPanel.main.planets.map(p => { return p.name; });
-        this.planetDescriptions = this.mainMenuPanel.main.planets.map(p => { return "\n- radius : " + p.seaAltitude.toFixed(0) + "m\n" });
+        this.planetDescriptions = this.mainMenuPanel.main.planets.map(p => { return "\n- radius : " + p.seaAltitude.toFixed(0) + "m\n- seaLevel : " + p.seaLevel.toFixed(0) + "m\n" });
         this.planetDescElement.prop.text = this.planetDescriptions[this.currentPlanetIndex];
         this.planetNameElement.prop.text = "id: " + this.planetNames[this.currentPlanetIndex];
         /*"\n- radius : 623m\n\n- type : dry\n\n- moons : 0"*/

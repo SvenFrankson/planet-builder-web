@@ -1,3 +1,9 @@
+// Notice : Adding a BlockType
+// 1) BlockType in the enum
+// 2) BlockTypeNames in the list
+// 3) Incrementing array size in terrainToon fragment shader
+// 4) Initializing with a color in PlanetMaterial.ts 
+
 var BlockTypeNames: string[] = [
     "None",
     "Water",
@@ -8,6 +14,9 @@ var BlockTypeNames: string[] = [
     "Wood",
     "Leaf",
     "Laterite",
+    "Basalt",
+    "Snow",
+    "Ice",
     "Unknown"
 ];
 
@@ -21,5 +30,8 @@ enum BlockType {
     Wood,
     Leaf,
     Laterite,
+    Basalt,
+    Snow,
+    Ice,
     Unknown
 }

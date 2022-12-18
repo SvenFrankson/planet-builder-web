@@ -1,7 +1,9 @@
 enum PlanetGeneratorType {
     Moon,
     Earth,
-    Mars
+    Mars,
+    Cold,
+    Minimal
 }
 
 class PlanetGeneratorFactory {
@@ -11,11 +13,15 @@ class PlanetGeneratorFactory {
     public static Create(position: BABYLON.Vector3, type: PlanetGeneratorType, kPosMax: number, scene: BABYLON.Scene): Planet {
         let name = "paulita-" + Math.floor(Math.random() * 1000).toString(16) + "-" + PlanetGeneratorFactory.Counter.toFixed(0);
         PlanetGeneratorFactory.Counter++;
+        let seaLevelRatio = 0.6;
+        if (type === PlanetGeneratorType.Minimal) {
+            seaLevelRatio = 0;
+        }
         let planet = new Planet(
             name,
             position,
             kPosMax,
-            0.6,
+            seaLevelRatio,
             scene, 
             (p) => {
                 if (type === PlanetGeneratorType.Moon) {
@@ -26,6 +32,12 @@ class PlanetGeneratorFactory {
                 }
                 else if (type === PlanetGeneratorType.Mars) {
                     return new PlanetGeneratorMars(p, 0.1);
+                }
+                else if (type === PlanetGeneratorType.Cold) {
+                    return new PlanetGeneratorCold(p, 0.08);
+                }
+                else if (type === PlanetGeneratorType.Minimal) {
+                    return new PlanetGeneratorMinimal(p);
                 }
                 else {
                     debugger;

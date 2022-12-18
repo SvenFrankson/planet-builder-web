@@ -1,4 +1,4 @@
-class PlanetGeneratorEarth extends PlanetGenerator {
+class PlanetGeneratorCold extends PlanetGenerator {
 
     private _mainHeightMap: PlanetHeightMap;
     //private _tunnelMap: PlanetHeightMap;
@@ -15,7 +15,7 @@ class PlanetGeneratorEarth extends PlanetGenerator {
         if (useLog) {
             timers = [];
             timers.push(performance.now());
-            logOutput = "PlanetGeneratorEarth constructor for " + planet.name;
+            logOutput = "PlanetGeneratorCold constructor for " + planet.name;
         }
         this._mainHeightMap = PlanetHeightMap.CreateMap(planet.degree);
         if (useLog) {
@@ -49,8 +49,10 @@ class PlanetGeneratorEarth extends PlanetGenerator {
         if (useLog) {
             timers.push(performance.now());
             logOutput += "\n  altitudeMap created in " + (timers[timers.length - 1] - timers[timers.length - 2]).toFixed(0) + " ms";
+            logOutput += "\nPlanetGeneratorCold constructed in " + (timers[timers.length - 1] - timers[0]).toFixed(0) + " ms";
+            console.log(logOutput);
         }
-        
+        /*
         for (let i = 0; i < 100; i++) {
             let p = new BABYLON.Vector3(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5);
             p.normalize();
@@ -70,9 +72,8 @@ class PlanetGeneratorEarth extends PlanetGenerator {
         if (useLog) {
             timers.push(performance.now());
             logOutput += "\n  segments and spheres created in " + (timers[timers.length - 1] - timers[timers.length - 2]).toFixed(0) + " ms";
-            logOutput += "\nPlanetGeneratorEarth constructed in " + (timers[timers.length - 1] - timers[0]).toFixed(0) + " ms";
-            console.log(logOutput);
         }
+        */
     }
 
     public getTexture(side: Side, size: number): BABYLON.Texture {
@@ -82,7 +83,7 @@ class PlanetGeneratorEarth extends PlanetGenerator {
         if (useLog) {
             timers = [];
             timers.push(performance.now());
-            logOutput = "PlanetGeneratorEarth getTexture for " + this.planet.name;
+            logOutput = "PlanetGeneratorCold getTexture for " + this.planet.name;
         }
         let texture = new BABYLON.DynamicTexture("texture-" + side, size);
         let context = texture.getContext();
@@ -98,11 +99,11 @@ class PlanetGeneratorEarth extends PlanetGenerator {
             for (let j = 0; j < size; j++) {
                 let v = Math.floor(this.altitudeMap.getForSide(side, Math.floor(i * f), Math.floor(j * f)) * PlanetTools.CHUNCKSIZE * this.planet.kPosMax);
                 let blockType: BlockType = BlockType.None;
-                if (v === this.planet.seaLevel + 1) {
-                    blockType = BlockType.Sand;
+                if (v === this.planet.seaLevel) {
+                    blockType = BlockType.Rock;
                 }
-                else if (v > this.planet.seaLevel + 1) {
-                    blockType = BlockType.Grass;
+                else if (v > this.planet.seaLevel) {
+                    blockType = BlockType.Snow;
                 }
 
                 if (blockType != BlockType.None) {
@@ -122,7 +123,7 @@ class PlanetGeneratorEarth extends PlanetGenerator {
         if (useLog) {
             timers.push(performance.now());
             logOutput += "\n  texture updated in " + (timers[timers.length - 1] - timers[timers.length - 2]).toFixed(0) + " ms";
-            logOutput += "\nPlanetGeneratorEarth getTexture completed in " + (timers[timers.length - 1] - timers[0]).toFixed(0) + " ms";
+            logOutput += "\nPlanetGeneratorCold getTexture completed in " + (timers[timers.length - 1] - timers[0]).toFixed(0) + " ms";
             console.log(logOutput);
         }
 
@@ -188,11 +189,11 @@ class PlanetGeneratorEarth extends PlanetGenerator {
 
                     if (globalK <= altitude) {
                         if (globalK > altitude - 2) {
-                            if (globalK <= this.planet.seaLevel) {
-                                refData[i - chunck.firstI][j - chunck.firstJ][k - chunck.firstK] = BlockType.Sand;
+                            if (globalK < this.planet.seaLevel) {
+                                refData[i - chunck.firstI][j - chunck.firstJ][k - chunck.firstK] = BlockType.Rock;
                             }
                             else {
-                                refData[i - chunck.firstI][j - chunck.firstJ][k - chunck.firstK] = BlockType.Grass;
+                                refData[i - chunck.firstI][j - chunck.firstJ][k - chunck.firstK] = BlockType.Snow;
                             }
                         }
                         else {
@@ -220,7 +221,7 @@ class PlanetGeneratorEarth extends PlanetGenerator {
                     }
                     */
 
-                    if (refData[i - chunck.firstI][j - chunck.firstJ][k - chunck.firstK] === BlockType.None && globalK <= this.planet.seaLevel) {
+                    if (refData[i - chunck.firstI][j - chunck.firstJ][k - chunck.firstK] === BlockType.None && globalK < this.planet.seaLevel) {
                         refData[i - chunck.firstI][j - chunck.firstJ][k - chunck.firstK] = BlockType.Water;
                     }
                 }

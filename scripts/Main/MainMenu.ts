@@ -63,7 +63,7 @@ class MainMenu extends Main {
 			//testGrab.position = new BABYLON.Vector3(- 0.3, this._testAltitude + 1.1, - 0.1);
 			//testGrab.instantiate();
 			
-			let mainMenuPlanet: Planet = PlanetGeneratorFactory.Create(BABYLON.Vector3.Zero(), PlanetGeneratorType.Earth, 6, this.scene);
+			let mainMenuPlanet: Planet = PlanetGeneratorFactory.Create(BABYLON.Vector3.Zero(), PlanetGeneratorType.Minimal, 6, this.scene);
 			mainMenuPlanet.instantiate();
 			this.planets = [mainMenuPlanet];
 			
@@ -112,7 +112,10 @@ class MainMenu extends Main {
 					this.onChunckManagerNotWorking(async () => {
 						await this.player.initialize();
 						this.player.registerControl();
-					})
+					});
+						
+					let debugAltimeter = new Altimeter3D(this.player);
+					debugAltimeter.instantiate();
 
 					let mainPanel = new MainMenuPanel(100, this);
 					mainPanel.instantiate();
@@ -144,7 +147,8 @@ class MainMenu extends Main {
 		for (let i = 0; i < orbitCount; i++) {
 			alpha += Math.PI * 0.5 + Math.PI * Math.random();
 			let kPosMax = Math.floor(3 + 12 * Math.random());
-			let planet: Planet = PlanetGeneratorFactory.Create(new BABYLON.Vector3(Math.cos(alpha) * orbitRadius * (i + 1), 0, Math.sin(alpha) * orbitRadius * (i + 1)), Math.floor(Math.random() * 2 + 1), kPosMax, this.scene);
+			//let planet: Planet = PlanetGeneratorFactory.Create(new BABYLON.Vector3(Math.cos(alpha) * orbitRadius * (i + 1), 0, Math.sin(alpha) * orbitRadius * (i + 1)), Math.floor(Math.random() * 2 + 1), kPosMax, this.scene);
+			let planet: Planet = PlanetGeneratorFactory.Create(new BABYLON.Vector3(Math.cos(alpha) * orbitRadius * (i + 1), 0, Math.sin(alpha) * orbitRadius * (i + 1)), PlanetGeneratorType.Earth, kPosMax, this.scene);
 			planet.instantiate();
 			this.planets.push(planet);
 		}

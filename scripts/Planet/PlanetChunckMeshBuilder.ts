@@ -380,12 +380,13 @@ class PlanetChunckMeshBuilder {
                             ref |= 0b1 << 7;
                         }
 
+                        let iGlobal: number = i + iPos * PlanetTools.CHUNCKSIZE;
+                        let jGlobal: number = j + jPos * PlanetTools.CHUNCKSIZE;
+                        let kGlobal = (k + kPos * PlanetTools.CHUNCKSIZE);
+
                         // Water case
                         if (d0 === BlockType.Water && d4 === BlockType.None || d1 === BlockType.Water && d5 === BlockType.None || d2 === BlockType.Water && d6 === BlockType.None || d3 === BlockType.Water && d7 === BlockType.None) {
-                            let iGlobal: number = i + iPos * PlanetTools.CHUNCKSIZE;
-                            let jGlobal: number = j + jPos * PlanetTools.CHUNCKSIZE;
-                            let hGlobal = (k + kPos * PlanetTools.CHUNCKSIZE);
-                            let altitude = PlanetTools.KGlobalToAltitude(hGlobal) * 0.5 + PlanetTools.KGlobalToAltitude(hGlobal + 1) * 0.5;
+                            let altitude = PlanetTools.KGlobalToAltitude(kGlobal) * 0.5 + PlanetTools.KGlobalToAltitude(kGlobal + 1) * 0.5;
 
                             PCMB.GetVertexToRef(2 * size, 2 * (iGlobal) + 1, 2 * (jGlobal) + 1, PCMB.tmpVertices[0]);
                             PCMB.GetVertexToRef(2 * size, 2 * (iGlobal) + 1, 2 * (jGlobal + 1) + 1, PCMB.tmpVertices[1]);
@@ -421,8 +422,6 @@ class PlanetChunckMeshBuilder {
                         }
                         let partVertexData = extendedpartVertexData.vertexData;
     
-                        let iGlobal: number = i + iPos * PlanetTools.CHUNCKSIZE;
-                        let jGlobal: number = j + jPos * PlanetTools.CHUNCKSIZE;
                         PCMB.GetVertexToRef(2 * size, 2 * (iGlobal) + 1, 2 * (jGlobal) + 1, PCMB.tmpVertices[0]);
                         PCMB.GetVertexToRef(2 * size, 2 * (iGlobal + 1) + 1, 2 * (jGlobal) + 1, PCMB.tmpVertices[1]);
                         PCMB.GetVertexToRef(2 * size, 2 * (iGlobal + 1) + 1, 2 * (jGlobal + 1) + 1, PCMB.tmpVertices[2]);
@@ -437,19 +436,18 @@ class PlanetChunckMeshBuilder {
                         }
                         */
     
-                        let hGlobal = (k + kPos * PlanetTools.CHUNCKSIZE + 1);
-                        let hLow = PlanetTools.KGlobalToAltitude(hGlobal - 1) * 0.5 + PlanetTools.KGlobalToAltitude(hGlobal) * 0.5;
-                        let hHigh = PlanetTools.KGlobalToAltitude(hGlobal) * 0.5 + PlanetTools.KGlobalToAltitude(hGlobal + 1) * 0.5;
+                        let altLow = PlanetTools.KGlobalToAltitude(kGlobal) * 0.5 + PlanetTools.KGlobalToAltitude(kGlobal + 1) * 0.5;
+                        let altHigh = PlanetTools.KGlobalToAltitude(kGlobal + 1) * 0.5 + PlanetTools.KGlobalToAltitude(kGlobal + 2) * 0.5;
     
-                        PCMB.tmpVertices[0].scaleToRef(hHigh/* + Math.sin(iGlobal * 10000 + jGlobal * 5000 + (hGlobal + 1) * 20000) * 0.15*/, PCMB.tmpVertices[4]);
-                        PCMB.tmpVertices[1].scaleToRef(hHigh/* + Math.sin((iGlobal + 1) * 10000 + jGlobal * 5000 + (hGlobal + 1) * 20000) * 0.15*/, PCMB.tmpVertices[5]);
-                        PCMB.tmpVertices[2].scaleToRef(hHigh/* + Math.sin((iGlobal + 1) * 10000 + (jGlobal + 1) * 5000 + (hGlobal + 1) * 20000) * 0.15*/, PCMB.tmpVertices[6]);
-                        PCMB.tmpVertices[3].scaleToRef(hHigh/* + Math.sin(iGlobal * 10000 + (jGlobal + 1) * 5000 + (hGlobal + 1) * 20000) * 0.15*/, PCMB.tmpVertices[7]);
+                        PCMB.tmpVertices[0].scaleToRef(altHigh/* + Math.sin(iGlobal * 10000 + jGlobal * 5000 + (hGlobal + 1) * 20000) * 0.15*/, PCMB.tmpVertices[4]);
+                        PCMB.tmpVertices[1].scaleToRef(altHigh/* + Math.sin((iGlobal + 1) * 10000 + jGlobal * 5000 + (hGlobal + 1) * 20000) * 0.15*/, PCMB.tmpVertices[5]);
+                        PCMB.tmpVertices[2].scaleToRef(altHigh/* + Math.sin((iGlobal + 1) * 10000 + (jGlobal + 1) * 5000 + (hGlobal + 1) * 20000) * 0.15*/, PCMB.tmpVertices[6]);
+                        PCMB.tmpVertices[3].scaleToRef(altHigh/* + Math.sin(iGlobal * 10000 + (jGlobal + 1) * 5000 + (hGlobal + 1) * 20000) * 0.15*/, PCMB.tmpVertices[7]);
     
-                        PCMB.tmpVertices[0].scaleInPlace(hLow/* + Math.sin(iGlobal * 10000 + jGlobal * 5000 + hGlobal * 20000) * 0.15*/);
-                        PCMB.tmpVertices[1].scaleInPlace(hLow/* + Math.sin((iGlobal + 1) * 10000 + jGlobal * 5000 + hGlobal * 20000) * 0.15*/);
-                        PCMB.tmpVertices[2].scaleInPlace(hLow/* + Math.sin((iGlobal + 1) * 10000 + (jGlobal + 1) * 5000 + hGlobal * 20000) * 0.15*/);
-                        PCMB.tmpVertices[3].scaleInPlace(hLow/* + Math.sin(iGlobal * 10000 + (jGlobal + 1) * 5000 + hGlobal * 20000) * 0.15*/);
+                        PCMB.tmpVertices[0].scaleInPlace(altLow/* + Math.sin(iGlobal * 10000 + jGlobal * 5000 + hGlobal * 20000) * 0.15*/);
+                        PCMB.tmpVertices[1].scaleInPlace(altLow/* + Math.sin((iGlobal + 1) * 10000 + jGlobal * 5000 + hGlobal * 20000) * 0.15*/);
+                        PCMB.tmpVertices[2].scaleInPlace(altLow/* + Math.sin((iGlobal + 1) * 10000 + (jGlobal + 1) * 5000 + hGlobal * 20000) * 0.15*/);
+                        PCMB.tmpVertices[3].scaleInPlace(altLow/* + Math.sin(iGlobal * 10000 + (jGlobal + 1) * 5000 + hGlobal * 20000) * 0.15*/);
 
                         /*
                         let center = BABYLON.Vector3.Zero();
@@ -874,7 +872,7 @@ class PlanetChunckMeshBuilder {
                         PCMB.GetVertexToRef(size, y + 1, z, PCMB.tmpVertices[2]);
                         PCMB.GetVertexToRef(size, y + 1, z + 1, PCMB.tmpVertices[3]);
 
-                        let hGlobal = (k + kPos * PlanetTools.CHUNCKSIZE + 1);
+                        let hGlobal = (k + kPos * PlanetTools.CHUNCKSIZE);
                         let hLow = PlanetTools.KGlobalToAltitude(hGlobal);
                         let hHigh = PlanetTools.KGlobalToAltitude(hGlobal + 1);
 

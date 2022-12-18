@@ -69,7 +69,7 @@ class DebugPlayerPosition {
     }
 
     private _update = () => {
-        let position = this.player.position.clone();
+        let position = this.player.position.clone().add(this.player.upDirection.scale(0.1));
         let longitude = - VMath.AngleFromToAround(BABYLON.Axis.Z, position, BABYLON.Axis.Y) / Math.PI * 180;
         let latitude = 0;
         let heading = 0;

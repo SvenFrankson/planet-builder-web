@@ -36,7 +36,7 @@ class Planet extends BABYLON.Mesh {
         this.kPosMax = kPosMax;
         this.degree = PlanetTools.KPosToDegree(this.kPosMax);
 
-        this.seaLevel = Math.round(this.kPosMax * this.seaLevelRatio * PlanetTools.CHUNCKSIZE);
+        this.seaLevel = Math.floor(this.kPosMax * this.seaLevelRatio * PlanetTools.CHUNCKSIZE);
         this.seaAltitude = PlanetTools.KGlobalToAltitude(this.seaLevel);
 		
         this.generator = createGenerator(this);

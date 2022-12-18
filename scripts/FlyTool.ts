@@ -129,7 +129,7 @@ class FlyTool {
                 let dir = wp.subtract(flightPlan.waypoints[index - 1]).normalize();
                 let dist = BABYLON.Vector3.Dot(player.position.subtract(flightPlan.from), totalDir);
                 let f = dist / totalDist;
-                let speed = Math.sin(f * Math.PI) * 25 + 5;
+                let speed = Math.sin(f * Math.PI) * 45 + 10;
 
                 let up = takeOffUp.scale(1 - f).add(landingUp.scale(f)).normalize();
 

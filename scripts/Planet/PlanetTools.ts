@@ -635,6 +635,9 @@ class PlanetTools {
     }
 
     public static KGlobalToAltitude(kGlobal: number): number {
+        if (kGlobal < 0) {
+            return 13.4 - 0.5;
+        }
         let degree = PlanetTools.KGlobalToDegree(kGlobal);
         let altitudes = PlanetTools.Altitudes[degree];
         let summedLength = PlanetTools.SummedBSizesLength[degree];
