@@ -24,27 +24,8 @@ class MainMenuPanel extends HoloPanel {
         let L5 = 200;
         let L6 = 300;
 
-        this.pointerElement.min = new SPosition(M + 5, M + 5);
-        this.pointerElement.max = new SPosition(1000 - M - 5, 1000 - M - 5);
-        this.pointerElement.XToDY = (x: number) => {
-            if (x < 500 - L4 * 0.5 - L2) {
-                return 0;
-            }
-            else if (x < 500 - L4 * 0.5) {
-                let f = (x - (500 - L4 * 0.5 - L2)) / L2;
-                return f * L2;
-            }
-            else if (x < 500 + L4 * 0.5) {
-                return L2;
-            }
-            else if (x < 500 + L4 * 0.5 + L2) {
-                let f = 1 - (x - (500 + L4 * 0.5)) / L2;
-                return f * L2;
-            }
-            else {
-                return 0;
-            }
-        }
+        this.pointerElement.min = new SPosition(M + L2 + 15, M+ L2  + 15);
+        this.pointerElement.max = new SPosition(1000 - M - L2 - 15, 1000 - M - L2 - 15);
 
         this.holoSlika.add(
             new SlikaPath(
@@ -98,14 +79,14 @@ class MainMenuPanel extends HoloPanel {
         );
 
         for (let i = 100; i < 1000; i += 100) {
-            this.holoSlika.add(SlikaLine.Create(M, i, 1000 - M, i, new SlikaShapeStyle("#ffffff", 0.1, "none", 1, 3, "ffffff", 20)));
+            this.holoSlika.add(new SlikaLine({ x0: M, y0: i, x1: 1000 - M, y1: i, color: BABYLON.Color3.White(), alpha: 0.3, highlightRadius: 10 }));
         }
         for (let i = 100; i < 1000; i += 100) {
             let dy = M;
             if (Math.abs(500 - i) < L4 * 0.5 + L2) {
                 dy = M + L2;
             }
-            this.holoSlika.add(SlikaLine.Create(i, dy, i, 1000 - dy, new SlikaShapeStyle("#ffffff", 0.1, "none", 1, 3, "ffffff", 20)));
+            this.holoSlika.add(new SlikaLine({ x0: i, y0: dy, x1: i, y1: 1000 - dy, color: BABYLON.Color3.White(), alpha: 0.3, highlightRadius: 10 }));
         }
 
         this.holoSlika.add(

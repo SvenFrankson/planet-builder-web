@@ -16,7 +16,7 @@ class SlikaButton extends SlikaElement {
     ];
 
     private _text: SlikaText;
-    private _strokes: (SlikaPath | SlikaLine)[] = [];
+    private _strokes: SlikaPath[] = [];
     private _fills: SlikaPath[] = [];
 
     public setAlpha(v: number): void {
