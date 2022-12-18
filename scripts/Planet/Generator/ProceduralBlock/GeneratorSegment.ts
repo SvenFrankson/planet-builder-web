@@ -1,5 +1,3 @@
-/// <reference path="./GeneratorElement.ts"/>
-
 class GeneratorSegment extends GeneratorElement {
 
     public l: number;
