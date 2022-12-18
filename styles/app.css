@@ -27,7 +27,6 @@ html, body {
 	position: absolute;
 	bottom: 100px;
 	left: 100px;
-	width: 100%;
 	font-size: 80px;
 	color: #35b4d4;
 	-webkit-text-stroke: black;
@@ -38,11 +37,13 @@ html, body {
 	position: absolute;
 	bottom: 100px;
 	left: 100px;
-	width: 100%;
+	padding: 10px;
+	width: 350px;
 	font-size: 50px;
 	color: #35b4d4;
 	-webkit-text-stroke: black;
 	-webkit-text-stroke-width: 2px;
+	background-color: rgba(0, 0, 0, 50%);
 }
 
 #cursor {
