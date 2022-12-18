@@ -17,7 +17,9 @@ class PlanetGeneratorCold extends PlanetGenerator {
             timers.push(performance.now());
             logOutput = "PlanetGeneratorCold constructor for " + planet.name;
         }
+
         this._mainHeightMap = PlanetHeightMap.CreateMap(planet.degree);
+
         if (useLog) {
             timers.push(performance.now());
             logOutput += "\n  _mainHeightMap created in " + (timers[timers.length - 1] - timers[timers.length - 2]).toFixed(0) + " ms";
@@ -49,31 +51,37 @@ class PlanetGeneratorCold extends PlanetGenerator {
         if (useLog) {
             timers.push(performance.now());
             logOutput += "\n  altitudeMap created in " + (timers[timers.length - 1] - timers[timers.length - 2]).toFixed(0) + " ms";
-            logOutput += "\nPlanetGeneratorCold constructed in " + (timers[timers.length - 1] - timers[0]).toFixed(0) + " ms";
             console.log(logOutput);
         }
-        /*
-        for (let i = 0; i < 100; i++) {
+        
+        for (let i = 0; i < 50; i++) {
             let p = new BABYLON.Vector3(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5);
             p.normalize();
+
+            let up = p.clone();
+            let forward = new BABYLON.Vector3(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5);
+            forward.normalize();
             
             let side = PlanetTools.PlanetPositionToSide(p);
             let ij = PlanetTools.PlanetDirectionToGlobalIJ(side, PlanetTools.DegreeToSize(planet.degree), p);
             let kGlobal = Math.floor(this.altitudeMap.getForSide(side, ij.i, ij.j) * PlanetTools.CHUNCKSIZE * this.planet.kPosMax);
 
-            if (kGlobal > planet.seaLevel + 1) {
-                let pBase = p.scale(PlanetTools.KGlobalToAltitude(kGlobal));
-                p.scaleInPlace(PlanetTools.KGlobalToAltitude(kGlobal + 7));
-                this.elements.push(new GeneratorSegment(BlockType.Wood, pBase, p, 1));
-                this.elements.push(new GeneratorSphere(BlockType.Leaf, p, 3));
-                //BABYLON.MeshBuilder.CreateLines("line", { points: [p, pBase]});
-            }
+            let pBase = p.scale(PlanetTools.KGlobalToAltitude(kGlobal));
+            p.scaleInPlace(PlanetTools.KGlobalToAltitude(kGlobal + 7));
+
+            let w = 2 + 6 * Math.random();
+            let h = 1.5 + 3 * Math.random();
+            let d = 2 + 6 * Math.random();
+            this.elements.push(new GeneratorBox(BlockType.Ice, pBase, up, forward, w, h, d));
         }
         if (useLog) {
             timers.push(performance.now());
-            logOutput += "\n  segments and spheres created in " + (timers[timers.length - 1] - timers[timers.length - 2]).toFixed(0) + " ms";
+            logOutput += "\n  cubes created in " + (timers[timers.length - 1] - timers[timers.length - 2]).toFixed(0) + " ms";
         }
-        */
+
+        if (useLog) {
+            logOutput += "\nPlanetGeneratorCold constructed in " + (timers[timers.length - 1] - timers[0]).toFixed(0) + " ms";
+        }
     }
 
     public getTexture(side: Side, size: number): BABYLON.Texture {
@@ -99,10 +107,10 @@ class PlanetGeneratorCold extends PlanetGenerator {
             for (let j = 0; j < size; j++) {
                 let v = Math.floor(this.altitudeMap.getForSide(side, Math.floor(i * f), Math.floor(j * f)) * PlanetTools.CHUNCKSIZE * this.planet.kPosMax);
                 let blockType: BlockType = BlockType.None;
-                if (v === this.planet.seaLevel) {
+                if (v === this.planet.seaLevel + 1) {
                     blockType = BlockType.Rock;
                 }
-                else if (v > this.planet.seaLevel) {
+                else if (v > this.planet.seaLevel + 1) {
                     blockType = BlockType.Snow;
                 }
 
@@ -172,6 +180,10 @@ class PlanetGeneratorCold extends PlanetGenerator {
                 for (let k: number = 0; k < PlanetTools.CHUNCKSIZE; k++) {
                     let globalK = k + chunck.kPos * PlanetTools.CHUNCKSIZE;
 
+                    if (globalK <= this.planet.seaLevel) {
+                        refData[i - chunck.firstI][j - chunck.firstJ][k - chunck.firstK] = BlockType.Water;
+                    }
+
                     if (intersectingElements.length > 0) {
                         let pPos = PlanetTools.LocalIJKToPlanetPosition(chunck, i, j, k, true);
                         
@@ -183,13 +195,9 @@ class PlanetGeneratorCold extends PlanetGenerator {
                         }
                     }
 
-                    if (globalK < this.planet.seaLevel) {
-                        refData[i - chunck.firstI][j - chunck.firstJ][k - chunck.firstK] = BlockType.Water;
-                    }
-
                     if (globalK <= altitude) {
                         if (globalK > altitude - 2) {
-                            if (globalK < this.planet.seaLevel) {
+                            if (globalK <= this.planet.seaLevel) {
                                 refData[i - chunck.firstI][j - chunck.firstJ][k - chunck.firstK] = BlockType.Rock;
                             }
                             else {
@@ -221,7 +229,7 @@ class PlanetGeneratorCold extends PlanetGenerator {
                     }
                     */
 
-                    if (refData[i - chunck.firstI][j - chunck.firstJ][k - chunck.firstK] === BlockType.None && globalK < this.planet.seaLevel) {
+                    if (refData[i - chunck.firstI][j - chunck.firstJ][k - chunck.firstK] === BlockType.None && globalK <= this.planet.seaLevel) {
                         refData[i - chunck.firstI][j - chunck.firstJ][k - chunck.firstK] = BlockType.Water;
                     }
                 }

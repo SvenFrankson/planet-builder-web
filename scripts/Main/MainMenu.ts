@@ -63,7 +63,7 @@ class MainMenu extends Main {
 			//testGrab.position = new BABYLON.Vector3(- 0.3, this._testAltitude + 1.1, - 0.1);
 			//testGrab.instantiate();
 			
-			let mainMenuPlanet: Planet = PlanetGeneratorFactory.Create(BABYLON.Vector3.Zero(), PlanetGeneratorType.Earth, 6, this.scene);
+			let mainMenuPlanet: Planet = PlanetGeneratorFactory.Create(BABYLON.Vector3.Zero(), PlanetGeneratorType.Cold, 6, this.scene);
 			mainMenuPlanet.instantiate();
 			this.planets = [mainMenuPlanet];
 			
@@ -114,8 +114,8 @@ class MainMenu extends Main {
 						this.player.registerControl();
 					});
 						
-					let debugAltimeter = new Altimeter3D(this.player);
-					debugAltimeter.instantiate();
+					//let debugAltimeter = new Altimeter3D(this.player);
+					//debugAltimeter.instantiate();
 
 					let mainPanel = new MainMenuPanel(100, this);
 					mainPanel.instantiate();

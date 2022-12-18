@@ -34,7 +34,7 @@ class PlanetGeneratorFactory {
                     return new PlanetGeneratorMars(p, 0.1);
                 }
                 else if (type === PlanetGeneratorType.Cold) {
-                    return new PlanetGeneratorCold(p, 0.08);
+                    return new PlanetGeneratorCold(p, 0.1);
                 }
                 else if (type === PlanetGeneratorType.Minimal) {
                     return new PlanetGeneratorMinimal(p);
