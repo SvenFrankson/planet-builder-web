@@ -94,9 +94,11 @@ function showLoading(darkBackground?: boolean): boolean {
         console.log("showLoading " + darkBackground)
         if (darkBackground) {
             delete loadingElement.style.backgroundColor;
+            loadingElement.querySelector("div").classList.remove("small");
         }
         else {
             loadingElement.style.backgroundColor = "rgba(0, 0, 0, 0%)";
+            loadingElement.querySelector("div").classList.add("small");
         }
         loadingElement.style.display = "block";
         let n = 0;

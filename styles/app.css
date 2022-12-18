@@ -32,6 +32,17 @@ html, body {
 	-webkit-text-stroke-width: 3px;
 }
 
+#loading div.small {
+	position: absolute;
+	bottom: 100px;
+	left: 100px;
+	width: 100%;
+	font-size: 50px;
+	color: #35b4d4;
+	-webkit-text-stroke: black;
+	-webkit-text-stroke-width: 2px;
+}
+
 #cursor {
 	position: absolute;
 	z-index: 1;
