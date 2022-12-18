@@ -11,6 +11,7 @@ class DebugPlanetPerf {
     private _frameRate: DebugDisplayFrameValue;
     private _chunckSort: DebugDisplayFrameValue;
     private _drawRequestCount: DebugDisplayFrameValue;
+    private _chunckManagerWorking: DebugDisplayTextValue;
     private _meshesCount: DebugDisplayTextValue;
     private _layerCounts: DebugDisplayTextValue[];
 
@@ -71,6 +72,15 @@ class DebugPlanetPerf {
             this.container.appendChild(this._drawRequestCount);
         }
 
+        let chunckManagerWorkingId = "#chunck-manager-working";
+        this._chunckManagerWorking = document.querySelector(chunckManagerWorkingId) as DebugDisplayTextValue;
+        if (!this._chunckManagerWorking) {
+            this._chunckManagerWorking = document.createElement("debug-display-text-value") as DebugDisplayTextValue;
+            this._chunckManagerWorking.id = chunckManagerWorkingId;
+            this._chunckManagerWorking.setAttribute("label", "ChunckManager");
+            this.container.appendChild(this._chunckManagerWorking);
+        }
+
         let meshesCountId = "#meshes-count";
         this._meshesCount = document.querySelector(meshesCountId) as DebugDisplayTextValue;
         if (!this._meshesCount) {
@@ -112,6 +122,8 @@ class DebugPlanetPerf {
             needRedrawCount += this.game.planets[i].chunckManager.needRedrawCount;
         }
         this._drawRequestCount.addValue(needRedrawCount);
+
+        this._chunckManagerWorking.setText(this.game.chunckManagerWorking ? "WORKING" : "IDLE");
 
         this._meshesCount.setText(this.game.scene.meshes.length.toFixed(0));
 

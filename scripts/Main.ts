@@ -9,6 +9,11 @@ class Main {
 	public cameraManager: CameraManager;
 
 	public planets: Planet[] = [];
+    private _chunckManagersWorkingTimer: number = 3
+    public get chunckManagerWorking(): boolean {
+        return this._chunckManagersWorkingTimer > 0;
+    }
+    private _onNextChunckManagerNotWorking: (() => void)[] = [];
 
     constructor(canvasElement: string) {
 		this.canvas = document.getElementById(canvasElement) as HTMLCanvasElement;
@@ -43,7 +48,32 @@ class Main {
     }
 
     public update(): void {
+        let checkIfReachesZero = false;
+        if (this._chunckManagersWorkingTimer > 0) {
+            checkIfReachesZero = true;
+        }
 
+        this._chunckManagersWorkingTimer = Math.max(this._chunckManagersWorkingTimer - 1, 0);
+        this.planets.forEach(p => {
+            if (p.chunckManager.needRedrawCount > 0) {
+                this._chunckManagersWorkingTimer = 3;
+            }
+        });
+
+        if (checkIfReachesZero && this._chunckManagersWorkingTimer <= 0) {
+            while (this._onNextChunckManagerNotWorking.length > 0) {
+                this._onNextChunckManagerNotWorking.pop()();
+            }
+        }
+    }
+    
+    public onChunckManagerNotWorking(callback: () => void): void {
+        if (!this.chunckManagerWorking) {
+            callback();
+        }
+        else {
+            this._onNextChunckManagerNotWorking.push(callback);
+        }
     }
 }
 

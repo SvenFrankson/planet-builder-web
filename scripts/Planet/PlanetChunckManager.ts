@@ -30,7 +30,6 @@ class PlanetChunckManager {
 
     // activity increase while manager is redrawing Chuncks.
     //private _maxActivity: number = 20;
-    //private _activity: number = this._maxActivity;
 
     constructor(
         public scene: BABYLON.Scene

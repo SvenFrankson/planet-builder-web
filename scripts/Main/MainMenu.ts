@@ -109,9 +109,10 @@ class MainMenu extends Main {
 					
 					this.inputManager.initialize(this.player);
 					
-					await this.player.initialize();
-					this.player.registerControl();
-					//moon.register();
+					this.onChunckManagerNotWorking(async () => {
+						await this.player.initialize();
+						this.player.registerControl();
+					})
 
 					let mainPanel = new MainMenuPanel(100, this);
 					mainPanel.instantiate();
@@ -133,7 +134,7 @@ class MainMenu extends Main {
 	}
 
 	public update(): void {
-		
+		super.update();
 	}
 
 	public async generatePlanets(): Promise<void> {
