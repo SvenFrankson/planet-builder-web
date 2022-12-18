@@ -13,6 +13,25 @@ html, body {
 	padding: 0;
 }
 
+#loading {
+	position: fixed;
+	width: 100%;
+	height: 100%;
+	font-family: "XoloniumRegular";
+	background-color: rgba(0, 0, 0, 75%);
+}
+
+#loading div {
+	position: absolute;
+	bottom: 100px;
+	left: 100px;
+	width: 100%;
+	font-size: 80px;
+	color: #35b4d4;
+	-webkit-text-stroke: black;
+	-webkit-text-stroke-width: 3px;
+}
+
 #cursor {
 	position: absolute;
 	z-index: 1;

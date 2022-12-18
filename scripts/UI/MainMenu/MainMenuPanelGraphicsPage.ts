@@ -135,14 +135,12 @@ class MainMenuPanelGraphicsPage extends MainMenuPanelPage {
         }
         buttonBack.onPointerUp = async () => {
             this.mainMenuPanel.animateTitleHeight(this.mainMenuPanel.introPage.targetTitleHeight, 1);
-            await this.mainMenuPanel.graphicsPage.hide(0.5);
-            await this.mainMenuPanel.introPage.show(0.5);
+            this.mainMenuPanel.showPage(0);
         }
         buttonNext.onPointerUp = async () => {
             if (buttonNext.state === SlikaButtonState.Enabled) {
                 this.mainMenuPanel.animateTitleHeight(this.mainMenuPanel.planetPage.targetTitleHeight, 1);
-                await this.mainMenuPanel.graphicsPage.hide(0.5);
-                await this.mainMenuPanel.planetPage.show(0.5);
+                this.mainMenuPanel.showPage(2);
             }
         }
 

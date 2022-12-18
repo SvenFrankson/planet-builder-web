@@ -120,7 +120,7 @@ class Player extends BABYLON.Mesh {
         }
         if (e.code === "Space") {
             if (this._isGrounded || this.godMode) {
-                this.velocity.addInPlace(this.getDirection(BABYLON.Axis.Y).scale(5));
+                this.velocity.addInPlace(this.getDirection(BABYLON.Axis.Y).scale(8));
                 this._isGrounded = false;
                 this._jumpTimer = 0.2;
             }

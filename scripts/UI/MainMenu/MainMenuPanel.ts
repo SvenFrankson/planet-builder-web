@@ -4,6 +4,7 @@ class MainMenuPanel extends HoloPanel {
     public titleLine1: SlikaPath;
     public titleLine2: SlikaPath;
 
+    public pages: MainMenuPanelPage[] = [];
     public introPage: MainMenuPanelIntroPage;
     public graphicsPage: MainMenuPanelGraphicsPage;
     public planetPage: MainMenuPlanetSelectionPage;
@@ -166,11 +167,42 @@ class MainMenuPanel extends HoloPanel {
         this.holoSlika.add(this.titleLine2);
 
         this.introPage = new MainMenuPanelIntroPage(this);
-        this.introPage.show(0.2);
         this.graphicsPage = new MainMenuPanelGraphicsPage(this);
-        this.graphicsPage.hide(0.2);
+        this.graphicsPage.hide(0);
         this.planetPage = new MainMenuPlanetSelectionPage(this);
-        this.planetPage.hide(0.2);
+        this.planetPage.hide(0);
+        this.pages = [this.introPage, this.graphicsPage, this.planetPage];
+        this.showPage(0);
+    }
+
+    public currentPage: number = 0;
+    public async showPage(page: number): Promise<void> {
+        await this.pages[this.currentPage].hide(0.3);
+        this.currentPage = page;
+        await this.pages[this.currentPage].show(0.3);
+    }
+
+    public register(): void {
+        this.inputManager.addMappedKeyUpListener(KeyInput.MAIN_MENU, async () => {
+            this.openAtPlayerPosition();
+        })
+    }
+
+    public async openAtPlayerPosition(): Promise<void> {
+        let player = this.inputManager.player;
+        if (player) {
+            await this.close();
+            let p = player.position.add(player.forward);
+            this.planet = player.planet;
+            this.setPosition(p);
+            this.setTarget(player.position);
+            requestAnimationFrame(() => {
+                this.inputManager.player.targetLook = this.holoMesh.absolutePosition;
+                this.inputManager.player.targetDestination = this.interactionAnchor.absolutePosition.clone();
+            })
+            this.showPage(this.currentPage);
+            await this.open();
+        }
     }
 
     public animateTitleHeight = AnimationFactory.CreateNumber(

@@ -62,17 +62,16 @@ class MainMenuPanelIntroPage extends MainMenuPanelPage {
             "datas/images/planet.png"
         ));
 
-        let buttonPlay = new SlikaButton(
+        let buttonEnter = new SlikaButton(
             "Enter",
             new SPosition(275, 550),
             SlikaButtonState.Enabled
         );
-        buttonPlay.onPointerUp = async () => {
+        buttonEnter.onPointerUp = async () => {
             this.mainMenuPanel.animateTitleHeight(this.mainMenuPanel.graphicsPage.targetTitleHeight, 1);
-            await this.mainMenuPanel.introPage.hide(0.5);
-            await this.mainMenuPanel.graphicsPage.show(0.5);
+            this.mainMenuPanel.showPage(1);
         }
-        this.holoSlika.add(buttonPlay);
+        this.holoSlika.add(buttonEnter);
 
         let buttonPlayLabel = this.holoSlika.add(new SlikaText({
             text: "(press to enter)",
@@ -114,6 +113,6 @@ class MainMenuPanelIntroPage extends MainMenuPanelPage {
             highlightRadius: 0
         }));
 
-        this.elements.push(title1, title2, text1, text2, textDecoy, planetImage, buttonPlay, buttonPlayLabel, bottom1, babylonIcon, bottom2);
+        this.elements.push(title1, title2, text1, text2, textDecoy, planetImage, buttonEnter, buttonPlayLabel, bottom1, babylonIcon, bottom2);
     }
 }

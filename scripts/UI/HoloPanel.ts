@@ -137,9 +137,9 @@ class HoloPanel extends Pickable {
         this.pointerMesh.alphaIndex = 2;
 
         this.interactionAnchor = new BABYLON.Mesh("interaction-anchor");
-        BABYLON.CreateBoxVertexData({ size: 0.1 }).applyToMesh(this.interactionAnchor);
-        this.interactionAnchor.material = SharedMaterials.RedMaterial();
-        this.interactionAnchor.position.z = -1;
+        //BABYLON.CreateBoxVertexData({ size: 0.1 }).applyToMesh(this.interactionAnchor);
+        //this.interactionAnchor.material = SharedMaterials.RedMaterial();
+        this.interactionAnchor.position.z = -0.7;
         this.interactionAnchor.parent = this;
 
         let data = new BABYLON.VertexData();
@@ -221,24 +221,6 @@ class HoloPanel extends Pickable {
         Config.performanceConfiguration.onHoloScreenFactorChangedCallbacks.push(() => {
             this.refreshHSF();
         });
-    }
-
-    public register(): void {
-        this.inputManager.addMappedKeyUpListener(KeyInput.MAIN_MENU, async () => {
-            let player = this.inputManager.player;
-            if (player) {
-                await this.close();
-                let p = player.position.add(player.forward);
-                this.planet = player.planet;
-                this.setPosition(p);
-                this.setTarget(player.position);
-                requestAnimationFrame(() => {
-                    this.inputManager.player.targetLook = this.holoMesh.absolutePosition;
-                    this.inputManager.player.targetDestination = this.interactionAnchor.absolutePosition.clone();
-                })
-                await this.open();
-            }
-        })
     }
 
     public refreshHSF(): void {
