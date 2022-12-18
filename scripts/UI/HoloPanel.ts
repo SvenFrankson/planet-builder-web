@@ -186,8 +186,8 @@ class HoloPanel extends Pickable {
             new SPosition(this._w * 0.5, this._h * 0.5),
             new SPosition(30, 13),
             new SPosition(this._w - 26, this._h - 21),
-            60,
-            BABYLON.Color3.FromHexString("#8dd6c0")
+            80,
+            BABYLON.Color3.FromHexString(Config.uiConfiguration.holoScreenBaseColor)
         );
         this.pointerSlika.add(this.pointerElement);
 
