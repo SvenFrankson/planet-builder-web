@@ -246,11 +246,11 @@ class HoloPanel extends Pickable {
     }
 
     public async open(): Promise<void> {
-        await this._animateScaleX(1, 0.2);
+        await this._animateScaleX(1, 0.5);
     }
 
     public async close(): Promise<void> {
-        await this._animateScaleX(0.05, 0.1);
+        await this._animateScaleX(0.05, 0.5);
     }
 
     public redrawSVG(image: any): void {
