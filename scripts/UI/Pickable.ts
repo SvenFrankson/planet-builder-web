@@ -31,6 +31,10 @@ class Pickable extends PlanetObject {
         this.inputManager.pickableElements.remove(this);
     }
 
+    public interceptsPointerMove(): boolean {
+        return false;
+    }
+
     public onPointerDown(): void {
 
     }

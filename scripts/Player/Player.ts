@@ -64,34 +64,34 @@ class Player extends BABYLON.Mesh {
     }
 
     public registerControl(): void {
-        this.main.inputManager.addMappedKeyDownListener(KeyInput.MOVE_FORWARD, () => {
+        this.inputManager.addMappedKeyDownListener(KeyInput.MOVE_FORWARD, () => {
             this.inputForward = 1;
         });
-        this.main.inputManager.addMappedKeyDownListener(KeyInput.MOVE_BACK, () => {
+        this.inputManager.addMappedKeyDownListener(KeyInput.MOVE_BACK, () => {
             this.inputForward = - 1;
         });
-        this.main.inputManager.addMappedKeyDownListener(KeyInput.MOVE_RIGHT, () => {
+        this.inputManager.addMappedKeyDownListener(KeyInput.MOVE_RIGHT, () => {
             this.inputRight = 1;
         });
-        this.main.inputManager.addMappedKeyDownListener(KeyInput.MOVE_LEFT, () => {
+        this.inputManager.addMappedKeyDownListener(KeyInput.MOVE_LEFT, () => {
             this.inputRight = - 1;
         });
 
-        this.main.inputManager.addMappedKeyUpListener(KeyInput.MOVE_FORWARD, () => {
+        this.inputManager.addMappedKeyUpListener(KeyInput.MOVE_FORWARD, () => {
             this.inputForward = 0;
         });
-        this.main.inputManager.addMappedKeyUpListener(KeyInput.MOVE_BACK, () => {
+        this.inputManager.addMappedKeyUpListener(KeyInput.MOVE_BACK, () => {
             this.inputForward = 0;
         });
-        this.main.inputManager.addMappedKeyUpListener(KeyInput.MOVE_RIGHT, () => {
+        this.inputManager.addMappedKeyUpListener(KeyInput.MOVE_RIGHT, () => {
             this.inputRight = 0;
         });
-        this.main.inputManager.addMappedKeyUpListener(KeyInput.MOVE_LEFT, () => {
+        this.inputManager.addMappedKeyUpListener(KeyInput.MOVE_LEFT, () => {
             this.inputRight = 0;
         });
         this.main.canvas.addEventListener("keyup", this._keyUp);
         this.main.canvas.addEventListener("pointermove", this._mouseMove);
-        this.main.canvas.addEventListener("pointerup", () => {
+        this.inputManager.pointerUpObservable.add(() => {
             if (this.currentAction) {
                 if (this.currentAction.onClick) {
                     this.currentAction.onClick();
@@ -103,10 +103,14 @@ class Player extends BABYLON.Mesh {
             if (this.armManager) {
                 this.armManager.startActionAnimation();
             }
+            this._headMoveWithMouse = false;
         });
-        this.main.canvas.addEventListener("pointerdown", () => {
-            if (this.inputManager && this.inputManager.aimedElement) {
+        this.inputManager.pointerDownObservable.add(() => {
+            if (this.inputManager.aimedElement) {
                 this.inputManager.aimedElement.onPointerDown();
+            }
+            if (!this.inputManager.aimedElement || !this.inputManager.aimedElement.interceptsPointerMove()) {
+                this._headMoveWithMouse = true;
             }
         });
     }
@@ -134,8 +138,9 @@ class Player extends BABYLON.Mesh {
         }
     };
 
+    private _headMoveWithMouse: boolean = false;
     private _mouseMove = (event: MouseEvent) => {
-        if (this.main.inputManager.isPointerDown || this.main.inputManager.isPointerLocked) {
+        if (this._headMoveWithMouse || this.inputManager.isPointerLocked) {
             let movementX: number = event.movementX;
             let movementY: number = event.movementY;
             this.inputHeadRight += movementX / 100;

@@ -21,6 +21,7 @@ html, body {
 	font-family: "XoloniumRegular";
 	background-color: rgba(0, 0, 0, 75%);
 	z-index: 1;
+	pointer-events: none;
 }
 
 #loading div {

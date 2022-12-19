@@ -262,6 +262,13 @@ class HoloPanel extends Pickable {
         this.holoTexture.update();
     }
 
+    public interceptsPointerMove(): boolean {
+        if (BABYLON.Vector3.DistanceSquared(this.inputManager.player.position, this.interactionAnchor.absolutePosition) < 0.2 * 0.2) {
+            return true;
+        }
+        return false;
+    }
+
     public onPointerDown(): void {
         if (BABYLON.Vector3.DistanceSquared(this.inputManager.player.position, this.interactionAnchor.absolutePosition) < 0.2 * 0.2) {
             let local = BABYLON.Vector3.TransformCoordinates(this.inputManager.aimedPosition, this.holoMesh.getWorldMatrix().clone().invert());

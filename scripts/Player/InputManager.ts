@@ -37,6 +37,9 @@ class InputManager {
     public aimedNormal: BABYLON.Vector3;
     public pickableElements: UniqueList<Pickable>;
 
+    public pointerDownObservable = new BABYLON.Observable<void>();
+    public pointerUpObservable = new BABYLON.Observable<void>();
+
     constructor(public scene: BABYLON.Scene, public canvas: HTMLCanvasElement) {
         this.pickableElements = new UniqueList<Pickable>();
     }
@@ -44,15 +47,18 @@ class InputManager {
     public initialize(player: Player): void {
         this.player = player;
         
-        window.addEventListener("pointerdown", () => {
+        window.addEventListener("pointerdown", (ev: PointerEvent) => {
+            this.updateAimedElement(ev.x, ev.y);
             this.isPointerDown = true;
             if (Config.controlConfiguration.canLockPointer) {
                 this.canvas.requestPointerLock();
                 this.isPointerLocked = true;
             }
+            this.pointerDownObservable.notifyObservers();
         });
         window.addEventListener("pointerup", () => {
             this.isPointerDown = false;
+            this.pointerUpObservable.notifyObservers();
         });
         document.addEventListener("pointerlockchange", () => {
             if (!(document.pointerLockElement === this.canvas)) {
@@ -215,16 +221,16 @@ class InputManager {
         return KeyInput.NULL;
     }
 
-    public updateAimedElement(): void {
-        let x: number = 0;
-        let y: number = 0;
-        if (this.isPointerLocked) {
-            x = this.canvas.clientWidth * 0.5;
-            y = this.canvas.clientHeight * 0.5;
-        }
-        else {
-            x = this.scene.pointerX;
-            y = this.scene.pointerY;
+    public updateAimedElement(x?: number, y?: number): void {
+        if (isNaN(x) || isNaN(y)) {
+            if (this.isPointerLocked) {
+                x = this.canvas.clientWidth * 0.5;
+                y = this.canvas.clientHeight * 0.5;
+            }
+            else {
+                x = this.scene.pointerX;
+                y = this.scene.pointerY;
+            }
         }
         let aimedPickable: Pickable;
         let aimedDist: number = Infinity;
