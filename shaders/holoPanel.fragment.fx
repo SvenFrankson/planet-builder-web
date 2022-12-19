@@ -4,6 +4,7 @@ precision highp float;
 uniform sampler2D holoTexture;
 uniform float offset;
 uniform float alpha;
+uniform vec3 upDirW;
 
 in vec3 vPositionW;
 in vec3 vNormalW;
@@ -28,7 +29,7 @@ void main() {
    }
    */
    if (color.a > 0.9) {
-      float y = vPositionW.y - offset;
+      float y = dot(vPositionW, upDirW) - offset;
       float d = (y * 3. - round(y * 3.)) / 3.;
       if (abs(d) < 0.005) {
          float x = d / 0.005;

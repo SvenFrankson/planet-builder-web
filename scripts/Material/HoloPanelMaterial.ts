@@ -1,6 +1,7 @@
 class HoloPanelMaterial extends BABYLON.ShaderMaterial {
 
     private _offset: number = 0;
+    private _up: BABYLON.Vector3 = BABYLON.Vector3.Up();
 
     constructor(name: string, scene: BABYLON.Scene) {
         super(
@@ -19,6 +20,7 @@ class HoloPanelMaterial extends BABYLON.ShaderMaterial {
         
         this.setFloat("alpha", this._alpha);
         this.setFloat("offset", this._offset);
+        this.setVector3("upDirW", this._up);
     }
 
     public get offset(): number {
@@ -37,6 +39,15 @@ class HoloPanelMaterial extends BABYLON.ShaderMaterial {
     public set alpha(v: number) {
         this._alpha = v;
         this.setFloat("alpha", this._alpha);
+    }
+
+    public get up(): BABYLON.Vector3 {
+        return this._up;
+    }
+
+    public set up(v: BABYLON.Vector3) {
+        this._up.copyFrom(v);
+        this.setVector3("upDirW", this._up);
     }
 
     private _holoTexture: BABYLON.Texture;

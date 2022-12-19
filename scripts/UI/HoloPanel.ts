@@ -202,12 +202,13 @@ class HoloPanel extends Pickable {
         let off = 5 * Math.random();
         let offPointer = 5 * Math.random();
         let offSpeed = 0.13 + 0.4 * Math.random();
+        let offPointerSpeed = 0.13 + 0.4 * Math.random();
         this.scene.onBeforeRenderObservable.add(() => {
             if (Math.random() < 0.1) {
                 offSpeed = 0.1 + 0.1 * Math.random();
             }
             off += this.scene.getEngine().getDeltaTime() / 1000 * offSpeed;
-            offPointer += this.scene.getEngine().getDeltaTime() / 1000 * offSpeed;
+            offPointer += this.scene.getEngine().getDeltaTime() / 1000 * offPointerSpeed;
             if (off > 100) {
                 off -= 100;
             }
@@ -217,6 +218,8 @@ class HoloPanel extends Pickable {
             this.holoMaterial.offset = off;
             this.pointerMaterial.offset = offPointer;
         });
+
+        this.onRotationChangedObservable.add(this.updateMaterialUpDirection);
 
         Config.performanceConfiguration.onHoloScreenFactorChangedCallbacks.push(() => {
             this.refreshHSF();
@@ -243,6 +246,11 @@ class HoloPanel extends Pickable {
             this.pointerSlika.context = this.pointerTexture.getContext();
             this.pointerSlika.needRedraw = true;
         }
+    }
+
+    public updateMaterialUpDirection = () => {
+        this.holoMaterial.up = this.up;
+        this.pointerMaterial.up = this.up;
     }
 
     public async open(): Promise<void> {
