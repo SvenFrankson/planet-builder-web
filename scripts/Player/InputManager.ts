@@ -37,8 +37,8 @@ class InputManager {
     public aimedNormal: BABYLON.Vector3;
     public pickableElements: UniqueList<Pickable>;
 
-    public pointerDownObservable = new BABYLON.Observable<void>();
-    public pointerUpObservable = new BABYLON.Observable<void>();
+    public pointerDownObservable = new BABYLON.Observable<Pickable>();
+    public pointerUpObservable = new BABYLON.Observable<Pickable>();
 
     constructor(public scene: BABYLON.Scene, public canvas: HTMLCanvasElement) {
         this.pickableElements = new UniqueList<Pickable>();
@@ -54,11 +54,11 @@ class InputManager {
                 this.canvas.requestPointerLock();
                 this.isPointerLocked = true;
             }
-            this.pointerDownObservable.notifyObservers();
+            this.pointerDownObservable.notifyObservers(this.aimedElement);
         });
         window.addEventListener("pointerup", () => {
             this.isPointerDown = false;
-            this.pointerUpObservable.notifyObservers();
+            this.pointerUpObservable.notifyObservers(this.aimedElement);
         });
         document.addEventListener("pointerlockchange", () => {
             if (!(document.pointerLockElement === this.canvas)) {

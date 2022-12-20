@@ -90,21 +90,27 @@ class Player extends BABYLON.Mesh {
             this.inputRight = 0;
         });
         this.main.canvas.addEventListener("keyup", this._keyUp);
+
         this.main.canvas.addEventListener("pointermove", this._mouseMove);
-        this.inputManager.pointerUpObservable.add(() => {
+
+        this.inputManager.pointerUpObservable.add((pickableElement: Pickable) => {
             if (this.currentAction) {
                 if (this.currentAction.onClick) {
                     this.currentAction.onClick();
+                    return;
                 }
             }
-            if (this.inputManager && this.inputManager.aimedElement) {
-                this.inputManager.aimedElement.onPointerUp();
-            }
+            
             if (this.armManager) {
-                this.armManager.startActionAnimation();
+                this.armManager.startActionAnimation(() => {
+                    if (pickableElement) {
+                        pickableElement.onPointerUp();
+                    }
+                });
             }
             this._headMoveWithMouse = false;
         });
+
         this.inputManager.pointerDownObservable.add(() => {
             if (this.inputManager.aimedElement) {
                 this.inputManager.aimedElement.onPointerDown();

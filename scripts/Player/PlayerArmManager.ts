@@ -173,10 +173,13 @@ class PlayerArmManager {
         this._updateRequestedTargetIdle(this.other(this._aimingArm));
     }
 
-    public async startActionAnimation(): Promise<void> {
+    public async startActionAnimation(actionCallback?: () => void): Promise<void> {
         if (this._aimingArm) {
             this._aimingArm.setHandMode(HandMode.PointPress);
             await this._animateAimingDistance(0.01, 0.3);
+            if (actionCallback) {
+                actionCallback();
+            }
             this._aimingArm.setHandMode(HandMode.Point);
             await this._animateAimingDistance(0.1, 0.3);
         }

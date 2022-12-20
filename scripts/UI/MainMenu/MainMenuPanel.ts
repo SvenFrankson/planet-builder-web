@@ -24,8 +24,10 @@ class MainMenuPanel extends HoloPanel {
         let L5 = 200;
         let L6 = 300;
 
-        this.pointerElement.min = new SPosition(M + L2 + 15, M+ L2  + 15);
-        this.pointerElement.max = new SPosition(1000 - M - L2 - 15, 1000 - M - L2 - 15);
+        this.pointerElement.prop.xMin = M + L2 + 15;
+        this.pointerElement.prop.yMin = M+ L2  + 15;
+        this.pointerElement.prop.xMax = 1000 - M - L2 - 15;
+        this.pointerElement.prop.yMax = 1000 - M - L2 - 15;
 
         this.holoSlika.add(
             new SlikaPath(

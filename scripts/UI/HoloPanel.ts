@@ -11,7 +11,7 @@ class HoloPanel extends Pickable {
     public pointerMaterial: HoloPanelMaterial;
     public pointerTexture: BABYLON.DynamicTexture;
     public pointerSlika: Slika;
-    public pointerElement: SlikaPointer;
+    public pointerElement: SlikaPointerLite;
 
     public interactionAnchor: BABYLON.Mesh;
 
@@ -182,13 +182,7 @@ class HoloPanel extends Pickable {
         this.holoSlika = new Slika(this._w, this._h, this.holoTexture.getContext(), this.holoTexture);
 
         this.pointerSlika = new Slika(this._w, this._h, this.pointerTexture.getContext(), this.pointerTexture);
-        this.pointerElement = new SlikaPointer(
-            new SPosition(this._w * 0.5, this._h * 0.5),
-            new SPosition(30, 13),
-            new SPosition(this._w - 26, this._h - 21),
-            80,
-            BABYLON.Color3.FromHexString(Config.uiConfiguration.holoScreenBaseColor)
-        );
+        this.pointerElement = new SlikaPointerLite({ x: this._w * 0.5, y: this._h * 0.5, xMin: 30, yMin: 13, xMax: this._w - 26, yMax: this._h - 21, radius: 20, color: BABYLON.Color3.FromHexString(Config.uiConfiguration.holoScreenBaseColor) });
         this.pointerSlika.add(this.pointerElement);
 
         this.lines[0] = "You know what? It is beets. I've crashed into a beet truck. Jaguar shark! So tell me - does it really exist? Is this my espresso machine? Wh-what is-h-how did you get my espresso machine? Hey, take a look at the earthlings. Goodbye! I was part of something special.";
@@ -292,6 +286,9 @@ class HoloPanel extends Pickable {
             let x = this.posXToXTexture(local.x);
             let y = this.posYToYTexture(local.y);
             this.holoSlika.onPointerUp(x, y);
+            this.pointerElement.animateRadius(60, 0.2).then(() => {
+                this.pointerElement.animateRadius(20, 0.2);
+            });
         }
         else {
             this.inputManager.player.targetLook = this.holoMesh.absolutePosition;

@@ -327,6 +327,7 @@ class PlayerArm extends BABYLON.Mesh {
         
     }
 
+    private _debugCurrentTarget: BABYLON.Mesh;
     private _elbowPosition: BABYLON.Vector3 = BABYLON.Vector3.Zero();
     private _wristPosition: BABYLON.Vector3 = BABYLON.Vector3.Zero();
     private _v0: BABYLON.Vector3 = BABYLON.Vector3.Zero();
@@ -350,6 +351,16 @@ class PlayerArm extends BABYLON.Mesh {
         this._elbowPosition.subtractInPlace(elbowOffset);
 
         let currentTarget = this.targetPosition.add(this.targetOffset);
+
+        if (DebugDefine.SHOW_PLAYER_ARM_CURRENT_TARGET) {
+            if (!this._debugCurrentTarget) {
+                this._debugCurrentTarget = BABYLON.MeshBuilder.CreateSphere("debug-current-target", { diameter: 0.03 }, this.getScene());
+                let material = new BABYLON.StandardMaterial("material", this.getScene());
+                material.alpha = 0.5;
+                this._debugCurrentTarget.material = material;
+            }
+            this._debugCurrentTarget.position.copyFrom(currentTarget);
+        }
 
         let n = currentTarget.subtract(this._elbowPosition).normalize();
         this._wristPosition.subtractInPlace(n.scale(0.07));
@@ -411,6 +422,6 @@ class PlayerArm extends BABYLON.Mesh {
             this.targetOffset.scaleInPlace(0.95);
             error.normalize().scaleInPlace(0.1);
         }
-        this.targetOffset.addInPlace(error.scale(1 / 20));
+        this.targetOffset.addInPlace(error.scale(1 / 10));
     }
 }
