@@ -75,17 +75,11 @@ class VMath {
     private static _Tmp6: BABYLON.Quaternion = BABYLON.Quaternion.Identity();
     public static GetAngleBetweenQuaternions(q1: BABYLON.Quaternion, q2: BABYLON.Quaternion): number {
         VMath._Tmp6.copyFrom(q1).conjugateInPlace().multiplyInPlace(q2);
-        if (isNaN(VMath._Tmp6.w)) {
-            debugger;
-        }
         return VMath.GetQuaternionAngle(VMath._Tmp6);
     }
 
     public static StepQuaternionToRef(q1: BABYLON.Quaternion, q2: BABYLON.Quaternion, step: number, ref: BABYLON.Quaternion): BABYLON.Quaternion {
         let angle = VMath.GetAngleBetweenQuaternions(q1, q2);
-        if (isNaN(angle)) {
-            debugger;
-        }
         if (step > angle) {
             return ref.copyFrom(q2);
         }

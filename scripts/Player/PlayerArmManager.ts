@@ -95,13 +95,13 @@ class PlayerArmManager {
             let target = new BABYLON.Vector3(- 0.1, - this.leftArm.wristLength, 0);
             target.normalize().scaleInPlace(this.leftArm.wristLength);
             target = BABYLON.Vector3.TransformCoordinates(target, this.leftArm.getWorldMatrix());
-            VMath.StepToRef(this.leftArm.targetPosition, target, dP, this.leftArm.targetPosition);
+            this.leftArm.targetPosition.copyFrom(target);
         }
         else {
             let target = new BABYLON.Vector3(0.1, - this.rightArm.wristLength, 0);
             target.normalize().scaleInPlace(this.rightArm.wristLength);
             target = BABYLON.Vector3.TransformCoordinates(target, this.rightArm.getWorldMatrix());
-            VMath.StepToRef(this.rightArm.targetPosition, target, dP, this.rightArm.targetPosition);
+            this.rightArm.targetPosition.copyFrom(target);
         }
     }
 
@@ -154,14 +154,12 @@ class PlayerArmManager {
         }
 
         // 3 - Update arm target position.
-        let dP = 0.5 * this.player.scene.getEngine().getDeltaTime() / 1000;
         if (d < 0.9) {
-            this._aimingStretch += dP;
+            this._aimingStretch = 1;
         }
         else {
-            this._aimingStretch -= dP;
+            this._aimingStretch = 0.4;
         }
-        this._aimingStretch = Math.max(Math.min(this._aimingStretch, this._aimingArm.fullLength), 0.4);
         
         let tmp = new BABYLON.Vector3();
         VMath.StepToRef(this.player.camPos.absolutePosition.add(this._aimingArm.absolutePosition).scale(0.5), this.inputManager.aimedPosition.add(this.inputManager.aimedNormal.scale(this._aimingDistance)), this._aimingStretch, tmp);
