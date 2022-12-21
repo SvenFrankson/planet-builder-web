@@ -68,6 +68,35 @@ class VMath {
         return ref.copyFrom(v1).addInPlace(v2).addInPlace(v3);
     }
 
+    public static GetQuaternionAngle(q: BABYLON.Quaternion): number {
+        return 2 * Math.acos(Math.min(Math.max(q.w, - 1), 1));
+    }
+
+    private static _Tmp6: BABYLON.Quaternion = BABYLON.Quaternion.Identity();
+    public static GetAngleBetweenQuaternions(q1: BABYLON.Quaternion, q2: BABYLON.Quaternion): number {
+        VMath._Tmp6.copyFrom(q1).conjugateInPlace().multiplyInPlace(q2);
+        if (isNaN(VMath._Tmp6.w)) {
+            debugger;
+        }
+        return VMath.GetQuaternionAngle(VMath._Tmp6);
+    }
+
+    public static StepQuaternionToRef(q1: BABYLON.Quaternion, q2: BABYLON.Quaternion, step: number, ref: BABYLON.Quaternion): BABYLON.Quaternion {
+        let angle = VMath.GetAngleBetweenQuaternions(q1, q2);
+        if (isNaN(angle)) {
+            debugger;
+        }
+        if (step > angle) {
+            return ref.copyFrom(q2);
+        }
+        let d = step / angle;
+        return BABYLON.Quaternion.SlerpToRef(q1, q2, d, ref);
+    }
+
+    public static StepQuaternionInPlace(q1: BABYLON.Quaternion, q2: BABYLON.Quaternion, step: number): BABYLON.Quaternion {
+        return VMath.StepQuaternionToRef(q1, q2, step, q1);
+    }
+
     private static _Tmp0: BABYLON.Vector3 = BABYLON.Vector3.Zero();
     private static _Tmp1: BABYLON.Vector3 = BABYLON.Vector3.Zero();
     private static _Tmp2: BABYLON.Vector3 = BABYLON.Vector3.Zero();
