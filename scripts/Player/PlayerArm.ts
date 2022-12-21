@@ -19,7 +19,7 @@ enum HandTargetAnchor {
 class PlayerArm extends BABYLON.Mesh {
 
     public targetPosition: BABYLON.Vector3 = BABYLON.Vector3.Zero();
-    public targetOffset: BABYLON.Vector3 = BABYLON.Vector3.Zero();
+    //public targetOffset: BABYLON.Vector3 = BABYLON.Vector3.Zero();
     public targetUp: BABYLON.Vector3 = BABYLON.Vector3.Up();
     public targetAnchor: HandTargetAnchor = HandTargetAnchor.Palm;
 
@@ -219,6 +219,7 @@ class PlayerArm extends BABYLON.Mesh {
             this.handUp.x = this.handUp.x * 0.9 + (target.x) * 0.1;
             this.handUp.y = this.handUp.y * 0.9 + (target.y) * 0.1;
             this.handUp.z = this.handUp.z * 0.9 + (target.z) * 0.1;
+            this.handUp.copyFrom(target);
             this.handUp.normalize();
         }
         else if (this.handMode === HandMode.Grab) {
@@ -345,12 +346,6 @@ class PlayerArm extends BABYLON.Mesh {
         this.updateTargetAnchor();
         this.updateGrabness();
         this.updateSpreadness();
-        
-        let elbowOffset = new BABYLON.Vector3(this.signLeft * 2 * dt, 2 * dt, 0);
-        VMath.RotateVectorByQuaternionToRef(elbowOffset, this.rotationQuaternion, elbowOffset);
-        this._elbowPosition.subtractInPlace(elbowOffset);
-
-        let currentTarget = this.targetPosition.add(this.targetOffset);
 
         if (DebugDefine.SHOW_PLAYER_ARM_CURRENT_TARGET) {
             if (!this._debugCurrentTarget) {
@@ -359,16 +354,19 @@ class PlayerArm extends BABYLON.Mesh {
                 material.alpha = 0.5;
                 this._debugCurrentTarget.material = material;
             }
-            this._debugCurrentTarget.position.copyFrom(currentTarget);
+            this._debugCurrentTarget.position.copyFrom(this.targetPosition);
         }
-
-        let n = currentTarget.subtract(this._elbowPosition).normalize();
-        this._wristPosition.subtractInPlace(n.scale(0.07));
-
+        
         this._arm.position.copyFrom(this.absolutePosition);
+        this._elbowPosition.copyFromFloats(- this.signLeft * 0.1, - this._armLength * 0.5, 0);
+        VMath.RotateVectorByQuaternionToRef(this._elbowPosition, this.rotationQuaternion, this._elbowPosition);
+        this._elbowPosition.addInPlace(this._arm.absolutePosition);
+        this._wristPosition.copyFrom(this._elbowPosition).addInPlace(this.targetPosition).scaleInPlace(0.5);
+        let dHand = this.getAnchorPosition().subtract(this._hand.absolutePosition);
+        let handLength = dHand.length();
+        let correction = this.getAnchorPosition().subtract(this._hand.absolutePosition.add(this._hand.forward.scale(handLength)));
+        let currentTarget = this.targetPosition.subtract(correction);
 
-        this._anchor.scaleInPlace(0.5).addInPlace(this.getAnchorPosition().scale(0.5));
-        let handLength = BABYLON.Vector3.Distance(this._anchor, this._wristPosition);
         let armZ = this._v0;
         let foreArmZ = this._v1;
         let handZ = this._v2;
@@ -381,6 +379,9 @@ class PlayerArm extends BABYLON.Mesh {
 
             armZ.copyFrom(this._elbowPosition).subtractInPlace(this._arm.absolutePosition).normalize().scaleInPlace(this._armLength);
             this._elbowPosition.copyFrom(this._arm.absolutePosition).addInPlace(armZ);
+
+            foreArmZ.copyFrom(this._wristPosition).subtractInPlace(this._elbowPosition).normalize().scaleInPlace(this._foreArmLength);
+            this._wristPosition.copyFrom(this._elbowPosition).subtractInPlace(foreArmZ);
         }
 
         this._wristPosition.copyFrom(this._elbowPosition).addInPlace(foreArmZ);
@@ -404,12 +405,13 @@ class PlayerArm extends BABYLON.Mesh {
         let handY = this.handUp;
         if (this.handUpStrictness < 0.5) {
             VMath.QuaternionFromZYAxisToRef(handZ, handY, this._computedHandQ);
-            BABYLON.Quaternion.SlerpToRef(this._hand.rotationQuaternion, this._computedHandQ, 0.2, this._hand.rotationQuaternion);
+            BABYLON.Quaternion.SlerpToRef(this._hand.rotationQuaternion, this._computedHandQ, 1, this._hand.rotationQuaternion);
         }
         else {
             VMath.QuaternionFromYZAxisToRef(handY, handZ, this._computedHandQ);
-            BABYLON.Quaternion.SlerpToRef(this._hand.rotationQuaternion, this._computedHandQ, 0.2, this._hand.rotationQuaternion);
+            BABYLON.Quaternion.SlerpToRef(this._hand.rotationQuaternion, this._computedHandQ, 1, this._hand.rotationQuaternion);
         }
+        console.log(this._arm.absolutePosition);
 
         this._wrist.position.copyFrom(this._wristPosition);
         let wristZ = foreArmZ;
@@ -417,11 +419,13 @@ class PlayerArm extends BABYLON.Mesh {
         VMath.QuaternionFromZYAxisToRef(wristZ, wristY, this._q0);
         BABYLON.Quaternion.SlerpToRef(this._wrist.rotationQuaternion, this._q0, 1, this._wrist.rotationQuaternion);
 
+        /*
         let error = this.targetPosition.subtract(this._anchor);
         if (error.lengthSquared() > 0.1 * 0.1) {
             this.targetOffset.scaleInPlace(0.95);
             error.normalize().scaleInPlace(0.1);
         }
         this.targetOffset.addInPlace(error.scale(1 / 10));
+        */
     }
 }
