@@ -127,7 +127,6 @@ function hideLoading(): void {
 
 window.addEventListener("DOMContentLoaded", () => {
     console.log("DOMContentLoaded " + window.location.href);
-    showLoading(true);
 
     if (window.location.href.indexOf("planet-toy.html") != -1) {
         let planetToy: PlanetToy = new PlanetToy("renderCanvas");
@@ -164,8 +163,16 @@ window.addEventListener("DOMContentLoaded", () => {
             chunckTest.animate();
         });
     }
+    else if (window.location.href.indexOf("vmath-test.html") != -1) {
+        let vMathTest: VMathTest = new VMathTest("renderCanvas");
+        vMathTest.createScene();
+        vMathTest.initialize().then(() => {
+            vMathTest.animate();
+        });
+    }
     else {
         let mainMenu: MainMenu = new MainMenu("renderCanvas");
+        showLoading(true);
         mainMenu.createScene();
         mainMenu.initialize().then(() => {
             mainMenu.animate();

@@ -30,7 +30,7 @@ class PlayerArm extends BABYLON.Mesh {
     private _wrist: BABYLON.Mesh;
     private _hand: BABYLON.Mesh;
     private _fingers: BABYLON.Mesh[][];
-    private _rotationSpeed: number[] = [Math.PI * 0.5, Math.PI * 0.5, Math.PI * 0.5];
+    private _rotationSpeed: number[] = [Math.PI * 0.8, Math.PI * 0.8, Math.PI * 0.8];
 
     private _armLength: number = 0.34;
     private _foreArmLength: number = 0.35;
