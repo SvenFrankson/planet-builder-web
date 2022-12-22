@@ -3,7 +3,8 @@ enum HandMode {
     Point,
     PointPress,
     Grab,
-    Like
+    Like,
+    Contact,
 }
 
 enum HandTargetAnchor {
@@ -29,7 +30,7 @@ class PlayerArm extends BABYLON.Mesh {
     private _wrist: BABYLON.Mesh;
     private _hand: BABYLON.Mesh;
     private _fingers: BABYLON.Mesh[][];
-    private _rotationSpeed: number[] = [0, 0, 0];
+    private _rotationSpeed: number[] = [Math.PI * 0.5, Math.PI * 0.5, Math.PI * 0.5];
 
     private _armLength: number = 0.34;
     private _foreArmLength: number = 0.35;
@@ -231,10 +232,13 @@ class PlayerArm extends BABYLON.Mesh {
             VMath.RotateVectorByQuaternionToRef(target, this.rotationQuaternion, target);
             this.handUp.copyFrom(target);
         }
+        else if (this.handMode === HandMode.Contact) {
+            
+        }
     }
 
     public updateHandUpStrictness(): void {
-        if (this.handMode === HandMode.Grab) {
+        if (this.handMode === HandMode.Grab || this.handMode === HandMode.Contact) {
             this.handUpStrictness = 1;
         }
         else {
@@ -246,7 +250,7 @@ class PlayerArm extends BABYLON.Mesh {
         if (this.handMode === HandMode.Point || this.handMode === HandMode.PointPress) {
             this.targetAnchor = HandTargetAnchor.IndexTip;
         }
-        else if (this.handMode === HandMode.Grab) {
+        else if (this.handMode === HandMode.Grab || this.handMode === HandMode.Contact) {
             this.targetAnchor = HandTargetAnchor.Palm;
         }
         else {
@@ -296,6 +300,13 @@ class PlayerArm extends BABYLON.Mesh {
             this._animateGrabness(2, 1, 0.6);
             this._animateGrabness(3, 1, 0.6);
             this._animateGrabness(4, 1, 0.6);
+        }
+        else if (mode === HandMode.Contact) {
+            this._animateGrabness(0, 0, 0.2);
+            this._animateGrabness(1, 0, 0.2);
+            this._animateGrabness(2, 0, 0.2);
+            this._animateGrabness(3, 0, 0.2);
+            this._animateGrabness(4, 0, 0.2);
         }
         else {
             this._animateGrabness(0, 0.2, 0.6);
@@ -378,9 +389,9 @@ class PlayerArm extends BABYLON.Mesh {
         
         let armY = this.right.scaleInPlace(- this.signLeft * 1);
         VMath.QuaternionFromZYAxisToRef(armZ, armY, this._q0);
-        this._rotationSpeed[0] *= 0.95;
-        this._rotationSpeed[0] += VMath.GetAngleBetweenQuaternions(this._arm.rotationQuaternion, this._q0);
-        this._rotationSpeed[0] = Math.min(Math.PI, this._rotationSpeed[0]);
+        //this._rotationSpeed[0] *= 0.95;
+        //this._rotationSpeed[0] += Math.abs(VMath.GetAngleBetweenQuaternions(this._arm.rotationQuaternion, this._q0));
+        //this._rotationSpeed[0] = Math.min(Math.PI, this._rotationSpeed[0]);
         VMath.StepQuaternionInPlace(this._arm.rotationQuaternion, this._q0, this._rotationSpeed[0] * dt);
         
         //this._foreArm.position.copyFrom(this._elbowPosition);
@@ -390,9 +401,9 @@ class PlayerArm extends BABYLON.Mesh {
 
         let foreArmX = armZ.scale(- 1 * this.signLeft);
         VMath.QuaternionFromZXAxisToRef(foreArmZ, foreArmX, this._q0);
-        this._rotationSpeed[1] *= 0.95;
-        this._rotationSpeed[1] += VMath.GetAngleBetweenQuaternions(this._foreArm.rotationQuaternion, this._q0);
-        this._rotationSpeed[1] = Math.min(Math.PI, this._rotationSpeed[1]);
+        //this._rotationSpeed[1] *= 0.95;
+        //this._rotationSpeed[1] += Math.abs(VMath.GetAngleBetweenQuaternions(this._foreArm.rotationQuaternion, this._q0));
+        //this._rotationSpeed[1] = Math.min(Math.PI, this._rotationSpeed[1]);
         VMath.StepQuaternionInPlace(this._foreArm.rotationQuaternion, this._q0,  this._rotationSpeed[1] * dt);
 
         this._elbow.position.copyFrom(this._foreArm.position);
@@ -407,16 +418,16 @@ class PlayerArm extends BABYLON.Mesh {
         let handY = this.handUp;
         if (this.handUpStrictness < 0.5) {
             VMath.QuaternionFromZYAxisToRef(handZ, handY, this._computedHandQ);
-            this._rotationSpeed[2] *= 0.95;
-            this._rotationSpeed[2] += VMath.GetAngleBetweenQuaternions(this._hand.rotationQuaternion, this._computedHandQ);
-            this._rotationSpeed[2] = Math.min(Math.PI, this._rotationSpeed[2]);
+            //this._rotationSpeed[2] *= 0.95;
+            //this._rotationSpeed[2] += Math.abs(VMath.GetAngleBetweenQuaternions(this._hand.rotationQuaternion, this._computedHandQ));
+            //this._rotationSpeed[2] = Math.min(Math.PI, this._rotationSpeed[2]);
             VMath.StepQuaternionInPlace(this._hand.rotationQuaternion, this._computedHandQ,  this._rotationSpeed[2] * dt);
         }
         else {
             VMath.QuaternionFromYZAxisToRef(handY, handZ, this._computedHandQ);
-            this._rotationSpeed[2] *= 0.95;
-            this._rotationSpeed[2] += VMath.GetAngleBetweenQuaternions(this._hand.rotationQuaternion, this._computedHandQ);
-            this._rotationSpeed[2] = Math.min(Math.PI, this._rotationSpeed[2]);
+            //this._rotationSpeed[2] *= 0.95;
+            //this._rotationSpeed[2] += Math.abs(VMath.GetAngleBetweenQuaternions(this._hand.rotationQuaternion, this._computedHandQ));
+            //this._rotationSpeed[2] = Math.min(Math.PI, this._rotationSpeed[2]);
             VMath.StepQuaternionInPlace(this._hand.rotationQuaternion, this._computedHandQ,  this._rotationSpeed[2] * dt);
         }
 
@@ -424,6 +435,8 @@ class PlayerArm extends BABYLON.Mesh {
         let wristZ = foreArmZ;
         let wristY = this._hand.up;
         VMath.QuaternionFromZYAxisToRef(wristZ, wristY, this._wrist.rotationQuaternion);
+
+        console.log(this._rotationSpeed.map(rs => { return rs.toFixed(3)}))
 
         /*
         let error = this.targetPosition.subtract(this._anchor);
