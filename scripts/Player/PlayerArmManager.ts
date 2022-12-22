@@ -1,7 +1,7 @@
 enum ArmManagerMode {
     Idle,
     Aim,
-    Contact
+    Lean
 }
 
 class PlayerArmManager {
@@ -69,9 +69,6 @@ class PlayerArmManager {
         }
         else if (this.mode === ArmManagerMode.Aim) {
             this._updateAim();
-        }
-        else if (this.mode === ArmManagerMode.Contact) {
-            this._updateContact();
         }
     }
 
@@ -174,40 +171,6 @@ class PlayerArmManager {
         this._updateRequestedTargetIdle(this.other(this._aimingArm));
     }
 
-    private _contactArm: PlayerArm;
-    private _contactPosition: BABYLON.Vector3 = BABYLON.Vector3.Zero();
-    private _contactNormal: BABYLON.Vector3 = BABYLON.Vector3.One();
-    private _updateContact(): void {
-        // 1 - Track which arm should be used.
-        if (!this._contactArm) {
-            this._contactArm = this.rightArm;
-        }
-        let dx = BABYLON.Vector3.Dot(this._contactPosition, this.player.right)
-        if (this._contactArm === this.leftArm && dx > 0.2) {
-            this._contactArm = this.rightArm;
-            if (this.leftArm.handMode != HandMode.Contact) {
-                this.leftArm.setHandMode(HandMode.Contact);
-            }
-        }
-        else if (this._contactArm === this.rightArm && dx < - 0.2) {
-            this._contactArm = this.leftArm;
-            if (this.rightArm.handMode != HandMode.Contact) {
-                this.rightArm.setHandMode(HandMode.Contact);
-            }
-        }
-
-        // 2 - Update the way the hand should interact depending on aimed object.
-        if (this._contactArm.handMode != HandMode.Contact) {
-            this._contactArm.setHandMode(HandMode.Contact);
-        }
-
-        // 3 - Update arm target position.
-        this._aimingArm.setTarget(this._contactPosition);
-        this._aimingArm.targetUp.copyFrom(this._contactNormal);
-
-        this._updateRequestedTargetIdle(this.other(this._contactArm));
-    }
-
     public async startActionAnimation(actionCallback?: () => void): Promise<void> {
         if (this._aimingArm) {
             this._aimingArm.setHandMode(HandMode.PointPress);
@@ -217,16 +180,6 @@ class PlayerArmManager {
             }
             this._aimingArm.setHandMode(HandMode.Point);
             await this._animateAimingDistance(0.1, 0.3);
-        }
-    }
-
-    public async startWallContactAnimation(contactPoint: BABYLON.Vector3, contactNormal: BABYLON.Vector3): Promise<void> {
-        if (this.mode != ArmManagerMode.Contact) {
-            this.mode = ArmManagerMode.Contact;
-            this._contactPosition.copyFrom(contactPoint);
-            this._contactNormal.copyFrom(contactNormal);
-            await this._wait(2);
-            this.mode = ArmManagerMode.Idle;
         }
     }
 
@@ -253,30 +206,6 @@ class PlayerArmManager {
                     }
                 }
                 this.player.scene.onBeforeRenderObservable.add(this._animateAimingDistanceCB);
-            });
-        }
-    }
-
-    private _waitCB: () => void;
-    private async _wait(duration: number = 1): Promise<void> {
-        if (this.player.scene) {
-            if (this._waitCB) {
-                this.player.scene.onBeforeRenderObservable.removeCallback(this._waitCB);
-            }
-            return new Promise<void>(resolve => {
-                let t = 0;
-                this._waitCB = () => {
-                    t += this.player.scene.getEngine().getDeltaTime() / 1000;
-                    if (t < duration) {
-                        // wait
-                    }
-                    else {
-                        this.player.scene.onBeforeRenderObservable.removeCallback(this._waitCB);
-                        this._waitCB = undefined;
-                        resolve();
-                    }
-                }
-                this.player.scene.onBeforeRenderObservable.add(this._waitCB);
             });
         }
     }

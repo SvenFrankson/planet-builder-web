@@ -69,7 +69,7 @@ class VMath {
     }
 
     public static GetQuaternionAngle(q: BABYLON.Quaternion): number {
-        return 2 * Math.acos(Math.min(Math.max(q.w, - 1), 1));
+        return 2 * Math.acos(Math.min(Math.abs(q.w), 1));
     }
 
     private static _Tmp6: BABYLON.Quaternion = BABYLON.Quaternion.Identity();

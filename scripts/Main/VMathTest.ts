@@ -28,8 +28,6 @@ class VMathTest extends Main {
 
     public async initialize(): Promise<void> {
 		return new Promise<void>(resolve => {
-            let ground = BABYLON.MeshBuilder.CreateGround("ground", { width: 20, height: 20 });
-            ground.position.y = - 1;
 
             let meshA = BABYLON.MeshBuilder.CreateLines(
                 "object-A",
@@ -48,12 +46,34 @@ class VMathTest extends Main {
                 },
                 this.scene
             );
-            meshB.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, 2 * Math.PI * Math.random());
+            let a = 2 * Math.PI * Math.random();
+            meshB.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, a);
+
+            let meshC = BABYLON.MeshBuilder.CreateLines(
+                "object-C",
+                {
+                    points: [BABYLON.Vector3.Zero(), new BABYLON.Vector3(0, 0, 5)],
+                    colors: [new BABYLON.Color4(0, 0, 1, 1), new BABYLON.Color4(0, 0, 1, 1)]
+                },
+                this.scene
+            );
+            meshC.rotationQuaternion = BABYLON.Quaternion.Slerp(meshA.rotationQuaternion, meshB.rotationQuaternion, 0.5);
 
             let angle = VMath.GetAngleBetweenQuaternions(meshA.rotationQuaternion, meshB.rotationQuaternion) / Math.PI * 180;
-            let value = new Number3D("angle", Math.round(angle), 1);
-            value.redraw();
-            value.position.z = 10;
+            let valueDisplay = new Number3D("angle", Math.round(angle), 1);
+            valueDisplay.redraw();
+            valueDisplay.position.z = 10;
+
+            setInterval(() => {
+                a += Math.PI * 0.003;
+                meshB.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, a);
+                
+                meshC.rotationQuaternion = BABYLON.Quaternion.Slerp(meshA.rotationQuaternion, meshB.rotationQuaternion, 0.5);
+    
+                let angle = VMath.GetAngleBetweenQuaternions(meshA.rotationQuaternion, meshB.rotationQuaternion) / Math.PI * 180;
+                valueDisplay.value = Math.round(angle);
+                valueDisplay.redraw();
+            }, 15);
 
 			resolve();
 		})
