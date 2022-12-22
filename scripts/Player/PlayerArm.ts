@@ -436,8 +436,6 @@ class PlayerArm extends BABYLON.Mesh {
         let wristY = this._hand.up;
         VMath.QuaternionFromZYAxisToRef(wristZ, wristY, this._wrist.rotationQuaternion);
 
-        console.log(this._rotationSpeed.map(rs => { return rs.toFixed(3)}))
-
         /*
         let error = this.targetPosition.subtract(this._anchor);
         if (error.lengthSquared() > 0.1 * 0.1) {
