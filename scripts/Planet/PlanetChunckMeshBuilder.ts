@@ -293,10 +293,10 @@ class PlanetChunckMeshBuilder {
                         }
                     }
                     
-                    if (cornerCase && false) { 
+                    if (cornerCase) { 
                         let d = chunck.GetData(i, j, k);
                         if (d > BlockType.Water) {
-                            if (chunck.GetData(i, j, k + 1) === BlockType.None) {
+                            if (chunck.GetData(i, j, k + 1) <= BlockType.Water) {
                                 let iGlobal: number = i + iPos * PlanetTools.CHUNCKSIZE;
                                 let jGlobal: number = j + jPos * PlanetTools.CHUNCKSIZE;
                                 PCMB.GetVertexToRef(2 * size, 2 * (iGlobal) + 1, 2 * (jGlobal) + 1, PCMB.tmpVertices[0]);
@@ -341,6 +341,8 @@ class PlanetChunckMeshBuilder {
                                 let u = d / 128;
                                 let v = d / 128;
                                 uvs.push(u, v, u, v, u, v);
+                                
+                                trianglesData.push(d);
                             }
                         }
                     }
