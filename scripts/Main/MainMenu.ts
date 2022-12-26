@@ -63,7 +63,7 @@ class MainMenu extends Main {
 			//testGrab.position = new BABYLON.Vector3(- 0.3, this._testAltitude + 1.1, - 0.1);
 			//testGrab.instantiate();
 			
-			let mainMenuPlanet: Planet = PlanetGeneratorFactory.Create(BABYLON.Vector3.Zero(), PlanetGeneratorType.Earth, 4, this.scene);
+			let mainMenuPlanet: Planet = PlanetGeneratorFactory.Create(BABYLON.Vector3.Zero(), PlanetGeneratorType.Moon, 2, this.scene);
 			mainMenuPlanet.instantiate();
 			this.planets = [mainMenuPlanet];
 			
@@ -143,14 +143,14 @@ class MainMenu extends Main {
 	}
 
 	public async generatePlanets(): Promise<void> {
-		let orbitCount = 5;
+		let orbitCount = 3;
 		let orbitRadius = 500;
 		let alpha = 0;
 		for (let i = 0; i < orbitCount; i++) {
 			alpha += Math.PI * 0.5 + Math.PI * Math.random();
-			let kPosMax = Math.floor(3 + 10 * Math.random());
-			//let planet: Planet = PlanetGeneratorFactory.Create(new BABYLON.Vector3(Math.cos(alpha) * orbitRadius * (i + 1), 0, Math.sin(alpha) * orbitRadius * (i + 1)), Math.floor(Math.random() * 2 + 1), kPosMax, this.scene);
-			let planet: Planet = PlanetGeneratorFactory.Create(new BABYLON.Vector3(Math.cos(alpha) * orbitRadius * (i + 1), 0, Math.sin(alpha) * orbitRadius * (i + 1)), PlanetGeneratorType.Earth, kPosMax, this.scene);
+			let kPosMax = Math.floor(3 + 8 * Math.random());
+			let planet: Planet = PlanetGeneratorFactory.Create(new BABYLON.Vector3(Math.cos(alpha) * orbitRadius * (i + 1), 0, Math.sin(alpha) * orbitRadius * (i + 1)), i + 1, kPosMax, this.scene);
+			//let planet: Planet = PlanetGeneratorFactory.Create(new BABYLON.Vector3(Math.cos(alpha) * orbitRadius * (i + 1), 0, Math.sin(alpha) * orbitRadius * (i + 1)), PlanetGeneratorType.Earth, kPosMax, this.scene);
 			planet.instantiate();
 			this.planets.push(planet);
 		}

@@ -7,6 +7,7 @@ class PlanetGeneratorMars extends PlanetGenerator {
 
     constructor(planet: Planet, private _mountainHeight: number) {
         super(planet);
+        this.type = "Red";
         this._mainHeightMap = PlanetHeightMap.CreateMap(planet.degree);
         this._rockMap = PlanetHeightMap.CreateMap(planet.degree, { firstNoiseDegree : planet.degree - 3});
 

@@ -50,6 +50,7 @@ class PlanetGeneratorFactory {
 
 abstract class PlanetGenerator {
 
+    public type: string = "Unknown";
     public heightMaps: PlanetHeightMap[];
     public altitudeMap: PlanetHeightMap;
 

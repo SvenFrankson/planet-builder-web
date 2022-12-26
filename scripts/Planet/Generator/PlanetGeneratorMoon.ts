@@ -5,6 +5,7 @@ class PlanetGeneratorMoon extends PlanetGenerator {
 
     constructor(planet: Planet) {
         super(planet);
+        this.type = "Moon";
 
         this.altitudeMap = PlanetHeightMap.CreateConstantMap(planet.degree, this.planet.seaLevelRatio);
 

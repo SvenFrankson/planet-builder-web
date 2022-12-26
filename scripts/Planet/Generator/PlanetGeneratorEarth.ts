@@ -9,6 +9,7 @@ class PlanetGeneratorEarth extends PlanetGenerator {
 
     constructor(planet: Planet, private _mountainHeight: number) {
         super(planet);
+        this.type = "Sunny";
         let timers: number[];
         let logOutput: string;
         let useLog = DebugDefine.LOG_PLANETMAP_PERFORMANCE;
