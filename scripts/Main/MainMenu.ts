@@ -63,7 +63,7 @@ class MainMenu extends Main {
 			//testGrab.position = new BABYLON.Vector3(- 0.3, this._testAltitude + 1.1, - 0.1);
 			//testGrab.instantiate();
 			
-			let mainMenuPlanet: Planet = PlanetGeneratorFactory.Create(BABYLON.Vector3.Zero(), PlanetGeneratorType.Moon, 2, this.scene);
+			let mainMenuPlanet: Planet = PlanetGeneratorFactory.Create(BABYLON.Vector3.Zero(), PlanetGeneratorType.Earth, 3, this.scene);
 			mainMenuPlanet.instantiate();
 			this.planets = [mainMenuPlanet];
 			
@@ -72,7 +72,8 @@ class MainMenu extends Main {
 				Math.random() - 0.5,
 				Math.random() - 0.5
 			);
-			dir.copyFromFloats(0, 1, 0);
+			dir.normalize();
+			//dir.copyFromFloats(0, 1, 0);
 			let side = PlanetTools.PlanetPositionToPlanetSide(mainMenuPlanet, dir);
 			let globalIJK = PlanetTools.PlanetDirectionToGlobalIJK(mainMenuPlanet, dir);
 			let pos = PlanetTools.GlobalIJKToPlanetPosition(side, globalIJK);
@@ -143,7 +144,7 @@ class MainMenu extends Main {
 	}
 
 	public async generatePlanets(): Promise<void> {
-		let orbitCount = 3;
+		let orbitCount = 0;
 		let orbitRadius = 500;
 		let alpha = 0;
 		for (let i = 0; i < orbitCount; i++) {

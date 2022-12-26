@@ -39,7 +39,7 @@ void main() {
       ambiantLightFactor = 0.4;
    }
 
-   float lightFactor = sunLightFactor * 0.8 + 0.2;
+   float lightFactor = sunFactor * sunLightFactor * 0.8 + 0.2;
 
    lightFactor = round(lightFactor * 5.) / 5.;
    if (flatness < 0.6 && flatness > - 0.6) {
