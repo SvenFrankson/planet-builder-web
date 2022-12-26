@@ -47,6 +47,7 @@ class OutlinePostProcess {
 			{
 				vec4 d = texture2D(depthSampler, vUV);
 				float depth = d.r * (1000.0 - 0.1) + 0.1;
+				float depthFactor = sqrt(d.r);
 				
 				float nD[9];
 				make_kernel_depth( nD, depthSampler, vUV );
@@ -61,11 +62,11 @@ class OutlinePostProcess {
 				vec4 sobel = sqrt((sobel_edge_h * sobel_edge_h) + (sobel_edge_v * sobel_edge_v));
 				
 				gl_FragColor = n[4];
-				if (max(sobel.r, max(sobel.g, sobel.b)) > 0.2) {
+				if (max(sobel.r, max(sobel.g, sobel.b)) > 0.4 * depthFactor) {
 					gl_FragColor = vec4(0.);
 					gl_FragColor.a = 1.0;
 				}
-				if (sobel_depth > 0.005) {
+				if (sobel_depth > 0.02 * depthFactor) {
 					gl_FragColor = vec4(0.);
 					gl_FragColor.a = 1.0;
 				}

@@ -63,7 +63,7 @@ class MainMenu extends Main {
 			//testGrab.position = new BABYLON.Vector3(- 0.3, this._testAltitude + 1.1, - 0.1);
 			//testGrab.instantiate();
 			
-			let mainMenuPlanet: Planet = PlanetGeneratorFactory.Create(BABYLON.Vector3.Zero(), PlanetGeneratorType.Earth, 3, this.scene);
+			let mainMenuPlanet: Planet = PlanetGeneratorFactory.Create(BABYLON.Vector3.Zero(), PlanetGeneratorType.Moon, 2, this.scene);
 			mainMenuPlanet.instantiate();
 			this.planets = [mainMenuPlanet];
 			
@@ -73,7 +73,7 @@ class MainMenu extends Main {
 				Math.random() - 0.5
 			);
 			dir.normalize();
-			//dir.copyFromFloats(0, 1, 0);
+			dir.copyFromFloats(0, 1, 0);
 			let side = PlanetTools.PlanetPositionToPlanetSide(mainMenuPlanet, dir);
 			let globalIJK = PlanetTools.PlanetDirectionToGlobalIJK(mainMenuPlanet, dir);
 			let pos = PlanetTools.GlobalIJKToPlanetPosition(side, globalIJK);
@@ -121,8 +121,8 @@ class MainMenu extends Main {
 
 						setTimeout(() => {
 							hideLoading();
-							mainPanel.openAtPlayerPosition();
-						}, 1000);
+							//mainPanel.openAtPlayerPosition();
+						}, 500);
 					});
 						
 					//let debugAltimeter = new Altimeter3D(this.player);
@@ -144,16 +144,16 @@ class MainMenu extends Main {
 	}
 
 	public async generatePlanets(): Promise<void> {
-		let orbitCount = 0;
+		let orbitCount = 2;
 		let orbitRadius = 500;
-		let alpha = 0;
+		let alpha = Math.PI / 2;
 		for (let i = 0; i < orbitCount; i++) {
-			alpha += Math.PI * 0.5 + Math.PI * Math.random();
 			let kPosMax = Math.floor(3 + 8 * Math.random());
 			let planet: Planet = PlanetGeneratorFactory.Create(new BABYLON.Vector3(Math.cos(alpha) * orbitRadius * (i + 1), 0, Math.sin(alpha) * orbitRadius * (i + 1)), i + 1, kPosMax, this.scene);
 			//let planet: Planet = PlanetGeneratorFactory.Create(new BABYLON.Vector3(Math.cos(alpha) * orbitRadius * (i + 1), 0, Math.sin(alpha) * orbitRadius * (i + 1)), PlanetGeneratorType.Earth, kPosMax, this.scene);
 			planet.instantiate();
 			this.planets.push(planet);
+			alpha += Math.PI * 0.5 + Math.PI * Math.random();
 		}
 	}
 }
