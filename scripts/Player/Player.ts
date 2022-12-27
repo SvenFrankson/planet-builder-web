@@ -266,8 +266,8 @@ class Player extends BABYLON.Mesh {
             }
         }
 
-        let rotationPower: number = this.inputHeadRight * 0.05;
-        let rotationCamPower: number = this.inputHeadUp * 0.05;
+        let rotationPower: number = this.inputHeadRight * Math.PI * deltaTime;
+        let rotationCamPower: number = this.inputHeadUp * Math.PI * deltaTime;
         let localY: BABYLON.Vector3 = BABYLON.Vector3.TransformNormal(BABYLON.Axis.Y, this.getWorldMatrix());
         let rotation: BABYLON.Quaternion = BABYLON.Quaternion.RotationAxis(localY, rotationPower);
         this.rotationQuaternion = rotation.multiply(this.rotationQuaternion);
@@ -286,8 +286,8 @@ class Player extends BABYLON.Mesh {
         }
         */
 
-        this.inputHeadRight *= 0.8;
-        this.inputHeadUp *= 0.8;
+        this.inputHeadRight *= 0.95;
+        this.inputHeadUp *= 0.95;
 
         this._collisionPositions[0] = this._headPosition;
         this._collisionPositions[1] = this._feetPosition;

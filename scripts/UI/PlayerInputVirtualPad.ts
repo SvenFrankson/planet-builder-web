@@ -86,8 +86,6 @@ class PlayerInputVirtualPad extends PlayerInput {
                 this._pointerDown = true;
                 this._dx = dx;
                 this._dy = dy;
-                this.updatePad(this._dx, this._dy);
-                this.updatePilot(this._dx, this._dy);
             }
         });
 
@@ -99,15 +97,11 @@ class PlayerInputVirtualPad extends PlayerInput {
                 if (dx * dx + dy * dy < 1) {
                     this._dx = dx;
                     this._dy = dy;
-                    this.updatePad(this._dx, this._dy);
-                    this.updatePilot(this._dx, this._dy);
                 }
                 else if (dx * dx + dy * dy < 4) {
                     let l = Math.sqrt(dx * dx + dy * dy);
                     this._dx = dx / l;
                     this._dy = dy / l;
-                    this.updatePad(this._dx, this._dy);
-                    this.updatePilot(this._dx, this._dy);
                 }
             }
         });
@@ -143,16 +137,14 @@ class PlayerInputVirtualPad extends PlayerInput {
             if (Math.abs(this._dx) > 0.001 || Math.abs(this._dy) > 0.001) {
                 this._dx *= 0.9;
                 this._dy *= 0.9;
-                if (Math.abs(this._dx) > 0.001 || Math.abs(this._dy) > 0.001) {
-                    this.updatePad(this._dx, this._dy);
-                    this.updatePilot(this._dx, this._dy);
-                }
-                else {
-                    this.updatePad(0, 0);
-                    this.updatePilot(0, 0);
+                if (Math.abs(this._dx) < 0.001 && Math.abs(this._dy) < 0.001) {
+                    this._dx = 0;
+                    this._dy = 0;
                 }
             }
         }
+        this.updatePad(this._dx, this._dy);
+        this.updatePilot(this._dx, this._dy);
     }
 
     public updatePad(dx: number, dy: number): void {

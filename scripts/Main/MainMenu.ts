@@ -119,9 +119,6 @@ class MainMenu extends Main {
 					this.onChunckManagerNotWorking(async () => {
 						await this.player.initialize();
 						this.player.registerControl();
-						
-						let movePad = new PlayerInputMovePad(this.player);
-						movePad.connectInput(true);
 
 						setTimeout(() => {
 							hideLoading();

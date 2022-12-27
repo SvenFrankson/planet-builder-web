@@ -47,6 +47,7 @@ class InputManager {
     public initialize(player: Player): void {
         this.player = player;
         
+        window.addEventListener("touchstart", this.onTouchStart.bind(this));
         window.addEventListener("pointerdown", (ev: PointerEvent) => {
             this.updateAimedElement(ev.x, ev.y);
             this.isPointerDown = true;
@@ -117,6 +118,22 @@ class InputManager {
                 }
             }
         });
+    }
+
+    public onTouchStart(): void {
+        if (!this._firstTouchStartTriggered) {
+            this.onFirstTouchStart();
+        }
+    }
+
+    private _firstTouchStartTriggered: boolean = false;
+    private onFirstTouchStart(): void {	
+        let movePad = new PlayerInputMovePad(this.player);
+        movePad.connectInput(true);
+        
+        let headPad = new PlayerInputHeadPad(this.player);
+        headPad.connectInput(false);
+        this._firstTouchStartTriggered = true;
     }
 
     public addKeyDownListener(callback: (k: KeyInput) => any): void {
