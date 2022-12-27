@@ -79,7 +79,7 @@ class PlayerInputVirtualPad extends PlayerInput {
         }
         this.centerY = this.clientHeight - this.size * 0.5 - margin;
 
-        this.game.canvas.addEventListener("pointerdown", (ev: PointerEvent) => {
+        document.body.addEventListener("pointerdown", (ev: PointerEvent) => {
             let dx = this.clientXToDX(ev.clientX);
             let dy = this.clientYToDY(ev.clientY);
             if (dx * dx + dy * dy < 1) {
@@ -91,7 +91,7 @@ class PlayerInputVirtualPad extends PlayerInput {
             }
         });
 
-        this.game.canvas.addEventListener("pointermove", (ev: PointerEvent) => {
+        document.body.addEventListener("pointermove", (ev: PointerEvent) => {
             if (this._pointerDown) {
                 let dx = this.clientXToDX(ev.clientX);
                 let dy = this.clientYToDY(ev.clientY);
@@ -112,7 +112,7 @@ class PlayerInputVirtualPad extends PlayerInput {
             }
         });
 
-        this.game.canvas.addEventListener("pointerup", (ev: PointerEvent) => {
+        document.body.addEventListener("pointerup", (ev: PointerEvent) => {
             let dx = this.clientXToDX(ev.clientX);
             let dy = this.clientYToDY(ev.clientY);
             if (dx * dx + dy * dy < 4) {

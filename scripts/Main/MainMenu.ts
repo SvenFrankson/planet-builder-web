@@ -87,11 +87,13 @@ class MainMenu extends Main {
 			this.cameraManager.player = this.player;
 			this.cameraManager.setMode(CameraMode.Player);
 
+			/*
             let debugPlanetPerf = new DebugPlanetPerf(this, true);
             debugPlanetPerf.show();
 
 			let debugPlayerPosition = new DebugPlayerPosition(this.player);
 			debugPlayerPosition.show();
+			*/
 
 			this.planetSky = new PlanetSky(this.scene);
 			this.planetSky.setInvertLightDir(BABYLON.Vector3.One().normalize());
@@ -117,7 +119,9 @@ class MainMenu extends Main {
 					this.onChunckManagerNotWorking(async () => {
 						await this.player.initialize();
 						this.player.registerControl();
-
+						
+						let movePad = new PlayerInputMovePad(this.player);
+						movePad.connectInput(true);
 
 						setTimeout(() => {
 							hideLoading();

@@ -5,9 +5,7 @@
 		<title>Planet Builder</title>
 		<script src="./lib/babylon.max.js"></script>
 		<script src="./scripts/app.js"></script>
-		<script src="https://preview.babylonjs.com/loaders/babylonjs.loaders.js"></script>
-		<link rel="stylesheet" media="screen" href="https://fontlibrary.org//face/xolonium" type="text/css"/>
-		<link rel="stylesheet" media="screen" href="https://fontlibrary.org//face/merom-sans" type="text/css"/>
+		<script src="./lib/babylonjs.loaders.js"></script>
 		<link rel="stylesheet" type="text/css" href="./styles/app.css">
 	</head>
 	<body>
@@ -15,15 +13,5 @@
 			<div>LOADING<span id="load-0"></span><span id="load-1">.</span><span id="load-2">..</span><span id="load-3">...</span></div>
 		</div>
 		<canvas id="renderCanvas"></canvas>
-		<div id="debug-container">				
-			<div id="debug-player-position" class="debug hidden">
-				<debug-display-text-value id="player-coordinates" label="Coordinates"></debug-display-text-value>
-				<debug-display-vector3-value id="player-position" label="Position" decimals="3"></debug-display-vector3-value>
-				<debug-display-vector3-value id="player-local-position" label="Local Position" decimals="3"></debug-display-vector3-value>
-				<debug-display-text-value id="player-planet-side" label="Side"></debug-display-text-value>
-				<debug-display-vector3-value id="player-global-ijk" label="Global" useIJK="true" decimals="0"></debug-display-vector3-value>
-				<debug-display-vector3-value id="player-chunck" label="Chunck" useIJK="true" decimals="0"></debug-display-vector3-value>
-				<debug-display-vector3-value id="player-local-ijk" label="Local" useIJK="true" decimals="0"></debug-display-vector3-value>
-			</div>
 	</body>
 </html>
