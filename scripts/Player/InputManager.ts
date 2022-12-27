@@ -91,33 +91,65 @@ class InputManager {
         window.addEventListener("keydown", (e) => {
             let keyInput = this.keyInputMap.get(e.code);
             if (isFinite(keyInput)) {
-                this.keyInputDown.push(keyInput);
-                for (let i = 0; i < this.keyDownListeners.length; i++) {
-                    this.keyDownListeners[i](keyInput);
-                }
-                let listeners = this.mappedKeyDownListeners.get(keyInput);
-                if (listeners) {
-                    for (let i = 0; i < listeners.length; i++) {
-                        listeners[i]();
-                    }
-                }
+                this.doKeyInputDown(keyInput);
             }
         });
         window.addEventListener("keyup", (e) => {
             let keyInput = this.keyInputMap.get(e.code);
             if (isFinite(keyInput)) {
-                this.keyInputDown.remove(keyInput);
-                for (let i = 0; i < this.keyUpListeners.length; i++) {
-                    this.keyUpListeners[i](keyInput);
-                }
-                let listeners = this.mappedKeyUpListeners.get(keyInput);
-                if (listeners) {
-                    for (let i = 0; i < listeners.length; i++) {
-                        listeners[i]();
-                    }
-                }
+                this.doKeyInputUp(keyInput);
             }
         });
+        document.getElementById("touch-menu").addEventListener("pointerdown", () => {
+            let keyInput = KeyInput.MAIN_MENU;
+            if (isFinite(keyInput)) {
+                this.doKeyInputDown(keyInput);
+            }
+        })
+        document.getElementById("touch-menu").addEventListener("pointerup", () => {
+            let keyInput = KeyInput.MAIN_MENU;
+            if (isFinite(keyInput)) {
+                this.doKeyInputUp(keyInput);
+            }
+        })
+        document.getElementById("touch-jump").addEventListener("pointerdown", () => {
+            let keyInput = KeyInput.JUMP;
+            if (isFinite(keyInput)) {
+                this.doKeyInputDown(keyInput);
+            }
+        })
+        document.getElementById("touch-jump").addEventListener("pointerup", () => {
+            let keyInput = KeyInput.JUMP;
+            if (isFinite(keyInput)) {
+                this.doKeyInputUp(keyInput);
+            }
+        })
+    }
+
+    private doKeyInputDown(keyInput: KeyInput): void {
+        this.keyInputDown.push(keyInput);
+        for (let i = 0; i < this.keyDownListeners.length; i++) {
+            this.keyDownListeners[i](keyInput);
+        }
+        let listeners = this.mappedKeyDownListeners.get(keyInput);
+        if (listeners) {
+            for (let i = 0; i < listeners.length; i++) {
+                listeners[i]();
+            }
+        }
+    }
+
+    private doKeyInputUp(keyInput: KeyInput): void {
+        this.keyInputDown.remove(keyInput);
+        for (let i = 0; i < this.keyUpListeners.length; i++) {
+            this.keyUpListeners[i](keyInput);
+        }
+        let listeners = this.mappedKeyUpListeners.get(keyInput);
+        if (listeners) {
+            for (let i = 0; i < listeners.length; i++) {
+                listeners[i]();
+            }
+        }
     }
 
     public onTouchStart(): void {
@@ -134,6 +166,9 @@ class InputManager {
         let headPad = new PlayerInputHeadPad(this.player);
         headPad.connectInput(false);
         this._firstTouchStartTriggered = true;
+
+        document.getElementById("touch-menu").style.display = "block";
+        document.getElementById("touch-jump").style.display = "block";
     }
 
     public addKeyDownListener(callback: (k: KeyInput) => any): void {

@@ -89,6 +89,13 @@ class Player extends BABYLON.Mesh {
         this.inputManager.addMappedKeyUpListener(KeyInput.MOVE_LEFT, () => {
             this.inputRight = 0;
         });
+        this.inputManager.addMappedKeyUpListener(KeyInput.JUMP, () => {
+            if (this._isGrounded || this.godMode) {
+                this.velocity.addInPlace(this.getDirection(BABYLON.Axis.Y).scale(8));
+                this._isGrounded = false;
+                this._jumpTimer = 0.2;
+            }
+        });
         this.main.canvas.addEventListener("keyup", this._keyUp);
 
         this.main.canvas.addEventListener("pointermove", this._mouseMove);
@@ -127,13 +134,6 @@ class Player extends BABYLON.Mesh {
                 this.initialize();
             }
             this.godMode = !this.godMode;
-        }
-        if (e.code === "Space") {
-            if (this._isGrounded || this.godMode) {
-                this.velocity.addInPlace(this.getDirection(BABYLON.Axis.Y).scale(8));
-                this._isGrounded = false;
-                this._jumpTimer = 0.2;
-            }
         }
         if (e.code === "ControlLeft") {
             if (this.godMode) {

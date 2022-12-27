@@ -186,3 +186,27 @@ debug-display-text-value {
 .debug.hidden {
 	display: none;
 }
+
+button {
+	width: 20%;
+	height: 7%;
+	font-size: 40px;
+	font-family: XoloniumRegular;
+	background-color: black;
+	color: white;
+	user-select: none;
+}
+
+#touch-menu {
+	position: fixed;
+	bottom: 250px;
+	left: 40%;
+	display: none;
+}
+
+#touch-jump {
+	position: fixed;
+	bottom: 50px;
+	left: 40%;
+	display: none;
+}
