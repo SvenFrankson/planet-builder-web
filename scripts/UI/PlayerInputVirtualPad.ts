@@ -141,10 +141,14 @@ class PlayerInputVirtualPad extends PlayerInput {
                     this._dx = 0;
                     this._dy = 0;
                 }
+                this.updatePad(this._dx, this._dy);
+                this.updatePilot(this._dx, this._dy);
             }
         }
-        this.updatePad(this._dx, this._dy);
-        this.updatePilot(this._dx, this._dy);
+        else {
+            this.updatePad(this._dx, this._dy);
+            this.updatePilot(this._dx, this._dy);
+        }
     }
 
     public updatePad(dx: number, dy: number): void {
