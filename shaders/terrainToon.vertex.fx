@@ -4,6 +4,7 @@ precision highp float;
 in vec3 position;
 in vec3 normal;
 in vec2 uv;
+in vec2 uv2;
 in vec4 color;
 
 uniform mat4 worldViewProjection;
@@ -13,6 +14,7 @@ uniform vec3 lightInvDirW;
 out vec3 vPositionW;
 out vec3 vNormalW;
 out vec2 vUv;
+out vec2 vUv2;
 out vec4 vColor;
 
 void main()
@@ -23,5 +25,6 @@ void main()
   vNormalW = normalize(vec3(world * vec4(normal, 0.0)));
 
   vUv = uv;
+  vUv2 = uv2;
   vColor = color;
 }

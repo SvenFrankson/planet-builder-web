@@ -251,6 +251,7 @@ class PlanetChunckMeshBuilder {
         PCMB.GetVertexToRef(size, iPos * PlanetTools.CHUNCKSIZE, jPos * PlanetTools.CHUNCKSIZE, PCMB.tmpVertices[0]);
         PCMB.GetVertexToRef(size, (iPos + 1) * PlanetTools.CHUNCKSIZE, (jPos + 1) * PlanetTools.CHUNCKSIZE, PCMB.tmpVertices[1]);
         chunckDir.copyFrom(PCMB.tmpVertices[1]).subtractInPlace(PCMB.tmpVertices[0]).normalize();
+        BABYLON.Vector3.TransformNormalToRef(chunckDir, chunck.planetSide.getWorldMatrix(), chunckDir);
 
         let uL = 1 / (PlanetTools.CHUNCKSIZE - chunck.firstI);
         let vL = 1 / (PlanetTools.CHUNCKSIZE - chunck.firstJ);
@@ -259,9 +260,9 @@ class PlanetChunckMeshBuilder {
         for (let i: number = chunck.firstI; i < PlanetTools.CHUNCKSIZE; i++) {
             for (let j: number = chunck.firstJ; j < chunck.lastJ; j++) {
                 for (let k: number = chunck.firstK; k < PlanetTools.CHUNCKSIZE; k++) {
-                    let u = i - chunck.firstI / (PlanetTools.CHUNCKSIZE - chunck.firstI);
-                    let v = j - chunck.firstJ / (PlanetTools.CHUNCKSIZE - chunck.firstJ);
-                    let w = k - chunck.firstK / (PlanetTools.CHUNCKSIZE - chunck.firstK);
+                    let u = (i - chunck.firstI) / (PlanetTools.CHUNCKSIZE - chunck.firstI);
+                    let v = (j - chunck.firstJ) / (PlanetTools.CHUNCKSIZE - chunck.firstJ);
+                    let w = (k - chunck.firstK) / (PlanetTools.CHUNCKSIZE - chunck.firstK);
                     let cornerCase = false;
                     if ((chunck.side === Side.Top || chunck.side === Side.Bottom) && chunck.isCorner) {
                         if (chunck.iPos === 0) {

@@ -8,10 +8,12 @@ uniform vec3 planetPos;
 uniform int useSeaLevelTexture;
 uniform sampler2D seaLevelTexture;
 uniform int useVertexColor;
+uniform sampler2D testTexture;
 
 in vec3 vPositionW;
 in vec3 vNormalW;
 in vec2 vUv;
+in vec2 vUv2;
 in vec4 vColor;
 
 out vec4 outColor;
@@ -57,26 +59,25 @@ void main() {
       //color = vec3(0.50, 0.96, 0.36);
 
       if (flatness > 0.6) {
-         color = vec3(1., 0., 0.);
+         color = texture(testTexture, vUv).rgb;
       }
       else {
          vec3 chunckDir = vColor.rgb;
          vec3 radialNorm = vNormalW - flatness * localUp;
          float l = length(radialNorm);
          radialNorm = radialNorm / l;
-         float aRadial = acos(dot(chunckDir, radialNorm));
-         if (abs(aRadial) < 0.78539816339) {
+         vec3 radialCross = cross(chunckDir, radialNorm);
+         bool isNegative = dot(radialCross, localUp) < 0.;
+         float radialDot = dot(chunckDir, radialNorm);
+         if (radialDot > 0.) {
             color = vec3(0., 1., 0.);
-         }
-         else if (abs(aRadial) > 2.35619449019) {
-            color = vec3(0., 0., 1.);
-         }
-         else {
-            float aRadial2 = asin(dot(chunckDir, radialNorm));
-            if (aRadial2 < 0.) {
+            if (isNegative) {
                color = vec3(0., 1., 1.);
             }
-            else {
+         }
+         else {
+            color = vec3(0., 0., 1.);
+            if (isNegative) {
                color = vec3(1., 0., 1.);
             }
          }

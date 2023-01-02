@@ -18,7 +18,7 @@ class PlanetMaterial extends BABYLON.ShaderMaterial {
             },
             {
                 attributes: ["position", "normal", "uv", "color"],
-                uniforms: ["world", "worldView", "worldViewProjection", "view", "projection", "useSeaLevelTexture", "useVertexColor", "seaLevelTexture", "planetPos"]
+                uniforms: ["world", "worldView", "worldViewProjection", "view", "projection", "useSeaLevelTexture", "useVertexColor", "seaLevelTexture", "planetPos", "testTexture"]
             }
         );
         this.setVector3("lightInvDirW", BABYLON.Vector3.One().normalize());
@@ -53,6 +53,7 @@ class PlanetMaterial extends BABYLON.ShaderMaterial {
         this.setColor3Array("terrainColors", this._terrainColors);
         this.setSeaLevelTexture(undefined);
         this.setInt("useVertexColor", 0);
+        this.setTexture("testTexture", new BABYLON.Texture("datas/images/test_texture.png"));
         this.setPlanetPos(BABYLON.Vector3.Zero());
     }
 
