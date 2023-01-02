@@ -221,6 +221,7 @@ class PlanetChunckMeshBuilder {
         let indices: number[] = [];
         let trianglesData: number[] = [];
         let uvs: number[] = [];
+        let uvs2: number[] = [];
         let normals: number[] = [];
         let colors: number[] = [];
         
@@ -244,16 +245,23 @@ class PlanetChunckMeshBuilder {
         let v76 = PCMB.tmpVertices[11];
         let v0132 = PCMB.tmpVertices[12];
         let v4576 = PCMB.tmpVertices[13];
-        let v = PCMB.tmpVertices[14];
+        let vertex = PCMB.tmpVertices[14];
         
         let chunckDir = PCMB.tmpVertices[15];
         PCMB.GetVertexToRef(size, iPos * PlanetTools.CHUNCKSIZE, jPos * PlanetTools.CHUNCKSIZE, PCMB.tmpVertices[0]);
         PCMB.GetVertexToRef(size, (iPos + 1) * PlanetTools.CHUNCKSIZE, (jPos + 1) * PlanetTools.CHUNCKSIZE, PCMB.tmpVertices[1]);
         chunckDir.copyFrom(PCMB.tmpVertices[1]).subtractInPlace(PCMB.tmpVertices[0]).normalize();
 
+        let uL = 1 / (PlanetTools.CHUNCKSIZE - chunck.firstI);
+        let vL = 1 / (PlanetTools.CHUNCKSIZE - chunck.firstJ);
+        let wL = 1 / (PlanetTools.CHUNCKSIZE - chunck.firstK);
+
         for (let i: number = chunck.firstI; i < PlanetTools.CHUNCKSIZE; i++) {
             for (let j: number = chunck.firstJ; j < chunck.lastJ; j++) {
                 for (let k: number = chunck.firstK; k < PlanetTools.CHUNCKSIZE; k++) {
+                    let u = i - chunck.firstI / (PlanetTools.CHUNCKSIZE - chunck.firstI);
+                    let v = j - chunck.firstJ / (PlanetTools.CHUNCKSIZE - chunck.firstJ);
+                    let w = k - chunck.firstK / (PlanetTools.CHUNCKSIZE - chunck.firstK);
                     let cornerCase = false;
                     if ((chunck.side === Side.Top || chunck.side === Side.Bottom) && chunck.isCorner) {
                         if (chunck.iPos === 0) {
@@ -338,6 +346,7 @@ class PlanetChunckMeshBuilder {
                                 let u = d / 128;
                                 let v = d / 128;
                                 uvs.push(u, v, u, v, u, v);
+                                uvs2.push(0, 0, 0, 0, 0, 0);
                                 
                                 trianglesData.push(d);
                             }
@@ -526,19 +535,21 @@ class PlanetChunckMeshBuilder {
                                     v0132.copyFrom(v32).subtractInPlace(v01).scaleInPlace(z).addInPlace(v01);
                                     v4576.copyFrom(v76).subtractInPlace(v45).scaleInPlace(z).addInPlace(v45);
             
-                                    v.copyFrom(v4576).subtractInPlace(v0132).scaleInPlace(y).addInPlace(v0132);
+                                    vertex.copyFrom(v4576).subtractInPlace(v0132).scaleInPlace(y).addInPlace(v0132);
                                     
-                                    positions.push(v.x);
-                                    positions.push(v.y);
-                                    positions.push(v.z);
+                                    positions.push(vertex.x);
+                                    positions.push(vertex.y);
+                                    positions.push(vertex.z);
 
-                                    colors.push(partColors[4 * n]);
+                                    colors.push(partColors[4 * n + 0]);
                                     colors.push(partColors[4 * n + 1]);
                                     colors.push(partColors[4 * n + 2]);
                                     colors.push(partColors[4 * n + 3]);
 
-                                    uvs.push(partUvs[2 * n]);
-                                    uvs.push(partUvs[2 * n + 1]);
+                                    uvs.push(u + vertex.x * uL);
+                                    uvs.push(v + vertex.z * vL);
+                                    uvs2.push(w + vertex.y * wL);
+                                    uvs2.push(1);
 
                                     if (edge === 1) {
                                         unstretchedPositionsX.push(unstretchedPosition);
@@ -574,19 +585,21 @@ class PlanetChunckMeshBuilder {
                                 v0132.copyFrom(v32).subtractInPlace(v01).scaleInPlace(z).addInPlace(v01);
                                 v4576.copyFrom(v76).subtractInPlace(v45).scaleInPlace(z).addInPlace(v45);
         
-                                v.copyFrom(v4576).subtractInPlace(v0132).scaleInPlace(y).addInPlace(v0132);
+                                vertex.copyFrom(v4576).subtractInPlace(v0132).scaleInPlace(y).addInPlace(v0132);
                                 
-                                positions.push(v.x);
-                                positions.push(v.y);
-                                positions.push(v.z);
+                                positions.push(vertex.x);
+                                positions.push(vertex.y);
+                                positions.push(vertex.z);
 
-                                colors.push(partColors[4 * n]);
+                                colors.push(partColors[4 * n + 0]);
                                 colors.push(partColors[4 * n + 1]);
                                 colors.push(partColors[4 * n + 2]);
                                 colors.push(partColors[4 * n + 3]);
 
-                                uvs.push(partUvs[2 * n]);
-                                uvs.push(partUvs[2 * n + 1]);
+                                uvs.push(u + vertex.x * uL);
+                                uvs.push(v + vertex.z * vL);
+                                uvs2.push(w + vertex.y * wL);
+                                uvs2.push(1);
                                 
                                 for (let a = 0; a < partVertexData.indices.length; a++) {
                                     if (partVertexData.indices[a] === n) {
@@ -619,6 +632,7 @@ class PlanetChunckMeshBuilder {
         let splitIndices: number[] = [];
         let splitNormals: number[] = [];
         let splitUvs: number[] = [];
+        let splitUvs2: number[] = [];
         let splitColors: number[] = [];
         while (trianglesData.length > 0) {
             let data = trianglesData[0];
@@ -642,7 +656,8 @@ class PlanetChunckMeshBuilder {
                             splitNormals.push(normals[3 * index + 2]);
 
                             splitColors.push(chunckDir.x, chunckDir.y, chunckDir.z, data / 128);
-                            splitUvs.push(1, 1);
+                            splitUvs.push(uvs[2 * index], uvs[2 * index + 1]);
+                            splitUvs2.push(uvs2[2 * index], uvs2[2 * index + 1]);
         
                             pToSplitP.set(index, splitIndex);
                         }
@@ -660,6 +675,7 @@ class PlanetChunckMeshBuilder {
         vertexData.positions = splitPositions;
         vertexData.indices = splitIndices;
         vertexData.uvs = splitUvs;
+        vertexData.uvs2 = splitUvs2;
         vertexData.colors = splitColors;
         vertexData.normals = splitNormals;
 
