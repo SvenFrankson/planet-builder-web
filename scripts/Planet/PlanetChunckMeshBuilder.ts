@@ -246,13 +246,10 @@ class PlanetChunckMeshBuilder {
         let v4576 = PCMB.tmpVertices[13];
         let v = PCMB.tmpVertices[14];
         
-        let norm = PCMB.tmpVertices[15];
-        let blockCenter = PCMB.tmpVertices[16];
-        let blockAxis = PCMB.tmpVertices[17];
-        let blockQuaternions = [PCMB.tmpQuaternions[0], PCMB.tmpQuaternions[1], PCMB.tmpQuaternions[2], PCMB.tmpQuaternions[3]];
-        let q1 = PCMB.tmpQuaternions[4];
-        let q2 = PCMB.tmpQuaternions[5];
-        let q = PCMB.tmpQuaternions[6];
+        let chunckDir = PCMB.tmpVertices[15];
+        PCMB.GetVertexToRef(size, iPos * PlanetTools.CHUNCKSIZE, jPos * PlanetTools.CHUNCKSIZE, PCMB.tmpVertices[0]);
+        PCMB.GetVertexToRef(size, (iPos + 1) * PlanetTools.CHUNCKSIZE, (jPos + 1) * PlanetTools.CHUNCKSIZE, PCMB.tmpVertices[1]);
+        chunckDir.copyFrom(PCMB.tmpVertices[1]).subtractInPlace(PCMB.tmpVertices[0]).normalize();
 
         for (let i: number = chunck.firstI; i < PlanetTools.CHUNCKSIZE; i++) {
             for (let j: number = chunck.firstJ; j < chunck.lastJ; j++) {
@@ -644,7 +641,7 @@ class PlanetChunckMeshBuilder {
                             splitNormals.push(normals[3 * index + 1]);
                             splitNormals.push(normals[3 * index + 2]);
 
-                            splitColors.push(data / 128, 1, 1, 1);
+                            splitColors.push(chunckDir.x, chunckDir.y, chunckDir.z, data / 128);
                             splitUvs.push(1, 1);
         
                             pToSplitP.set(index, splitIndex);

@@ -55,12 +55,41 @@ void main() {
    }
    else {
       //color = vec3(0.50, 0.96, 0.36);
-      
-      int d = int(vColor.r * 128. + 0.002);
-      if (d == 2 && flatness < 0.6) {
-         d = 3;
-      } 
-      color = terrainColors[d];
+
+      if (flatness > 0.6) {
+         color = vec3(1., 0., 0.);
+      }
+      else {
+         vec3 chunckDir = vColor.rgb;
+         vec3 radialNorm = vNormalW - flatness * localUp;
+         float l = length(radialNorm);
+         radialNorm = radialNorm / l;
+         float aRadial = acos(dot(chunckDir, radialNorm));
+         if (abs(aRadial) < 0.78539816339) {
+            color = vec3(0., 1., 0.);
+         }
+         else if (abs(aRadial) > 2.35619449019) {
+            color = vec3(0., 0., 1.);
+         }
+         else {
+            float aRadial2 = asin(dot(chunckDir, radialNorm));
+            if (aRadial2 < 0.) {
+               color = vec3(0., 1., 1.);
+            }
+            else {
+               color = vec3(1., 0., 1.);
+            }
+         }
+         /*
+         else {
+            int d = int(vColor.a * 128. + 0.002);
+            if (d == 2 && flatness < 0.6) {
+               d = 3;
+            } 
+            color = terrainColors[d];
+         }
+         */
+      }
    }
 
    outColor = vec4(globalColor + color * lightFactor, 1.);
