@@ -258,10 +258,10 @@ class PlanetChunckMeshBuilder {
         let wL = 1 / (PlanetTools.CHUNCKSIZE - chunck.firstK);
 
         for (let i: number = chunck.firstI; i < PlanetTools.CHUNCKSIZE; i++) {
+            let u = (i - chunck.firstI) / (PlanetTools.CHUNCKSIZE - chunck.firstI);
             for (let j: number = chunck.firstJ; j < chunck.lastJ; j++) {
+                let v = (j - chunck.firstJ) / (PlanetTools.CHUNCKSIZE - chunck.firstJ);
                 for (let k: number = chunck.firstK; k < PlanetTools.CHUNCKSIZE; k++) {
-                    let u = (i - chunck.firstI) / (PlanetTools.CHUNCKSIZE - chunck.firstI);
-                    let v = (j - chunck.firstJ) / (PlanetTools.CHUNCKSIZE - chunck.firstJ);
                     let w = (k - chunck.firstK) / (PlanetTools.CHUNCKSIZE - chunck.firstK);
                     let cornerCase = false;
                     if ((chunck.side === Side.Top || chunck.side === Side.Bottom) && chunck.isCorner) {
@@ -547,9 +547,10 @@ class PlanetChunckMeshBuilder {
                                     colors.push(partColors[4 * n + 2]);
                                     colors.push(partColors[4 * n + 3]);
 
-                                    uvs.push(u + vertex.x * uL);
-                                    uvs.push(v + vertex.z * vL);
-                                    uvs2.push(w + vertex.y * wL);
+                                    uvs.push(u + x * uL);
+                                    uvs.push(v + z * vL);
+                                    
+                                    uvs2.push(w + y * wL);
                                     uvs2.push(1);
 
                                     if (edge === 1) {
@@ -597,9 +598,9 @@ class PlanetChunckMeshBuilder {
                                 colors.push(partColors[4 * n + 2]);
                                 colors.push(partColors[4 * n + 3]);
 
-                                uvs.push(u + vertex.x * uL);
-                                uvs.push(v + vertex.z * vL);
-                                uvs2.push(w + vertex.y * wL);
+                                uvs.push(u + x * uL);
+                                uvs.push(v + z * vL);
+                                uvs2.push(w + y * wL);
                                 uvs2.push(1);
                                 
                                 for (let a = 0; a < partVertexData.indices.length; a++) {

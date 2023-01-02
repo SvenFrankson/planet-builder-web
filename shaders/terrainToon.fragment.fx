@@ -59,26 +59,34 @@ void main() {
       //color = vec3(0.50, 0.96, 0.36);
 
       if (flatness > 0.6) {
-         color = texture(testTexture, vUv).rgb;
+         color = texture(testTexture, vUv * 8.).rgb;
       }
       else {
          vec3 chunckDir = vColor.rgb;
          vec3 radialNorm = vNormalW - flatness * localUp;
          float l = length(radialNorm);
          radialNorm = radialNorm / l;
-         vec3 radialCross = cross(chunckDir, radialNorm);
+         vec3 radialCross = cross(radialNorm, chunckDir);
          bool isNegative = dot(radialCross, localUp) < 0.;
          float radialDot = dot(chunckDir, radialNorm);
          if (radialDot > 0.) {
-            color = vec3(0., 1., 0.);
             if (isNegative) {
-               color = vec3(0., 1., 1.);
+               vec2 uv = vec2(vUv.y, vUv2.x) * 8.;
+               color = texture(testTexture, uv).rgb;
+            }
+            else {
+               vec2 uv = vec2(1. - vUv.x, vUv2.x) * 8.;
+               color = texture(testTexture, uv).rgb;
             }
          }
          else {
-            color = vec3(0., 0., 1.);
             if (isNegative) {
-               color = vec3(1., 0., 1.);
+               vec2 uv = vec2(vUv.x, vUv2.x) * 8.;
+               color = texture(testTexture, uv).rgb;
+            }
+            else {
+               vec2 uv = vec2(1. - vUv.y, vUv2.x) * 8.;
+               color = texture(testTexture, uv).rgb;
             }
          }
          /*
