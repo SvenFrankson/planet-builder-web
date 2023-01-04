@@ -4,6 +4,7 @@ class PlanetMaterial extends BABYLON.ShaderMaterial {
     private _terrainColors: BABYLON.Color3[];
     private _terrainFillStyles: string[];
     private _useSeaLevelTexture: number;
+    private _terrainTextures: BABYLON.Texture[];
     private _seaLevelTexture: BABYLON.Texture;
     private _useVertexColor: number;
     private _planetPos: BABYLON.Vector3 = BABYLON.Vector3.Zero();
@@ -18,7 +19,7 @@ class PlanetMaterial extends BABYLON.ShaderMaterial {
             },
             {
                 attributes: ["position", "normal", "uv", "uv2", "color"],
-                uniforms: ["world", "worldView", "worldViewProjection", "view", "projection", "useSeaLevelTexture", "useVertexColor", "seaLevelTexture", "planetPos", "testTexture"]
+                uniforms: ["world", "worldView", "worldViewProjection", "view", "projection", "useSeaLevelTexture", "useVertexColor", "seaLevelTexture", "planetPos", "terrainTextures"]
             }
         );
         this.setVector3("lightInvDirW", BABYLON.Vector3.One().normalize());
@@ -44,6 +45,21 @@ class PlanetMaterial extends BABYLON.ShaderMaterial {
             this._terrainFillStyles[i] = fillStyle;
 
         }
+
+        let terrainTextureNames = [];
+        for (let i = 0; i < this._terrainColors.length; i++) {
+            terrainTextureNames.push("test_texture");
+        }
+        terrainTextureNames[BlockType.Grass] = "grass_texture";
+        terrainTextureNames[BlockType.Dirt] = "dirt_texture";
+
+        this._terrainTextures = [];
+        for (let i = 0; i < terrainTextureNames.length; i++) {
+            let texture = new BABYLON.Texture("datas/images/" + terrainTextureNames[i] + ".png");
+            texture.wrapU = 1;
+            texture.wrapV = 1;
+            this._terrainTextures[i] = texture;
+        }
         //this._terrainColors[BlockType.Grass] = BABYLON.Color3.FromHexString("#6C7237");
         //this._terrainColors[BlockType.Dirt] = BABYLON.Color3.FromHexString("#6D4B3C");
 
@@ -53,10 +69,7 @@ class PlanetMaterial extends BABYLON.ShaderMaterial {
         this.setColor3Array("terrainColors", this._terrainColors);
         this.setSeaLevelTexture(undefined);
         this.setInt("useVertexColor", 0);
-        let testTexture = new BABYLON.Texture("datas/images/test_texture.png");
-        testTexture.wrapU = 1;
-        testTexture.wrapV = 1;
-        this.setTexture("testTexture", testTexture);
+        this.setTexture("terrainTexture", this._terrainTextures[BlockType.Rock]);
         this.setPlanetPos(BABYLON.Vector3.Zero());
     }
 
