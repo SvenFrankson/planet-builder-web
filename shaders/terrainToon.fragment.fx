@@ -8,7 +8,8 @@ uniform vec3 planetPos;
 uniform int useSeaLevelTexture;
 uniform sampler2D seaLevelTexture;
 uniform int useVertexColor;
-uniform sampler2D terrainTexture;
+uniform sampler2D voidTexture;
+uniform sampler2D dirtSideTexture;
 
 in vec3 vPositionW;
 in vec3 vNormalW;
@@ -64,7 +65,7 @@ void main() {
       }
 
       if (flatness > 0.6) {
-         color = texture(terrainTexture, vUv * 8.).rgb;
+         color = texture(dirtSideTexture, vUv * 8.).rgb;
       }
       else {
          vec3 chunckDir = vColor.rgb;
@@ -77,21 +78,21 @@ void main() {
          if (radialDot > 0.) {
             if (isNegative) {
                vec2 uv = vec2(vUv.y, vUv2.x) * 8.;
-               color = texture(terrainTexture, uv).rgb;
+               color = texture(dirtSideTexture, uv).rgb;
             }
             else {
                vec2 uv = vec2(1. - vUv.x, vUv2.x) * 8.;
-               color = texture(terrainTexture, uv).rgb;
+               color = texture(dirtSideTexture, uv).rgb;
             }
          }
          else {
             if (isNegative) {
                vec2 uv = vec2(vUv.x, vUv2.x) * 8.;
-               color = texture(terrainTexture, uv).rgb;
+               color = texture(dirtSideTexture, uv).rgb;
             }
             else {
                vec2 uv = vec2(1. - vUv.y, vUv2.x) * 8.;
-               color = texture(terrainTexture, uv).rgb;
+               color = texture(dirtSideTexture, uv).rgb;
             }
          }
          /*
@@ -100,6 +101,7 @@ void main() {
          }
          */
       }
+      color -= vec3(0.5, 0.5, 0.5);
       color += terrainColors[d];
    }
 

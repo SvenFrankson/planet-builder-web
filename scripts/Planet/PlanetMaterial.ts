@@ -19,7 +19,14 @@ class PlanetMaterial extends BABYLON.ShaderMaterial {
             },
             {
                 attributes: ["position", "normal", "uv", "uv2", "color"],
-                uniforms: ["world", "worldView", "worldViewProjection", "view", "projection", "useSeaLevelTexture", "useVertexColor", "seaLevelTexture", "planetPos", "terrainTextures"]
+                uniforms: [
+                    "world", "worldView", "worldViewProjection", "view", "projection",
+                    "useSeaLevelTexture", "useVertexColor",
+                    "seaLevelTexture",
+                    "planetPos",
+                    "voidTexture",
+                    "dirtSideTexture"
+                ]
             }
         );
         this.setVector3("lightInvDirW", BABYLON.Vector3.One().normalize());
@@ -45,31 +52,22 @@ class PlanetMaterial extends BABYLON.ShaderMaterial {
             this._terrainFillStyles[i] = fillStyle;
 
         }
-
-        let terrainTextureNames = [];
-        for (let i = 0; i < this._terrainColors.length; i++) {
-            terrainTextureNames.push("test_texture");
-        }
-        terrainTextureNames[BlockType.Grass] = "grass_texture";
-        terrainTextureNames[BlockType.Dirt] = "dirt_texture";
-
-        this._terrainTextures = [];
-        for (let i = 0; i < terrainTextureNames.length; i++) {
-            let texture = new BABYLON.Texture("datas/images/" + terrainTextureNames[i] + ".png");
-            texture.wrapU = 1;
-            texture.wrapV = 1;
-            this._terrainTextures[i] = texture;
-        }
-        //this._terrainColors[BlockType.Grass] = BABYLON.Color3.FromHexString("#6C7237");
-        //this._terrainColors[BlockType.Dirt] = BABYLON.Color3.FromHexString("#6D4B3C");
-
-        //this.setFlatColors();
+        
+        let voidTexture = new BABYLON.Texture("datas/images/void-texture.png");
+        voidTexture.wrapU = 1;
+        voidTexture.wrapV = 1;
+        
+        let dirtSideTexture = new BABYLON.Texture("datas/images/dirt-side.png");
+        dirtSideTexture.wrapU = 1;
+        dirtSideTexture.wrapV = 1;
 
         this.setColor3("globalColor", this._globalColor);
         this.setColor3Array("terrainColors", this._terrainColors);
         this.setSeaLevelTexture(undefined);
         this.setInt("useVertexColor", 0);
-        this.setTexture("terrainTexture", this._terrainTextures[BlockType.Dirt]);
+        this.setTexture("seaLevelTexture", voidTexture);
+        this.setTexture("voidTexture", voidTexture);
+        this.setTexture("dirtSideTexture", dirtSideTexture);
         this.setPlanetPos(BABYLON.Vector3.Zero());
     }
 
