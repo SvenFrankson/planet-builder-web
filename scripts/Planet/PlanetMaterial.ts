@@ -69,7 +69,7 @@ class PlanetMaterial extends BABYLON.ShaderMaterial {
         this.setColor3Array("terrainColors", this._terrainColors);
         this.setSeaLevelTexture(undefined);
         this.setInt("useVertexColor", 0);
-        this.setTexture("terrainTexture", this._terrainTextures[BlockType.Rock]);
+        this.setTexture("terrainTexture", this._terrainTextures[BlockType.Dirt]);
         this.setPlanetPos(BABYLON.Vector3.Zero());
     }
 

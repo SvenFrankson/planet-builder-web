@@ -100,6 +100,7 @@ void main() {
          }
          */
       }
+      color += terrainColors[d];
    }
 
    outColor = vec4(globalColor + color * lightFactor, 1.);
