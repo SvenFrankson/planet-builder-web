@@ -57,17 +57,19 @@ void main() {
       color = vec3(1., 0., 0.);
    }
    else {
-      //color = vec3(0.50, 0.96, 0.36);
+      bool isSide = false;
 
       int d = int(vColor.a * 128. + 0.002);
       if (d == 2 && flatness < 0.6) {
          d = 3;
       }
 
-      if (flatness > 0.6) {
-         color = texture(dirtSideTexture, vUv * 8.).rgb;
+      vec2 uv = vUv;
+      if (flatness < - 0.6) {
+         uv = - vUv;
       }
-      else {
+      else if (flatness < 0.6) {
+         isSide = true;
          vec3 chunckDir = vColor.rgb;
          vec3 radialNorm = vNormalW - flatness * localUp;
          float l = length(radialNorm);
@@ -77,22 +79,18 @@ void main() {
          float radialDot = dot(chunckDir, radialNorm);
          if (radialDot > 0.) {
             if (isNegative) {
-               vec2 uv = vec2(vUv.y, vUv2.x) * 8.;
-               color = texture(dirtSideTexture, uv).rgb;
+               uv = vec2(vUv.y, vUv2.x);
             }
             else {
-               vec2 uv = vec2(1. - vUv.x, vUv2.x) * 8.;
-               color = texture(dirtSideTexture, uv).rgb;
+               uv = vec2(1. - vUv.x, vUv2.x);
             }
          }
          else {
             if (isNegative) {
-               vec2 uv = vec2(vUv.x, vUv2.x) * 8.;
-               color = texture(dirtSideTexture, uv).rgb;
+               uv = vec2(vUv.x, vUv2.x);
             }
             else {
-               vec2 uv = vec2(1. - vUv.y, vUv2.x) * 8.;
-               color = texture(dirtSideTexture, uv).rgb;
+               uv = vec2(1. - vUv.y, vUv2.x);
             }
          }
          /*
@@ -100,6 +98,18 @@ void main() {
             color = terrainColor;
          }
          */
+      }
+
+      if (d == 3 || d == 8) {
+         if (isSide) {
+            color = texture(dirtSideTexture, uv * 8.).rgb;
+         }
+         else {
+            color = texture(voidTexture, uv * 8.).rgb;
+         }
+      }
+      else {
+         color = texture(voidTexture, uv * 8.).rgb;
       }
       color -= vec3(0.5, 0.5, 0.5);
       color += terrainColors[d];
