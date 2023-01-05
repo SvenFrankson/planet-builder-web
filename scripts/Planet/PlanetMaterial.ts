@@ -4,7 +4,6 @@ class PlanetMaterial extends BABYLON.ShaderMaterial {
     private _terrainColors: BABYLON.Color3[];
     private _terrainFillStyles: string[];
     private _useSeaLevelTexture: number;
-    private _terrainTextures: BABYLON.Texture[];
     private _seaLevelTexture: BABYLON.Texture;
     private _useVertexColor: number;
     private _planetPos: BABYLON.Vector3 = BABYLON.Vector3.Zero();
@@ -25,7 +24,9 @@ class PlanetMaterial extends BABYLON.ShaderMaterial {
                     "seaLevelTexture",
                     "planetPos",
                     "voidTexture",
-                    "dirtSideTexture"
+                    "dirtSideTexture",
+                    "dirtTopTexture",
+                    "grassTexture"
                 ]
             }
         );
@@ -60,6 +61,14 @@ class PlanetMaterial extends BABYLON.ShaderMaterial {
         let dirtSideTexture = new BABYLON.Texture("datas/images/dirt-side.png");
         dirtSideTexture.wrapU = 1;
         dirtSideTexture.wrapV = 1;
+        
+        let dirtTopTexture = new BABYLON.Texture("datas/images/dirt-top.png");
+        dirtTopTexture.wrapU = 1;
+        dirtTopTexture.wrapV = 1;
+        
+        let grassTexture = new BABYLON.Texture("datas/images/grass.png");
+        grassTexture.wrapU = 1;
+        grassTexture.wrapV = 1;
 
         this.setColor3("globalColor", this._globalColor);
         this.setColor3Array("terrainColors", this._terrainColors);
@@ -68,6 +77,8 @@ class PlanetMaterial extends BABYLON.ShaderMaterial {
         this.setTexture("seaLevelTexture", voidTexture);
         this.setTexture("voidTexture", voidTexture);
         this.setTexture("dirtSideTexture", dirtSideTexture);
+        this.setTexture("dirtTopTexture", dirtTopTexture);
+        this.setTexture("grassTexture", grassTexture);
         this.setPlanetPos(BABYLON.Vector3.Zero());
     }
 

@@ -10,6 +10,8 @@ uniform sampler2D seaLevelTexture;
 uniform int useVertexColor;
 uniform sampler2D voidTexture;
 uniform sampler2D dirtSideTexture;
+uniform sampler2D dirtTopTexture;
+uniform sampler2D grassTexture;
 
 in vec3 vPositionW;
 in vec3 vNormalW;
@@ -100,12 +102,15 @@ void main() {
          */
       }
 
-      if (d == 3 || d == 8) {
+      if (d == 2) {
+         color = texture(grassTexture, uv * 8.).rgb;
+      }
+      else if (d == 3 || d == 8) {
          if (isSide) {
             color = texture(dirtSideTexture, uv * 8.).rgb;
          }
          else {
-            color = texture(voidTexture, uv * 8.).rgb;
+            color = texture(dirtTopTexture, uv * 8.).rgb;
          }
       }
       else {
