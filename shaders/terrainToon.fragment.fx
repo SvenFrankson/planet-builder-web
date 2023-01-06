@@ -12,8 +12,7 @@ uniform sampler2D voidTexture;
 uniform sampler2D dirtSideTexture;
 uniform sampler2D dirtTopTexture;
 uniform sampler2D grassTexture;
-uniform sampler2D rockSideTexture;
-uniform sampler2D rockTopTexture;
+uniform sampler2D rockTexture;
 
 in vec3 vPositionW;
 in vec3 vNormalW;
@@ -116,12 +115,7 @@ void main() {
          }
       }
       else if (d == 5 || d == 9) {
-         if (isSide) {
-            color = texture(rockSideTexture, uv * 8.).rgb;
-         }
-         else {
-            color = texture(rockTopTexture, uv * 8.).rgb;
-         }
+         color = texture(rockTexture, uv * 8.).rgb;
       }
       else {
          color = texture(voidTexture, uv * 8.).rgb;
