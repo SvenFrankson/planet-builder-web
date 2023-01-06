@@ -3,7 +3,7 @@ class PlanetGeneratorEarth extends PlanetGenerator {
     private _mainHeightMap: PlanetHeightMap;
     //private _tunnelMap: PlanetHeightMap;
     //private _tunnelAltitudeMap: PlanetHeightMap;
-    //private _rockMap: PlanetHeightMap;
+    private _rockMap: PlanetHeightMap;
 
     public spheres: GeneratorSphere[] = [];
 
@@ -42,8 +42,8 @@ class PlanetGeneratorEarth extends PlanetGenerator {
         this._tunnelMap.smooth();
         this._tunnelMap.smooth();
         this._tunnelAltitudeMap = PlanetHeightMap.CreateMap(planet.degree);
-        this._rockMap = PlanetHeightMap.CreateMap(planet.degree, { firstNoiseDegree : planet.degree - 3});
         */
+        this._rockMap = PlanetHeightMap.CreateMap(planet.degree, { firstNoiseDegree : planet.degree - 3});
 
         this.altitudeMap = PlanetHeightMap.CreateConstantMap(planet.degree, 0).addInPlace(this._mainHeightMap).multiplyInPlace(_mountainHeight).addInPlace(PlanetHeightMap.CreateConstantMap(planet.degree, this.planet.seaLevelRatio));
         this.altitudeMap.maxInPlace(PlanetHeightMap.CreateConstantMap(planet.degree, this.planet.seaLevelRatio));
@@ -144,8 +144,8 @@ class PlanetGeneratorEarth extends PlanetGenerator {
 
                 let v = this._mainHeightMap.getForSide(chunck.side, (chunck.iPos * PlanetTools.CHUNCKSIZE + i) * f, (chunck.jPos * PlanetTools.CHUNCKSIZE + j) * f);
                 let altitude = this.planet.seaLevel + Math.floor((v * this._mountainHeight) * this.planet.kPosMax * PlanetTools.CHUNCKSIZE);
-                //let rock = this._rockMap.getForSide(chunck.side, (chunck.iPos * PlanetTools.CHUNCKSIZE + i) * f, (chunck.jPos * PlanetTools.CHUNCKSIZE + j) * f);
-                //let rockAltitude = altitude + Math.round((rock - 0.4) * this._mountainHeight * this.planet.kPosMax * PlanetTools.CHUNCKSIZE);
+                let rock = this._rockMap.getForSide(chunck.side, (chunck.iPos * PlanetTools.CHUNCKSIZE + i) * f, (chunck.jPos * PlanetTools.CHUNCKSIZE + j) * f);
+                let rockAltitude = altitude + Math.round((rock - 0.4) * this._mountainHeight * this.planet.kPosMax * PlanetTools.CHUNCKSIZE);
 
                 //let tree = this._treeMap.getForSide(chunck.side, (chunck.iPos * PlanetTools.CHUNCKSIZE + i) * f, (chunck.jPos * PlanetTools.CHUNCKSIZE + j) * f) * 4;
                 
@@ -205,10 +205,10 @@ class PlanetGeneratorEarth extends PlanetGenerator {
                             refData[i - chunck.firstI][j - chunck.firstJ][k - chunck.firstK] = BlockType.Rock;
                         }
                     }
-                    /*
                     else if (globalK <= rockAltitude) {
                         refData[i - chunck.firstI][j - chunck.firstJ][k - chunck.firstK] = BlockType.Rock;
                     }
+                    /*
                     if (tunnel > 0) {
                         if (globalK >= tunnelAltitude - tunnel && globalK <= tunnelAltitude + tunnel) {
                             refData[i - chunck.firstI][j - chunck.firstJ][k - chunck.firstK] = BlockType.None;
