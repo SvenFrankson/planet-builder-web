@@ -28,6 +28,9 @@ class PlanetMaterial extends BABYLON.ShaderMaterial {
                     "dirtTopTexture",
                     "grassTexture",
                     "rockTexture",
+                    "woodTexture",
+                    "sandTexture",
+                    "leafTexture",
                 ]
             }
         );
@@ -74,6 +77,18 @@ class PlanetMaterial extends BABYLON.ShaderMaterial {
         let rockTexture = new BABYLON.Texture("datas/images/rock.png");
         rockTexture.wrapU = 1;
         rockTexture.wrapV = 1;
+        
+        let woodTexture = new BABYLON.Texture("datas/images/wood.png");
+        woodTexture.wrapU = 1;
+        woodTexture.wrapV = 1;
+        
+        let sandTexture = new BABYLON.Texture("datas/images/sand.png");
+        sandTexture.wrapU = 1;
+        sandTexture.wrapV = 1;
+        
+        let leafTexture = new BABYLON.Texture("datas/images/leaf.png");
+        leafTexture.wrapU = 1;
+        leafTexture.wrapV = 1;
 
         this.setColor3("globalColor", this._globalColor);
         this.setColor3Array("terrainColors", this._terrainColors);
@@ -85,6 +100,9 @@ class PlanetMaterial extends BABYLON.ShaderMaterial {
         this.setTexture("dirtTopTexture", dirtTopTexture);
         this.setTexture("grassTexture", grassTexture);
         this.setTexture("rockTexture", rockTexture);
+        this.setTexture("woodTexture", woodTexture);
+        this.setTexture("sandTexture", sandTexture);
+        this.setTexture("leafTexture", leafTexture);
         this.setPlanetPos(BABYLON.Vector3.Zero());
     }
 

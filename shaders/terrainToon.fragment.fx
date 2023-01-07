@@ -13,6 +13,9 @@ uniform sampler2D dirtSideTexture;
 uniform sampler2D dirtTopTexture;
 uniform sampler2D grassTexture;
 uniform sampler2D rockTexture;
+uniform sampler2D woodTexture;
+uniform sampler2D sandTexture;
+uniform sampler2D leafTexture;
 
 in vec3 vPositionW;
 in vec3 vNormalW;
@@ -114,8 +117,17 @@ void main() {
             color = texture(dirtTopTexture, uv * 8.).rgb;
          }
       }
+      else if (d == 4 || d == 10) {
+         color = texture(sandTexture, uv * 8.).rgb;
+      }
       else if (d == 5 || d == 9) {
          color = texture(rockTexture, uv * 8.).rgb;
+      }
+      else if (d == 6) {
+         color = texture(woodTexture, uv * 16.).rgb;
+      }
+      else if (d == 7) {
+         color = texture(leafTexture, uv * 16.).rgb;
       }
       else {
          color = texture(voidTexture, uv * 8.).rgb;
