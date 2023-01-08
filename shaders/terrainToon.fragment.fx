@@ -16,6 +16,7 @@ uniform sampler2D rockTexture;
 uniform sampler2D woodTexture;
 uniform sampler2D sandTexture;
 uniform sampler2D leafTexture;
+uniform sampler2D iceTexture;
 
 in vec3 vPositionW;
 in vec3 vNormalW;
@@ -128,6 +129,9 @@ void main() {
       }
       else if (d == 7) {
          color = texture(leafTexture, uv * 16.).rgb;
+      }
+      else if (d == 11) {
+         color = texture(iceTexture, uv * 16.).rgb;
       }
       else {
          color = texture(voidTexture, uv * 8.).rgb;

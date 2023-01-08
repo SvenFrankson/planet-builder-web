@@ -31,6 +31,7 @@ class PlanetMaterial extends BABYLON.ShaderMaterial {
                     "woodTexture",
                     "sandTexture",
                     "leafTexture",
+                    "iceTexture",
                 ]
             }
         );
@@ -89,6 +90,10 @@ class PlanetMaterial extends BABYLON.ShaderMaterial {
         let leafTexture = new BABYLON.Texture("datas/images/leaf.png");
         leafTexture.wrapU = 1;
         leafTexture.wrapV = 1;
+        
+        let iceTexture = new BABYLON.Texture("datas/images/ice.png");
+        iceTexture.wrapU = 1;
+        iceTexture.wrapV = 1;
 
         this.setColor3("globalColor", this._globalColor);
         this.setColor3Array("terrainColors", this._terrainColors);
@@ -103,6 +108,7 @@ class PlanetMaterial extends BABYLON.ShaderMaterial {
         this.setTexture("woodTexture", woodTexture);
         this.setTexture("sandTexture", sandTexture);
         this.setTexture("leafTexture", leafTexture);
+        this.setTexture("iceTexture", iceTexture);
         this.setPlanetPos(BABYLON.Vector3.Zero());
     }
 
