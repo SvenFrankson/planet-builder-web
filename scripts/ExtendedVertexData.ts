@@ -28,15 +28,15 @@ class ExtendedVertexData {
             let n3 = this.vertexData.indices[3 * n + 2];
 
             let x0 = this.vertexData.positions[3 * n1];
-            let y0 = this.vertexData.positions[3 * n1 + 1] + this.vertexData.normals[3 * n1 + 1] * 0.2;
+            let y0 = this.vertexData.positions[3 * n1 + 1] - this.vertexData.normals[3 * n1 + 1] * 0.2;
             let z0 = this.vertexData.positions[3 * n1 + 2];
 
             let x1 = this.vertexData.positions[3 * n2];
-            let y1 = this.vertexData.positions[3 * n2 + 1] + this.vertexData.normals[3 * n2 + 1] * 0.2;
+            let y1 = this.vertexData.positions[3 * n2 + 1] - this.vertexData.normals[3 * n2 + 1] * 0.2;
             let z1 = this.vertexData.positions[3 * n2 + 2];
 
             let x2 = this.vertexData.positions[3 * n3];
-            let y2 = this.vertexData.positions[3 * n3 + 1] + this.vertexData.normals[3 * n3 + 1] * 0.2;
+            let y2 = this.vertexData.positions[3 * n3 + 1] - this.vertexData.normals[3 * n3 + 1] * 0.2;
             let z2 = this.vertexData.positions[3 * n3 + 2];
 
             let bx = (x0 + x1 + x2) / 3;
