@@ -376,15 +376,10 @@ class PlayerArm extends BABYLON.Mesh {
 
         this._wristPosition.copyFrom(this._elbowPosition).addInPlace(foreArmZ);
 
-        let magicNumber = 0.995;
-        let jointAccelerationFactor = 4;
-        let magicNumber2 = 0.1;
+        let magicNumber2 = 1 - Easing.smooth025Sec(this.scene.getEngine().getFps());
         
         let armY = this.right.scaleInPlace(- this.signLeft * 1);
         VMath.QuaternionFromZYAxisToRef(armZ, armY, this._q0);
-        //this._rotationSpeed[0] *= magicNumber;
-        //this._rotationSpeed[0] += jointAccelerationFactor * VMath.GetAngleBetweenQuaternions(this._arm.rotationQuaternion, this._q0) * dt;
-        //VMath.StepQuaternionInPlace(this._arm.rotationQuaternion, this._q0, this._rotationSpeed[0] * dt);
         BABYLON.Quaternion.SlerpToRef(this._arm.rotationQuaternion, this._q0, magicNumber2, this._arm.rotationQuaternion);
         
         //this._foreArm.position.copyFrom(this._elbowPosition);
@@ -394,9 +389,6 @@ class PlayerArm extends BABYLON.Mesh {
 
         let foreArmX = armZ.scale(- 1 * this.signLeft);
         VMath.QuaternionFromZXAxisToRef(foreArmZ, foreArmX, this._q0);
-        //this._rotationSpeed[1] *= magicNumber;
-        //this._rotationSpeed[1] += jointAccelerationFactor * VMath.GetAngleBetweenQuaternions(this._foreArm.rotationQuaternion, this._q0) * dt;
-        //VMath.StepQuaternionInPlace(this._foreArm.rotationQuaternion, this._q0,  this._rotationSpeed[1] * dt);
         BABYLON.Quaternion.SlerpToRef(this._foreArm.rotationQuaternion, this._q0, magicNumber2, this._foreArm.rotationQuaternion);
 
         this._elbow.position.copyFrom(this._foreArm.position);
@@ -411,16 +403,10 @@ class PlayerArm extends BABYLON.Mesh {
         let handY = this.handUp;
         if (this.handUpStrictness < 0.5) {
             VMath.QuaternionFromZYAxisToRef(handZ, handY, this._computedHandQ);
-            //²this._rotationSpeed[2] *= magicNumber;
-            //²this._rotationSpeed[2] += jointAccelerationFactor * VMath.GetAngleBetweenQuaternions(this._hand.rotationQuaternion, this._computedHandQ) * dt;
-            //²VMath.StepQuaternionInPlace(this._hand.rotationQuaternion, this._computedHandQ,  this._rotationSpeed[2] * dt);
             BABYLON.Quaternion.SlerpToRef(this._hand.rotationQuaternion, this._computedHandQ, magicNumber2, this._hand.rotationQuaternion);
         }
         else {
             VMath.QuaternionFromYZAxisToRef(handY, handZ, this._computedHandQ);
-            //this._rotationSpeed[2] *= magicNumber;
-            //this._rotationSpeed[2] += jointAccelerationFactor * VMath.GetAngleBetweenQuaternions(this._hand.rotationQuaternion, this._computedHandQ) * dt;
-            //VMath.StepQuaternionInPlace(this._hand.rotationQuaternion, this._computedHandQ,  this._rotationSpeed[2] * dt);
             BABYLON.Quaternion.SlerpToRef(this._hand.rotationQuaternion, this._computedHandQ, magicNumber2, this._hand.rotationQuaternion);
         }
 
