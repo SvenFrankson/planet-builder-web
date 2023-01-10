@@ -382,7 +382,6 @@ class PlayerArm extends BABYLON.Mesh {
         VMath.QuaternionFromZYAxisToRef(armZ, armY, this._q0);
         BABYLON.Quaternion.SlerpToRef(this._arm.rotationQuaternion, this._q0, magicNumber2, this._arm.rotationQuaternion);
         
-        //this._foreArm.position.copyFrom(this._elbowPosition);
         this._foreArm.position.copyFromFloats(0, 0, this._armLength);
         VMath.RotateVectorByQuaternionToRef(this._foreArm.position, this._arm.rotationQuaternion, this._foreArm.position);
         this._foreArm.position.addInPlace(this._arm.position);
@@ -414,14 +413,5 @@ class PlayerArm extends BABYLON.Mesh {
         let wristZ = foreArmZ;
         let wristY = this._hand.up;
         VMath.QuaternionFromZYAxisToRef(wristZ, wristY, this._wrist.rotationQuaternion);
-
-        /*
-        let error = this.targetPosition.subtract(this._anchor);
-        if (error.lengthSquared() > 0.1 * 0.1) {
-            this.targetOffset.scaleInPlace(0.95);
-            error.normalize().scaleInPlace(0.1);
-        }
-        this.targetOffset.addInPlace(error.scale(1 / 10));
-        */
     }
 }

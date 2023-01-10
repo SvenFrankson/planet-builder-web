@@ -95,6 +95,9 @@ class MainMenu extends Main {
 			debugPlayerPosition.show();
 			*/
 
+			let debugInput = new DebugInput(this.player);
+			debugInput.show();
+
 			this.planetSky = new PlanetSky(this.scene);
 			this.planetSky.setInvertLightDir(BABYLON.Vector3.One().normalize());
 			this.planetSky.initialize();
