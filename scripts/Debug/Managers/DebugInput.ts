@@ -9,7 +9,7 @@ class DebugInput {
     public container: HTMLDivElement;
 
     private _playerHeadUp: DebugDisplayFrameValue;
-    private _playerInputHeadRight: DebugDisplayFrameValue;
+    private _playerHeadRight: DebugDisplayFrameValue;
 
     public get scene(): BABYLON.Scene {
         return this.player.scene;
@@ -35,12 +35,23 @@ class DebugInput {
             this.debugContainer.appendChild(this.container);
         }
         
+        let playerHeadRightId = "player-head-right";
+        this._playerHeadRight = document.querySelector("#" + playerHeadRightId) as DebugDisplayFrameValue;
+        if (!this._playerHeadRight) {
+            this._playerHeadRight = document.createElement("debug-display-frame-value") as DebugDisplayFrameValue;
+            this._playerHeadRight.id = playerHeadRightId;
+            this._playerHeadRight.setAttribute("label", "Head X");
+            this._playerHeadRight.setAttribute("min", "-1");
+            this._playerHeadRight.setAttribute("max", "1");
+            this.container.appendChild(this._playerHeadRight);
+        }
+        
         let playerHeadUpId = "player-head-up";
         this._playerHeadUp = document.querySelector("#" + playerHeadUpId) as DebugDisplayFrameValue;
         if (!this._playerHeadUp) {
             this._playerHeadUp = document.createElement("debug-display-frame-value") as DebugDisplayFrameValue;
             this._playerHeadUp.id = playerHeadUpId;
-            this._playerHeadUp.setAttribute("label", "Head Up");
+            this._playerHeadUp.setAttribute("label", "Head Y");
             this._playerHeadUp.setAttribute("min", "-1");
             this._playerHeadUp.setAttribute("max", "1");
             this.container.appendChild(this._playerHeadUp);
@@ -50,6 +61,7 @@ class DebugInput {
     }
 
     private _update = () => {
+        this._playerHeadRight.addValue(this.player.inputHeadRight);
         this._playerHeadUp.addValue(this.player.inputHeadUp);
     }
 

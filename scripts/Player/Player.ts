@@ -288,8 +288,9 @@ class Player extends BABYLON.Mesh {
         }
         */
 
-        this.inputHeadRight *= 0.8;
-        this.inputHeadUp *= 0.8;
+        let inputFactor = Easing.smooth025Sec(this.getEngine().getFps());
+        this.inputHeadRight *= inputFactor;
+        this.inputHeadUp *= inputFactor;
 
         this._collisionPositions[0] = this._headPosition;
         this._collisionPositions[1] = this._feetPosition;
