@@ -101,6 +101,8 @@ class Player extends BABYLON.Mesh {
         this.main.canvas.addEventListener("pointermove", this._mouseMove);
 
         this.inputManager.pointerUpObservable.add((pickableElement: Pickable) => {
+            this.abortTeleportation();
+
             if (this.currentAction) {
                 if (this.currentAction.onClick) {
                     this.currentAction.onClick();
@@ -122,6 +124,7 @@ class Player extends BABYLON.Mesh {
             if (this.inputManager.aimedElement) {
                 this.inputManager.aimedElement.onPointerDown();
             }
+            this.startTeleportation();
             if (!this.inputManager.aimedElement || !this.inputManager.aimedElement.interceptsPointerMove()) {
                 this._headMoveWithMouse = true;
             }
@@ -150,10 +153,23 @@ class Player extends BABYLON.Mesh {
             let movementX: number = event.movementX;
             let movementY: number = event.movementY;
             let size = Math.min(this.main.canvas.width, this.main.canvas.height)
-            this.inputHeadRight += movementX / size * 10;
-            this.inputHeadUp += movementY / size * 10;
+            this.inputHeadRight += movementX / size * 5;
+            this.inputHeadRight = Math.max(Math.min(this.inputHeadRight, 1), - 1);
+            this.inputHeadUp += movementY / size * 5;
+            this.inputHeadUp = Math.max(Math.min(this.inputHeadUp, 1), - 1);
         }
     };
+
+    private _teleportationTarget: BABYLON.Vector3;
+    private _teleportationTimer: number = Infinity;
+    private startTeleportation(): void {
+        this._teleportationTimer = 1;
+        this._teleportationTarget = undefined;
+    }
+
+    private abortTeleportation(): void {
+        this._teleportationTimer = Infinity;
+    }
 
     public unregisterControl(): void {
         this.main.canvas.removeEventListener("keyup", this._keyUp);
@@ -245,6 +261,27 @@ class Player extends BABYLON.Mesh {
 
         let deltaTime: number = this.main.engine.getDeltaTime() / 1000;
 
+        if (isFinite(this._teleportationTimer)) {
+            let p = this.inputManager.getPickInfo(this._meshes);
+            if (p && p.hit && p.pickedPoint) {
+                if (!this._teleportationTarget) {
+                    this._teleportationTarget = p.pickedPoint.clone();
+                }
+                
+                if (BABYLON.Vector3.DistanceSquared(this._teleportationTarget, p.pickedPoint) > 1) {
+                    this.abortTeleportation();
+                }
+
+                if (this._teleportationTarget) {
+                    this._teleportationTimer -= deltaTime;
+                }
+            }
+            if (this._teleportationTimer < 0) {
+                this.animatePos(this._teleportationTarget, 1, true);
+                this.abortTeleportation();
+            }
+        }
+
         this._jumpTimer = Math.max(this._jumpTimer - deltaTime, 0);
 
         if (this.targetLook) {
@@ -277,16 +314,23 @@ class Player extends BABYLON.Mesh {
         this.camPos.rotation.x = Math.max(this.camPos.rotation.x, -Math.PI / 2);
         this.camPos.rotation.x = Math.min(this.camPos.rotation.x, Math.PI / 2);
         
-        /*
         let chunck = PlanetTools.WorldPositionToChunck(this.planet, this.position);
         if (this._currentChunck) {
-            this._currentChunck.unlit();
+            //this._currentChunck.unlit();
         }
+
         this._currentChunck = chunck;
         if (this._currentChunck) {
-            this._currentChunck.highlight();
+            this._chuncks = this._currentChunck.adjacentsAsArray;
         }
-        */
+        else {
+            this._chuncks = [];
+        }
+        this._meshes = this._chuncks.map(c => { return c.mesh; });
+
+        if (this._currentChunck) {
+            //this._currentChunck.highlight();
+        }
 
         let inputFactor = Easing.smooth025Sec(this.getEngine().getFps());
         this.inputHeadRight *= inputFactor;
@@ -332,12 +376,6 @@ class Player extends BABYLON.Mesh {
         gFactor = Math.max(Math.min(gFactor, 1), 0) * 9.8;
         this._gravityFactor.copyFrom(this._downDirection).scaleInPlace(gFactor * deltaTime);
         this._groundFactor.copyFromFloats(0, 0, 0);
-
-        this._chuncks.forEach((chunck) => {
-            //chunck.unlit();
-        });
-        this._chuncks = [];
-        this._meshes = [];
 
         if (this._jumpTimer === 0 && this.planet) {
 

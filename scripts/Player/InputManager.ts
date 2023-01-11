@@ -273,6 +273,35 @@ class InputManager {
         return KeyInput.NULL;
     }
 
+    public getPickInfo(meshes: BABYLON.Mesh[], x?: number, y?: number): BABYLON.PickingInfo {
+        if (isNaN(x) || isNaN(y)) {
+            if (this.isPointerLocked) {
+                x = this.canvas.clientWidth * 0.5;
+                y = this.canvas.clientHeight * 0.5;
+            }
+            else {
+                x = this.scene.pointerX;
+                y = this.scene.pointerY;
+            }
+        }
+        let bestDist: number = Infinity;
+        let bestPick: BABYLON.PickingInfo;
+        let ray = this.scene.createPickingRay(x, y, BABYLON.Matrix.Identity(), this.scene.activeCamera);
+        for (let i = 0; i < meshes.length; i++) {
+            let mesh = meshes[i];
+            if (mesh) {
+                let pick = ray.intersectsMesh(mesh);
+                if (pick && pick.hit && pick.pickedMesh) {
+                    if (pick.distance < bestDist) {
+                        bestDist = pick.distance;
+                        bestPick = pick;
+                    }
+                }
+            }
+        }
+        return bestPick;
+    }
+
     public updateAimedElement(x?: number, y?: number): void {
         if (isNaN(x) || isNaN(y)) {
             if (this.isPointerLocked) {
