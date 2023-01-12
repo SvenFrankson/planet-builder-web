@@ -49,8 +49,23 @@ class DebugPlayerPosition {
             this.container.appendChild(this._playerCoordinates);
         }
 
-        this._playerPosition = document.querySelector("#player-position") as DebugDisplayVector3Value;
-        this._playerLocalPosition = document.querySelector("#player-local-position") as DebugDisplayVector3Value;
+        let playerPositionId = "player-position";
+        this._playerPosition = document.querySelector("#" + playerPositionId) as DebugDisplayVector3Value;
+        if (!this._playerPosition) {
+            this._playerPosition = document.createElement("debug-display-vector3-value") as DebugDisplayVector3Value;
+            this._playerPosition.id = playerPositionId;
+            this._playerPosition.setAttribute("label", "Position");
+            this.container.appendChild(this._playerPosition);
+        }
+
+        let playerLocalPositionId = "player-local-position";
+        this._playerLocalPosition = document.querySelector("#" + playerLocalPositionId) as DebugDisplayVector3Value;
+        if (!this._playerLocalPosition) {
+            this._playerLocalPosition = document.createElement("debug-display-vector3-value") as DebugDisplayVector3Value;
+            this._playerLocalPosition.id = playerLocalPositionId;
+            this._playerLocalPosition.setAttribute("label", "Local Pos");
+            this.container.appendChild(this._playerLocalPosition);
+        }
         
         let playerSideId = "#player-planet-side";
         this._playerSide = document.querySelector(playerSideId) as DebugDisplayTextValue;
@@ -61,9 +76,32 @@ class DebugPlayerPosition {
             this.container.appendChild(this._playerSide);
         }
 
-        this._playerGlobalIJK = document.querySelector("#player-global-ijk") as DebugDisplayVector3Value;
-        this._playerChunck = document.querySelector("#player-chunck") as DebugDisplayVector3Value;
-        this._playerLocalIJK = document.querySelector("#player-local-ijk") as DebugDisplayVector3Value;
+        let playerGlobalIJKId = "player-global-ijk";
+        this._playerGlobalIJK = document.querySelector("#" + playerGlobalIJKId) as DebugDisplayVector3Value;
+        if (!this._playerGlobalIJK) {
+            this._playerGlobalIJK = document.createElement("debug-display-vector3-value") as DebugDisplayVector3Value;
+            this._playerGlobalIJK.id = playerGlobalIJKId;
+            this._playerGlobalIJK.setAttribute("label", "Global IJK");
+            this.container.appendChild(this._playerGlobalIJK);
+        }
+        
+        let playerChunckId = "player-chunck";
+        this._playerChunck = document.querySelector("#" + playerChunckId) as DebugDisplayVector3Value;
+        if (!this._playerChunck) {
+            this._playerChunck = document.createElement("debug-display-vector3-value") as DebugDisplayVector3Value;
+            this._playerChunck.id = playerChunckId;
+            this._playerChunck.setAttribute("label", "Player Chunck");
+            this.container.appendChild(this._playerChunck);
+        }
+        
+        let playerLocalIJKId = "player-local-ijk";
+        this._playerLocalIJK = document.querySelector("#" + playerLocalIJKId) as DebugDisplayVector3Value;
+        if (!this._playerLocalIJK) {
+            this._playerLocalIJK = document.createElement("debug-display-vector3-value") as DebugDisplayVector3Value;
+            this._playerLocalIJK.id = playerLocalIJKId;
+            this._playerLocalIJK.setAttribute("label", "Local IJK");
+            this.container.appendChild(this._playerLocalIJK);
+        }
 
         this._initialized = true;
     }
