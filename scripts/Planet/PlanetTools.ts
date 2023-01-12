@@ -4,8 +4,16 @@ var PI = Math.PI;
 
 class PlanetTools {
 
-    public static readonly DEGREEMIN = 5;
-    public static readonly CHUNCKSIZE = 16;
+    // Chunck Size = 8 case
+    public static readonly DEGREEMIN = 4;
+    public static readonly CHUNCKSIZE = 8;
+    public static readonly CORE_RADIUS = 7.6;
+
+    // Chunck Size = 16 case
+    //public static readonly DEGREEMIN = 5;
+    //public static readonly CHUNCKSIZE = 16;
+    //public static readonly CORE_RADIUS = 13.4;
+
     public static readonly ALPHALIMIT = Math.PI / 4;
     public static readonly DISTANCELIMITSQUARED = 128 * 128;
 
@@ -505,7 +513,7 @@ class PlanetTools {
     }
 
     public static KPosToDegree(kPos: number): number {
-        return PlanetTools.KPosToDegree16(kPos);
+        return PlanetTools.KPosToDegree8(kPos);
     }
 
     public static KPosToSize(kPos: number): number {
@@ -538,7 +546,7 @@ class PlanetTools {
         PlanetTools._BSizes = [];
         PlanetTools._Altitudes = [];
         PlanetTools._SummedBSizesLength = [];
-        let coreRadius = 13.4;
+        let coreRadius = 7.6;
         let radius = coreRadius;
         let degree = this.DEGREEMIN;
         let bSizes = [];

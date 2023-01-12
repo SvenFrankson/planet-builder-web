@@ -1,4 +1,6 @@
 class Main {
+    public static Instance: Main;
+
 	public canvas: HTMLCanvasElement;
 	public static Engine: BABYLON.Engine;
 	public engine: BABYLON.Engine;
@@ -16,6 +18,8 @@ class Main {
     private _onNextChunckManagerNotWorking: (() => void)[] = [];
 
     constructor(canvasElement: string) {
+        Main.Instance = this;
+        
 		this.canvas = document.getElementById(canvasElement) as HTMLCanvasElement;
         this.canvas.requestPointerLock = this.canvas.requestPointerLock || this.canvas.msRequestPointerLock || this.canvas.mozRequestPointerLock || this.canvas.webkitRequestPointerLock;
 		Main.Engine = new BABYLON.Engine(this.canvas, true);

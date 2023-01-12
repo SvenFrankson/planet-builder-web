@@ -108,33 +108,33 @@ void main() {
       }
 
       if (d == 2) {
-         color = texture(grassTexture, uv * 8.).rgb;
+         color = texture(grassTexture, uv * 4.).rgb;
       }
       else if (d == 3 || d == 8) {
          if (isSide) {
-            color = texture(dirtSideTexture, uv * 8.).rgb;
+            color = texture(dirtSideTexture, uv * 4.).rgb;
          }
          else {
-            color = texture(dirtTopTexture, uv * 8.).rgb;
+            color = texture(dirtTopTexture, uv * 4.).rgb;
          }
       }
       else if (d == 4 || d == 10) {
-         color = texture(sandTexture, uv * 8.).rgb;
+         color = texture(sandTexture, uv * 4.).rgb;
       }
       else if (d == 5 || d == 9) {
-         color = texture(rockTexture, uv * 8.).rgb;
+         color = texture(rockTexture, uv * 4.).rgb;
       }
       else if (d == 6) {
-         color = texture(woodTexture, uv * 16.).rgb;
+         color = texture(woodTexture, uv * 8.).rgb;
       }
       else if (d == 7) {
-         color = texture(leafTexture, uv * 16.).rgb;
+         color = texture(leafTexture, uv * 8.).rgb;
       }
       else if (d == 11) {
-         color = texture(iceTexture, uv * 16.).rgb;
+         color = texture(iceTexture, uv * 4.).rgb;
       }
       else {
-         color = texture(voidTexture, uv * 8.).rgb;
+         color = texture(voidTexture, uv * 4.).rgb;
       }
       color -= vec3(0.5, 0.5, 0.5);
       color += terrainColors[d];
