@@ -29,6 +29,8 @@ class Player extends BABYLON.Mesh {
     private wallCollisionVData: BABYLON.VertexData;
     private wallCollisionMeshes: BABYLON.Mesh[] = [];
 
+    private teleportationIndicator: BABYLON.Mesh;
+
     public get inputManager(): InputManager {
         return this.main.inputManager;
     }
@@ -50,6 +52,9 @@ class Player extends BABYLON.Mesh {
         material.alpha = 0.5;
         this.material = material;
         this.layerMask = 0x10000000;
+
+        this.teleportationIndicator = BABYLON.MeshBuilder.CreateSphere("teleportation-indicator", { diameter: 0.5 });
+        this.teleportationIndicator.isVisible = false; 
     }
 
     private _initialized: boolean = false;
@@ -214,7 +219,13 @@ class Player extends BABYLON.Mesh {
             if (lookingAt) {
                 quaternionZero = this.rotationQuaternion.clone();
                 let targetZ = posTarget.subtract(posZero).normalize();
-                let targetY = posTarget.clone().normalize();
+                let targetY: BABYLON.Vector3;
+                if (this.planet) {
+                    targetY = posTarget.subtract(this.planet.position).normalize();
+                }
+                else {
+                    targetY = posTarget.clone().normalize();
+                }
                 let targetX = BABYLON.Vector3.Cross(targetY, targetZ);
                 targetZ = BABYLON.Vector3.Cross(targetX, targetY);
                 quaternionTarget = BABYLON.Quaternion.RotationQuaternionFromAxis(targetX, targetY, targetZ);
@@ -262,13 +273,13 @@ class Player extends BABYLON.Mesh {
         let deltaTime: number = this.main.engine.getDeltaTime() / 1000;
 
         if (isFinite(this._teleportationTimer)) {
-            let p = this.inputManager.getPickInfo(this._meshes);
-            if (p && p.hit && p.pickedPoint) {
+            let p = this.inputManager.getPickedPoint(this._meshes);
+            if (p) {
                 if (!this._teleportationTarget) {
-                    this._teleportationTarget = p.pickedPoint.clone();
+                    this._teleportationTarget = p.clone();
                 }
                 
-                if (BABYLON.Vector3.DistanceSquared(this._teleportationTarget, p.pickedPoint) > 1) {
+                if (BABYLON.Vector3.DistanceSquared(this._teleportationTarget, p) > 1) {
                     this.abortTeleportation();
                 }
 
@@ -280,6 +291,14 @@ class Player extends BABYLON.Mesh {
                 this.animatePos(this._teleportationTarget, 1, true);
                 this.abortTeleportation();
             }
+        }
+
+        if (isFinite(this._teleportationTimer) && this._teleportationTarget) {
+            this.teleportationIndicator.isVisible = true;
+            this.teleportationIndicator.position.copyFrom(this._teleportationTarget);
+        }
+        else {
+            this.teleportationIndicator.isVisible = false;
         }
 
         this._jumpTimer = Math.max(this._jumpTimer - deltaTime, 0);
@@ -326,7 +345,8 @@ class Player extends BABYLON.Mesh {
         else {
             this._chuncks = [];
         }
-        this._meshes = this._chuncks.map(c => { return c.mesh; });
+        this._chuncks.push(this._currentChunck);
+        this._meshes = this._chuncks.map(c => { return c ? c.mesh : undefined; });
 
         if (this._currentChunck) {
             //this._currentChunck.highlight();

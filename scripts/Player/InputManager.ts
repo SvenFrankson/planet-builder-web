@@ -273,7 +273,7 @@ class InputManager {
         return KeyInput.NULL;
     }
 
-    public getPickInfo(meshes: BABYLON.Mesh[], x?: number, y?: number): BABYLON.PickingInfo {
+    public getPickedPoint(meshes: BABYLON.Mesh[], x?: number, y?: number): BABYLON.Vector3 {
         if (isNaN(x) || isNaN(y)) {
             if (this.isPointerLocked) {
                 x = this.canvas.clientWidth * 0.5;
@@ -299,7 +299,9 @@ class InputManager {
                 }
             }
         }
-        return bestPick;
+        if (bestPick) {
+            return bestPick.pickedPoint;
+        }
     }
 
     public updateAimedElement(x?: number, y?: number): void {
