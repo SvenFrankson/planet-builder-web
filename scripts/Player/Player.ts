@@ -273,13 +273,14 @@ class Player extends BABYLON.Mesh {
         let deltaTime: number = this.main.engine.getDeltaTime() / 1000;
 
         if (isFinite(this._teleportationTimer)) {
-            let p = this.inputManager.getPickedPoint(this._meshes);
-            if (p) {
+            let p = this.inputManager.getPickInfo(this._meshes);
+            if (p && p.hit && p.pickedPoint) {
                 if (!this._teleportationTarget) {
-                    this._teleportationTarget = p.clone();
+                    let n = p.getNormal(true).scale(0.12);
+                    this._teleportationTarget = p.pickedPoint.subtract(n);
                 }
                 
-                if (BABYLON.Vector3.DistanceSquared(this._teleportationTarget, p) > 1) {
+                if (BABYLON.Vector3.DistanceSquared(this._teleportationTarget, p.pickedPoint) > 1) {
                     this.abortTeleportation();
                 }
 
