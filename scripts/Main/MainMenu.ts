@@ -87,13 +87,11 @@ class MainMenu extends Main {
 			this.cameraManager.player = this.player;
 			this.cameraManager.setMode(CameraMode.Player);
 
-			/*
             let debugPlanetPerf = new DebugPlanetPerf(this, true);
             debugPlanetPerf.show();
 
 			let debugPlayerPosition = new DebugPlayerPosition(this.player);
 			debugPlayerPosition.show();
-			*/
 
 			let debugInput = new DebugInput(this.player);
 			debugInput.show();

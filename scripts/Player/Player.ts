@@ -158,9 +158,9 @@ class Player extends BABYLON.Mesh {
             let movementX: number = event.movementX;
             let movementY: number = event.movementY;
             let size = Math.min(this.main.canvas.width, this.main.canvas.height)
-            this.inputHeadRight += movementX / size * 5;
+            this.inputHeadRight += movementX / size * 10;
             this.inputHeadRight = Math.max(Math.min(this.inputHeadRight, 1), - 1);
-            this.inputHeadUp += movementY / size * 5;
+            this.inputHeadUp += movementY / size * 10;
             this.inputHeadUp = Math.max(Math.min(this.inputHeadUp, 1), - 1);
         }
     };
