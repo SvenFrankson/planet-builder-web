@@ -6,6 +6,8 @@ class DebugDefine {
 
     public static SHOW_PLAYER_ARM_CURRENT_TARGET: boolean = true;
     public static SHOW_PLAYER_COLLISION_MESHES: boolean = false;
+    
+    public static SHOW_PLANET_CORNER_FLAGS: boolean = true;
 
     public static LOG_GLOBAL_START_TIME_PERFORMANCE: boolean = false;
     public static LOG_CHUNCK_VERTEXDATA_INIT_PERFORMANCE: boolean = false;

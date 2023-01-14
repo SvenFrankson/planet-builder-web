@@ -266,33 +266,33 @@ class PlanetChunckMeshBuilder {
                     let cornerCase = false;
                     if ((chunck.side === Side.Top || chunck.side === Side.Bottom) && chunck.isCorner) {
                         if (chunck.iPos === 0) {
-                            if (chunck.jPos === 0) {
-                                if (i === chunck.firstI) {
+                            if (i === chunck.firstI) {
+                                if (chunck.jPos === 0) {
                                     if (j === chunck.firstJ) {
                                         cornerCase = true;
+                                        //console.log("imin jmin");
                                     }
                                 }
-                            }
-                            if (chunck.jPos === chunck.chunckCount - 1) {
-                                if (i === chunck.firstI) {
+                                if (chunck.jPos === chunck.chunckCount - 1) {
                                     if (j === chunck.lastJ - 1) {
                                         cornerCase = true;
+                                        //console.log("imin jmax");
                                     }
                                 }
                             }
                         }
                         if (chunck.iPos === chunck.chunckCount - 1) {
-                            if (chunck.jPos === 0) {
-                                if (i === PlanetTools.CHUNCKSIZE - 1) {
+                            if (i === PlanetTools.CHUNCKSIZE - 1) {
+                                if (chunck.jPos === 0) {
                                     if (j === chunck.firstJ) {
                                         cornerCase = true;
+                                        //console.log("imax jmin");
                                     }
                                 }
-                            }
-                            if (chunck.jPos === chunck.chunckCount - 1) {
-                                if (i === PlanetTools.CHUNCKSIZE - 1) {
+                                if (chunck.jPos === chunck.chunckCount - 1) {
                                     if (j === chunck.lastJ - 1) {
                                         cornerCase = true;
+                                        //console.log("imax jmax");
                                     }
                                 }
                             }
@@ -303,52 +303,51 @@ class PlanetChunckMeshBuilder {
                         let d = chunck.GetData(i, j, k);
                         if (d > BlockType.Water) {
                             if (chunck.GetData(i, j, k + 1) <= BlockType.Water) {
+                                console.log(chunck.name);
                                 let iGlobal: number = i + iPos * PlanetTools.CHUNCKSIZE;
                                 let jGlobal: number = j + jPos * PlanetTools.CHUNCKSIZE;
-                                PCMB.GetVertexToRef(2 * size, 2 * (iGlobal) + 1, 2 * (jGlobal) + 1, PCMB.tmpVertices[0]);
-                                PCMB.GetVertexToRef(2 * size, 2 * (iGlobal) + 1, 2 * (jGlobal + 1) + 1, PCMB.tmpVertices[1]);
-                                PCMB.GetVertexToRef(2 * size, 2 * (iGlobal + 1) + 1, 2 * (jGlobal) + 1, PCMB.tmpVertices[2]);
-                                PCMB.GetVertexToRef(2 * size, 2 * (iGlobal + 1) + 1, 2 * (jGlobal + 1) + 1, PCMB.tmpVertices[3]);
+
+                                PCMB.GetVertexToRef(2 * size, 2 * (iGlobal) + 1, 2 * (jGlobal) + 1, v0);
+                                PCMB.GetVertexToRef(2 * size, 2 * (iGlobal + 1) + 1, 2 * (jGlobal) + 1, v1);
+                                PCMB.GetVertexToRef(2 * size, 2 * (iGlobal + 1) + 1, 2 * (jGlobal + 1) + 1, v2);
+                                PCMB.GetVertexToRef(2 * size, 2 * (iGlobal) + 1, 2 * (jGlobal + 1) + 1, v3);
             
                                 let hGlobal = (k + kPos * PlanetTools.CHUNCKSIZE);
                                 let hLow = PlanetTools.KGlobalToAltitude(hGlobal) * 0.5 + PlanetTools.KGlobalToAltitude(hGlobal + 1) * 0.5;
                                 let hHigh = PlanetTools.KGlobalToAltitude(hGlobal + 1) * 0.5 + PlanetTools.KGlobalToAltitude(hGlobal + 2) * 0.5;
                                 let h = hLow * 0.5 + hHigh * 0.5;
             
-                                PCMB.tmpVertices[0].scaleInPlace(h);
-                                PCMB.tmpVertices[1].scaleInPlace(h);
-                                PCMB.tmpVertices[2].scaleInPlace(h);
-                                PCMB.tmpVertices[3].scaleInPlace(h);
+                                v0.scaleInPlace(h);
+                                v1.scaleInPlace(h);
+                                v2.scaleInPlace(h);
+                                v3.scaleInPlace(h);
 
-                                if (BABYLON.Vector3.DistanceSquared(v0, v1) === 0) {
+                                if (BABYLON.Vector3.DistanceSquared(v0, v1) < 0.01) {
                                     v1.copyFrom(v2);
                                     v2.copyFrom(v3);
                                 }
-                                else if (BABYLON.Vector3.DistanceSquared(v1, v2) === 0) {
+                                else if (BABYLON.Vector3.DistanceSquared(v1, v2) < 0.01) {
                                     v2.copyFrom(v3);
                                 }
-                                else if (BABYLON.Vector3.DistanceSquared(v0, v2) === 0) {
-                                    v2.copyFrom(v3);
-                                }
-                                
-                                let c = PCMB.BlockColor.get(d);
-                                if (!c) {
-                                    c = PCMB.BlockColor.get(136);
-                                }
-            
+                                            
                                 let l = positions.length / 3;
+                                //positions.push(v0.x, v0.y, v0.z, v1.x, v1.y, v1.z, v2.x, v2.y, v2.z, v3.x, v3.y, v3.z);
                                 positions.push(v0.x, v0.y, v0.z, v1.x, v1.y, v1.z, v2.x, v2.y, v2.z);
 
+                                //normals.push(0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0);
                                 normals.push(0, 1, 0, 0, 1, 0, 0, 1, 0);
-                                indices.push(l, l + 2, l + 1);
+                                //indices.push(l, l + 1, l + 2, l, l + 2, l + 3);
+                                indices.push(l, l + 1, l + 2);
                                 
-                                let alpha = d / 128;
-                                colors.push(1, 0, 0, alpha, 0, 1, 0, alpha, 0, 0, 1, alpha);
-                                let u = d / 128;
-                                let v = d / 128;
+                                //colors.push(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1);
+                                colors.push(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1);
+
+                                //uvs.push(u, v, u, v, u, v, u, v);
                                 uvs.push(u, v, u, v, u, v);
-                                uvs2.push(0, 0, 0, 0, 0, 0);
+                                //uvs2.push(w, 1, w, 1, w, 1, w, 1);
+                                uvs2.push(w, 1, w, 1, w, 1);
                                 
+                                //trianglesData.push(d, d);
                                 trianglesData.push(d);
                             }
                         }

@@ -56,6 +56,34 @@ class Planet extends BABYLON.Mesh {
         this.planetSides[Side.Bottom] = new PlanetSide(Side.Bottom, this);
 
         this.chunckManager = new PlanetChunckManager(this._scene);
+
+        if (DebugDefine.SHOW_PLANET_CORNER_FLAGS) {
+            let p = BABYLON.Vector3.One();
+            p.scaleInPlace(this.kPosMax * PlanetTools.CHUNCKSIZE);
+            let d = p.x;
+            let lines = [
+                [new BABYLON.Vector3(d, d, d), new BABYLON.Vector3(- d, -d, -d)],
+                [new BABYLON.Vector3(d, d, - d), new BABYLON.Vector3(- d, - d, d)],
+                [new BABYLON.Vector3(- d, d, d), new BABYLON.Vector3(d, - d, - d)],
+                [new BABYLON.Vector3(- d, d, - d), new BABYLON.Vector3(d, - d, d)]
+            ];
+            let color = new BABYLON.Color4(1, 0, 1);
+            let colors = [
+                [color, color],
+                [color, color],
+                [color, color],
+                [color, color]
+            ]
+            let debugCornerFlagsMesh = BABYLON.MeshBuilder.CreateLineSystem(
+                this.name + "-debug-corner-flags",
+                {
+                    lines: lines,
+                    colors: colors
+                },
+                this.scene
+            );
+            debugCornerFlagsMesh.parent = this;
+        }
     }
 
     public instantiate(): void {
