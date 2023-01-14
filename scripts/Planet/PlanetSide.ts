@@ -178,7 +178,7 @@ class PlanetSide extends BABYLON.Mesh {
 
         if (iGlobal < 0) {
             if (this.side <= Side.Left) {
-                let side = this.planet.GetSide((this.side + 3) % 4);
+                let side = this.planet.GetSide((this.side + 1) % 4);
                 return side.GetData(L + iGlobal, jGlobal, kGlobal, degree);
             }
             else if (this.side === Side.Top) {

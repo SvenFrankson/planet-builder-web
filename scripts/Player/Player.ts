@@ -1,5 +1,7 @@
 class Player extends BABYLON.Mesh {
 
+    public static DEBUG_INSTANCE: Player;
+
     private mass: number = 1;
     private speed: number = 5;
     public velocity: BABYLON.Vector3 = BABYLON.Vector3.Zero();
@@ -41,6 +43,7 @@ class Player extends BABYLON.Mesh {
 
     constructor(position: BABYLON.Vector3, public main: Main) {
         super("Player", main.scene);
+        Player.DEBUG_INSTANCE = this;
         this.position = position;
         this.rotationQuaternion = BABYLON.Quaternion.Identity();
         this.camPos = new BABYLON.Mesh("Dummy", Game.Scene);
