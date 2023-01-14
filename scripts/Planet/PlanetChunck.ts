@@ -374,7 +374,7 @@ class PlanetChunck extends AbstractPlanetChunck {
         if (this.isCorner && this.side > Side.Left) {
             for (let i = 0; i < this.adjacentsAsArray.length; i++) {
                 let adjacent = this.adjacentsAsArray[i];
-                if (adjacent.isCorner && !adjacent._adjacentsDataSynced) {
+                if (adjacent.isCorner && adjacent.side <= Side.Left) {
                     adjacent.syncWithAdjacents();
                 }
             }
