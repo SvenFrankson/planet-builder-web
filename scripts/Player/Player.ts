@@ -31,7 +31,9 @@ class Player extends BABYLON.Mesh {
     private wallCollisionVData: BABYLON.VertexData;
     private wallCollisionMeshes: BABYLON.Mesh[] = [];
 
-    private teleportationIndicator: BABYLON.Mesh;
+    private moveDelay: number = 1;
+    private moveIndicatorDisc: PlanetObject;
+    private moveIndicatorLandmark: PlanetObject;
 
     public get inputManager(): InputManager {
         return this.main.inputManager;
@@ -56,8 +58,16 @@ class Player extends BABYLON.Mesh {
         this.material = material;
         this.layerMask = 0x10000000;
 
-        this.teleportationIndicator = BABYLON.MeshBuilder.CreateSphere("teleportation-indicator", { diameter: 0.5 });
-        this.teleportationIndicator.isVisible = false; 
+        let mat = new ToonMaterial("move-indicator-material", this.scene);
+        this.moveIndicatorDisc = new PlanetObject("player-move-indicator-disc", this.main);
+        this.moveIndicatorDisc.material = mat;
+        this.moveIndicatorDisc.rotationQuaternion = BABYLON.Quaternion.Identity();
+        this.moveIndicatorDisc.isVisible = false; 
+        
+        this.moveIndicatorLandmark = new PlanetObject("player-move-indicator-landmark", this.main);
+        this.moveIndicatorLandmark.material = mat;
+        this.moveIndicatorLandmark.rotationQuaternion = BABYLON.Quaternion.Identity();
+        this.moveIndicatorLandmark.isVisible = false; 
     }
 
     private _initialized: boolean = false;
@@ -68,6 +78,8 @@ class Player extends BABYLON.Mesh {
             this._initialized = true;
             this.groundCollisionVData = (await this.main.vertexDataLoader.get("chunck-part"))[1];
             this.wallCollisionVData = (await this.main.vertexDataLoader.get("chunck-part"))[2];
+            (await this.main.vertexDataLoader.get("landmark"))[0].applyToMesh(this.moveIndicatorDisc);
+            (await this.main.vertexDataLoader.get("landmark"))[1].applyToMesh(this.moveIndicatorLandmark);
         }
     }
 
@@ -168,15 +180,15 @@ class Player extends BABYLON.Mesh {
         }
     };
 
-    private _teleportationTarget: BABYLON.Vector3;
-    private _teleportationTimer: number = Infinity;
+    private _moveTarget: BABYLON.Vector3;
+    private _moveTimer: number = Infinity;
     private startTeleportation(): void {
-        this._teleportationTimer = 1;
-        this._teleportationTarget = undefined;
+        this._moveTimer = 1;
+        this._moveTarget = undefined;
     }
 
     private abortTeleportation(): void {
-        this._teleportationTimer = Infinity;
+        this._moveTimer = Infinity;
     }
 
     public unregisterControl(): void {
@@ -275,34 +287,53 @@ class Player extends BABYLON.Mesh {
 
         let deltaTime: number = this.main.engine.getDeltaTime() / 1000;
 
-        if (isFinite(this._teleportationTimer)) {
+        if (isFinite(this._moveTimer)) {
             let p = this.inputManager.getPickInfo(this._meshes);
             if (p && p.hit && p.pickedPoint) {
-                if (!this._teleportationTarget) {
-                    let n = p.getNormal(true).scale(0.12);
-                    this._teleportationTarget = p.pickedPoint.subtract(n);
+                if (!this._moveTarget) {
+                    this._moveTarget = p.pickedPoint.clone();
                 }
                 
-                if (BABYLON.Vector3.DistanceSquared(this._teleportationTarget, p.pickedPoint) > 1) {
+                if (BABYLON.Vector3.DistanceSquared(this._moveTarget, p.pickedPoint) > 1) {
                     this.abortTeleportation();
                 }
 
-                if (this._teleportationTarget) {
-                    this._teleportationTimer -= deltaTime;
+                if (this._moveTarget) {
+                    this._moveTimer -= deltaTime;
                 }
             }
-            if (this._teleportationTimer < 0) {
-                this.animatePos(this._teleportationTarget, 1, true);
+            if (this._moveTimer < 0) {
+                this.animatePos(this._moveTarget, 1, true);
                 this.abortTeleportation();
             }
         }
 
-        if (isFinite(this._teleportationTimer) && this._teleportationTarget) {
-            this.teleportationIndicator.isVisible = true;
-            this.teleportationIndicator.position.copyFrom(this._teleportationTarget);
+        let moveTimerNormalized = this._moveTimer / this.moveDelay;
+        if (moveTimerNormalized < 0.75 && this._moveTarget) {
+            let sDisc = 0;
+            if (moveTimerNormalized > 0.6) {
+                sDisc = Easing.easeInOutSine(1 - (moveTimerNormalized - 0.6) / 0.15);
+            }
+            else {
+                sDisc = Easing.easeInOutSine(moveTimerNormalized / 0.6);
+            }
+            let sLandmark = 0;
+            if (moveTimerNormalized <= 0.6) {
+                sLandmark = Easing.easeInOutSine(1 - moveTimerNormalized / 0.6);
+            }
+
+            this.moveIndicatorDisc.isVisible = true;
+            this.moveIndicatorDisc.planet = this.planet;
+            this.moveIndicatorDisc.scaling.copyFromFloats(sDisc, sDisc, sDisc);
+            this.moveIndicatorDisc.setPosition(this._moveTarget);
+            this.moveIndicatorLandmark.isVisible = true;
+            this.moveIndicatorLandmark.planet = this.planet;
+            this.moveIndicatorLandmark.scaling.copyFromFloats(sLandmark, sLandmark, sLandmark);
+            this.moveIndicatorLandmark.setPosition(this._moveTarget);
         }
         else {
-            this.teleportationIndicator.isVisible = false;
+            this.moveIndicatorDisc.isVisible = false;
+            this.moveIndicatorLandmark.isVisible = false;
         }
 
         this._jumpTimer = Math.max(this._jumpTimer - deltaTime, 0);
@@ -338,22 +369,22 @@ class Player extends BABYLON.Mesh {
         this.camPos.rotation.x = Math.min(this.camPos.rotation.x, Math.PI / 2);
         
         let chunck = PlanetTools.WorldPositionToChunck(this.planet, this.position);
-        if (this._currentChunck) {
-            //this._currentChunck.unlit();
-        }
+        if (chunck != this._currentChunck) {
+            if (this._currentChunck) {
+                //this._currentChunck.unlit();
+            }
+            
+            this._currentChunck = chunck;
 
-        this._currentChunck = chunck;
-        if (this._currentChunck) {
-            this._chuncks = this._currentChunck.adjacentsAsArray;
-        }
-        else {
-            this._chuncks = [];
-        }
-        this._chuncks.push(this._currentChunck);
-        this._meshes = this._chuncks.map(c => { return c ? c.mesh : undefined; });
-
-        if (this._currentChunck) {
-            //this._currentChunck.highlight();
+            if (this._currentChunck) {
+                //this._currentChunck.highlight();
+                this._chuncks = [...this._currentChunck.adjacentsAsArray, this._currentChunck];
+                this._meshes = this._chuncks.map(c => { return c ? c.mesh : undefined; });
+            }
+            else {
+                this._chuncks = [];
+                this._meshes = [];
+            }
         }
 
         let inputFactor = Easing.smooth025Sec(this.getEngine().getFps());

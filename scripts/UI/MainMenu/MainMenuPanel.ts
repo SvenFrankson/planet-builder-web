@@ -177,7 +177,7 @@ class MainMenuPanel extends HoloPanel {
             await this.close();
             let p = player.position.add(player.forward);
             this.planet = player.planet;
-            this.setPosition(p);
+            this.setPosition(p, true);
             this.setTarget(player.position);
             requestAnimationFrame(() => {
                 this.inputManager.player.targetLook = this.holoMesh.absolutePosition;

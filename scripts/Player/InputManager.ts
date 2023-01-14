@@ -274,6 +274,16 @@ class InputManager {
     }
 
     public getPickInfo(meshes: BABYLON.Mesh[], x?: number, y?: number): BABYLON.PickingInfo {
+        
+        let timers: number[];
+        let logOutput: string;
+        let useLog = DebugDefine.LOG_INPUTMANAGER_GETPICKINGINFO_PERFORMANCE;
+        if (useLog) {
+            timers = [];
+            timers.push(performance.now());
+            logOutput = "InputManager getPickInfo on " + meshes.length + " meshes.";
+        }
+        
         if (isNaN(x) || isNaN(y)) {
             if (this.isPointerLocked) {
                 x = this.canvas.clientWidth * 0.5;
@@ -297,8 +307,20 @@ class InputManager {
                         bestPick = pick;
                     }
                 }
+
+                if (useLog) {
+                    timers.push(performance.now());
+                    logOutput += "\n  mesh " + mesh.name + " checked in " + (timers[timers.length - 1] - timers[timers.length - 2]).toFixed(0) + " ms";
+                }
             }
         }
+
+        if (useLog) {
+            timers.push(performance.now());
+            logOutput += "\nInputManager getPickInfo completed in " + (timers[timers.length - 1] - timers[0]).toFixed(0) + " ms";
+            console.log(logOutput);
+        }
+
         return bestPick;
     }
 

@@ -116,7 +116,7 @@ class PlanetGeneratorEarth extends PlanetGenerator {
 
         if (useLog) {
             timers.push(performance.now());
-            logOutput += "\n context filled in " + (timers[timers.length - 1] - timers[timers.length - 2]).toFixed(0) + " ms";
+            logOutput += "\n  context filled in " + (timers[timers.length - 1] - timers[timers.length - 2]).toFixed(0) + " ms";
         }
 
         texture.update(false);
