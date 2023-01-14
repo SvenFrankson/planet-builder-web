@@ -2,6 +2,7 @@ class PlanetChunckMeshBuilder {
 
     private static cachedVertices: BABYLON.Vector3[][][];
     private static tmpVertices: BABYLON.Vector3[];
+    private static tmpUVs: BABYLON.Vector2[];
     private static tmpQuaternions: BABYLON.Quaternion[];
     private static unstretchedPositionNull = { x: NaN, y: NaN, z: NaN, index: - 1 };
 
@@ -201,15 +202,21 @@ class PlanetChunckMeshBuilder {
         let size = chunck.size;
         let vertexData: BABYLON.VertexData = new BABYLON.VertexData();
 
-        if (!PCMB.tmpVertices || PCMB.tmpVertices.length < 15) {
+        if (!PCMB.tmpVertices || PCMB.tmpVertices.length < 30) {
             PCMB.tmpVertices = [];
             for (let i: number = 0; i < 30; i++) {
                 PCMB.tmpVertices[i] = BABYLON.Vector3.Zero();
             }
         }
+        if (!PCMB.tmpUVs || PCMB.tmpUVs.length < 8) {
+            PCMB.tmpUVs = [];
+            for (let i: number = 0; i < 8; i++) {
+                PCMB.tmpUVs[i] = BABYLON.Vector2.Zero();
+            }
+        }
         if (!PCMB.tmpQuaternions || PCMB.tmpQuaternions.length < 1) {
             PCMB.tmpQuaternions = [];
-            for (let i: number = 0; i < 30; i++) {
+            for (let i: number = 0; i < 1; i++) {
                 PCMB.tmpQuaternions[i] = BABYLON.Quaternion.Identity();
             }
         }
@@ -318,16 +325,30 @@ class PlanetChunckMeshBuilder {
                                 let h = hLow * 0.5 + hHigh * 0.5;
             
                                 v0.scaleInPlace(h);
+                                PCMB.tmpUVs[0].copyFromFloats(u + 0 * uL, v + 0 * vL);
+                                PCMB.tmpUVs[4].copyFromFloats(w + 0 * wL, 1);
                                 v1.scaleInPlace(h);
+                                PCMB.tmpUVs[1].copyFromFloats(u + 1 * uL, v + 0 * vL);
+                                PCMB.tmpUVs[5].copyFromFloats(w + 0 * wL, 1);
                                 v2.scaleInPlace(h);
+                                PCMB.tmpUVs[2].copyFromFloats(u + 1 * uL, v + 1 * vL);
+                                PCMB.tmpUVs[6].copyFromFloats(w + 0 * wL, 1);
                                 v3.scaleInPlace(h);
+                                PCMB.tmpUVs[3].copyFromFloats(u + 0 * uL, v + 1 * vL);
+                                PCMB.tmpUVs[7].copyFromFloats(w + 0 * wL, 1);
 
                                 if (BABYLON.Vector3.DistanceSquared(v0, v1) < 0.01) {
                                     v1.copyFrom(v2);
+                                    PCMB.tmpUVs[1].copyFrom(PCMB.tmpUVs[2]);
+                                    PCMB.tmpUVs[5].copyFrom(PCMB.tmpUVs[6]);
                                     v2.copyFrom(v3);
+                                    PCMB.tmpUVs[2].copyFrom(PCMB.tmpUVs[3]);
+                                    PCMB.tmpUVs[6].copyFrom(PCMB.tmpUVs[7]);
                                 }
                                 else if (BABYLON.Vector3.DistanceSquared(v1, v2) < 0.01) {
                                     v2.copyFrom(v3);
+                                    PCMB.tmpUVs[2].copyFrom(PCMB.tmpUVs[3]);
+                                    PCMB.tmpUVs[6].copyFrom(PCMB.tmpUVs[7]);
                                 }
                                             
                                 let l = positions.length / 3;
@@ -343,9 +364,23 @@ class PlanetChunckMeshBuilder {
                                 colors.push(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1);
 
                                 //uvs.push(u, v, u, v, u, v, u, v);
-                                uvs.push(u, v, u, v, u, v);
+                                uvs.push(
+                                    PCMB.tmpUVs[0].x,
+                                    PCMB.tmpUVs[0].y,
+                                    PCMB.tmpUVs[1].x,
+                                    PCMB.tmpUVs[1].y,
+                                    PCMB.tmpUVs[2].x,
+                                    PCMB.tmpUVs[2].y,
+                                );
                                 //uvs2.push(w, 1, w, 1, w, 1, w, 1);
-                                uvs2.push(w, 1, w, 1, w, 1);
+                                uvs2.push(
+                                    PCMB.tmpUVs[4].x,
+                                    PCMB.tmpUVs[4].y,
+                                    PCMB.tmpUVs[5].x,
+                                    PCMB.tmpUVs[5].y,
+                                    PCMB.tmpUVs[6].x,
+                                    PCMB.tmpUVs[6].y,
+                                );
                                 
                                 //trianglesData.push(d, d);
                                 trianglesData.push(d);
