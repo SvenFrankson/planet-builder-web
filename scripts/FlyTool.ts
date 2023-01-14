@@ -14,74 +14,42 @@ class FlightPlan {
 class FlyTool {
 
     public static CreateFlightPlan(from: BABYLON.Vector3, fromPlanet: Planet, to: BABYLON.Vector3, toPlanet: Planet): FlightPlan {
-
         let dir = to.subtract(from).normalize();
-        console.log("from " + from.toString());
-        console.log("to " + to.toString());
-
         let h = 20;
 
         // insert takeOff
         let takeOffAltitude = BABYLON.Vector3.Distance(from, fromPlanet.position);
-        let takeOffUp = from.subtract(fromPlanet.position).scaleInPlace(1 / takeOffAltitude);
-        let takeOffPoint = from.add(dir.scale(h)).add(takeOffUp.scale(h));
+        let takeOffY = from.subtract(fromPlanet.position).normalize();
+        let takeOffX = BABYLON.Vector3.Cross(takeOffY, dir).normalize();
+        let takeOffZ = BABYLON.Vector3.Cross(takeOffX, takeOffY).normalize();
+        let takeOffPoint = from.add(takeOffZ.scale(2 * h)).add(takeOffY.scale(h));
 
         // insert landing
-        let landingAltitude = BABYLON.Vector3.Distance(from, fromPlanet.position);
-        let landingUp = to.subtract(toPlanet.position).scaleInPlace(1 / landingAltitude);
-        let landingPoint = to.subtract(dir.scale(h)).add(landingUp.scale(h));
+        let landingAltitude = BABYLON.Vector3.Distance(to, toPlanet.position);
+        let landingY = to.subtract(toPlanet.position).normalize();
+        let landingX = BABYLON.Vector3.Cross(landingY, dir).normalize();
+        let landingZ = BABYLON.Vector3.Cross(landingX, landingY).normalize();
+        let landingPoint = to.add(landingZ.scale(- 2 * h)).add(landingY.scale(h));
 
-        takeOffAltitude += h;
-        landingAltitude += h;
+        takeOffAltitude = BABYLON.Vector3.Distance(fromPlanet.position, takeOffPoint);
+        landingAltitude = BABYLON.Vector3.Distance(toPlanet.position, landingPoint);
 
-        let waypoints = [from.clone(), takeOffPoint, landingPoint, to.clone()];
-        if (BABYLON.Vector3.DistanceSquared(takeOffPoint, fromPlanet.position) < takeOffAltitude * takeOffAltitude) {
-            VMath.ForceDistanceInPlace(takeOffPoint, fromPlanet.position, takeOffAltitude);
-        }
-        if (BABYLON.Vector3.DistanceSquared(landingPoint, toPlanet.position) < landingAltitude * landingAltitude) {
-            VMath.ForceDistanceInPlace(landingPoint, toPlanet.position, landingAltitude);
-        }
+        let waypoints = [takeOffPoint, landingPoint];
         
-        waypoints = FlyTool.SmoothFlightPlan(waypoints);
-        for (let i = 2; i < waypoints.length - 2; i++) {
-            if (BABYLON.Vector3.DistanceSquared(waypoints[i], fromPlanet.position) < takeOffAltitude * takeOffAltitude) {
-                VMath.ForceDistanceInPlace(waypoints[i], fromPlanet.position, takeOffAltitude);
-            }
-            if (BABYLON.Vector3.DistanceSquared(waypoints[i], toPlanet.position) < landingAltitude * landingAltitude) {
-                VMath.ForceDistanceInPlace(waypoints[i], toPlanet.position, landingAltitude);
-            }
-        }
-
-        waypoints = FlyTool.SmoothFlightPlan(waypoints);
-        for (let i = 4; i < waypoints.length - 4; i++) {
-            if (BABYLON.Vector3.DistanceSquared(waypoints[i], fromPlanet.position) < takeOffAltitude * takeOffAltitude) {
-                VMath.ForceDistanceInPlace(waypoints[i], fromPlanet.position, takeOffAltitude);
-            }
-            if (BABYLON.Vector3.DistanceSquared(waypoints[i], toPlanet.position) < landingAltitude * landingAltitude) {
-                VMath.ForceDistanceInPlace(waypoints[i], toPlanet.position, landingAltitude);
+        for (let n = 0; n < 3; n++) {
+            waypoints = FlyTool.SmoothFlightPlan(waypoints);
+            for (let i = 1; i < waypoints.length - 1; i++) {
+                if (BABYLON.Vector3.DistanceSquared(waypoints[i], fromPlanet.position) < takeOffAltitude * takeOffAltitude) {
+                    VMath.ForceDistanceInPlace(waypoints[i], fromPlanet.position, takeOffAltitude);
+                }
+                if (BABYLON.Vector3.DistanceSquared(waypoints[i], toPlanet.position) < landingAltitude * landingAltitude) {
+                    VMath.ForceDistanceInPlace(waypoints[i], toPlanet.position, landingAltitude);
+                }
             }
         }
-
+        waypoints = [from, ...waypoints, to];
         waypoints = FlyTool.SmoothFlightPlan(waypoints);
-        for (let i = 8; i < waypoints.length - 8; i++) {
-            if (BABYLON.Vector3.DistanceSquared(waypoints[i], fromPlanet.position) < takeOffAltitude * takeOffAltitude) {
-                VMath.ForceDistanceInPlace(waypoints[i], fromPlanet.position, takeOffAltitude);
-            }
-            if (BABYLON.Vector3.DistanceSquared(waypoints[i], toPlanet.position) < landingAltitude * landingAltitude) {
-                VMath.ForceDistanceInPlace(waypoints[i], toPlanet.position, landingAltitude);
-            }
-        }
-
         waypoints = FlyTool.SmoothFlightPlan(waypoints);
-        for (let i = 16; i < waypoints.length - 16; i++) {
-            if (BABYLON.Vector3.DistanceSquared(waypoints[i], fromPlanet.position) < takeOffAltitude * takeOffAltitude) {
-                VMath.ForceDistanceInPlace(waypoints[i], fromPlanet.position, takeOffAltitude);
-            }
-            if (BABYLON.Vector3.DistanceSquared(waypoints[i], toPlanet.position) < landingAltitude * landingAltitude) {
-                VMath.ForceDistanceInPlace(waypoints[i], toPlanet.position, landingAltitude);
-            }
-        }
-        
         waypoints = FlyTool.SmoothFlightPlan(waypoints);
 
         return new FlightPlan(
@@ -129,7 +97,7 @@ class FlyTool {
                 let dir = wp.subtract(flightPlan.waypoints[index - 1]).normalize();
                 let dist = BABYLON.Vector3.Dot(player.position.subtract(flightPlan.from), totalDir);
                 let f = dist / totalDist;
-                let speed = Math.sin(f * Math.PI) * 45 + 10;
+                let speed = Math.sin(f * Math.PI) * 70 + 10;
 
                 let up = takeOffUp.scale(1 - f).add(landingUp.scale(f)).normalize();
 
