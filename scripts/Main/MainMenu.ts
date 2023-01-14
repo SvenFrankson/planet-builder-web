@@ -87,6 +87,7 @@ class MainMenu extends Main {
 			this.cameraManager.player = this.player;
 			this.cameraManager.setMode(CameraMode.Player);
 
+			/*
             let debugPlanetPerf = new DebugPlanetPerf(this, true);
             debugPlanetPerf.show();
 
@@ -95,6 +96,7 @@ class MainMenu extends Main {
 
 			let debugInput = new DebugInput(this.player);
 			debugInput.show();
+			*/
 
 			this.planetSky = new PlanetSky(this.scene);
 			this.planetSky.setInvertLightDir(BABYLON.Vector3.One().normalize());

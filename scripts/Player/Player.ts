@@ -478,11 +478,14 @@ class Player extends BABYLON.Mesh {
                         this._debugCollisionGroundMesh.position.copyFrom(hit.pickedPoint);
                     }
                     let d: number = BABYLON.Vector3.Dot(this.position.subtract(hit.pickedPoint), this.upDirection);
-                    if (d <= 0.05) {
+                    if (d <= 0.1) {
+                        let v = 0;
+                        if (d < 0) {
+                            v = Math.abs(2 * d);
+                        }
                         this._groundFactor
                             .copyFrom(this._gravityFactor)
-                            .scaleInPlace(-1)
-                            .scaleInPlace(10 * Math.abs(d));
+                            .scaleInPlace(- 1 - v);
                         fVert = 0.005;
                         this._isGrounded = true;
                     }
