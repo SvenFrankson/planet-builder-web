@@ -22,6 +22,7 @@ class Player extends BABYLON.Mesh {
     public sqrDistToPlanet = Infinity;
     public altitudeOnPlanet: number = 0;
 
+    public targetLookStrength: number = 1;
     public targetLook: BABYLON.Vector3;
     public targetDestination: BABYLON.Vector3;
     private _lastDistToTarget: number;
@@ -341,18 +342,19 @@ class Player extends BABYLON.Mesh {
         if (this.targetLook) {
             let forward = this.camPos.forward;
             let targetForward = this.targetLook.subtract(this.camPos.absolutePosition).normalize();
-            if (!this.targetDestination && this.velocity.lengthSquared() < 0.01) {
-                if (BABYLON.Vector3.Dot(forward, targetForward) > 0.99) {
-                    this.targetLook = undefined;
-                }
-            }
             let a = VMath.AngleFromToAround(forward, targetForward, this.upDirection) / Math.PI;
             if (isFinite(a)) {
-                this.inputHeadRight += a;
+                this.inputHeadRight += a * this.targetLookStrength;
             }
             a = VMath.AngleFromToAround(forward, targetForward, this._rightDirection) / Math.PI;
             if (isFinite(a)) {
-                this.inputHeadUp += a;
+                this.inputHeadUp += a * this.targetLookStrength;
+            }
+            if (!this.targetDestination && this.velocity.lengthSquared() < 0.01) {
+                if (BABYLON.Vector3.Dot(forward, targetForward) > 0.99) {
+                    this.targetLook = undefined;
+                    this.targetLookStrength = 1;
+                }
             }
         }
 

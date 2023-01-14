@@ -97,6 +97,14 @@ class FlyTool {
                 let dir = wp.subtract(flightPlan.waypoints[index - 1]).normalize();
                 let dist = BABYLON.Vector3.Dot(player.position.subtract(flightPlan.from), totalDir);
                 let f = dist / totalDist;
+                if (f < 0.9) {
+                    player.targetLook = flightPlan.to;
+                    player.targetLookStrength = 0.05;
+                }
+                else {
+                    player.targetLook = undefined;
+                    player.targetLookStrength = 1;
+                }
                 let speed = Math.sin(f * Math.PI) * 70 + 10;
 
                 let up = takeOffUp.scale(1 - f).add(landingUp.scale(f)).normalize();
