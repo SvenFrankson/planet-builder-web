@@ -309,8 +309,15 @@ class PlanetChunckMeshBuilder {
                     if (cornerCase) { 
                         let d = chunck.GetData(i, j, k);
                         if (d > BlockType.Water) {
+                            let cornerFace: number = 0;
                             if (chunck.GetData(i, j, k + 1) <= BlockType.Water) {
-                                console.log(chunck.name);
+                                cornerFace = 1;
+                            }
+                            else if (chunck.GetData(i, j, k - 1) <= BlockType.Water) {
+                                cornerFace = - 1;
+                            }
+
+                            if (cornerFace != 0) {
                                 let iGlobal: number = i + iPos * PlanetTools.CHUNCKSIZE;
                                 let jGlobal: number = j + jPos * PlanetTools.CHUNCKSIZE;
 
@@ -319,9 +326,9 @@ class PlanetChunckMeshBuilder {
                                 PCMB.GetVertexToRef(2 * size, 2 * (iGlobal + 1) + 1, 2 * (jGlobal + 1) + 1, v2);
                                 PCMB.GetVertexToRef(2 * size, 2 * (iGlobal) + 1, 2 * (jGlobal + 1) + 1, v3);
             
-                                let hGlobal = (k + kPos * PlanetTools.CHUNCKSIZE);
-                                let hLow = PlanetTools.KGlobalToAltitude(hGlobal) * 0.5 + PlanetTools.KGlobalToAltitude(hGlobal + 1) * 0.5;
-                                let hHigh = PlanetTools.KGlobalToAltitude(hGlobal + 1) * 0.5 + PlanetTools.KGlobalToAltitude(hGlobal + 2) * 0.5;
+                                let hGlobal = (k + kPos * PlanetTools.CHUNCKSIZE) + cornerFace * 0.5;
+                                let hLow = PlanetTools.KGlobalToAltitude(hGlobal - 0.5) * 0.5 + PlanetTools.KGlobalToAltitude(hGlobal + 0.5) * 0.5;
+                                let hHigh = PlanetTools.KGlobalToAltitude(hGlobal + 0.5) * 0.5 + PlanetTools.KGlobalToAltitude(hGlobal + 1.5) * 0.5;
                                 let h = hLow * 0.5 + hHigh * 0.5;
             
                                 v0.scaleInPlace(h);
@@ -356,9 +363,14 @@ class PlanetChunckMeshBuilder {
                                 positions.push(v0.x, v0.y, v0.z, v1.x, v1.y, v1.z, v2.x, v2.y, v2.z);
 
                                 //normals.push(0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0);
-                                normals.push(0, 1, 0, 0, 1, 0, 0, 1, 0);
+                                normals.push(0, cornerFace, 0, 0, cornerFace, 0, 0, cornerFace, 0);
                                 //indices.push(l, l + 1, l + 2, l, l + 2, l + 3);
-                                indices.push(l, l + 1, l + 2);
+                                if (cornerFace > 0) {
+                                    indices.push(l, l + 1, l + 2);
+                                }
+                                else {
+                                    indices.push(l, l + 2, l + 1);
+                                }
                                 
                                 //colors.push(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1);
                                 colors.push(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1);
