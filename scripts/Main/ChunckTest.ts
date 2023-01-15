@@ -39,8 +39,8 @@ class ChunckTest extends Main {
 		//Config.chunckPartConfiguration.setLodMax(1);
 		//Config.chunckPartConfiguration.useXZAxisRotation = false;
 
-		Config.chunckPartConfiguration.setFilename("chunck-parts", false);
-		Config.chunckPartConfiguration.useXZAxisRotation = true;
+		Config.chunckPartConfiguration.setFilename("round-smooth-chunck-parts", false);
+		Config.chunckPartConfiguration.useXZAxisRotation = false;
 		Config.chunckPartConfiguration.setLodMin(0);
 		Config.chunckPartConfiguration.setLodMax(1);
 

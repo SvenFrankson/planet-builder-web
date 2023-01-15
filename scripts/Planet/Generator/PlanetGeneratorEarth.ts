@@ -1,8 +1,8 @@
 class PlanetGeneratorEarth extends PlanetGenerator {
 
     private _mainHeightMap: PlanetHeightMap;
-    //private _tunnelMap: PlanetHeightMap;
-    //private _tunnelAltitudeMap: PlanetHeightMap;
+    private _tunnelMap: PlanetHeightMap;
+    private _tunnelAltitudeMap: PlanetHeightMap;
     private _rockMap: PlanetHeightMap;
 
     public spheres: GeneratorSphere[] = [];
@@ -25,7 +25,6 @@ class PlanetGeneratorEarth extends PlanetGenerator {
         }
         this._mainHeightMap.addInPlace(PlanetHeightMap.CreateConstantMap(planet.degree, 1 / planet.kPosMax));
 
-        /*
         this._tunnelMap = PlanetHeightMap.CreateMap(
             planet.degree,
             {
@@ -42,7 +41,7 @@ class PlanetGeneratorEarth extends PlanetGenerator {
         this._tunnelMap.smooth();
         this._tunnelMap.smooth();
         this._tunnelAltitudeMap = PlanetHeightMap.CreateMap(planet.degree);
-        */
+        
         this._rockMap = PlanetHeightMap.CreateMap(planet.degree, { firstNoiseDegree : planet.degree - 3});
 
         this.altitudeMap = PlanetHeightMap.CreateConstantMap(planet.degree, 0).addInPlace(this._mainHeightMap).multiplyInPlace(_mountainHeight).addInPlace(PlanetHeightMap.CreateConstantMap(planet.degree, this.planet.seaLevelRatio));
@@ -64,8 +63,8 @@ class PlanetGeneratorEarth extends PlanetGenerator {
             if (kGlobal > planet.seaLevel + 1) {
                 let pBase = p.scale(PlanetTools.KGlobalToAltitude(kGlobal));
                 p.scaleInPlace(PlanetTools.KGlobalToAltitude(kGlobal + 7));
-                this.elements.push(new GeneratorSegment(BlockType.Wood, pBase, p, 1));
                 this.elements.push(new GeneratorSphere(BlockType.Leaf, p, 3));
+                this.elements.push(new GeneratorSegment(BlockType.Wood, pBase, p, 1));
                 //BABYLON.MeshBuilder.CreateLines("line", { points: [p, pBase]});
             }
         }
@@ -149,9 +148,9 @@ class PlanetGeneratorEarth extends PlanetGenerator {
 
                 //let tree = this._treeMap.getForSide(chunck.side, (chunck.iPos * PlanetTools.CHUNCKSIZE + i) * f, (chunck.jPos * PlanetTools.CHUNCKSIZE + j) * f) * 4;
                 
-                //let tunnel = Math.floor(this._tunnelMap.getForSide(chunck.side, (chunck.iPos * PlanetTools.CHUNCKSIZE + i) * f, (chunck.jPos * PlanetTools.CHUNCKSIZE + j) * f) * 5);
-                //let tunnelV = this._tunnelAltitudeMap.getForSide(chunck.side, (chunck.iPos * PlanetTools.CHUNCKSIZE + i) * f, (chunck.jPos * PlanetTools.CHUNCKSIZE + j) * f);
-                //let tunnelAltitude = this.planet.seaLevel + Math.floor((2 * tunnelV * this._mountainHeight) * this.planet.kPosMax * PlanetTools.CHUNCKSIZE);
+                let tunnel = Math.floor(this._tunnelMap.getForSide(chunck.side, (chunck.iPos * PlanetTools.CHUNCKSIZE + i) * f, (chunck.jPos * PlanetTools.CHUNCKSIZE + j) * f) * 3);
+                let tunnelV = this._tunnelAltitudeMap.getForSide(chunck.side, (chunck.iPos * PlanetTools.CHUNCKSIZE + i) * f, (chunck.jPos * PlanetTools.CHUNCKSIZE + j) * f);
+                let tunnelAltitude = this.planet.seaLevel + Math.floor((2 * tunnelV * this._mountainHeight) * this.planet.kPosMax * PlanetTools.CHUNCKSIZE);
 
                 /*
                 if (tree > 0.7 && treeCount < maxTree) {
@@ -177,17 +176,6 @@ class PlanetGeneratorEarth extends PlanetGenerator {
                 for (let k: number = 0; k < PlanetTools.CHUNCKSIZE; k++) {
                     let globalK = k + chunck.kPos * PlanetTools.CHUNCKSIZE;
 
-                    if (intersectingElements.length > 0) {
-                        let pPos = PlanetTools.LocalIJKToPlanetPosition(chunck, i, j, k, true);
-                        
-                        for (let n = 0; n < intersectingElements.length; n++) {
-                            let sV = intersectingElements[n].getData(pPos);
-                            if (sV != BlockType.Unknown) {
-                                refData[i - chunck.firstI][j - chunck.firstJ][k - chunck.firstK] = sV;
-                            }
-                        }
-                    }
-
                     if (globalK <= this.planet.seaLevel) {
                         refData[i - chunck.firstI][j - chunck.firstJ][k - chunck.firstK] = BlockType.Water;
                     }
@@ -208,13 +196,12 @@ class PlanetGeneratorEarth extends PlanetGenerator {
                     else if (globalK <= rockAltitude) {
                         refData[i - chunck.firstI][j - chunck.firstJ][k - chunck.firstK] = BlockType.Rock;
                     }
-                    /*
+
                     if (tunnel > 0) {
                         if (globalK >= tunnelAltitude - tunnel && globalK <= tunnelAltitude + tunnel) {
                             refData[i - chunck.firstI][j - chunck.firstJ][k - chunck.firstK] = BlockType.None;
                         }
                     }
-                    */
                     /*
                     if (tree > 0 && globalK > this.planet.seaLevel) {
                         if (globalK > altitude + 4 && globalK <= altitude + 4 + tree) {
@@ -225,6 +212,17 @@ class PlanetGeneratorEarth extends PlanetGenerator {
                         }
                     }
                     */
+
+                    if (intersectingElements.length > 0) {
+                        let pPos = PlanetTools.LocalIJKToPlanetPosition(chunck, i, j, k, true);
+                        
+                        for (let n = 0; n < intersectingElements.length; n++) {
+                            let sV = intersectingElements[n].getData(pPos);
+                            if (sV != BlockType.Unknown) {
+                                refData[i - chunck.firstI][j - chunck.firstJ][k - chunck.firstK] = sV;
+                            }
+                        }
+                    }
 
                     if (refData[i - chunck.firstI][j - chunck.firstJ][k - chunck.firstK] === BlockType.None && globalK <= this.planet.seaLevel) {
                         refData[i - chunck.firstI][j - chunck.firstJ][k - chunck.firstK] = BlockType.Water;

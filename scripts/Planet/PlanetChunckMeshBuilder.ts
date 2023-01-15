@@ -473,6 +473,7 @@ class PlanetChunckMeshBuilder {
                         let extendedpartVertexData = PlanetChunckVertexData.Get(lod + Config.performanceConfiguration.lodMin, ref);
                         if (!extendedpartVertexData) {
                             console.log("fail " + lod + " " + Config.performanceConfiguration.lodMin);
+                            debugger;
                             continue;
                         }
                         let partVertexData = extendedpartVertexData.vertexData;
