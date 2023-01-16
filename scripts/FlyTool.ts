@@ -97,9 +97,9 @@ class FlyTool {
                 let dir = wp.subtract(flightPlan.waypoints[index - 1]).normalize();
                 let dist = BABYLON.Vector3.Dot(player.position.subtract(flightPlan.from), totalDir);
                 let f = dist / totalDist;
-                if (f < 0.9) {
+                if ((1 - f) * totalDist > 20) {
                     player.targetLook = flightPlan.to;
-                    player.targetLookStrength = 0.05;
+                    player.targetLookStrength = 0.1;
                 }
                 else {
                     player.targetLook = undefined;
