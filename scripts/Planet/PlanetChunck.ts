@@ -493,9 +493,9 @@ class PlanetChunck extends AbstractPlanetChunck {
         for (let i = this.firstI; i <= PlanetTools.CHUNCKSIZE; i++) {
             for (let j = this.firstJ; j <= this.lastJ; j++) {
                 for (let k = this.firstK; k <= PlanetTools.CHUNCKSIZE; k++) {
-                    let block = this.data[i - this.firstI][j - this.firstJ][k - this.firstK] > BlockType.Water;
-                    this._isFull = this._isFull && block;
-                    this._isEmpty = this._isEmpty && !block;
+                    let block = this.data[i - this.firstI][j - this.firstJ][k - this.firstK];
+                    this._isFull = this._isFull && (block > BlockType.Water);
+                    this._isEmpty = this._isEmpty && (block < BlockType.Water);
                     if (!this._isFull && !this._isEmpty) {
                         return;
                     }
@@ -540,6 +540,10 @@ class PlanetChunck extends AbstractPlanetChunck {
                 this.mesh.material = this.planet.chunckMaterial;
                 //this.mesh.material = SharedMaterials.WaterMaterial();
             }
+            else {
+                this.mesh.dispose();
+            }
+
             let waterVertexData = vertexDatas[1];
             if (waterVertexData) {
                 if (!this.waterMesh || this.waterMesh.isDisposed()) {
