@@ -13,7 +13,7 @@ class PlanetSky {
 
     public player: Player;
 
-    constructor(public scene: BABYLON.Scene) {
+    constructor(public skybox: BABYLON.Mesh, public scene: BABYLON.Scene) {
 
     }
     
@@ -30,9 +30,17 @@ class PlanetSky {
     private _update = () => {
         if (this.player) {
             let factor = BABYLON.Vector3.Dot(this.player.upDirection, this.invertLightDir);
+
             let atmoLimit = 50;
             let d = (atmoLimit - this.player.altitudeOnPlanet) / 25;
             d = Math.max(Math.min(d, 1), 0);
+
+            if (this.skybox) {
+                let skyAlpha = (1 - factor) / 4;
+                skyAlpha = Math.max(Math.min(skyAlpha, 1), 0);
+                this.skybox.material.alpha = Math.max(skyAlpha, 1 - d);
+            }
+
             let sign = 0;
             if (factor != 0) {
                 sign = factor / Math.abs(factor);

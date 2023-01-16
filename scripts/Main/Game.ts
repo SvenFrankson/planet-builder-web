@@ -86,7 +86,7 @@ class Game extends Main {
 
 			//planetTest.AsyncInitialize();
 
-			this.planetSky = new PlanetSky(this.scene);
+			this.planetSky = new PlanetSky(undefined, this.scene);
 			this.planetSky.setInvertLightDir((new BABYLON.Vector3(0.5, 2.5, 1.5)).normalize());
 			this.planetSky.initialize();
 			this.planetSky.player = this.player;

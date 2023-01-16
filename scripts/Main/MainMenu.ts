@@ -59,6 +59,21 @@ class MainMenu extends Main {
 
 		return new Promise<void>(resolve => {
 
+			let skybox = BABYLON.MeshBuilder.CreateBox("skyBox", { size: 1000.0 }, Main.Scene);
+			skybox.rotation.y = Math.PI / 2;
+			skybox.infiniteDistance = true;
+			let skyboxMaterial: BABYLON.StandardMaterial = new BABYLON.StandardMaterial("skyBox", Main.Scene);
+			skyboxMaterial.backFaceCulling = false;
+			let skyTexture = new BABYLON.CubeTexture(
+				"./datas/skyboxes/dark",
+				Main.Scene,
+				["-px.png", "-py.png", "-pz.png", "-nx.png", "-ny.png", "-nz.png"]);
+			skyboxMaterial.reflectionTexture = skyTexture;
+			skyboxMaterial.reflectionTexture.coordinatesMode = BABYLON.Texture.SKYBOX_MODE;
+			skyboxMaterial.diffuseColor = new BABYLON.Color3(0, 0, 0);
+			skyboxMaterial.specularColor = new BABYLON.Color3(0, 0, 0);
+			skybox.material = skyboxMaterial;
+
 			//let testGrab = new TestGrab("test-grab", this);
 			//testGrab.position = new BABYLON.Vector3(- 0.3, this._testAltitude + 1.1, - 0.1);
 			//testGrab.instantiate();
@@ -98,7 +113,7 @@ class MainMenu extends Main {
 			debugInput.show();
 			*/
 
-			this.planetSky = new PlanetSky(this.scene);
+			this.planetSky = new PlanetSky(skybox, this.scene);
 			this.planetSky.setInvertLightDir(BABYLON.Vector3.One().normalize());
 			this.planetSky.initialize();
 			this.planetSky.player = this.player;

@@ -59,7 +59,7 @@ class Demo extends Main {
 			//planetTest.generator = new PlanetGeneratorHole(planetTest, 0.60, 0.15, p, 40);
 			//planetTest.generator.showDebug();
 
-			this.planetSky = new PlanetSky(this.scene);
+			this.planetSky = new PlanetSky(undefined, this.scene);
 			this.planetSky.setInvertLightDir((new BABYLON.Vector3(0.5, 2.5, 1.5)).normalize());
 			this.planetSky.initialize();
 			this.planetSky.player = this.player;
