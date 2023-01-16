@@ -296,7 +296,7 @@ class InputManager {
         }
         let bestDist: number = Infinity;
         let bestPick: BABYLON.PickingInfo;
-        let ray = this.scene.createPickingRay(x, y, BABYLON.Matrix.Identity(), this.scene.activeCamera);
+        let ray = this.scene.createPickingRay(x, y, BABYLON.Matrix.Identity(), this.scene.activeCameras[1]);
         for (let i = 0; i < meshes.length; i++) {
             let mesh = meshes[i];
             if (mesh) {
@@ -338,7 +338,7 @@ class InputManager {
         let aimedPickable: Pickable;
         let aimedDist: number = Infinity;
         let hit = false;
-        let ray = this.scene.createPickingRay(x, y, BABYLON.Matrix.Identity(), this.scene.activeCamera);
+        let ray = this.scene.createPickingRay(x, y, BABYLON.Matrix.Identity(), this.scene.activeCameras[1]);
         for (let i = 0; i < this.pickableElements.length; i++) {
             let pickableElement = this.pickableElements.get(i);
             let mesh: BABYLON.Mesh = pickableElement;
