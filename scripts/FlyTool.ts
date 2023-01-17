@@ -36,7 +36,7 @@ class FlyTool {
 
         let waypoints = [takeOffPoint, landingPoint];
         
-        for (let n = 0; n < 3; n++) {
+        for (let n = 0; n < 5; n++) {
             waypoints = FlyTool.SmoothFlightPlan(waypoints);
             for (let i = 1; i < waypoints.length - 1; i++) {
                 if (BABYLON.Vector3.DistanceSquared(waypoints[i], fromPlanet.position) < takeOffAltitude * takeOffAltitude) {

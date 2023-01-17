@@ -43,22 +43,9 @@ class CameraManager {
             BABYLON.Vector3.Zero(),
             this.main.scene
         );
-        this.freeCamera.fov *= 1.2;
         this.freeCamera.rotationQuaternion = BABYLON.Quaternion.Identity();
         this.freeCamera.minZ = 0.1;
-        this.freeCamera.maxZ = 1000;
-        
-        this.farCamera = new BABYLON.FreeCamera(
-            "far-camera",
-            BABYLON.Vector3.Zero(),
-            this.main.scene
-        );
-        this.farCamera.fov *= 1.2;
-        this.farCamera.rotationQuaternion = BABYLON.Quaternion.Identity();
-        this.farCamera.minZ = 1000;
-        this.farCamera.maxZ = 10000;
-        this.farCamera.layerMask = 0x20000000;
-        this.farCamera.parent = this.freeCamera;
+        this.freeCamera.maxZ = 3000;
 
         if (this.useOutline) {
             const rtt = new BABYLON.RenderTargetTexture('render target', { width: this.main.engine.getRenderWidth(), height: this.main.engine.getRenderHeight() }, this.main.scene);
@@ -70,9 +57,9 @@ class CameraManager {
                 BABYLON.Vector3.Zero(),
                 this.main.scene
             );
-            this.noOutlineCamera.fov *= 1.2;
+
             this.noOutlineCamera.minZ = 0.1;
-            this.noOutlineCamera.maxZ = 1000;
+            this.noOutlineCamera.maxZ = 3000;
             this.noOutlineCamera.layerMask = 0x10000000;
             this.noOutlineCamera.parent = this.freeCamera;
     
@@ -104,10 +91,10 @@ class CameraManager {
                 this.freeCamera.rotationQuaternion.copyFrom(BABYLON.Quaternion.Identity());
                 this.freeCamera.computeWorldMatrix();
                 if (this.useOutline) {
-                    this.main.scene.activeCameras = [this.farCamera, this.freeCamera, this.noOutlineCamera];
+                    this.main.scene.activeCameras = [this.freeCamera, this.noOutlineCamera];
                 }
                 else {
-                    this.main.scene.activeCameras = [this.farCamera, this.freeCamera];
+                    this.main.scene.activeCameras = [this.freeCamera];
                 }
             }
             if (this.cameraMode === CameraMode.Sky) {

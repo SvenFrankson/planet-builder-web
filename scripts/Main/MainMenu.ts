@@ -4,7 +4,7 @@ class MainMenu extends Main {
 
 	public player: Player;
 	public planetSky: PlanetSky;
-	private _testAltitude = 20.7;
+	public skybox: BABYLON.Mesh;
 
 	public createScene(): void {
 		super.createScene();
@@ -59,9 +59,8 @@ class MainMenu extends Main {
 
 		return new Promise<void>(resolve => {
 
-			let skybox = BABYLON.MeshBuilder.CreateBox("skyBox", { size: 1000.0 }, Main.Scene);
-			skybox.rotation.y = Math.PI / 2;
-			skybox.infiniteDistance = true;
+			this.skybox = BABYLON.MeshBuilder.CreateBox("skyBox", { size: 6000 / Math.sqrt(3) }, Main.Scene);
+			this.skybox.rotation.y = Math.PI / 2;
 			let skyboxMaterial: BABYLON.StandardMaterial = new BABYLON.StandardMaterial("skyBox", Main.Scene);
 			skyboxMaterial.backFaceCulling = false;
 			let skyTexture = new BABYLON.CubeTexture(
@@ -72,7 +71,7 @@ class MainMenu extends Main {
 			skyboxMaterial.reflectionTexture.coordinatesMode = BABYLON.Texture.SKYBOX_MODE;
 			skyboxMaterial.diffuseColor = new BABYLON.Color3(0, 0, 0);
 			skyboxMaterial.specularColor = new BABYLON.Color3(0, 0, 0);
-			skybox.material = skyboxMaterial;
+			this.skybox.material = skyboxMaterial;
 
 			//let testGrab = new TestGrab("test-grab", this);
 			//testGrab.position = new BABYLON.Vector3(- 0.3, this._testAltitude + 1.1, - 0.1);
@@ -113,7 +112,7 @@ class MainMenu extends Main {
 			debugInput.show();
 			*/
 
-			this.planetSky = new PlanetSky(skybox, this.scene);
+			this.planetSky = new PlanetSky(this.skybox, this.scene);
 			this.planetSky.setInvertLightDir(BABYLON.Vector3.One().normalize());
 			this.planetSky.initialize();
 			this.planetSky.player = this.player;
@@ -160,6 +159,7 @@ class MainMenu extends Main {
 
 	public update(): void {
 		super.update();
+		this.skybox.position = this.scene.activeCameras[0].globalPosition;
 	}
 
 	public async generatePlanets(): Promise<void> {

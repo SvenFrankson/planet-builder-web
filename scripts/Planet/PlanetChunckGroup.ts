@@ -89,9 +89,6 @@ class PlanetChunckGroup extends AbstractPlanetChunck {
 
         if (this.isShellLevel) {
             this.drawMesh();
-            if (this.level > 2) {
-                this.mesh.layerMask |= 0x20000000;
-            }
         }
     }
 
