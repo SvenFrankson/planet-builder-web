@@ -50,6 +50,7 @@ class PlanetMaterial extends BABYLON.ShaderMaterial {
         this._terrainColors[BlockType.Basalt] = BABYLON.Color3.FromHexString("#1f1916");
         this._terrainColors[BlockType.Snow] = BABYLON.Color3.FromHexString("#efffff");
         this._terrainColors[BlockType.Ice] = BABYLON.Color3.FromHexString("#95e4f0");
+        this._terrainColors[BlockType.Regolith] = new BABYLON.Color3(0.522, 0.522, 0.522);
 
         this._terrainFillStyles = [];
         for (let i = 0; i < this._terrainColors.length; i++) {

@@ -2,7 +2,7 @@
 precision highp float;
  
 uniform vec3 lightInvDirW;
-uniform vec3 terrainColors[12];
+uniform vec3 terrainColors[13];
 uniform vec3 globalColor;
 uniform vec3 planetPos;
 uniform int useSeaLevelTexture;
@@ -118,7 +118,7 @@ void main() {
             color = texture(dirtTopTexture, uv * 4.).rgb;
          }
       }
-      else if (d == 4 || d == 10) {
+      else if (d == 4 || d == 10 || d == 12) {
          color = texture(sandTexture, uv * 4.).rgb;
       }
       else if (d == 5 || d == 9) {

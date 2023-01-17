@@ -17,6 +17,7 @@ var BlockTypeNames: string[] = [
     "Basalt",
     "Snow",
     "Ice",
+    "Regolith",
     "Unknown"
 ];
 
@@ -33,5 +34,6 @@ enum BlockType {
     Basalt,
     Snow,
     Ice,
+    Regolith,
     Unknown
 }

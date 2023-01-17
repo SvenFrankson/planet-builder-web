@@ -2,6 +2,7 @@ class PlanetGeneratorMoon extends PlanetGenerator {
 
     private _moutainHeightMap: PlanetHeightMap;
     private _craterMap: PlanetHeightMap;
+    private _iceMap: PlanetHeightMap;
 
     constructor(planet: Planet) {
         super(planet);
@@ -17,6 +18,22 @@ class PlanetGeneratorMoon extends PlanetGenerator {
         }
         this._craterMap.smooth();
         this._craterMap.smooth();
+
+        this._iceMap = PlanetHeightMap.CreateMap(
+            planet.degree,
+            {
+                firstNoiseDegree : planet.degree - 5,
+                lastNoiseDegree: planet.degree - 1,
+                postComputation: (v) => {
+                    if (Math.abs(v) < 0.08) {
+                        return 1;
+                    }
+                    return -1;
+                }
+            }
+        );
+        this._iceMap.smooth();
+        this._iceMap.smooth();
 
         this.altitudeMap.addInPlace(this._moutainHeightMap).substractInPlace(this._craterMap);
     }
@@ -34,18 +51,21 @@ class PlanetGeneratorMoon extends PlanetGenerator {
         let texture = new BABYLON.DynamicTexture("texture-" + side, size);
         let context = texture.getContext();
 
-        //let f = Math.pow(2, this._mainHeightMap.degree) / size;
+        let f = Math.pow(2, this.altitudeMap.degree) / size;
 
         let mainMaterial = SharedMaterials.MainMaterial();
 
-        context.fillStyle = mainMaterial.getFillStyle(BlockType.Rock);
+        context.fillStyle = mainMaterial.getFillStyle(BlockType.Regolith);
         context.fillRect(0, 0, size, size);
 
-        /*
         for (let i = 0; i < size; i++) {
             for (let j = 0; j < size; j++) {
-                let v = Math.floor(this.altitudeMap.getForSide(side, Math.floor(i * f), Math.floor(j * f)) * PlanetTools.CHUNCKSIZE * this.planet.kPosMax);
+                let ice = this._iceMap.getForSide(side, Math.floor(i * f), Math.floor(j * f));
+
                 let blockType: BlockType = BlockType.None;
+                if (ice > 0) {
+                    blockType = BlockType.Ice;
+                }
                 
                 if (blockType != BlockType.None) {
                     context.fillStyle = mainMaterial.getFillStyle(blockType);
@@ -53,7 +73,6 @@ class PlanetGeneratorMoon extends PlanetGenerator {
                 }
             }
         }
-        */
 
         if (useLog) {
             timers.push(performance.now());
@@ -81,6 +100,7 @@ class PlanetGeneratorMoon extends PlanetGenerator {
             refData[i - chunck.firstI] = [];
             for (let j: number = 0; j < PlanetTools.CHUNCKSIZE; j++) {
                 let altitude = this.altitudeMap.getForSide(chunck.side, (chunck.iPos * PlanetTools.CHUNCKSIZE + i) * f, (chunck.jPos * PlanetTools.CHUNCKSIZE + j) * f) * (this.planet.kPosMax * PlanetTools.CHUNCKSIZE);
+                let ice = Math.floor(this._iceMap.getForSide(chunck.side, (chunck.iPos * PlanetTools.CHUNCKSIZE + i) * f, (chunck.jPos * PlanetTools.CHUNCKSIZE + j) * f));
 
                 refData[i - chunck.firstI][j - chunck.firstJ] = [];
 
@@ -88,6 +108,21 @@ class PlanetGeneratorMoon extends PlanetGenerator {
                 
                 for (let k: number = 0; k < PlanetTools.CHUNCKSIZE; k++) {
                     let globalK = k + chunck.kPos * PlanetTools.CHUNCKSIZE;
+
+
+                    if (globalK <= altitude) {
+                        if (ice < 0) {
+                            refData[i - chunck.firstI][j - chunck.firstJ][k - chunck.firstK] = BlockType.Regolith;
+                        }
+                        else {
+                            if (globalK <= altitude - 4) {
+                                refData[i - chunck.firstI][j - chunck.firstJ][k - chunck.firstK] = BlockType.Regolith;
+                            }
+                            else if (globalK <= altitude - 2) {
+                                refData[i - chunck.firstI][j - chunck.firstJ][k - chunck.firstK] = BlockType.Ice;
+                            }
+                        }
+                    }
 
                     if (intersectingElements.length > 0) {
                         let pPos = PlanetTools.LocalIJKToPlanetPosition(chunck, i, j, k, true);
@@ -98,10 +133,6 @@ class PlanetGeneratorMoon extends PlanetGenerator {
                                 refData[i - chunck.firstI][j - chunck.firstJ][k - chunck.firstK] = sV;
                             }
                         }
-                    }
-
-                    if (globalK < altitude) {
-                        refData[i - chunck.firstI][j - chunck.firstJ][k - chunck.firstK] = BlockType.Rock;
                     }
                 }
             }
