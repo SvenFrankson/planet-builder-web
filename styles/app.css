@@ -30,6 +30,20 @@ html, body {
 	padding: 0;
 }
 
+#subtitles-container {
+	position: fixed;
+	left: 20%;
+	bottom: 40px;
+	width: 60%;
+    height: auto;
+	margin: 0;
+	padding: 10px;
+	font-size: 30px;
+	color: white;
+    font-family: 'XoloniumRegular';
+	background-color: rgba(0, 0, 0, 50%);
+}
+
 #loading {
 	position: fixed;
 	width: 100%;

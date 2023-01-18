@@ -53,11 +53,13 @@ class Player extends BABYLON.Mesh {
         this.camPos.parent = this;
         this.camPos.position = new BABYLON.Vector3(0, 1.7, 0);
         this.armManager = new PlayerArmManager(this);
+        /*
         BABYLON.CreateSphereVertexData({ diameter: 0.2 }).applyToMesh(this);
         let material = new BABYLON.StandardMaterial("material", this.getScene());
         material.alpha = 0.5;
         this.material = material;
         this.layerMask = 0x10000000;
+        */
 
         let mat = new ToonMaterial("move-indicator-material", this.scene);
         this.moveIndicatorDisc = new PlanetObject("player-move-indicator-disc", this.main);

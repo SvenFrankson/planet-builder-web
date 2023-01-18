@@ -9,6 +9,7 @@ class Main {
     public vertexDataLoader: VertexDataLoader;
 	public inputManager: InputManager;
 	public cameraManager: CameraManager;
+    public subtitleManager: SubtitleManager;
 
 	public planets: Planet[] = [];
     private _chunckManagersWorkingTimer: number = 3
@@ -34,6 +35,7 @@ class Main {
         this.vertexDataLoader = new VertexDataLoader(this.scene);
         this.inputManager = new InputManager(this.scene, this.canvas);
 		this.cameraManager = new CameraManager(this);
+        this.subtitleManager = new SubtitleManager(this);
 	}
 
 	public animate(): void {
@@ -48,7 +50,7 @@ class Main {
 	}
 
     public async initialize(): Promise<void> {
-        
+        this.subtitleManager.initialize();
     }
 
     public update(): void {

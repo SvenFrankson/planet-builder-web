@@ -4,7 +4,7 @@ class DebugDefine {
 
     public static USE_CHUNCK_LEVEL_DEBUG_COLORS: boolean = false;
 
-    public static SHOW_PLAYER_ARM_CURRENT_TARGET: boolean = true;
+    public static SHOW_PLAYER_ARM_CURRENT_TARGET: boolean = false;
     public static SHOW_PLAYER_COLLISION_MESHES: boolean = false;
     
     public static SHOW_PLANET_CORNER_FLAGS: boolean = false;
