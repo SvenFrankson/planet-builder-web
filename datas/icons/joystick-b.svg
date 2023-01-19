@@ -13,7 +13,7 @@
    version="1.1"
    id="svg8"
    inkscape:version="1.0.1 (3bc2e813f5, 2020-09-07)"
-   sodipodi:docname="joystick-l.svg">
+   sodipodi:docname="joystick-b.svg">
   <defs
      id="defs2" />
   <sodipodi:namedview
@@ -53,17 +53,11 @@
      inkscape:groupmode="layer"
      id="layer1">
     <circle
-       style="fill:#808080;fill-opacity:1;stroke:#000000;stroke-width:1.05833;stroke-linecap:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       style="fill:#d61d11;fill-opacity:1;stroke:#000000;stroke-width:1.05833;stroke-linecap:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        id="path1402"
        cx="16.933334"
        cy="16.933334"
        r="16.404169" />
-    <circle
-       style="fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:1.05843;stroke-linecap:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       id="path1402-1"
-       cx="16.933332"
-       cy="16.933332"
-       r="13.229166" />
     <text
        xml:space="preserve"
        style="font-size:21.1667px;line-height:1.25;font-family:sans-serif;stroke-width:0.264583"
@@ -82,14 +76,14 @@
          id="tspan842" /></text>
     <text
        xml:space="preserve"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:22.5778px;line-height:1.25;font-family:Xolonium;-inkscape-font-specification:Xolonium;fill:#4d4d4d;fill-opacity:1;stroke:#000000;stroke-width:2.11667;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;paint-order:stroke fill markers"
-       x="8.6924353"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:22.5778px;line-height:1.25;font-family:Xolonium;-inkscape-font-specification:Xolonium;fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:2.11667;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;paint-order:stroke fill markers;"
+       x="8.0151014"
        y="24.384007"
        id="text846"><tspan
          sodipodi:role="line"
          id="tspan844"
-         x="8.6924353"
+         x="8.0151014"
          y="24.384007"
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Xolonium;-inkscape-font-specification:Xolonium;fill:#4d4d4d;fill-opacity:1;stroke:#000000;stroke-width:2.11667;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;paint-order:stroke fill markers">L</tspan></text>
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Xolonium;-inkscape-font-specification:Xolonium;fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:2.11667;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;paint-order:stroke fill markers;">B</tspan></text>
   </g>
 </svg>

@@ -23,9 +23,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="3.959798"
-     inkscape:cx="119.66553"
-     inkscape:cy="60.508081"
+     inkscape:zoom="5.6"
+     inkscape:cx="82.408992"
+     inkscape:cy="50.180288"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      inkscape:document-rotation="0"
@@ -52,26 +52,26 @@
      inkscape:label="Calque 1"
      inkscape:groupmode="layer"
      id="layer1">
-    <ellipse
-       style="fill:#808080;fill-opacity:1;stroke:#000000;stroke-width:1.05843;stroke-linecap:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+    <circle
+       style="fill:#808080;fill-opacity:1;stroke:#000000;stroke-width:1.05833;stroke-linecap:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        id="path1402"
        cx="16.933334"
        cy="16.933334"
-       rx="16.404114"
-       ry="16.404116" />
+       r="16.404169" />
     <circle
-       style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:1.05843;stroke-linecap:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       style="fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:1.05843;stroke-linecap:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        id="path1402-1"
        cx="16.933332"
        cy="16.933332"
-       r="14.287452" />
+       r="13.229166" />
     <g
        aria-label="R"
        id="text1421"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:22.5778px;line-height:1.25;font-family:Xolonium;-inkscape-font-specification:Xolonium;stroke:none;stroke-width:1.05833;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;paint-order:stroke fill markers">
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:22.5778px;line-height:1.25;font-family:Xolonium;-inkscape-font-specification:Xolonium;fill:#4d4d4d;fill-opacity:1;stroke:#000000;stroke-width:2.11667;stroke-linecap:square;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;paint-order:stroke fill markers"
+       transform="translate(3.6295259e-5)">
       <path
          d="M 9.4826679,24.384007 V 9.482658 H 20.320012 q 3.38667,0 3.38667,2.709336 v 3.273781 q 0,2.686758 -3.409248,2.709336 l 4.086582,6.208896 H 20.907035 L 16.820453,18.175111 H 12.64356 v 6.208896 z M 12.64356,16.255998 h 6.999118 q 0.903112,0 0.903112,-0.722489 v -3.409248 q 0,-0.72249 -0.903112,-0.72249 H 12.64356 Z"
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:22.5778px;font-family:Xolonium;-inkscape-font-specification:Xolonium;stroke:none;stroke-width:1.05833;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;paint-order:stroke fill markers"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:22.5778px;font-family:Xolonium;-inkscape-font-specification:Xolonium;fill:#4d4d4d;fill-opacity:1;stroke:#000000;stroke-width:2.11667;stroke-linecap:square;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;paint-order:stroke fill markers"
          id="path1407" />
     </g>
   </g>
