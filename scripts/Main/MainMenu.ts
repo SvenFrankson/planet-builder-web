@@ -139,12 +139,21 @@ class MainMenu extends Main {
 
 						setTimeout(() => {
 							hideLoading();
-							this.subtitleManager.add(new Subtitle("Jaguar shark! So tell me - does it really exist? You know what? It is beets. I've crashed into a beet truck.", 3));
-							this.subtitleManager.add(new Subtitle("Yeah, but John, if The Pirates of the Caribbean breaks down, the pirates don’t eat the tourists.", 3));
-							this.subtitleManager.add(new Subtitle("Yeah, but your scientists were so preoccupied with whether or not they could, they didn't stop to think if they should.", 3));
-							this.subtitleManager.add(new Subtitle("What do they got in there? King Kong? What do they got in there? King Kong? I gave it a cold? I gave it a virus.", 3));
-							this.subtitleManager.add(new Subtitle("You're a very talented young man, with your own clever thoughts and ideas. Do you need a manager ?", 3));
-							this.subtitleManager.add(new Subtitle("We gotta burn the rain forest, dump toxic waste, pollute the air, and rip up the OZONE !", 3));
+							this.subtitleManager.add(new Subtitle(["Use joystick ", " to look around..."], ["<img src='datas/icons/joystick-r.svg'/>"], 3));
+							this.subtitleManager.add(new Subtitle(["... and use joystick ", " to move."], ["<img src='datas/icons/joystick-l.svg'/>"], 3));
+							this.subtitleManager.add(new Subtitle(["Use joystick ", " to look around... Yeah, but John, if The Pirates of the Caribbean breaks down, the pirates don’t eat the tourists."], ["<img src='datas/icons/joystick-r.svg'/>"], 3));
+							this.subtitleManager.add(new Subtitle(["... and use joystick ", " to move."], ["<img src='datas/icons/joystick-l.svg'/>"], 3));
+							this.subtitleManager.add(new Subtitle(["Use joystick ", " to look around..."], ["<img src='datas/icons/joystick-r.svg'/>"], 3));
+							this.subtitleManager.add(new Subtitle(["... and use joystick ", " to move."], ["<img src='datas/icons/joystick-l.svg'/>"], 3));
+							this.subtitleManager.add(new Subtitle(["Use joystick ", " to look around..."], ["<img src='datas/icons/joystick-r.svg'/>"], 3));
+							this.subtitleManager.add(new Subtitle(["... and use joystick ", " to move."], ["<img src='datas/icons/joystick-l.svg'/>"], 3));
+							this.subtitleManager.add(new Subtitle(["Use joystick ", " to look around..."], ["<img src='datas/icons/joystick-r.svg'/>"], 3));
+							this.subtitleManager.add(new Subtitle(["... and use joystick ", " to move."], ["<img src='datas/icons/joystick-l.svg'/>"], 3));
+							this.subtitleManager.add(new Subtitle(["Yeah, but John, if The Pirates of the Caribbean breaks down, the pirates don’t eat the tourists."], [], 3));
+							this.subtitleManager.add(new Subtitle(["Yeah, but your scientists were so preoccupied with whether or not they could, they didn't stop to think if they should."], [], 3));
+							this.subtitleManager.add(new Subtitle(["What do they got in there? King Kong? What do they got in there? King Kong? I gave it a cold? I gave it a virus."], [], 3));
+							this.subtitleManager.add(new Subtitle(["You're a very talented young man, with your own clever thoughts and ideas. Do you need a manager ?"], [], 3));
+							this.subtitleManager.add(new Subtitle(["We gotta burn the rain forest, dump toxic waste, pollute the air, and rip up the OZONE !"], [], 3));
 							//mainPanel.openAtPlayerPosition();
 						}, 500);
 					});

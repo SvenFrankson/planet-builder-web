@@ -38,10 +38,16 @@ html, body {
     height: auto;
 	margin: 0;
 	padding: 10px;
-	font-size: 30px;
+	font-size: 35px;
+	line-height: 120%;
 	color: white;
     font-family: 'XoloniumRegular';
 	background-color: rgba(0, 0, 0, 50%);
+}
+
+#subtitles-container img {
+	width: 40px;
+	vertical-align: text-top;
 }
 
 #loading {
