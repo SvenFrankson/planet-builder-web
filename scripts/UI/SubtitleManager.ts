@@ -128,6 +128,7 @@ class SubtitleManager {
             a = Math.max(a, 0);
             this.container.style.color = "rgba(255, 255, 255, " + a.toFixed(1) + "%)";
             this.container.querySelectorAll("img").forEach(img => { img.style.opacity = a.toFixed(1) + "%"});
+            this.container.querySelectorAll("span").forEach(span => { span.style.opacity = a.toFixed(1) + "%"});
 
             let a2 = (1 - ((this._timer - 0.25) / 0.25)) * 100;
             a2 = Math.max(Math.min(a2, 100), 0) * 0.75;

@@ -140,20 +140,20 @@ class MainMenu extends Main {
 						setTimeout(() => {
 							hideLoading();
 							this.subtitleManager.add(Subtitle.Create(
-								["Use ", "<span class='joystick'>R</span>", " to look around."],
+								["Use joystick ", "<span class='joystick'>R</span>", " to look around."],
 								3
 							));
 							this.subtitleManager.add(Subtitle.Create(
-								["Clic ", "<img src='datas/icons/mouse-left.svg'/>", " and move to look around."],
+								["Hold clic ", "<img src='datas/icons/mouse-left.svg'/>", " and rotate to look around."],
 								3
 							));
 							this.subtitleManager.add(Subtitle.Create(
-								["Touch ", "<img src='datas/icons/touch-icon.svg'/>", " and move to look around."],
+								["Touch ", "<img src='datas/icons/touch-icon.svg'/>", " and rotate to look around."],
 								3
 							));
 
 							this.subtitleManager.add(Subtitle.Create(
-								["Use ", "<span class='joystick'>L</span>", " to move."],
+								["Use joystick ", "<span class='joystick'>L</span>", " to move."],
 								3
 							));
 							this.subtitleManager.add(Subtitle.Create(
@@ -170,6 +170,20 @@ class MainMenu extends Main {
 								],
 								3
 							));
+							this.subtitleManager.add(Subtitle.Create(
+								["Hold clic ", "<img src='datas/icons/mouse-left.svg'/>", " in place to move to target location."],
+								3
+							));
+							this.subtitleManager.add(Subtitle.Create(
+								["Hold touch ", "<img src='datas/icons/touch-icon.svg'/>", " in place to move to target location."],
+								3
+							));
+							
+							this.subtitleManager.add(Subtitle.Create(["Press ", "<span class='keyboard'>SPACE</span>", " to jump."], 3));
+							this.subtitleManager.add(Subtitle.Create(["Press ", "<span class='pad yellow'>Y</span>", " to jump."], 3));
+							
+							this.subtitleManager.add(Subtitle.Create(["Press ", "<span class='keyboard'>²</span>", " to open Menu."], 3));
+							this.subtitleManager.add(Subtitle.Create(["Press ", "<span class='pad'>start</span>", " to open Menu."], 3));
 							
 							this.subtitleManager.add(new Subtitle(
 								[
