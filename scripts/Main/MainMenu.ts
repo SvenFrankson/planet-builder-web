@@ -139,6 +139,38 @@ class MainMenu extends Main {
 
 						setTimeout(() => {
 							hideLoading();
+							this.subtitleManager.add(Subtitle.Create(
+								["Use ", "<span class='joystick'>R</span>", " to look around."],
+								3
+							));
+							this.subtitleManager.add(Subtitle.Create(
+								["Clic ", "<img src='datas/icons/mouse-left.svg'/>", " and move to look around."],
+								3
+							));
+							this.subtitleManager.add(Subtitle.Create(
+								["Touch ", "<img src='datas/icons/touch-icon.svg'/>", " and move to look around."],
+								3
+							));
+
+							this.subtitleManager.add(Subtitle.Create(
+								["Use ", "<span class='joystick'>L</span>", " to move."],
+								3
+							));
+							this.subtitleManager.add(Subtitle.Create(
+								[
+									"Press ",
+									"<span class='keyboard'>W</span>",
+									", ",
+									"<span class='keyboard'>A</span>",
+									", ",
+									"<span class='keyboard'>S</span>",
+									" and ",
+									"<span class='keyboard'>D</span>",
+									" to move."
+								],
+								3
+							));
+							
 							this.subtitleManager.add(new Subtitle(
 								[
 									"Press ",
@@ -178,21 +210,6 @@ class MainMenu extends Main {
 								],
 								3600)
 							);
-							this.subtitleManager.add(new Subtitle(["Use joystick ", " to look around..."], ["<img src='datas/icons/joystick-r.svg'/>"], 3));
-							this.subtitleManager.add(new Subtitle(["... and use joystick ", " to move."], ["<img src='datas/icons/joystick-l.svg'/>"], 3));
-							this.subtitleManager.add(new Subtitle(["Use joystick ", " to look around... Yeah, but John, if The Pirates of the Caribbean breaks down, the pirates don’t eat the tourists."], ["<img src='datas/icons/joystick-r.svg'/>"], 3));
-							this.subtitleManager.add(new Subtitle(["... and use joystick ", " to move."], ["<img src='datas/icons/joystick-l.svg'/>"], 3));
-							this.subtitleManager.add(new Subtitle(["Use joystick ", " to look around..."], ["<img src='datas/icons/joystick-r.svg'/>"], 3));
-							this.subtitleManager.add(new Subtitle(["... and use joystick ", " to move."], ["<img src='datas/icons/joystick-l.svg'/>"], 3));
-							this.subtitleManager.add(new Subtitle(["Use joystick ", " to look around..."], ["<img src='datas/icons/joystick-r.svg'/>"], 3));
-							this.subtitleManager.add(new Subtitle(["... and use joystick ", " to move."], ["<img src='datas/icons/joystick-l.svg'/>"], 3));
-							this.subtitleManager.add(new Subtitle(["Use joystick ", " to look around..."], ["<img src='datas/icons/joystick-r.svg'/>"], 3));
-							this.subtitleManager.add(new Subtitle(["... and use joystick ", " to move."], ["<img src='datas/icons/joystick-l.svg'/>"], 3));
-							this.subtitleManager.add(new Subtitle(["Yeah, but John, if The Pirates of the Caribbean breaks down, the pirates don’t eat the tourists."], [], 3));
-							this.subtitleManager.add(new Subtitle(["Yeah, but your scientists were so preoccupied with whether or not they could, they didn't stop to think if they should."], [], 3));
-							this.subtitleManager.add(new Subtitle(["What do they got in there? King Kong? What do they got in there? King Kong? I gave it a cold? I gave it a virus."], [], 3));
-							this.subtitleManager.add(new Subtitle(["You're a very talented young man, with your own clever thoughts and ideas. Do you need a manager ?"], [], 3));
-							this.subtitleManager.add(new Subtitle(["We gotta burn the rain forest, dump toxic waste, pollute the air, and rip up the OZONE !"], [], 3));
 							//mainPanel.openAtPlayerPosition();
 						}, 500);
 					});

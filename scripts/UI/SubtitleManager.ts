@@ -4,6 +4,25 @@ class Subtitle {
         return this.texts.map(text => { return text.length; }).reduce((l1, l2) => { return l1 + l2; }) + this.imgs.length;
     }
 
+    public static Create(
+        content: string[],
+        duration?: number,
+        durationMin?: number,
+        speed?: number
+    ) {
+        let texts: string[] = [];
+        let imgs: string[] = [];
+        for (let i = 0; i < content.length; i++) {
+            if (i % 2 === 0) {
+                texts.push(content[i]);
+            }
+            else {
+                imgs.push(content[i]);
+            }
+        }
+        return new Subtitle(texts, imgs, duration, durationMin, speed);
+    }
+
     constructor(
         public texts: string[] = [],
         public imgs: string[] = [],
