@@ -77,7 +77,7 @@ class MainMenu extends Main {
 			//testGrab.position = new BABYLON.Vector3(- 0.3, this._testAltitude + 1.1, - 0.1);
 			//testGrab.instantiate();
 			
-			let mainMenuPlanet: Planet = PlanetGeneratorFactory.Create(BABYLON.Vector3.Zero(), PlanetGeneratorType.Moon, 4, this.scene);
+			let mainMenuPlanet: Planet = PlanetGeneratorFactory.Create(BABYLON.Vector3.Zero(), PlanetGeneratorType.Moon, 2, this.scene);
 			mainMenuPlanet.instantiate();
 			this.planets = [mainMenuPlanet];
 			
@@ -139,6 +139,36 @@ class MainMenu extends Main {
 
 						setTimeout(() => {
 							hideLoading();
+							this.subtitleManager.add(new Subtitle(
+								[
+									"Press ",
+									" or ",
+									" or ",
+									" or ",
+									" or ",
+									" or ",
+									" or ",
+									" or ",
+									" or ",
+									" or ",
+									" or ",
+									" to Jump."
+								],
+								[
+									"<span class='keyboard'>SPACE</span>",
+									"<span class='keyboard'>J</span>",
+									"<span class='pad green'>A</span>",
+									"<span class='pad red'>B</span>",
+									"<span class='pad blue'>X</span>",
+									"<span class='pad yellow'>Y</span>",
+									"<span class='joystick'>R</span>",
+									"<span class='pad red'>B</span>",
+									"<span class='pad blue'>X</span>",
+									"<span class='pad yellow'>Y</span>",
+									"<span class='joystick'>R</span>"
+								],
+								3600)
+							);
 							this.subtitleManager.add(new Subtitle(["Use joystick ", " to look around..."], ["<img src='datas/icons/joystick-r.svg'/>"], 3));
 							this.subtitleManager.add(new Subtitle(["... and use joystick ", " to move."], ["<img src='datas/icons/joystick-l.svg'/>"], 3));
 							this.subtitleManager.add(new Subtitle(["Use joystick ", " to look around... Yeah, but John, if The Pirates of the Caribbean breaks down, the pirates don’t eat the tourists."], ["<img src='datas/icons/joystick-r.svg'/>"], 3));

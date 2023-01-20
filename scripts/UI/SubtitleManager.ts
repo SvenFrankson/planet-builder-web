@@ -60,7 +60,7 @@ class SubtitleManager {
             this._status = SubtitleManagerStatus.Writing;
             this._timer = 0;
             this.container.style.color = "rgba(255, 255, 255, 100%)";
-            this.container.style.backgroundColor = "rgba(0, 0, 0, 50%)";
+            this.container.style.backgroundColor = "rgba(63, 63, 63, 75%)";
             this.container.style.display = "";
         }
 
@@ -111,8 +111,8 @@ class SubtitleManager {
             this.container.querySelectorAll("img").forEach(img => { img.style.opacity = a.toFixed(1) + "%"});
 
             let a2 = (1 - ((this._timer - 0.25) / 0.25)) * 100;
-            a2 = Math.max(Math.min(a2, 100), 0) * 0.5;
-            this.container.style.backgroundColor = "rgba(0, 0, 0, " + a2.toFixed(1) + "%)";
+            a2 = Math.max(Math.min(a2, 100), 0) * 0.75;
+            this.container.style.backgroundColor = "rgba(63, 63, 63, " + a2.toFixed(1) + "%)";
 
             if (this._timer > 0.5) {
                 this._status = SubtitleManagerStatus.Ready;
