@@ -152,7 +152,12 @@ class MainMenu extends Main {
 									" or ",
 									" or ",
 									" or ",
-									" to Jump."
+									" or ",
+									" to Jump. Also please clic ",
+									" and ",
+									" and ",
+									".",
+
 								],
 								[
 									"<span class='keyboard'>SPACE</span>",
@@ -161,11 +166,15 @@ class MainMenu extends Main {
 									"<span class='pad red'>B</span>",
 									"<span class='pad blue'>X</span>",
 									"<span class='pad yellow'>Y</span>",
+									"<span class='pad'>start</span>",
 									"<span class='joystick'>R</span>",
 									"<span class='pad red'>B</span>",
 									"<span class='pad blue'>X</span>",
 									"<span class='pad yellow'>Y</span>",
-									"<span class='joystick'>R</span>"
+									"<span class='joystick'>R</span>",
+									"<img src='datas/icons/mouse-left.svg'/>",
+									"<img src='datas/icons/mouse-right.svg'/>",
+									"<img src='datas/icons/mouse-wheel.svg'/>"
 								],
 								3600)
 							);
