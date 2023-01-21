@@ -97,7 +97,7 @@ class SubtitleManager {
             this._status = SubtitleManagerStatus.Writing;
             this._timer = 0;
             this.container.style.color = "rgba(255, 255, 255, 100%)";
-            this.container.style.backgroundColor = "rgba(63, 63, 63, 75%)";
+            this.container.style.backgroundColor = "rgba(31, 31, 31, 75%)";
             this.container.style.display = "";
         }
 
@@ -134,7 +134,11 @@ class SubtitleManager {
 
         if (this._status === SubtitleManagerStatus.Displaying) {
             this._timer += this.engine.getDeltaTime() / 1000;
-            if (this._timer > this._currentSubtitle.duration) {
+            let duration = this._currentSubtitle.duration;
+            if (this.subtitlesBuffer.length > 0) {
+                duration = this._currentSubtitle.durationMin;
+            }
+            if (this._timer > duration) {
                 this._status = SubtitleManagerStatus.Erasing;
                 this._timer = 0;
             }
@@ -150,7 +154,7 @@ class SubtitleManager {
 
             let a2 = (1 - ((this._timer - 0.25) / 0.25)) * 100;
             a2 = Math.max(Math.min(a2, 100), 0) * 0.75;
-            this.container.style.backgroundColor = "rgba(63, 63, 63, " + a2.toFixed(1) + "%)";
+            this.container.style.backgroundColor = "rgba(31, 31, 31, " + a2.toFixed(1) + "%)";
 
             if (this._timer > 0.5) {
                 this._status = SubtitleManagerStatus.Ready;
