@@ -139,6 +139,9 @@ class MainMenu extends Main {
 
 						setTimeout(() => {
 							hideLoading();
+							let tutorialManager = new TutorialManager(this);
+							tutorialManager.runTutorial();
+							/*
 							this.subtitleManager.add(Subtitle.Create(
 								["Use joystick ", "<span class='joystick'>R</span>", " to look around."],
 								3
@@ -224,6 +227,7 @@ class MainMenu extends Main {
 								],
 								3600)
 							);
+							*/
 							//mainPanel.openAtPlayerPosition();
 						}, 500);
 					});

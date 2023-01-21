@@ -8,7 +8,8 @@ class Subtitle {
         content: string[],
         duration?: number,
         durationMin?: number,
-        speed?: number
+        speed?: number,
+        callback?: () => void
     ) {
         let texts: string[] = [];
         let imgs: string[] = [];
@@ -20,7 +21,7 @@ class Subtitle {
                 imgs.push(content[i]);
             }
         }
-        return new Subtitle(texts, imgs, duration, durationMin, speed);
+        return new Subtitle(texts, imgs, duration, durationMin, speed, callback);
     }
 
     constructor(
@@ -28,7 +29,8 @@ class Subtitle {
         public imgs: string[] = [],
         public duration: number,
         public durationMin: number = 1,
-        public speed: number = 60
+        public speed: number = 60,
+        public callback?: () => void
     ) {
 
     }
@@ -71,6 +73,22 @@ class SubtitleManager {
 
     public add(subtitle: Subtitle): void {
         this.subtitlesBuffer.push(subtitle);
+    }
+
+    public async display(subtitle: Subtitle): Promise<void> {
+        return new Promise<void>(resolve => {
+            if (subtitle.callback) {
+                let newCallback = () => {
+                    subtitle.callback();
+                    resolve();
+                }
+                subtitle.callback = newCallback;
+            }
+            else {
+                subtitle.callback = resolve;
+            }
+            this.add(subtitle);
+        });
     }
 
     private _update = () => {
@@ -137,6 +155,9 @@ class SubtitleManager {
             if (this._timer > 0.5) {
                 this._status = SubtitleManagerStatus.Ready;
                 this._timer = 0;
+                if (this._currentSubtitle.callback) {
+                    this._currentSubtitle.callback();
+                }
             }
         }
     }
