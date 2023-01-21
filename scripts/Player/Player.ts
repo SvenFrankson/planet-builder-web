@@ -229,6 +229,10 @@ class Player extends BABYLON.Mesh {
         return this._meshes;
     }
     
+    private _isPosAnimating: boolean = false;
+    public get isPosAnimating(): boolean {
+        return this._isPosAnimating;
+    }
     public async animatePos(posTarget: BABYLON.Vector3, duration: number, lookingAt?: boolean): Promise<void> {
         return new Promise<void>(resolve => {
             let posZero = this.position.clone();
@@ -252,6 +256,7 @@ class Player extends BABYLON.Mesh {
             let cb = () => {
                 t += this.main.engine.getDeltaTime() / 1000;
                 if (t < duration) {
+                    this._isPosAnimating = true;
                     let f = Easing.easeInOutSine(t / duration);
                     this.position.copyFrom(posZero).scaleInPlace(1 - f).addInPlace(posTarget.scale(f));
                     if (lookingAt) {
@@ -259,6 +264,7 @@ class Player extends BABYLON.Mesh {
                     }
                 }
                 else {
+                    this._isPosAnimating = false;
                     this.position.copyFrom(posTarget);
                     this.main.scene.onBeforeRenderObservable.removeCallback(cb);
                     resolve();
