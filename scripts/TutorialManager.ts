@@ -31,7 +31,7 @@ class TutorialManager {
     public async runTutorial(): Promise<void> {
         await this.main.subtitleManager.display(Subtitle.Create(["Hello there ! Let me introduce myself : I'm an extremely advanced AI, and I will take you through a quick control course."], 3));
         this.step = TutorialStep.LookAround;
-        this.main.subtitleManager.display(Subtitle.Create(["Lesson 1 / 87 - Head control. Hold clic ", "<img src='datas/icons/mouse-left.svg'/>", " and rotate to look around."], 10, 3));
+        this.main.subtitleManager.display(Subtitle.Create(["Lesson 1 / 87 - Head control. Hold clic ", "<img src='datas/icons/mouse-left.svg'/>", " and rotate to look around."], 1000, 3));
         this.scene.onBeforeRenderObservable.add(this.waitForLookAround);
     }
 

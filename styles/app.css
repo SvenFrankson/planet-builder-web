@@ -25,24 +25,28 @@ html, body {
 #renderCanvas {
 	position: fixed;
 	width: 100%;
-    height: min(140vw, 100%);
+    height: min(140vw, 100vh);
 	margin: 0;
 	padding: 0;
 }
 
 #subtitles-container {
 	position: fixed;
-	left: 20%;
-	max-width: 60%;
-	bottom: 40px;
+	left: 15%;
+	max-width: 70%;
+	bottom: calc(40px + calc(100% - min(140vw, 100vh)));
     height: auto;
 	margin: 0;
 	padding: 10px;
+	padding-left: 20px;
+	padding-right: 20px;
+	margin-left: -20px;
 	font-size: 35px;
 	line-height: 120%;
 	color: white;
     font-family: 'XoloniumRegular';
 	background-color: rgba(127, 127, 127, 50%);
+	user-select: none;
 }
 
 #subtitles-container img {
