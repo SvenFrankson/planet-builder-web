@@ -71,6 +71,19 @@ class PlayerInputVirtualPad extends PlayerInput {
         
         this.svg.appendChild(this.pad);
 
+        let letter = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        letter.setAttribute("x", "500");
+        letter.setAttribute("y", "600");
+        letter.setAttribute("fill", "white");
+        letter.setAttribute("font-size", "300");
+        letter.setAttribute("font-family", "XoloniumBold");
+        letter.setAttribute("font-family", "XoloniumBold");
+        letter.setAttribute("text-anchor", "middle");
+        letter.setAttribute("stroke", "black");
+        letter.setAttribute("stroke-width", "5");
+        letter.textContent = left ? "L" : "R";
+        this.svg.appendChild(letter);
+
         if (left) {
             this.centerX = this.size * 0.5 + margin;
         }
