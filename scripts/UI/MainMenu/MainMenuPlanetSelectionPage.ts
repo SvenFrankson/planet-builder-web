@@ -114,8 +114,8 @@ class MainMenuPlanetSelectionPage extends MainMenuPanelPage {
             40
         );
         buttonBack.onPointerUp = async () => {
-            this.mainMenuPanel.animateTitleHeight(this.mainMenuPanel.graphicsPage.targetTitleHeight, 1);
-            await this.mainMenuPanel.showPage(1);
+            this.mainMenuPanel.animateTitleHeight(this.mainMenuPanel.pages[2].targetTitleHeight, 1);
+            this.mainMenuPanel.showPage(2);
         }
         this.holoSlika.add(buttonBack);
 

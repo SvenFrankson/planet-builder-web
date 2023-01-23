@@ -5,6 +5,7 @@ class MainMenu extends Main {
 	public player: Player;
 	public planetSky: PlanetSky;
 	public skybox: BABYLON.Mesh;
+	public tutorialManager: TutorialManager;
 
 	public createScene(): void {
 		super.createScene();
@@ -59,6 +60,8 @@ class MainMenu extends Main {
 
 		return new Promise<void>(resolve => {
 
+			this.tutorialManager = new TutorialManager(this);
+			
 			this.skybox = BABYLON.MeshBuilder.CreateBox("skyBox", { size: 6000 / Math.sqrt(3) }, Main.Scene);
 			this.skybox.rotation.y = Math.PI / 2;
 			let skyboxMaterial: BABYLON.StandardMaterial = new BABYLON.StandardMaterial("skyBox", Main.Scene);
@@ -139,8 +142,6 @@ class MainMenu extends Main {
 
 						setTimeout(() => {
 							hideLoading();
-							let tutorialManager = new TutorialManager(this);
-							tutorialManager.runTutorial();
 							/*
 							this.subtitleManager.add(Subtitle.Create(
 								["Use joystick ", "<span class='joystick'>R</span>", " to look around."],

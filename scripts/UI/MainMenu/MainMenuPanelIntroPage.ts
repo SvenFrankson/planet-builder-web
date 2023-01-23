@@ -68,7 +68,7 @@ class MainMenuPanelIntroPage extends MainMenuPanelPage {
             SlikaButtonState.Enabled
         );
         buttonEnter.onPointerUp = async () => {
-            this.mainMenuPanel.animateTitleHeight(this.mainMenuPanel.graphicsPage.targetTitleHeight, 1);
+            this.mainMenuPanel.animateTitleHeight(this.mainMenuPanel.pages[1].targetTitleHeight, 1);
             this.mainMenuPanel.showPage(1);
         }
         this.holoSlika.add(buttonEnter);

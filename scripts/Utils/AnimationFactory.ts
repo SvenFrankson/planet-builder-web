@@ -10,7 +10,7 @@ class AnimationFactory {
         owner: ISceneObject,
         obj: any,
         property: string,
-        onUpdateCallback: () => void
+        onUpdateCallback?: () => void
     ): (target: number, duration: number) => Promise<void> {
         return (target: number, duration: number) => {
             return new Promise<void>(resolve => {

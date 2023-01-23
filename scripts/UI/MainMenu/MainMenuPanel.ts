@@ -7,6 +7,7 @@ class MainMenuPanel extends HoloPanel {
     public pages: MainMenuPanelPage[] = [];
     public introPage: MainMenuPanelIntroPage;
     public graphicsPage: MainMenuPanelGraphicsPage;
+    public tutorialPage: MainMenuPanelTutorialPage;
     public planetPage: MainMenuPlanetSelectionPage;
 
     constructor(public dpi: number, main: Main) {
@@ -150,12 +151,15 @@ class MainMenuPanel extends HoloPanel {
         this.holoSlika.add(this.titleLine2);
 
         this.introPage = new MainMenuPanelIntroPage(this);
+        this.introPage.hide(0);
         this.graphicsPage = new MainMenuPanelGraphicsPage(this);
         this.graphicsPage.hide(0);
+        this.tutorialPage = new MainMenuPanelTutorialPage(this);
+        this.tutorialPage.hide(0);
         this.planetPage = new MainMenuPlanetSelectionPage(this);
         this.planetPage.hide(0);
-        this.pages = [this.introPage, this.graphicsPage, this.planetPage];
-        this.showPage(0);
+        this.pages = [this.introPage, this.graphicsPage, this.tutorialPage, this.planetPage];
+        this.showPage(2);
     }
 
     public currentPage: number = 0;
@@ -174,7 +178,7 @@ class MainMenuPanel extends HoloPanel {
     public async openAtPlayerPosition(): Promise<void> {
         let player = this.inputManager.player;
         if (player) {
-            await this.close();
+            await this.close(0);
             let p = player.position.add(player.forward);
             this.planet = player.planet;
             this.setPosition(p, true);

@@ -134,12 +134,12 @@ class MainMenuPanelGraphicsPage extends MainMenuPanelPage {
             Config.setConfLowPreset();
         }
         buttonBack.onPointerUp = async () => {
-            this.mainMenuPanel.animateTitleHeight(this.mainMenuPanel.introPage.targetTitleHeight, 1);
+            this.mainMenuPanel.animateTitleHeight(this.mainMenuPanel.pages[0].targetTitleHeight, 1);
             this.mainMenuPanel.showPage(0);
         }
         buttonNext.onPointerUp = async () => {
             if (buttonNext.state === SlikaButtonState.Enabled) {
-                this.mainMenuPanel.animateTitleHeight(this.mainMenuPanel.planetPage.targetTitleHeight, 1);
+                this.mainMenuPanel.animateTitleHeight(this.mainMenuPanel.pages[2].targetTitleHeight, 1);
                 this.mainMenuPanel.showPage(2);
             }
         }

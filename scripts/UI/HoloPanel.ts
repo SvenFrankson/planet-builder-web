@@ -2,6 +2,8 @@
 
 class HoloPanel extends Pickable {
 
+    public frame: BABYLON.Mesh;
+
     public holoMesh: BABYLON.Mesh;
     public holoMaterial: HoloPanelMaterial;
     public holoTexture: BABYLON.DynamicTexture;
@@ -51,25 +53,7 @@ class HoloPanel extends Pickable {
         this._angle = this.size / this._radius;
     }
 
-    private async _animatePosY(posYTarget: number, duration: number): Promise<void> {
-        return new Promise<void>(resolve => {
-            let yZero = this.holoMesh.position.y;
-            let t = 0;
-            let cb = () => {
-                t += this.main.engine.getDeltaTime() / 1000;
-                if (t < duration) {
-                    let f = t / duration;
-                    this.holoMesh.position.y = yZero * (1 - f) + posYTarget * f;
-                }
-                else {
-                    this.holoMesh.position.y = posYTarget;
-                    this.main.scene.onBeforeRenderObservable.removeCallback(cb);
-                    resolve();
-                }
-            }
-            this.main.scene.onBeforeRenderObservable.add(cb);
-        });
-    }
+    public animateFramePosY = AnimationFactory.EmptyNumberCallback;
 
     private async _animateScaleX(xTarget: number, duration: number): Promise<void> {
         return new Promise<void>(resolve => {
@@ -115,13 +99,16 @@ class HoloPanel extends Pickable {
         super.instantiate();
         let h = this._angle * this._radius / this._w * this._h;
 
-        let frame = BABYLON.MeshBuilder.CreateBox("frame", { size: 0.05 });
-        frame.parent = this;
-        frame.position.y = this.height - h * 0.5;
+        this.frame = BABYLON.MeshBuilder.CreateBox("frame", { size: 0.05 });
+        this.frame.parent = this;
+        this.frame.position.y = 0;
+        this.frame.isVisible = true;
         VertexDataLoader.instance.get("holoPanelFrame").then(vertexDatas => {
             let vData = vertexDatas[1];
-            vData.applyToMesh(frame);
-        })
+            vData.applyToMesh(this.frame);
+        });
+
+        this.animateFramePosY = AnimationFactory.CreateNumber(this, this.frame.position, "y");
 
         this.holoMesh = new BABYLON.Mesh("text-page");
         this.holoMesh.layerMask = 0x10000000;
@@ -248,11 +235,16 @@ class HoloPanel extends Pickable {
     }
 
     public async open(): Promise<void> {
+        let h = this._angle * this._radius / this._w * this._h;
+        this.frame.isVisible = true;
+        await this.animateFramePosY(this.height - h * 0.5, 0.5);
         await this._animateScaleX(1, 0.5);
     }
 
-    public async close(): Promise<void> {
-        await this._animateScaleX(0.05, 0.5);
+    public async close(duration: number = 1.5): Promise<void> {
+        await this._animateScaleX(0, 1 / 3 * duration);
+        await this.animateFramePosY(0, 2 / 3 * duration);
+        this.frame.isVisible = false;
     }
 
     public redrawSVG(image: any): void {
