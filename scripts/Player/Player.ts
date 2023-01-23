@@ -114,7 +114,7 @@ class Player extends BABYLON.Mesh {
         });
         this.inputManager.addMappedKeyUpListener(KeyInput.JUMP, () => {
             if (this._isGrounded || this.godMode) {
-                this.velocity.addInPlace(this.getDirection(BABYLON.Axis.Y).scale(8));
+                this.velocity.addInPlace(this.getDirection(BABYLON.Axis.Y).scale(5));
                 this._isGrounded = false;
                 this._jumpTimer = 0.2;
             }
@@ -354,7 +354,7 @@ class Player extends BABYLON.Mesh {
             if (isFinite(a)) {
                 this.inputHeadRight += a * this.targetLookStrength;
             }
-            a = VMath.AngleFromToAround(forward, targetForward, this._rightDirection) / Math.PI;
+            a = VMath.AngleFromToAround(forward, targetForward, this._rightDirection) / (2 * Math.PI);
             if (isFinite(a)) {
                 this.inputHeadUp += a * this.targetLookStrength;
             }
@@ -486,15 +486,15 @@ class Player extends BABYLON.Mesh {
                         this._debugCollisionGroundMesh.position.copyFrom(hit.pickedPoint);
                     }
                     let d: number = BABYLON.Vector3.Dot(this.position.subtract(hit.pickedPoint), this.upDirection);
-                    if (d <= 0.1) {
+                    if (d <= 0.2) {
                         let v = 0;
                         if (d < 0) {
-                            v = Math.abs(2 * d);
+                            v = Math.abs(20 * d);
                         }
                         this._groundFactor
                             .copyFrom(this._gravityFactor)
                             .scaleInPlace(- 1 - v);
-                        fVert = 0.005;
+                        fVert = 0.001;
                         this._isGrounded = true;
                     }
                 }
