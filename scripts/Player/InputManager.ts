@@ -48,7 +48,7 @@ class InputManager {
         this.player = player;
         
         window.addEventListener("touchstart", this.onTouchStart.bind(this));
-        window.addEventListener("pointerdown", (ev: PointerEvent) => {
+        this.canvas.addEventListener("pointerdown", (ev: PointerEvent) => {
             this.updateAimedElement(ev.x, ev.y);
             this.isPointerDown = true;
             if (Config.controlConfiguration.canLockPointer) {
@@ -57,7 +57,7 @@ class InputManager {
             }
             this.pointerDownObservable.notifyObservers(this.aimedElement);
         });
-        window.addEventListener("pointerup", () => {
+        this.canvas.addEventListener("pointerup", () => {
             this.isPointerDown = false;
             this.pointerUpObservable.notifyObservers(this.aimedElement);
         });

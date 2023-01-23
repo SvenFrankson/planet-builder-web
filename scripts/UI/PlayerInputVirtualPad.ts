@@ -82,6 +82,7 @@ class PlayerInputVirtualPad extends PlayerInput {
         letter.setAttribute("stroke", "black");
         letter.setAttribute("stroke-width", "5");
         letter.textContent = left ? "L" : "R";
+        letter.style.userSelect = "none";
         this.svg.appendChild(letter);
 
         if (left) {
@@ -186,7 +187,7 @@ class PlayerInputMovePad extends PlayerInputVirtualPad {
 class PlayerInputHeadPad extends PlayerInputVirtualPad {
 
     public updatePilot(dx: number, dy: number): void {
-        this.player.inputHeadUp = - dy * 0.5;
-        this.player.inputHeadRight = dx * 0.5;
+        this.player.inputHeadUp = - dy * 0.35;
+        this.player.inputHeadRight = dx * 0.35;
     }
 }
