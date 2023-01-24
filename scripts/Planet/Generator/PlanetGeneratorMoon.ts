@@ -36,6 +36,14 @@ class PlanetGeneratorMoon extends PlanetGenerator {
         this._iceMap.smooth();
 
         this.altitudeMap.addInPlace(this._moutainHeightMap).substractInPlace(this._craterMap);
+
+        let center = Math.floor(this._iceMap.size * 0.5);
+        for (let i = - 3; i <= 3; i++) {
+            for (let j = -3; j <= 3; j++) {
+                this.altitudeMap.setValue(this.planet.seaLevelRatio, center + i, this.altitudeMap.size, center + j);
+                this._iceMap.setValue(-1, center + i, this._iceMap.size, center + j);
+            }
+        }
     }
     
 
