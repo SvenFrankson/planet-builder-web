@@ -106,7 +106,6 @@ class PlayerArmManager {
     }
 
     private _aimingArm: PlayerArm;
-    private _aimingStretch: number = 0.6;
     private _aimingDistance: number = 0.1;
     private _updateAim(): void {
 
@@ -120,50 +119,35 @@ class PlayerArmManager {
             this._aimingArm = this.rightArm;
         }
         let dx = BABYLON.Vector3.Dot(this.inputManager.aimedPosition, this.player.right)
-        if (this._aimingArm === this.leftArm && dx > 0.2) {
+        if (this._aimingArm === this.leftArm && dx > 0.1) {
             this._aimingArm = this.rightArm;
             if (this.leftArm.handMode != HandMode.Idle) {
                 this.leftArm.setHandMode(HandMode.Idle);
             }
         }
-        else if (this._aimingArm === this.rightArm && dx < - 0.2) {
+        else if (this._aimingArm === this.rightArm && dx < - 0.1) {
             this._aimingArm = this.leftArm;
             if (this.rightArm.handMode != HandMode.Idle) {
                 this.rightArm.setHandMode(HandMode.Idle);
             }
         }
 
-        let d = BABYLON.Vector3.Distance(this.inputManager.aimedPosition, this._aimingArm.absolutePosition);
+        let aimedPointClose = BABYLON.Vector3.Zero();
+        VMath.StepToRef(this.player.camPos.absolutePosition.add(this._aimingArm.absolutePosition).scale(0.5), this.inputManager.aimedPosition, 0.9, aimedPointClose);
         // 2 - Update the way the hand should interact depending on aimed object.
-        if (d > 0.9) {
-            if (this._aimingArm.handMode != HandMode.Point) {
+        if (this.inputManager.aimedElement.interactionMode === InteractionMode.Point) {
+            if (this._aimingArm.handMode != HandMode.Point && this._aimingArm.handMode != HandMode.PointPress) {
                 this._aimingArm.setHandMode(HandMode.Point);
             }
         }
-        else {
-            if (this.inputManager.aimedElement.interactionMode === InteractionMode.Point) {
-                if (this._aimingArm.handMode != HandMode.Point && this._aimingArm.handMode != HandMode.PointPress) {
-                    this._aimingArm.setHandMode(HandMode.Point);
-                }
-            }
-            else if (this.inputManager.aimedElement.interactionMode === InteractionMode.Grab) {
-                if (this._aimingArm.handMode != HandMode.Grab) {
-                    this._aimingArm.setHandMode(HandMode.Grab);
-                }
+        else if (this.inputManager.aimedElement.interactionMode === InteractionMode.Grab) {
+            if (this._aimingArm.handMode != HandMode.Grab) {
+                this._aimingArm.setHandMode(HandMode.Grab);
             }
         }
 
         // 3 - Update arm target position.
-        if (d < 0.9) {
-            this._aimingStretch = 1;
-        }
-        else {
-            this._aimingStretch = 0.4;
-        }
-        
-        let tmp = new BABYLON.Vector3();
-        VMath.StepToRef(this.player.camPos.absolutePosition.add(this._aimingArm.absolutePosition).scale(0.5), this.inputManager.aimedPosition.add(this.inputManager.aimedNormal.scale(this._aimingDistance)), this._aimingStretch, tmp);
-        this._aimingArm.setTarget(tmp);
+        this._aimingArm.setTarget(aimedPointClose.add(this.inputManager.aimedNormal.scale(this._aimingDistance)));
 
         if (this._aimingArm.handMode === HandMode.Grab) {
             this._aimingArm.targetUp.copyFrom(this.inputManager.aimedNormal);

@@ -18,11 +18,12 @@ class Player extends BABYLON.Mesh {
     public currentAction: PlayerAction;
 
     public lockInPlace: boolean = false;
+    public lockInput: boolean = true;
     public planet: Planet;
     public sqrDistToPlanet = Infinity;
     public altitudeOnPlanet: number = 0;
 
-    public targetLookStrength: number = 1;
+    public targetLookStrength: number = 0.5;
     public targetLook: BABYLON.Vector3;
     public targetDestination: BABYLON.Vector3;
     private _lastDistToTarget: number;
@@ -35,6 +36,10 @@ class Player extends BABYLON.Mesh {
     private moveDelay: number = 1;
     private moveIndicatorDisc: PlanetObject;
     private moveIndicatorLandmark: PlanetObject;
+
+    private _initialized: boolean = false;
+    private _isRegisteredUIOnly: boolean = false;
+    private _isRegistered: boolean = false;
 
     public get inputManager(): InputManager {
         return this.main.inputManager;
@@ -52,6 +57,7 @@ class Player extends BABYLON.Mesh {
         this.camPos = new BABYLON.Mesh("Dummy", Game.Scene);
         this.camPos.parent = this;
         this.camPos.position = new BABYLON.Vector3(0, 1.7, 0);
+        this.camPos.rotation.x = Math.PI / 8;
         this.armManager = new PlayerArmManager(this);
         /*
         BABYLON.CreateSphereVertexData({ diameter: 0.2 }).applyToMesh(this);
@@ -73,7 +79,6 @@ class Player extends BABYLON.Mesh {
         this.moveIndicatorLandmark.isVisible = false; 
     }
 
-    private _initialized: boolean = false;
     public async initialize(): Promise<void> {
         if (!this._initialized) {
             Game.Scene.onBeforeRenderObservable.add(this._update);
@@ -86,7 +91,45 @@ class Player extends BABYLON.Mesh {
         }
     }
 
+    public registerControlUIOnly(): void {
+        if (this._isRegisteredUIOnly) {
+            return;
+        }
+        this.inputManager.pointerUpObservable.add(this._onPointerUpUIOnly);
+        this.inputManager.pointerDownObservable.add(this._onPointerDownUIOnly);
+        this._isRegisteredUIOnly = true;
+    }
+
+    public unregisterControlUIOnly(): void {
+        this.inputManager.pointerUpObservable.removeCallback(this._onPointerUpUIOnly);
+        this.inputManager.pointerDownObservable.removeCallback(this._onPointerDownUIOnly);
+        this._isRegisteredUIOnly = false;
+    }
+
+    private _onPointerUpUIOnly = (pickableElement: Pickable) => {
+        if (this.armManager) {
+            this.armManager.startActionAnimation(() => {
+                if (pickableElement) {
+                    pickableElement.onPointerUp();
+                }
+            });
+        }
+    }
+
+    private _onPointerDownUIOnly = (pickableElement: Pickable) => {
+        if (this.inputManager.aimedElement) {
+            this.inputManager.aimedElement.onPointerDown();
+        }
+    }
+
     public registerControl(): void {
+        if (this._isRegisteredUIOnly) {
+            this.unregisterControlUIOnly();
+        }
+        if (this._isRegistered) {
+            return;
+        }
+
         this.inputManager.addMappedKeyDownListener(KeyInput.MOVE_FORWARD, () => {
             this.inputForward = 1;
         });
@@ -152,6 +195,8 @@ class Player extends BABYLON.Mesh {
                 this._headMoveWithMouse = true;
             }
         });
+
+        this._isRegistered = true;
     }
 
     private _keyUp = (e: KeyboardEvent) => {
@@ -358,10 +403,10 @@ class Player extends BABYLON.Mesh {
             if (isFinite(a)) {
                 this.inputHeadUp += a * this.targetLookStrength;
             }
-            if (!this.targetDestination && this.velocity.lengthSquared() < 0.01) {
+            if (!this.targetDestination && this.velocity.lengthSquared() < 0.001) {
                 if (BABYLON.Vector3.Dot(forward, targetForward) > 0.99) {
                     this.targetLook = undefined;
-                    this.targetLookStrength = 1;
+                    this.targetLookStrength = 0.5;
                 }
             }
         }

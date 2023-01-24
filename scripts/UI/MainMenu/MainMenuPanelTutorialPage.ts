@@ -53,6 +53,9 @@ class MainMenuPanelTutorialPage extends MainMenuPanelPage {
         buttonEnter.onPointerUp = async () => {
             if (this.mainMenuPanel.main instanceof MainMenu) {
                 this.mainMenuPanel.close();
+                this.mainMenuPanel.animateTitleHeight(this.mainMenuPanel.pages[3].targetTitleHeight, 1);
+                this.mainMenuPanel.showPage(3);
+                this.mainMenuPanel.main.player.registerControl();
                 this.mainMenuPanel.main.tutorialManager.runTutorial();
             }
         }
@@ -83,6 +86,9 @@ class MainMenuPanelTutorialPage extends MainMenuPanelPage {
             this.mainMenuPanel.showPage(1);
         }
         buttonNext.onPointerUp = async () => {
+            if (this.mainMenuPanel.main instanceof MainMenu) {
+                this.mainMenuPanel.main.player.registerControl();
+            }
             this.mainMenuPanel.animateTitleHeight(this.mainMenuPanel.pages[3].targetTitleHeight, 1);
             this.mainMenuPanel.showPage(3);
         }

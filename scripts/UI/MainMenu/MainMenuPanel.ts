@@ -11,7 +11,7 @@ class MainMenuPanel extends HoloPanel {
     public planetPage: MainMenuPlanetSelectionPage;
 
     constructor(public dpi: number, main: Main) {
-        super(0.6, 1.7, 1000, 1000, main);
+        super(0.6, 1.5, 1000, 1000, main);
     }
 
     public instantiate(): void {
@@ -159,7 +159,7 @@ class MainMenuPanel extends HoloPanel {
         this.planetPage = new MainMenuPlanetSelectionPage(this);
         this.planetPage.hide(0);
         this.pages = [this.introPage, this.graphicsPage, this.tutorialPage, this.planetPage];
-        this.showPage(2);
+        this.showPage(0);
     }
 
     public currentPage: number = 0;
@@ -179,7 +179,7 @@ class MainMenuPanel extends HoloPanel {
         let player = this.inputManager.player;
         if (player) {
             await this.close(0);
-            let p = player.position.add(player.forward);
+            let p = player.position.add(player.forward.scale(1.2));
             this.planet = player.planet;
             this.setPosition(p, true);
             this.setTarget(player.position);

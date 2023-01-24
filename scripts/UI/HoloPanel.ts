@@ -126,7 +126,7 @@ class HoloPanel extends Pickable {
         this.interactionAnchor = new BABYLON.Mesh("interaction-anchor");
         //BABYLON.CreateBoxVertexData({ size: 0.1 }).applyToMesh(this.interactionAnchor);
         //this.interactionAnchor.material = SharedMaterials.RedMaterial();
-        this.interactionAnchor.position.z = -0.8;
+        this.interactionAnchor.position.z = -1;
         this.interactionAnchor.parent = this;
 
         let data = new BABYLON.VertexData();

@@ -138,10 +138,13 @@ class MainMenu extends Main {
 					
 					this.onChunckManagerNotWorking(async () => {
 						await this.player.initialize();
-						this.player.registerControl();
+						this.player.registerControlUIOnly();
 
 						setTimeout(() => {
 							hideLoading();
+							setTimeout(() => {
+								mainPanel.openAtPlayerPosition();
+							}, 1000);
 							/*
 							this.subtitleManager.add(Subtitle.Create(
 								["Use joystick ", "<span class='joystick'>R</span>", " to look around."],
