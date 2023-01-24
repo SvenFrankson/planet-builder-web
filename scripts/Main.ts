@@ -18,6 +18,8 @@ class Main {
     }
     private _onNextChunckManagerNotWorking: (() => void)[] = [];
 
+    public isTouch: boolean = false;
+
     constructor(canvasElement: string) {
         Main.Instance = this;
         
@@ -33,7 +35,7 @@ class Main {
 		this.scene = Main.Scene;
 		this.scene.clearColor.copyFromFloats(166 / 255, 231 / 255, 255 / 255, 1);
         this.vertexDataLoader = new VertexDataLoader(this.scene);
-        this.inputManager = new InputManager(this.scene, this.canvas);
+        this.inputManager = new InputManager(this.scene, this.canvas, this);
 		this.cameraManager = new CameraManager(this);
         this.subtitleManager = new SubtitleManager(this);
 	}

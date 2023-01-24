@@ -40,7 +40,7 @@ class InputManager {
     public pointerDownObservable = new BABYLON.Observable<Pickable>();
     public pointerUpObservable = new BABYLON.Observable<Pickable>();
 
-    constructor(public scene: BABYLON.Scene, public canvas: HTMLCanvasElement) {
+    constructor(public scene: BABYLON.Scene, public canvas: HTMLCanvasElement, public main: Main) {
         this.pickableElements = new UniqueList<Pickable>();
     }
 
@@ -169,6 +169,8 @@ class InputManager {
 
         document.getElementById("touch-menu").style.display = "block";
         document.getElementById("touch-jump").style.display = "block";
+
+        this.main.isTouch = true;
     }
 
     public addKeyDownListener(callback: (k: KeyInput) => any): void {

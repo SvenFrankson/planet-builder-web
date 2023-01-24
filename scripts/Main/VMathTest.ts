@@ -10,7 +10,7 @@ class VMathTest extends Main {
 		this.scene = Main.Scene;
         
         this.vertexDataLoader = new VertexDataLoader(this.scene);
-        this.inputManager = new InputManager(this.scene, this.canvas);
+        this.inputManager = new InputManager(this.scene, this.canvas, this);
 
 		let light = new BABYLON.HemisphericLight(
 			"light",

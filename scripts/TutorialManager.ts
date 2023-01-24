@@ -24,6 +24,31 @@ class TutorialManager {
         return this.main.player;
     }
 
+    public lookAroundText: string[][] = [
+        ["Lesson 1 / 87 - Head control. Hold clic ", "<img src='datas/icons/mouse-left.svg'/>", " and rotate to look around."],
+        ["Lesson 1 / 87 - Head control. Touch ", "<img src='datas/icons/touch-icon.svg'/>", " and rotate to look around. You may also use joystick ", "<span class='joystick'>R</span>"],
+    ];
+    public moveText: string[][] = [
+        ["Lesson 1.a / 87 - Movement. Press ", "<span class='keyboard'>W</span>", ", ", "<span class='keyboard'>A</span>", ", ", "<span class='keyboard'>S</span>", " and ", "<span class='keyboard'>D</span>", " to move."],
+        ["Lesson 1.a / 87 - Movement. Use joystick ", "<span class='joystick'>L</span>", " to move."],
+    ]
+    public moveToLocationText: string[][] = [
+        ["Lesson 1.b / 87 - Move To Location. Hold clic ", "<img src='datas/icons/mouse-left.svg'/>", " in place to move to target location."],
+        ["Lesson 1.b / 87 - Move To Location. Hold touch ", "<img src='datas/icons/touch-icon.svg'/>", " in place to move to target location."],
+    ]
+    public jumpText: string[][] = [
+        ["Lesson 1.c / 87 - Jump. Press ", "<span class='keyboard'>SPACE</span>", " to jump."],
+        ["Lesson 1.c / 87 - Jump. Press ", "<span class='pad yellow'>Y</span>", " to jump."],
+    ]
+    public mainMenuText: string[][] = [
+        ["Lesson 1.d / 87 - Open Menu. Press ", "<span class='keyboard'>²</span>", " to open Planet Selection Menu."],
+        ["Lesson 1.d / 87 - Open Menu. Press ", "<span class='pad'>start</span>", " to open Planet Selection Menu."],
+    ]
+
+    public get textIndex(): number {
+        return this.main.isTouch ? 1 : 0;
+    };
+
     constructor(public main: MainMenu) {
 
     }
@@ -31,7 +56,7 @@ class TutorialManager {
     public async runTutorial(): Promise<void> {
         await this.main.subtitleManager.display(Subtitle.Create(["Hello there ! Let me introduce myself : I'm an extremely advanced AI, and I will take you through a quick control course."], 3));
         this.step = TutorialStep.LookAround;
-        this.main.subtitleManager.display(Subtitle.Create(["Lesson 1 / 87 - Head control. Hold clic ", "<img src='datas/icons/mouse-left.svg'/>", " and rotate to look around."], 20, 3));
+        this.main.subtitleManager.display(Subtitle.Create(this.lookAroundText[this.textIndex], 20, 3));
         this.scene.onBeforeRenderObservable.add(this.waitForLookAround);
     }
 
@@ -45,7 +70,7 @@ class TutorialManager {
                 this.scene.onBeforeRenderObservable.removeCallback(this.waitForLookAround);
                 // Start next tutorial step (move).
                 this.main.subtitleManager.display(Subtitle.Create(["Well done ! You can now look around."], 3)).then(() => {
-                    this.main.subtitleManager.display(Subtitle.Create(["Lesson 1.a / 87 - Movement. Press ", "<span class='keyboard'>W</span>", ", ", "<span class='keyboard'>A</span>", ", ", "<span class='keyboard'>S</span>", " and ", "<span class='keyboard'>D</span>", " to move."], 20, 3));
+                    this.main.subtitleManager.display(Subtitle.Create(this.moveText[this.textIndex], 20, 3));
                     this.scene.onBeforeRenderObservable.add(this.waitForMove);
                 });
             }
@@ -62,7 +87,7 @@ class TutorialManager {
                 this.scene.onBeforeRenderObservable.removeCallback(this.waitForMove);
                 // Start next tutorial step (move to location).
                 this.main.subtitleManager.display(Subtitle.Create(["Ok, you know how to move."], 3)).then(() => {
-                    this.main.subtitleManager.display(Subtitle.Create(["Lesson 1.b / 87 - Move To Location. Hold clic ", "<img src='datas/icons/mouse-left.svg'/>", " in place to move to target location."], 20, 3));
+                    this.main.subtitleManager.display(Subtitle.Create(this.moveToLocationText[this.textIndex], 20, 3));
                     this.scene.onBeforeRenderObservable.add(this.waitForMoveToLocation);
                 });
             }
@@ -79,7 +104,7 @@ class TutorialManager {
                 this.scene.onBeforeRenderObservable.removeCallback(this.waitForMoveToLocation);
                 // Start next tutorial step (jump).
                 this.main.subtitleManager.display(Subtitle.Create(["Nice, that's how you move to target location."], 3)).then(() => {
-                    this.main.subtitleManager.display(Subtitle.Create(["Lesson 1.c / 87 - Jump. Press ", "<span class='keyboard'>SPACE</span>", " to jump."], 20, 3));
+                    this.main.subtitleManager.display(Subtitle.Create(this.jumpText[this.textIndex], 20, 3));
                     this.main.inputManager.addMappedKeyUpListener(KeyInput.JUMP, this.onJump);
                 });
             }
@@ -90,7 +115,7 @@ class TutorialManager {
         this.main.inputManager.removeMappedKeyUpListener(KeyInput.JUMP, this.onJump);
         // Start next tutorial step (open main menu).
         this.main.subtitleManager.display(Subtitle.Create(["That's a new height record !"], 3)).then(() => {
-            this.main.subtitleManager.display(Subtitle.Create(["Lesson 1.d / 87 - Open Menu. Press ", "<span class='keyboard'>²</span>", " to open Planet Selection Menu."], 20, 3));
+            this.main.subtitleManager.display(Subtitle.Create(this.mainMenuText[this.textIndex], 20, 3));
             this.main.inputManager.addMappedKeyUpListener(KeyInput.MAIN_MENU, this.onMainMenu);
         });
     }
