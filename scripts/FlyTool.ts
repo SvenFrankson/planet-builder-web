@@ -105,7 +105,7 @@ class FlyTool {
                     player.targetLook = undefined;
                     player.targetLookStrength = 1;
                 }
-                let speed = Math.sin(f * Math.PI) * 70 + 10;
+                let speed = Math.sin(f * Math.PI) * 70 + 5;
 
                 let up = takeOffUp.scale(1 - f).add(landingUp.scale(f)).normalize();
 
