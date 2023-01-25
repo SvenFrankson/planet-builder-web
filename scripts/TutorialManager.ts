@@ -41,7 +41,7 @@ class TutorialManager {
         ["Lesson 1.c / 87 - Jump. Press ", "<span class='pad yellow'>Y</span>", " to jump."],
     ]
     public mainMenuText: string[][] = [
-        ["Lesson 1.d / 87 - Open Menu. Press ", "<span class='keyboard'>²</span>", " to open Planet Selection Menu."],
+        ["Lesson 1.d / 87 - Open Menu. Press ", "<span class='keyboard'>²</span>", " or ", "<span class='keyboard'>M</span>" ," to open Planet Selection Menu."],
         ["Lesson 1.d / 87 - Open Menu. Press ", "<span class='pad'>start</span>", " to open Planet Selection Menu."],
     ]
 
