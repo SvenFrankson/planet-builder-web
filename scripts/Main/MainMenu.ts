@@ -138,6 +138,8 @@ class MainMenu extends Main {
 					
 					this.onChunckManagerNotWorking(async () => {
 						await this.player.initialize();
+						let hud = new HeadUpDisplay(this.player, this.cameraManager);
+						hud.instantiate();
 						this.player.registerControlUIOnly();
 
 						setTimeout(() => {
@@ -145,94 +147,6 @@ class MainMenu extends Main {
 							setTimeout(() => {
 								mainPanel.openAtPlayerPosition();
 							}, 1000);
-							/*
-							this.subtitleManager.add(Subtitle.Create(
-								["Use joystick ", "<span class='joystick'>R</span>", " to look around."],
-								3
-							));
-							this.subtitleManager.add(Subtitle.Create(
-								["Hold clic ", "<img src='datas/icons/mouse-left.svg'/>", " and rotate to look around."],
-								3
-							));
-							this.subtitleManager.add(Subtitle.Create(
-								["Touch ", "<img src='datas/icons/touch-icon.svg'/>", " and rotate to look around."],
-								3
-							));
-
-							this.subtitleManager.add(Subtitle.Create(
-								["Use joystick ", "<span class='joystick'>L</span>", " to move."],
-								3
-							));
-							this.subtitleManager.add(Subtitle.Create(
-								[
-									"Press ",
-									"<span class='keyboard'>W</span>",
-									", ",
-									"<span class='keyboard'>A</span>",
-									", ",
-									"<span class='keyboard'>S</span>",
-									" and ",
-									"<span class='keyboard'>D</span>",
-									" to move."
-								],
-								3
-							));
-							this.subtitleManager.add(Subtitle.Create(
-								["Hold clic ", "<img src='datas/icons/mouse-left.svg'/>", " in place to move to target location."],
-								3
-							));
-							this.subtitleManager.add(Subtitle.Create(
-								["Hold touch ", "<img src='datas/icons/touch-icon.svg'/>", " in place to move to target location."],
-								3
-							));
-							
-							this.subtitleManager.add(Subtitle.Create(["Press ", "<span class='keyboard'>SPACE</span>", " to jump."], 3));
-							this.subtitleManager.add(Subtitle.Create(["Press ", "<span class='pad yellow'>Y</span>", " to jump."], 3));
-							
-							this.subtitleManager.add(Subtitle.Create(["Press ", "<span class='keyboard'>²</span>", " to open Menu."], 3));
-							this.subtitleManager.add(Subtitle.Create(["Press ", "<span class='pad'>start</span>", " to open Menu."], 3));
-							
-							this.subtitleManager.add(new Subtitle(
-								[
-									"Press ",
-									" or ",
-									" or ",
-									" or ",
-									" or ",
-									" or ",
-									" or ",
-									" or ",
-									" or ",
-									" or ",
-									" or ",
-									" or ",
-									" to Jump. Also please clic ",
-									" and ",
-									" and ",
-									".",
-
-								],
-								[
-									"<span class='keyboard'>SPACE</span>",
-									"<span class='keyboard'>J</span>",
-									"<span class='pad green'>A</span>",
-									"<span class='pad red'>B</span>",
-									"<span class='pad blue'>X</span>",
-									"<span class='pad yellow'>Y</span>",
-									"<span class='pad'>start</span>",
-									"<span class='joystick'>R</span>",
-									"<span class='pad red'>B</span>",
-									"<span class='pad blue'>X</span>",
-									"<span class='pad yellow'>Y</span>",
-									"<span class='joystick'>R</span>",
-									"<img src='datas/icons/mouse-left.svg'/>",
-									"<img src='datas/icons/mouse-right.svg'/>",
-									"<img src='datas/icons/mouse-wheel.svg'/>"
-								],
-								3600)
-							);
-							*/
-							//mainPanel.openAtPlayerPosition();
 						}, 500);
 					});
 						
