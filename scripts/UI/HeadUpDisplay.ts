@@ -12,7 +12,9 @@ class HeadUpDisplay extends BABYLON.Mesh {
         let ratio = w / h;
         let dist = (h * 0.5) / Math.tan(yAngle * 0.5);
         let xAngle = 2 * Math.atan((h * ratio * 0.5) / (dist));
-        //console.log("xAngle = " + (xAngle / Math.PI * 180).toFixed(1) + " | yAngle = " + (yAngle / Math.PI * 180).toFixed(1));
+        let distSide = dist / Math.cos(xAngle * 0.5);
+        let yAngleSide = 2 * Math.atan(h * 0.5 / distSide);
+        console.log("xAngle = " + (xAngle / Math.PI * 180).toFixed(1) + " | yAngle = " + (yAngle / Math.PI * 180).toFixed(1) + " | yAngleSide = " + (yAngleSide / Math.PI * 180).toFixed(1));
 
         /*
         let debug = BABYLON.MeshBuilder.CreatePlane("debug", { size: 0.1 });
@@ -32,14 +34,23 @@ class HeadUpDisplay extends BABYLON.Mesh {
         debug2.parent = this;
         */
 
-        for (let b = 0; b <= 0.6; b += 0.08) {
-            let debug3 = BABYLON.MeshBuilder.CreatePlane("debug3", { size: 0.06 });
-            debug3.position.y = Math.sin(b);
-            debug3.position.z = Math.cos(b);
+        let hudMaterial = new BABYLON.StandardMaterial("hud-material");
+        hudMaterial.emissiveTexture = new BABYLON.Texture("datas/images/test_texture.png");
+        hudMaterial.diffuseColor.copyFromFloats(0, 0, 0);
+        hudMaterial.specularColor.copyFromFloats(0, 0, 0);
+
+        let angularMargin = 0.04;
+        for (let b = 0; b < 10; b ++) {
+            let beta = - yAngleSide * 0.5 + angularMargin + (yAngleSide - 2 * angularMargin) * b / 9;
+            let debug3 = BABYLON.MeshBuilder.CreatePlane("debug3", { size: 0.05 });
+            debug3.position.y = Math.sin(beta);
+            debug3.position.z = Math.cos(beta);
             debug3.rotationQuaternion = BABYLON.Quaternion.Identity();
             VMath.QuaternionFromZYAxisToRef(debug3.position, BABYLON.Axis.Y, debug3.rotationQuaternion);
             debug3.parent = this;
-            debug3.rotateAround(BABYLON.Vector3.Zero(), BABYLON.Axis.Y, - (xAngle * 0.5 - 0.06));
+            debug3.rotateAround(BABYLON.Vector3.Zero(), BABYLON.Axis.Y, - (xAngle * 0.5 - angularMargin));
+
+            debug3.material = hudMaterial;
         }
 
         this.parent = this.player.camPos;
