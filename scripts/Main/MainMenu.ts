@@ -128,7 +128,9 @@ class MainMenu extends Main {
 			PlanetChunckVertexData.InitializeData().then(
 				async () => {
 
-					this.generatePlanets();
+					if (!DebugDefine.ONLY_START_PLANET) {
+						this.generatePlanets();
+					}
 
 					this.planets.forEach(p => {
 						p.register();
@@ -138,16 +140,23 @@ class MainMenu extends Main {
 					
 					this.onChunckManagerNotWorking(async () => {
 						await this.player.initialize();
-						//let hud = new HeadUpDisplay(this.player, this.cameraManager);
-						//hud.instantiate();
-						this.player.registerControlUIOnly();
+						let hud = new HeadUpDisplay(this.player, this.cameraManager);
+						hud.instantiate();
 
-						setTimeout(() => {
+						if (DebugDefine.SKIP_MAINMENU_PANEL) {
+							this.player.registerControl();
 							hideLoading();
+						}
+						else {
+							this.player.registerControlUIOnly();
+	
 							setTimeout(() => {
-								mainPanel.openAtPlayerPosition();
-							}, 1000);
-						}, 500);
+								hideLoading();
+								setTimeout(() => {
+									mainPanel.openAtPlayerPosition();
+								}, 1000);
+							}, 500);
+						}
 					});
 						
 					//let debugAltimeter = new Altimeter3D(this.player);

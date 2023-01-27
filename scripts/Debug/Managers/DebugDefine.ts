@@ -1,5 +1,8 @@
 class DebugDefine {
 
+    public static ONLY_START_PLANET: boolean = true;
+    public static SKIP_MAINMENU_PANEL: boolean = true;
+
     public static USE_VERTEX_SET_MESH_HISTORY: boolean = false;
 
     public static USE_CHUNCK_LEVEL_DEBUG_COLORS: boolean = false;
