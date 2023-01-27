@@ -177,7 +177,7 @@ class MainMenuPanel extends HoloPanel {
 
     public async openAtPlayerPosition(): Promise<void> {
         let player = this.inputManager.player;
-        if (player) {
+        if (player && !player.lockInPlace && !player.targetDestination && !player.targetLook) {
             await this.close(0);
             let p = player.position.add(player.forward.scale(1.2));
             this.planet = player.planet;

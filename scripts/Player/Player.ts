@@ -18,7 +18,6 @@ class Player extends BABYLON.Mesh {
     public currentAction: PlayerAction;
 
     public lockInPlace: boolean = false;
-    public lockInput: boolean = true;
     public planet: Planet;
     public sqrDistToPlanet = Infinity;
     public altitudeOnPlanet: number = 0;

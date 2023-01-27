@@ -138,8 +138,8 @@ class MainMenu extends Main {
 					
 					this.onChunckManagerNotWorking(async () => {
 						await this.player.initialize();
-						let hud = new HeadUpDisplay(this.player, this.cameraManager);
-						hud.instantiate();
+						//let hud = new HeadUpDisplay(this.player, this.cameraManager);
+						//hud.instantiate();
 						this.player.registerControlUIOnly();
 
 						setTimeout(() => {
