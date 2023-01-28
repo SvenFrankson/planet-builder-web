@@ -168,6 +168,8 @@ class Player extends BABYLON.Mesh {
         this.inputManager.pointerUpObservable.add((pickableElement: Pickable) => {
             this.abortTeleportation();
 
+            this._headMoveWithMouse = false;
+            
             if (this.currentAction) {
                 if (this.currentAction.onClick) {
                     this.currentAction.onClick();
@@ -182,7 +184,6 @@ class Player extends BABYLON.Mesh {
                     }
                 });
             }
-            this._headMoveWithMouse = false;
         });
 
         this.inputManager.pointerDownObservable.add(() => {
