@@ -66,8 +66,8 @@ class SlikaButton extends SlikaElement {
         let L4 = 10;
 
         this._strokes.push(
-            new SlikaPath(
-                new SPoints([
+            new SlikaPath({
+                points: [
                     this.position.x, this.position.y,
                     this.position.x + 2 * L1, this.position.y,
                     this.position.x + 2 * L1 + L2, this.position.y + L2,
@@ -76,81 +76,43 @@ class SlikaButton extends SlikaElement {
                     this.position.x + L1, this.position.y + h,
                     this.position.x + L1 - L4, this.position.y + h - L4,
                     this.position.x, this.position.y + h - L4,
-                ], true),
-                new SlikaShapeStyle(hexColor, 1, "none", 1, 3, hexColor, 6)
-        ));
+                ],
+                close: true,
+                strokeColor: this.color,
+                width: 3,
+                outlineWidth: 3
+            })
+        );
 
         this._fills.push(
-            new SlikaPath(
-                new SPoints([
+            new SlikaPath({
+                points: [
                     this.position.x, this.position.y + 0.4 * h,
                     this.position.x + w, this.position.y + 0.4 * h,
                     this.position.x + w, this.position.y + 0.5 * h,
                     this.position.x, this.position.y + 0.5 * h,
-                ], true),
-                new SlikaShapeStyle("none", 1, hexColor, 0.5, 3, hexColor, 0)
-        ));
+                ],
+                close: true,
+                fillColor: this.color,
+                fillAlpha: 0.5
+            })
+        );
 
         this._fills.push(
-            new SlikaPath(
-                new SPoints([
+            new SlikaPath({
+                points: [
                     this.position.x, this.position.y + 0.6 * h,
                     this.position.x + w, this.position.y + 0.6 * h,
                     this.position.x + w, this.position.y + h,
                     this.position.x + L1, this.position.y + h,
                     this.position.x + L1 - L4, this.position.y + h - L4,
                     this.position.x, this.position.y + h - L4,
-                ], true),
-                new SlikaShapeStyle("none", 1, hexColor, 0.5, 3, hexColor, 0)
-        ));
-        
-        /*
-        this._fills.push(
-            new SlikaPath(
-                new SPoints([
-                    5 + this.position.x + w, this.position.y + 2,
-                    5 + this.position.x + w + L3, this.position.y + L3 + 2,
-                    5 + this.position.x + w + L3, this.position.y + h - L3 - 2,
-                    5 + this.position.x + w, this.position.y + h - 2,
-                ], true),
-                new SlikaShapeStyle("none", 1, hexColor, 0.5, 0, hexColor, 20)
-        ));
-
-        this._fills.push(
-            new SlikaPath(
-                new SPoints([
-                    5 + this.position.x + 2 * L1, this.position.y - 1.5,
-                    1 + this.position.x + 2 * L1 + L2, this.position.y + L2 - 4,
-                    1.5 + this.position.x + w, this.position.y + L2 - 4,
-                    1.5 + this.position.x + w, this.position.y - 1.5,
-                ], true),
-                new SlikaShapeStyle("none", 1, hexColor, 0.5, 0, hexColor, 20)
-        ));
-        
-        this._fills.push(
-            new SlikaPath(
-                new SPoints([
-                    - 5.5 + this.position.x, this.position.y + 1.5,
-                    - 5.5 + this.position.x - L4, this.position.y + L4 + 1.5,
-                    - 5.5 + this.position.x - L4, this.position.y + h - L4 + 1.5 - 0.5,
-                    - 5.5 + this.position.x, this.position.y + h - L4 + 1.5 - 0.5,
-                ], true),
-                new SlikaShapeStyle("none", 1, hexColor, 0.5, 0, hexColor, 20)
-        ));
-        */
-        
-        /*
-        this._fills.push(
-            new SlikaPath(
-                new SPoints([
-                    - 7 + this.position.x, this.position.y + h * 0.5 + 3,
-                    - 7 + this.position.x - L3, this.position.y + h * 0.5 + 3,
-                    - 7 + this.position.x - L3, this.position.y + h - L3 - L2,
-                    - 7 + this.position.x, this.position.y + h - L2,
-                ], true),
-                new SlikaShapeStyle("none", 1, hexColor, 0.5, 0, hexColor, 20)
-        ));
-        */
+                ],
+                close: true,
+                fillColor: this.color,
+                fillAlpha: 0.5
+            })
+        );
     }
 
     public setStatus(state: number): void {
@@ -179,14 +141,13 @@ class SlikaButton extends SlikaElement {
     }
 
     private _updateColor(): void {
-        let hexColor = this.color.toHexString();
         this._fills.forEach(f => {
-            f.style.fill = hexColor;
-            f.style.highlightColor = hexColor;
+            f.prop.fillColor = this.color;
+            f.prop.highlightColor = this.color;
         })
         this._strokes.forEach(s => {
-            s.style.stroke = hexColor;
-            s.style.highlightColor = hexColor;
+            s.prop.strokeColor = this.color;
+            s.prop.highlightColor = this.color;
         })
         this._text.prop.color = this.color;
         if (this.slika) {

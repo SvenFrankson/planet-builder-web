@@ -53,7 +53,10 @@ class MainMenuPanelIntroPage extends MainMenuPanelPage {
             highlightRadius: 0
         }));
 
-        let textDecoy = this.holoSlika.add(SlikaPath.CreatePan(100, 620, 460, 3, 30, 0.15, false, true, new SlikaShapeStyle("none", 1, Config.uiConfiguration.holoScreenBaseColor, 1, 0, Config.uiConfiguration.holoScreenBaseColor, 6)));
+        let textDecoy = this.holoSlika.add(SlikaPath.CreatePan(100, 620, 460, 3, 30, 0.15, false, true, {
+            fillColor: BABYLON.Color3.FromHexString(Config.uiConfiguration.holoScreenBaseColor),
+            outlineWidth: 3
+        }));
 
         let planetImage = this.holoSlika.add(new SlikaImage(
             new SPosition(750, 390),

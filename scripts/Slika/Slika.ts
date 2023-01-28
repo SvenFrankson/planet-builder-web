@@ -40,21 +40,6 @@ class SArc {
     }
 }
 
-class SPoints {
-
-    constructor(
-        public points: number[] = [],
-        public close: boolean = false
-    ) {
-
-    }
-
-    public scaleInPlace(s: number): SPoints {
-        this.points = this.points.map(p => { return p * s; });
-        return this;
-    }
-}
-
 class SlikaShapeStyle {
 
     private _strokeAlphaString: string = "ff";

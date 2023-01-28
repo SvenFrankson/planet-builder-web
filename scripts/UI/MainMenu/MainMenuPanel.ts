@@ -31,8 +31,8 @@ class MainMenuPanel extends HoloPanel {
         this.pointerElement.prop.yMax = 1000 - M - L2 - 15;
 
         this.holoSlika.add(
-            new SlikaPath(
-                new SPoints([
+            new SlikaPath({
+                points: [
                     M + L1, M,
                     500 - L4 * 0.5 - L2, M,
                     500 - L4 * 0.5, M + L2,
@@ -76,9 +76,11 @@ class MainMenuPanel extends HoloPanel {
                     M, 500 - L6 * 0.5,
 
                     M, M + L1,
-                ], true),
-                new SlikaShapeStyle("none", 1, "#292e2c", 0.75, 0, "white", 0)
-            )
+                ], 
+                close: true,
+                fillColor: BABYLON.Color3.FromHexString("#292e2c"), 
+                fillAlpha: 0.75
+            })
         );
 
         for (let i = 100; i < 1000; i += 100) {
@@ -93,8 +95,8 @@ class MainMenuPanel extends HoloPanel {
         }
 
         this.holoSlika.add(
-            new SlikaPath(
-                new SPoints([
+            new SlikaPath({
+                points: [
                     M + L1, M,
                     500 - L4 * 0.5 - L2, M,
                     500 - L4 * 0.5, M + L2,
@@ -138,15 +140,29 @@ class MainMenuPanel extends HoloPanel {
                     M, 500 - L6 * 0.5,
 
                     M, M + L1,
-                ], true),
-                new SlikaShapeStyle(Config.uiConfiguration.holoScreenBaseColor, 1, "none", 1, 6, Config.uiConfiguration.holoScreenBaseColor, 6)
-            )
+                ],
+                close: true,
+                strokeColor: BABYLON.Color3.FromHexString(Config.uiConfiguration.holoScreenBaseColor), 
+                strokeAlpha: 1,
+                width: 6,
+                outlineWidth: 3
+            })
         );
         
-        this.titleLine1 = SlikaPath.CreatePan(M + L2, 1000 - M - L2, 0, 3, 15, 0.30, true, false, new SlikaShapeStyle("none", 1, Config.uiConfiguration.holoScreenBaseColor, 1, 0, Config.uiConfiguration.holoScreenBaseColor, 6));
+        this.titleLine1 = SlikaPath.CreatePan(M + L2, 1000 - M - L2, 0, 3, 15, 0.30, true, false, {
+            close: true,
+            fillColor: BABYLON.Color3.FromHexString(Config.uiConfiguration.holoScreenBaseColor), 
+            strokeAlpha: 1,
+            outlineWidth: 3
+        });
         this.titleLine1.posY = this.titleHeight;
         this.holoSlika.add(this.titleLine1);
-        this.titleLine2 = SlikaPath.CreatePan(M + L2, 1000 - M - L2, 30, 3, 15, 0.30, false, true, new SlikaShapeStyle("none", 1, Config.uiConfiguration.holoScreenBaseColor, 1, 0, Config.uiConfiguration.holoScreenBaseColor, 6));
+        this.titleLine2 = SlikaPath.CreatePan(M + L2, 1000 - M - L2, 30, 3, 15, 0.30, false, true, {
+            close: true,
+            fillColor: BABYLON.Color3.FromHexString(Config.uiConfiguration.holoScreenBaseColor), 
+            strokeAlpha: 1,
+            outlineWidth: 3
+        });
         this.titleLine2.posY = this.titleHeight;
         this.holoSlika.add(this.titleLine2);
 

@@ -57,26 +57,33 @@ class SlikaTextBox extends SlikaElement {
         DefaultSlikaTextBoxProperties(this.prop);
         
         this._strokes.push(
-            new SlikaPath(
-                new SPoints([
+            new SlikaPath({
+                points: [
                     this.prop.x, this.prop.y,
                     this.prop.x + this.prop.w, this.prop.y,
                     this.prop.x + this.prop.w, this.prop.y + this.prop.h,
                     this.prop.x, this.prop.y + this.prop.h
-                ], true),
-                new SlikaShapeStyle(this.prop.color.toHexString(), 1, "none", 1, 2, this.prop.color.toHexString(), 4)
-        ));
+                ], 
+                close: true,
+                strokeColor: this.prop.color, 
+                width: 2, 
+                outlineWidth: 2
+            })
+        );
         
         this._fills.push(
-            new SlikaPath(
-                new SPoints([
+            new SlikaPath({
+                points: [
                     this.prop.x, this.prop.y,
                     this.prop.x + this.prop.w, this.prop.y,
                     this.prop.x + this.prop.w, this.prop.y + this.prop.h,
                     this.prop.x, this.prop.y + this.prop.h
-                ], true),
-                new SlikaShapeStyle("none", 1, this.prop.color.toHexString(), 0.05, 0, this.prop.color.toHexString(), 0)
-        ));
+                ], 
+                close: true,
+                fillColor: this.prop.color, 
+                fillAlpha: 0.05
+            })
+        );
     }
 
     public redraw(context: BABYLON.ICanvasRenderingContext): void {

@@ -1,5 +1,9 @@
 class HeadUpDisplay extends BABYLON.Mesh {
 
+    public get scene(): BABYLON.Scene {
+        return this.player.scene;
+    }
+
     constructor(public player: Player, public cameraManager: CameraManager) {
         super("head-up-display");
     }
@@ -14,43 +18,59 @@ class HeadUpDisplay extends BABYLON.Mesh {
         let xAngle = 2 * Math.atan((h * ratio * 0.5) / (dist));
         let distSide = dist / Math.cos(xAngle * 0.5);
         let yAngleSide = 2 * Math.atan(h * 0.5 / distSide);
-        console.log("xAngle = " + (xAngle / Math.PI * 180).toFixed(1) + " | yAngle = " + (yAngle / Math.PI * 180).toFixed(1) + " | yAngleSide = " + (yAngleSide / Math.PI * 180).toFixed(1));
+        //console.log("xAngle = " + (xAngle / Math.PI * 180).toFixed(1) + " | yAngle = " + (yAngle / Math.PI * 180).toFixed(1) + " | yAngleSide = " + (yAngleSide / Math.PI * 180).toFixed(1));
 
-        /*
-        let debug = BABYLON.MeshBuilder.CreatePlane("debug", { size: 0.1 });
-        let a = xAngle * 0.5 - 0.06;
-        debug.position.x = - Math.sin(a);
-        debug.position.z = Math.cos(a);
-        debug.rotationQuaternion = BABYLON.Quaternion.Identity();
-        VMath.QuaternionFromZYAxisToRef(debug.position, BABYLON.Axis.Y, debug.rotationQuaternion);
-        debug.parent = this;
+        let hsf = Config.performanceConfiguration.holoScreenFactor;
+
+        let hudMaterial = new HoloPanelMaterial("hud-material", this.scene);
+
+        let hudTexture = new BABYLON.DynamicTexture("hud-texture", { width: 1000 * hsf, height: 1000 * hsf }, this.scene, true);
+        hudTexture.hasAlpha = true;
+        hudMaterial.holoTexture = hudTexture;
         
-        let debug2 = BABYLON.MeshBuilder.CreatePlane("debug2", { size: 0.1 });
-        let a2 = xAngle * 0.25;
-        debug2.position.x = - Math.sin(a2);
-        debug2.position.z = Math.cos(a2);
-        debug2.rotationQuaternion = BABYLON.Quaternion.Identity();
-        VMath.QuaternionFromZYAxisToRef(debug2.position, BABYLON.Axis.Y, debug2.rotationQuaternion);
-        debug2.parent = this;
-        */
+        let hudSlika = new Slika(1000 * hsf, 1000 * hsf, hudTexture.getContext(), hudTexture);
+        hudSlika.texture = hudTexture;
+        hudSlika.context = hudTexture.getContext();
+        hudSlika.needRedraw = true;
 
-        let hudMaterial = new BABYLON.StandardMaterial("hud-material");
-        hudMaterial.emissiveTexture = new BABYLON.Texture("datas/images/test_texture.png");
-        hudMaterial.diffuseColor.copyFromFloats(0, 0, 0);
-        hudMaterial.specularColor.copyFromFloats(0, 0, 0);
+        let M = 20;
+        let L1 = 80;
+        let L2 = 200;
+        hudSlika.add(
+            new SlikaPath({
+                points: [
+                    M, M + L1,
+                    M + L1, M,
+                    (500 - M), M,
+                    (500 - M), (500 - M) - L1,
+                    (500 - M) - L2, (500 - M) - L1,
+                    (500 - M) - L2 - L1, (500 - M),
+                    M, (500 - M)
+                ],
+                close: true,
+                fillColor: BABYLON.Color3.Black(), 
+                fillAlpha: 0.2,
+                strokeColor: BABYLON.Color3.FromHexString(Config.uiConfiguration.holoScreenBaseColor), 
+                strokeAlpha: 1,
+                width: 20
+            })
+        );
 
         let angularMargin = 0.04;
         for (let b = 0; b < 10; b ++) {
             let beta = - yAngleSide * 0.5 + angularMargin + (yAngleSide - 2 * angularMargin) * b / 9;
-            let debug3 = BABYLON.MeshBuilder.CreatePlane("debug3", { size: 0.05 });
-            debug3.position.y = Math.sin(beta);
-            debug3.position.z = Math.cos(beta);
-            debug3.rotationQuaternion = BABYLON.Quaternion.Identity();
-            VMath.QuaternionFromZYAxisToRef(debug3.position, BABYLON.Axis.Y, debug3.rotationQuaternion);
-            debug3.parent = this;
-            debug3.rotateAround(BABYLON.Vector3.Zero(), BABYLON.Axis.Y, - (xAngle * 0.5 - angularMargin));
+            let hudLateralTile = new BABYLON.Mesh("hud-lateral-tile-" + b);
+            VertexDataUtils.CreatePlane(0.055, 0.055, undefined, undefined, 0, 0.5, 0.5, 1).applyToMesh(hudLateralTile);
+            hudLateralTile.position.y = Math.sin(beta);
+            hudLateralTile.position.z = Math.cos(beta);
+            hudLateralTile.rotationQuaternion = BABYLON.Quaternion.Identity();
+            VMath.QuaternionFromZYAxisToRef(hudLateralTile.position, BABYLON.Axis.Y, hudLateralTile.rotationQuaternion);
+            hudLateralTile.parent = this;
+            hudLateralTile.rotateAround(BABYLON.Vector3.Zero(), BABYLON.Axis.Y, - (xAngle * 0.5 - angularMargin));
+            hudLateralTile.layerMask = 0x10000000;
+            hudLateralTile.alphaIndex = 1;
 
-            debug3.material = hudMaterial;
+            hudLateralTile.material = hudMaterial;
         }
 
         this.parent = this.player.camPos;
