@@ -136,15 +136,15 @@ class SlikaPath extends SlikaElement {
 
         if (this.prop.points.length > 0) {
 
-            let fillStyle = "none";
+            let fillStyle = "";
             if (this.prop.fillColor) {
                 fillStyle = this.prop.fillColor.toHexString() + Math.floor((this.prop.fillAlpha * this.alpha) * 255).toString(16).padStart(2, "0");
             }
-            let strokeStyle = "none";
+            let strokeStyle = "";
             if (this.prop.strokeColor) {
                 strokeStyle = this.prop.strokeColor.toHexString() + Math.floor((this.prop.strokeAlpha * this.alpha) * 255).toString(16).padStart(2, "0");
             }
-            let outlineStyle = "none";
+            let outlineStyle = "";
             if (this.prop.outlineWidth > 0) {
                 outlineStyle = this.prop.outlineColor.toHexString() + Math.floor((this.prop.outlineAlpha * this.alpha) * 255).toString(16).padStart(2, "0");
             }
@@ -163,16 +163,16 @@ class SlikaPath extends SlikaElement {
                 context.closePath();
             }
 
-            if (outlineStyle != "none") {
+            if (outlineStyle != "") {
                 context.lineWidth = lineWidth + this.prop.outlineWidth * 2 * hsf;
                 context.strokeStyle = outlineStyle;
                 context.stroke();
             }
-            if (fillStyle != "none") {
+            if (fillStyle != "") {
                 context.fillStyle = fillStyle;
                 context.fill();
             }
-            if (strokeStyle != "none") {
+            if (strokeStyle != "") {
                 context.strokeStyle = strokeStyle;
                 context.lineWidth = lineWidth;
                 context.stroke();

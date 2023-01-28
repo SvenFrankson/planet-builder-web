@@ -57,6 +57,25 @@ class HeadUpDisplay extends BABYLON.Mesh {
                 strokeWidth: 20
             })
         );
+        hudSlika.add(
+            new SlikaPath({
+                points: [
+                    M, 500 + M + L1,
+                    M + L1, 500 + M,
+                    (500 - M), 500 + M,
+                    (500 - M), 500 + (500 - M) - L1,
+                    (500 - M) - L2, 500 + (500 - M) - L1,
+                    (500 - M) - L2 - L1, 500 + (500 - M),
+                    M, 500 + (500 - M)
+                ],
+                close: true,
+                fillColor: BABYLON.Color3.Black(), 
+                fillAlpha: 0.3,
+                strokeColor: BABYLON.Color3.White(), 
+                strokeAlpha: 0.5,
+                strokeWidth: 10
+            })
+        );
 
         let angularMargin = 0.04;
         let size = 0.055;
@@ -98,7 +117,13 @@ class HeadUpDisplay extends BABYLON.Mesh {
             let beta = - yAngleSide * 0.5 + angularMargin + (yAngleSide - 2 * angularMargin) * b / 9;
 
             let hudLateralTile = new BABYLON.Mesh("hud-lateral-tile-" + b);
-            VertexDataUtils.CreatePlane(size, size, undefined, undefined, 0, 0.5, 0.5, 1).applyToMesh(hudLateralTile);
+            let highlight = Math.random() > 0.5
+            if (highlight) {
+                VertexDataUtils.CreatePlane(size, size, undefined, undefined, 0, 0.5, 0.5, 1).applyToMesh(hudLateralTile);
+            }
+            else {
+                VertexDataUtils.CreatePlane(size, size, undefined, undefined, 0, 0, 0.5, 0.5).applyToMesh(hudLateralTile);
+            }
             hudLateralTile.layerMask = 0x10000000;
             hudLateralTile.alphaIndex = 1;
             hudLateralTile.parent = this;
@@ -108,7 +133,9 @@ class HeadUpDisplay extends BABYLON.Mesh {
             hudLateralTile.position.z = Math.cos(beta);
             hudLateralTile.rotationQuaternion = BABYLON.Quaternion.Identity();
             VMath.QuaternionFromZYAxisToRef(hudLateralTile.position, BABYLON.Axis.Y, hudLateralTile.rotationQuaternion);
-            hudLateralTile.rotateAround(BABYLON.Vector3.Zero(), BABYLON.Axis.Y, - (xAngle * 0.5 - angularMargin));
+            let h = Math.abs(beta / yAngleSide);
+            h = h * h;
+            hudLateralTile.rotateAround(BABYLON.Vector3.Zero(), BABYLON.Axis.Y, - (xAngle * 0.5 - h * xAngle * 0.08 - angularMargin));
 
 
             let v0 = b * 0.1;

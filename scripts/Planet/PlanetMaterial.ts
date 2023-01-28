@@ -7,6 +7,7 @@ class PlanetMaterial extends BABYLON.ShaderMaterial {
     private _seaLevelTexture: BABYLON.Texture;
     private _useVertexColor: number;
     private _planetPos: BABYLON.Vector3 = BABYLON.Vector3.Zero();
+    private _lightInvDirW: BABYLON.Vector3 = BABYLON.Vector3.One().normalize();
 
     constructor(name: string, scene: BABYLON.Scene) {
         super(
@@ -35,7 +36,6 @@ class PlanetMaterial extends BABYLON.ShaderMaterial {
                 ]
             }
         );
-        this.setVector3("lightInvDirW", BABYLON.Vector3.One().normalize());
 
         this._terrainColors = [];
         this._terrainColors[BlockType.None] = new BABYLON.Color3(0, 0, 0);
@@ -96,6 +96,7 @@ class PlanetMaterial extends BABYLON.ShaderMaterial {
         iceTexture.wrapU = 1;
         iceTexture.wrapV = 1;
 
+        this.setVector3("lightInvDirW", this._lightInvDirW);
         this.setColor3("globalColor", this._globalColor);
         this.setColor3Array("terrainColors", this._terrainColors);
         this.setSeaLevelTexture(undefined);
@@ -111,6 +112,15 @@ class PlanetMaterial extends BABYLON.ShaderMaterial {
         this.setTexture("leafTexture", leafTexture);
         this.setTexture("iceTexture", iceTexture);
         this.setPlanetPos(BABYLON.Vector3.Zero());
+    }
+
+    public getLightInvDir(): BABYLON.Vector3 {
+        return this._lightInvDirW;
+    }
+
+    public setLightInvDir(p: BABYLON.Vector3): void {
+        this._lightInvDirW.copyFrom(p);
+        this.setVector3("lightInvDirW", this._lightInvDirW);
     }
 
     public getGlobalColor(): BABYLON.Color3 {
