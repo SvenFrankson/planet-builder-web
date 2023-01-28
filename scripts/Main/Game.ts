@@ -64,17 +64,6 @@ class Game extends Main {
 			Game.Player = new Player(new BABYLON.Vector3(0, (kPosMax + 1) * PlanetTools.CHUNCKSIZE * 0.8, 0), this);
 			this.player = Game.Player;
 
-			this.actionManager = new PlayerActionManager(this.player, this);
-			this.actionManager.initialize();
-			let ass = async () => {
-				let slotIndex = 1;
-				for (let i = BlockType.Grass; i < BlockType.Unknown; i++) {
-					this.actionManager.linkAction(await PlayerActionTemplate.CreateBlockAction(this.player, i), slotIndex);
-					slotIndex++;
-				}
-			}
-			ass();
-			
 			this.player.registerControl();
 
 			//Game.Plane = new Plane(new BABYLON.Vector3(0, 80, 0), planetTest);

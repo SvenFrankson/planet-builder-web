@@ -16,19 +16,17 @@ class PlayerActionTemplate {
         let lastK: number;
 
         action.onUpdate = () => {
-            let ray: BABYLON.Ray = new BABYLON.Ray(player.camPos.absolutePosition, player.camPos.forward);
-            let hit: BABYLON.PickingInfo[] = ray.intersectsMeshes(player.meshes);
-            hit = hit.sort((h1, h2) => { return h1.distance - h2.distance; });
-            if (hit[0] && hit[0].pickedPoint) {
-                let n =  hit[0].getNormal(true).scaleInPlace(0.2);
-                let localIJK = PlanetTools.WorldPositionToLocalIJK(player.planet, hit[0].pickedPoint.add(n));
+            let hit = player.inputManager.getPickInfo(player.meshes);
+            if (hit && hit.pickedPoint) {
+                let n =  hit.getNormal(true).scaleInPlace(0.2);
+                let localIJK = PlanetTools.WorldPositionToLocalIJK(player.planet, hit.pickedPoint.add(n));
                 if (localIJK) {
                     // Redraw block preview
                     if (!previewMesh) {
-                        previewMesh = BABYLON.MeshBuilder.CreateSphere("preview-mesh", { diameter: 1 });
-                        let material = new BABYLON.StandardMaterial("material");
-                        material.alpha = 0.25;
-                        previewMesh.material = material;
+                        previewMesh = new BABYLON.Mesh("preview-mesh");
+                        if (player.planet) {
+                            previewMesh.material = player.planet.chunckMaterial;
+                        }
                     }
                     let globalIJK = PlanetTools.LocalIJKToGlobalIJK(localIJK);
                     let needRedrawMesh: boolean = false;
@@ -49,7 +47,7 @@ class PlayerActionTemplate {
                         needRedrawMesh = true;
                     }
                     if (needRedrawMesh) {
-                        PlanetTools.SkewVertexData(vData, localIJK.planetChunck.size, globalIJK.i, globalIJK.j, globalIJK.k).applyToMesh(previewMesh);
+                        PlanetTools.SkewVertexData(vData, localIJK.planetChunck.size, globalIJK.i, globalIJK.j, globalIJK.k, localIJK.planetChunck.side, blockType).applyToMesh(previewMesh);
                         previewMesh.parent = localIJK.planetChunck.planetSide;
                     }
 
@@ -63,12 +61,10 @@ class PlayerActionTemplate {
         }
 
         action.onClick = () => {
-            let ray: BABYLON.Ray = new BABYLON.Ray(player.camPos.absolutePosition, player.camPos.forward);
-            let hit: BABYLON.PickingInfo[] = ray.intersectsMeshes(player.meshes);
-            hit = hit.sort((h1, h2) => { return h1.distance - h2.distance; });
-            if (hit[0] && hit[0].pickedPoint) {
-                let n =  hit[0].getNormal(true).scaleInPlace(0.2);
-                let localIJK = PlanetTools.WorldPositionToLocalIJK(player.planet, hit[0].pickedPoint.add(n));
+            let hit = player.inputManager.getPickInfo(player.meshes);
+            if (hit && hit.pickedPoint) {
+                let n =  hit.getNormal(true).scaleInPlace(0.2);
+                let localIJK = PlanetTools.WorldPositionToLocalIJK(player.planet, hit.pickedPoint.add(n));
                 if (localIJK) {
                     localIJK.planetChunck.SetData(localIJK.i, localIJK.j, localIJK.k, blockType);
                     localIJK.planetChunck.planetSide.planet.chunckManager.requestDraw(localIJK.planetChunck, localIJK.planetChunck.lod, "PlayerAction.onClick");

@@ -106,7 +106,9 @@ class PlanetTools {
         size: number,
         i: number,
         j: number,
-        k: number
+        k: number,
+        side?: Side,
+        blockType: BlockType = BlockType.Unknown,
     ): BABYLON.VertexData {
         let h0 = PlanetTools.KGlobalToAltitude(k);
         let h1 = PlanetTools.KGlobalToAltitude(k + 1);
@@ -141,20 +143,51 @@ class PlanetTools {
         v2.scaleInPlace(h0);
         v3.scaleInPlace(h0);
         
+        let chunckDir: BABYLON.Vector3;
+        if (blockType != BlockType.Unknown) {
+            chunckDir = v2.subtract(v0).normalize();
+            VMath.RotateVectorByQuaternionToRef(chunckDir, PlanetTools.QuaternionForSide(side), chunckDir);
+        }
+        
         let skewedVertexData = new BABYLON.VertexData();
         let positions: number[] = [];
         let normals: number[] = [...vertexData.normals];
         let indices: number[] = [...vertexData.indices];
-        let uvs: number[] = [...vertexData.uvs];
-        let colors: number[];
+        
+        let colors = [];
+        let uvs = [];
+        if (blockType != BlockType.Unknown) {
+            uvs = [...vertexData.uvs];
+        }
+		let uvs2 = [];
+
         if (vertexData.colors) {
             colors = [...vertexData.colors];
         }
+
+        for (let i = 0; i < vertexData.positions.length / 3; i++) {
+
+        }
+        vertexData.colors = colors;
+        vertexData.uvs = uvs;
 
         for (let n = 0; n < vertexData.positions.length / 3; n++) {
             let x = vertexData.positions[3 * n];
             let y = vertexData.positions[3 * n + 1];
             let z = vertexData.positions[3 * n + 2];
+
+            if (blockType != BlockType.Unknown) {
+                colors[4 * n] = chunckDir.x;
+                colors[4 * n + 1] = chunckDir.y;
+                colors[4 * n + 2] = chunckDir.z;
+                colors[4 * n + 3] = blockType / 128;
+    
+                uvs[2 * n] = x * 0.25;
+                uvs[2 * n + 1] = z * 0.25;
+                
+                uvs2[2 * n] = y * 0.25;
+                uvs2[2 * n + 1] = 1;
+            }
             
             v01.copyFrom(v1).subtractInPlace(v0).scaleInPlace(x).addInPlace(v0);
             v32.copyFrom(v2).subtractInPlace(v3).scaleInPlace(x).addInPlace(v3);
@@ -176,6 +209,9 @@ class PlanetTools {
         skewedVertexData.indices = indices;
         skewedVertexData.colors = colors;
         skewedVertexData.uvs = uvs;
+        if (blockType != BlockType.Unknown) {
+            skewedVertexData.uvs2 = uvs2;
+        }
 
         return skewedVertexData;
     }

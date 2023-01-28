@@ -1,5 +1,7 @@
 class HeadUpDisplay extends BABYLON.Mesh {
 
+    public hudLateralTileImageMaterials: BABYLON.StandardMaterial[] = [];
+
     public get scene(): BABYLON.Scene {
         return this.player.scene;
     }
@@ -49,10 +51,10 @@ class HeadUpDisplay extends BABYLON.Mesh {
                 ],
                 close: true,
                 fillColor: BABYLON.Color3.Black(), 
-                fillAlpha: 0.2,
-                strokeColor: BABYLON.Color3.FromHexString(Config.uiConfiguration.holoScreenBaseColor), 
+                fillAlpha: 0.3,
+                strokeColor: BABYLON.Color3.White(), 
                 strokeAlpha: 1,
-                width: 20
+                strokeWidth: 20
             })
         );
 
@@ -83,12 +85,13 @@ class HeadUpDisplay extends BABYLON.Mesh {
             );
             */
             hudSlika.add(new SlikaText({
-                text: "44",
+                text: Math.floor(Math.random() * 99).toFixed(0),
                 textAlign: "center",
                 x: 550,
-                y: 1000 - 20 - b * 100,
-                fontSize: 70,
-                highlightRadius: 0,
+                y: 1000 - 30 - b * 100,
+                fontSize: 60,
+                strokeColor: BABYLON.Color3.Black(),
+                strokeWidth: 12,
                 fontFamily: "XoloniumRegular"
             }));
 
@@ -124,13 +127,13 @@ class HeadUpDisplay extends BABYLON.Mesh {
             hudLateralTileImage.position.z = - 0.1;
             hudLateralTileImage.parent = hudLateralTile;
             
-            let iconMaterial = new BABYLON.StandardMaterial("hud-lateral-tile-" + b + "-image-material");
-            hudLateralTileImage.material = iconMaterial;
-            iconMaterial.emissiveColor.copyFromFloats(1, 1, 1);
-            iconMaterial.specularColor.copyFromFloats(0, 0, 0);
-            iconMaterial.diffuseTexture = new BABYLON.Texture("datas/images/block-icon-" + BlockTypeNames[BlockType.Grass + b] + "-miniature.png");
-            iconMaterial.diffuseTexture.hasAlpha = true;
-            iconMaterial.useAlphaFromDiffuseTexture = true;
+            this.hudLateralTileImageMaterials[b] = new BABYLON.StandardMaterial("hud-lateral-tile-" + b + "-image-material");
+            hudLateralTileImage.material = this.hudLateralTileImageMaterials[b];
+            this.hudLateralTileImageMaterials[b].emissiveColor.copyFromFloats(1, 1, 1);
+            this.hudLateralTileImageMaterials[b].specularColor.copyFromFloats(0, 0, 0);
+            this.hudLateralTileImageMaterials[b].diffuseTexture = new BABYLON.Texture("datas/images/block-icon-" + BlockTypeNames[BlockType.Grass + b] + "-miniature.png");
+            this.hudLateralTileImageMaterials[b].diffuseTexture.hasAlpha = true;
+            this.hudLateralTileImageMaterials[b].useAlphaFromDiffuseTexture = true;
         }
 
         this.parent = this.player.camPos;

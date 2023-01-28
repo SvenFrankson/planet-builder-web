@@ -3,6 +3,7 @@
 class MainMenu extends Main {
 
 	public player: Player;
+	public actionManager: PlayerActionManager;
 	public planetSky: PlanetSky;
 	public skybox: BABYLON.Mesh;
 	public tutorialManager: TutorialManager;
@@ -142,6 +143,17 @@ class MainMenu extends Main {
 						await this.player.initialize();
 						let hud = new HeadUpDisplay(this.player, this.cameraManager);
 						hud.instantiate();
+
+						this.actionManager = new PlayerActionManager(this.player, hud, this);
+						this.actionManager.initialize();
+						let ass = async () => {
+							let slotIndex = 1;
+							for (let i = BlockType.Grass; i < BlockType.Unknown; i++) {
+								this.actionManager.linkAction(await PlayerActionTemplate.CreateBlockAction(this.player, i), slotIndex);
+								slotIndex++;
+							}
+						}
+						ass();
 
 						if (DebugDefine.SKIP_MAINMENU_PANEL) {
 							this.player.registerControl();

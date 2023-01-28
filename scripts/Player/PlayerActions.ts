@@ -30,7 +30,8 @@ class PlayerActionManager {
 
     constructor(
         public player: Player,
-        public game: Game
+        public hud: HeadUpDisplay,
+        public main: Main
     ) {
 
     }
@@ -38,7 +39,7 @@ class PlayerActionManager {
     public initialize(): void {
         Main.Scene.onBeforeRenderObservable.add(this.update);
         
-        this.game.inputManager.addKeyDownListener((e: KeyInput) => {
+        this.main.inputManager.addKeyDownListener((e: KeyInput) => {
             let slotIndex = e;
             if (slotIndex >= 0 && slotIndex < 10) {
                 if (!document.pointerLockElement) {
@@ -46,15 +47,17 @@ class PlayerActionManager {
                 }
             }
         });
-        this.game.inputManager.addKeyUpListener((e: KeyInput) => {
+        this.main.inputManager.addKeyUpListener((e: KeyInput) => {
             let slotIndex = e;
             this.equipAction(slotIndex);
         });
         for (let i = 0; i < 10; i++) {
             let slotIndex = i;
+            /*
             (document.querySelector("#player-action-" + slotIndex) as HTMLDivElement).addEventListener("touchend", () => {
                 this.equipAction(slotIndex);
             });
+            */
         }
     }
 
@@ -65,8 +68,10 @@ class PlayerActionManager {
             let opacity = (Math.cos(2 * Math.PI * t / 1000) + 1) * 0.5 * 0.5 + 0.25;
             for (let i = 0; i < this.hintedSlotIndex.length; i++) {
                 let slotIndex = this.hintedSlotIndex.get(i);
+                /*
                 console.log(thickness);
                 (document.querySelector("#player-action-" + slotIndex) as HTMLDivElement).style.backgroundColor = "rgba(255, 255, 255, " + opacity.toFixed(2) + ")";
+                */
             }
         }
     }
@@ -74,15 +79,15 @@ class PlayerActionManager {
     public linkAction(action: PlayerAction, slotIndex: number): void {
         if (slotIndex >= 0 && slotIndex <= 9) {
             this.linkedActions[slotIndex] = action;
-            console.log(slotIndex + " " + action.iconUrl);
-            (document.querySelector("#player-action-" + slotIndex + " .icon") as HTMLImageElement).src = action.iconUrl;
+            this.hud.hudLateralTileImageMaterials[slotIndex].diffuseTexture = new BABYLON.Texture(action.iconUrl);
+            this.hud.hudLateralTileImageMaterials[slotIndex].diffuseTexture.hasAlpha = true;
         }
     }
 
     public unlinkAction(slotIndex: number): void {
         if (slotIndex >= 0 && slotIndex <= 9) {
             this.linkedActions[slotIndex] = undefined;
-            (document.querySelector("#player-action-" + slotIndex + " .icon") as HTMLImageElement).src = "";
+            this.hud.hudLateralTileImageMaterials[slotIndex].diffuseTexture = undefined;
         }
     }
 
@@ -90,7 +95,7 @@ class PlayerActionManager {
         if (slotIndex >= 0 && slotIndex < 10) {
             this.stopHint(slotIndex);
             for (let i = 0; i < 10; i++) {
-                (document.querySelector("#player-action-" + i + " .background") as HTMLImageElement).src ="/datas/images/inventory-item-background.svg";
+                //(document.querySelector("#player-action-" + i + " .background") as HTMLImageElement).src ="/datas/images/inventory-item-background.svg";
             }
             // Unequip current action
             if (this.player.currentAction) {
@@ -107,7 +112,7 @@ class PlayerActionManager {
                 else {
                     this.player.currentAction = this.linkedActions[slotIndex];
                     if (this.player.currentAction) {
-                        (document.querySelector("#player-action-" + slotIndex + " .background") as HTMLImageElement).src ="/datas/images/inventory-item-background-highlit.svg";
+                        //(document.querySelector("#player-action-" + slotIndex + " .background") as HTMLImageElement).src ="/datas/images/inventory-item-background-highlit.svg";
                         if (this.player.currentAction.onEquip) {
                             this.player.currentAction.onEquip();
                         }
@@ -126,7 +131,7 @@ class PlayerActionManager {
 
     public stopHint(slotIndex: number): void {
         this.hintedSlotIndex.remove(slotIndex);
-        (document.querySelector("#player-action-" + slotIndex) as HTMLDivElement).style.backgroundColor = "";
+        //(document.querySelector("#player-action-" + slotIndex) as HTMLDivElement).style.backgroundColor = "";
     }
 
     public serialize(): IPlayerActionManagerData {
