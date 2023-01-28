@@ -57,20 +57,80 @@ class HeadUpDisplay extends BABYLON.Mesh {
         );
 
         let angularMargin = 0.04;
+        let size = 0.055;
         for (let b = 0; b < 10; b ++) {
+            /*
+            let w = 10;
+            let x0 = 500 + w;
+            let x1 = 600 - w;
+            let y0 = 1000 - 100 * (b + 1) + w;
+            let y1 = 1000 - 100 * b - w;
+            hudSlika.add(
+                new SlikaPath({
+                    points: [
+                        x0, y0,
+                        x1, y0,
+                        x1, y1,
+                        x0, y1
+                    ],
+                    close: true,
+                    fillColor: new BABYLON.Color3(0.5, 0.5, 0.5), 
+                    fillAlpha: 1,
+                    strokeColor: BABYLON.Color3.FromHexString(Config.uiConfiguration.holoScreenBaseColor), 
+                    strokeAlpha: 1,
+                    width: w
+                })
+            );
+            */
+            hudSlika.add(new SlikaText({
+                text: "44",
+                textAlign: "center",
+                x: 550,
+                y: 1000 - 20 - b * 100,
+                fontSize: 70,
+                highlightRadius: 0,
+                fontFamily: "XoloniumRegular"
+            }));
+
             let beta = - yAngleSide * 0.5 + angularMargin + (yAngleSide - 2 * angularMargin) * b / 9;
+
             let hudLateralTile = new BABYLON.Mesh("hud-lateral-tile-" + b);
-            VertexDataUtils.CreatePlane(0.055, 0.055, undefined, undefined, 0, 0.5, 0.5, 1).applyToMesh(hudLateralTile);
+            VertexDataUtils.CreatePlane(size, size, undefined, undefined, 0, 0.5, 0.5, 1).applyToMesh(hudLateralTile);
+            hudLateralTile.layerMask = 0x10000000;
+            hudLateralTile.alphaIndex = 1;
+            hudLateralTile.parent = this;
+            hudLateralTile.material = hudMaterial;
+
             hudLateralTile.position.y = Math.sin(beta);
             hudLateralTile.position.z = Math.cos(beta);
             hudLateralTile.rotationQuaternion = BABYLON.Quaternion.Identity();
             VMath.QuaternionFromZYAxisToRef(hudLateralTile.position, BABYLON.Axis.Y, hudLateralTile.rotationQuaternion);
-            hudLateralTile.parent = this;
             hudLateralTile.rotateAround(BABYLON.Vector3.Zero(), BABYLON.Axis.Y, - (xAngle * 0.5 - angularMargin));
-            hudLateralTile.layerMask = 0x10000000;
-            hudLateralTile.alphaIndex = 1;
 
-            hudLateralTile.material = hudMaterial;
+
+            let v0 = b * 0.1;
+            let hudLateralTileCount = new BABYLON.Mesh("hud-lateral-tile-" + b + "-image");
+            VertexDataUtils.CreatePlane(size * 0.35, size * 0.35, - size * 0.55, - size * 0.55, 0.5, v0, 0.6, v0 + 0.1).applyToMesh(hudLateralTileCount);
+            hudLateralTileCount.layerMask = 0x10000000;
+            hudLateralTileCount.alphaIndex = 1;
+            hudLateralTileCount.position.z = - 0.1;
+            hudLateralTileCount.parent = hudLateralTile;
+            hudLateralTileCount.material = hudMaterial;
+
+            let hudLateralTileImage = new BABYLON.Mesh("hud-lateral-tile-" + b + "-image");
+            VertexDataUtils.CreatePlane(size * 0.7, size * 0.7, - size * 0.3, - size * 0.25, 0, 0, 1, 1).applyToMesh(hudLateralTileImage);
+            hudLateralTileImage.layerMask = 0x10000000;
+            hudLateralTileImage.alphaIndex = 1;
+            hudLateralTileImage.position.z = - 0.1;
+            hudLateralTileImage.parent = hudLateralTile;
+            
+            let iconMaterial = new BABYLON.StandardMaterial("hud-lateral-tile-" + b + "-image-material");
+            hudLateralTileImage.material = iconMaterial;
+            iconMaterial.emissiveColor.copyFromFloats(1, 1, 1);
+            iconMaterial.specularColor.copyFromFloats(0, 0, 0);
+            iconMaterial.diffuseTexture = new BABYLON.Texture("datas/images/block-icon-" + BlockTypeNames[BlockType.Grass + b] + "-miniature.png");
+            iconMaterial.diffuseTexture.hasAlpha = true;
+            iconMaterial.useAlphaFromDiffuseTexture = true;
         }
 
         this.parent = this.player.camPos;

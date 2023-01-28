@@ -80,6 +80,7 @@ class Miniature extends Main {
         super.initialize();
         this.camera = new BABYLON.ArcRotateCamera("camera", 0, 0, 10, BABYLON.Vector3.Zero());
         this.camera.wheelPrecision *= 10;
+		this.scene.activeCamera = this.camera;
 
 		this.sizeMarkerMaterial = new BABYLON.StandardMaterial("size-marker-material", Main.Scene);
 		this.sizeMarkerMaterial.specularColor.copyFromFloats(0, 0, 0);
@@ -102,20 +103,28 @@ class Miniature extends Main {
         let vertexData = (await this.vertexDataLoader.get("chunck-part"))[0];
         let colors = [];
         let uvs = [];
+		let uvs2 = [];
         for (let i = 0; i < vertexData.positions.length / 3; i++) {
-            colors[4 * i] = 1;
-            colors[4 * i + 1] = 1;
-            colors[4 * i + 2] = 1;
+            colors[4 * i] = Math.SQRT2;
+            colors[4 * i + 1] = 0;
+            colors[4 * i + 2] = Math.SQRT2;
             colors[4 * i + 3] = blockType / 128;
-            uvs[2 * i] = blockType / 128;
-            uvs[2 * i + 1] = blockType / 128;
+			uvs[2 * i] = vertexData.positions[3 * i] * 0.25;
+			uvs[2 * i + 1] = vertexData.positions[3 * i + 2] * 0.25;
+			
+			uvs2[2 * i] = vertexData.positions[3 * i + 1] * 0.25;
+			uvs2[2 * i + 1] = 1;
         }
         vertexData.colors = colors;
         vertexData.uvs = uvs;
+		vertexData.uvs2 = uvs2;
 
         let block = BABYLON.MeshBuilder.CreateBox("block");
         vertexData.applyToMesh(block);
-        block.material = SharedMaterials.MainMaterial()
+		
+		let material = new PlanetMaterial("chunck-material", this.scene);
+        material.setPlanetPos(new BABYLON.Vector3(0, - 10, 0));
+        block.material = material;
 		
 		this.targets = [block];
 		
