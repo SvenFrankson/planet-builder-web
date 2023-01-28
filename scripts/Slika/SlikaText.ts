@@ -6,6 +6,9 @@ interface ISlikaTextProperties {
     fontSize?: number,
     fontFamily?: string
     color?: BABYLON.Color3,
+    strokeColor?: BABYLON.Color3,
+    strokeAlpha?: number,
+    strokeWidth?: number,
     highlightRadius?: number
 }
 
@@ -27,6 +30,12 @@ function DefaultSlikaTextProperties(prop: ISlikaTextProperties): void {
     }
     if (!prop.color) {
         prop.color = BABYLON.Color3.White();
+    }
+    if (isNaN(prop.strokeAlpha)) {
+        prop.strokeAlpha = 1;
+    }
+    if (isNaN(prop.strokeWidth)) {
+        prop.strokeWidth = 0;
     }
     if (isNaN(prop.highlightRadius)) {
         prop.highlightRadius = 0;
@@ -50,6 +59,11 @@ class SlikaText extends SlikaElement {
     public redraw(context: BABYLON.ICanvasRenderingContext): void {
         let hsf = Config.performanceConfiguration.holoScreenFactor;
 
+        let strokeStyle = "";
+        if (this.prop.strokeWidth > 0 && this.prop.strokeColor) {
+            strokeStyle = this.prop.strokeColor.toHexString() + Math.floor((this.prop.strokeAlpha * this.alpha) * 255).toString(16).padStart(2, "0");
+        }
+
         let colorString = this.prop.color.toHexString();
         let alphaString = Math.floor(this.alpha * 255).toString(16).padStart(2, "0");
 
@@ -64,9 +78,11 @@ class SlikaText extends SlikaElement {
         else if (this.prop.textAlign === "end") {
             offsetX = context.measureText(this.prop.text).width / hsf;
         }
-        context.lineWidth = 6 * hsf;
-        context.strokeStyle = "#000000" + alphaString;
-        context.strokeText(this.prop.text, (this.prop.x - offsetX) * hsf, this.prop.y * hsf);
+        if (strokeStyle != "") {
+            context.lineWidth = this.prop.strokeWidth * hsf;
+            context.strokeStyle = strokeStyle;
+            context.strokeText(this.prop.text, (this.prop.x - offsetX) * hsf, this.prop.y * hsf);
+        }
         context.fillText(this.prop.text, (this.prop.x - offsetX) * hsf, this.prop.y * hsf);
     }
 

@@ -66,7 +66,7 @@ class SlikaTextBox extends SlikaElement {
                 ], 
                 close: true,
                 strokeColor: this.prop.color, 
-                width: 2, 
+                strokeWidth: 2, 
                 outlineWidth: 2
             })
         );

@@ -144,7 +144,7 @@ class MainMenuPanel extends HoloPanel {
                 close: true,
                 strokeColor: BABYLON.Color3.FromHexString(Config.uiConfiguration.holoScreenBaseColor), 
                 strokeAlpha: 1,
-                width: 6,
+                strokeWidth: 6,
                 outlineWidth: 3
             })
         );

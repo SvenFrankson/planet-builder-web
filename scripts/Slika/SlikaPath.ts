@@ -5,7 +5,7 @@ interface ISlikaPathProperties {
     fillAlpha?: number,
     strokeColor?: BABYLON.Color3,
     strokeAlpha?: number,
-    width?: number,
+    strokeWidth?: number,
     highlightColor?: BABYLON.Color3,
     highlightRadius?: number,
     outlineColor?: BABYLON.Color3,
@@ -20,8 +20,8 @@ function DefaultSlikaPathProperties(prop: ISlikaPathProperties): void {
     if (isNaN(prop.strokeAlpha)) {
         prop.strokeAlpha = 1;
     }
-    if (isNaN(prop.width)) {
-        prop.width = 1;
+    if (isNaN(prop.strokeWidth)) {
+        prop.strokeWidth = 1;
     }
     if (!prop.highlightColor) {
         if (prop.fillColor) {
@@ -152,7 +152,7 @@ class SlikaPath extends SlikaElement {
             context.shadowBlur = this.prop.highlightRadius * hsf;
             context.shadowColor = this.prop.highlightColor.toHexString();
     
-            let lineWidth = this.prop.width * hsf;
+            let lineWidth = this.prop.strokeWidth * hsf;
 
             context.beginPath();
             context.moveTo((this.prop.points[0] + this.posX) * hsf, (this.prop.points[1] + this.posY) * hsf);

@@ -79,7 +79,7 @@ class SlikaButton extends SlikaElement {
                 ],
                 close: true,
                 strokeColor: this.color,
-                width: 3,
+                strokeWidth: 3,
                 outlineWidth: 3
             })
         );
