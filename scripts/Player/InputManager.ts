@@ -32,6 +32,7 @@ class InputManager {
     public mappedKeyUpListeners: Map<KeyInput,(() => any)[]> = new Map<KeyInput,(() => any)[]>();
 
     public player: Player;
+    public inventoryOpened: boolean = false;
     public aimedElement: Pickable;
     public aimedPosition: BABYLON.Vector3;
     public aimedNormal: BABYLON.Vector3;
@@ -87,6 +88,7 @@ class InputManager {
         this.keyInputMap.set("KeyD", KeyInput.MOVE_RIGHT);
         this.keyInputMap.set("Space", KeyInput.JUMP);
         this.keyInputMap.set("Backquote", KeyInput.MAIN_MENU);
+        this.keyInputMap.set("KeyI", KeyInput.INVENTORY);
         this.keyInputMap.set("m", KeyInput.MAIN_MENU);
 
         window.addEventListener("keydown", (e) => {

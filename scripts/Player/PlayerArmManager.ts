@@ -1,7 +1,8 @@
 enum ArmManagerMode {
     Idle,
     Aim,
-    Lean
+    Lean,
+    WristWatch
 }
 
 class PlayerArmManager {
@@ -70,11 +71,18 @@ class PlayerArmManager {
         else if (this.mode === ArmManagerMode.Aim) {
             this._updateAim();
         }
+        else if (this.mode === ArmManagerMode.WristWatch) {
+            this._updateWristWatch();
+        }
     }
 
     private _updateIdle(): void {
         if (this.inputManager.aimedPosition) {
             this.mode = ArmManagerMode.Aim;
+            return;
+        }
+        if (this.inputManager.inventoryOpened) {
+            this.mode = ArmManagerMode.WristWatch;
             return;
         }
 
@@ -153,6 +161,26 @@ class PlayerArmManager {
             this._aimingArm.targetUp.copyFrom(this.inputManager.aimedNormal);
         }
         this._updateRequestedTargetIdle(this.other(this._aimingArm));
+    }
+
+    private _updateWristWatch(): void {
+        if (!this.inputManager.inventoryOpened) {
+            this.mode = ArmManagerMode.Idle;
+            return;
+        }
+
+        // 2 - Update the way the hand should interact depending on aimed object.
+        if (this.leftArm.handMode != HandMode.Grab) {
+            this.leftArm.setHandMode(HandMode.Grab);
+        }
+
+        // 3 - Update arm target position.
+        let pos = BABYLON.Vector3.TransformCoordinates(new BABYLON.Vector3(0, 1.4, 0.3), this.player.getWorldMatrix());
+        let up = this.player.camPos.absolutePosition.subtract(pos).normalize();
+        this.leftArm.targetAnchor = HandTargetAnchor.Palm;
+        this.leftArm.setTarget(pos);
+        this.leftArm.handUp = up;
+        this._updateRequestedTargetIdle(this.rightArm);
     }
 
     public async startActionAnimation(actionCallback?: () => void): Promise<void> {
