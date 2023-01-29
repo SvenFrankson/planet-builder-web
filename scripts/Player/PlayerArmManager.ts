@@ -170,14 +170,14 @@ class PlayerArmManager {
         }
 
         // 2 - Update the way the hand should interact depending on aimed object.
-        if (this.leftArm.handMode != HandMode.Grab) {
-            this.leftArm.setHandMode(HandMode.Grab);
+        if (this.leftArm.handMode != HandMode.WristWatch) {
+            this.leftArm.setHandMode(HandMode.WristWatch);
         }
 
         // 3 - Update arm target position.
-        let pos = BABYLON.Vector3.TransformCoordinates(new BABYLON.Vector3(0, 1.4, 0.3), this.player.getWorldMatrix());
-        let up = this.player.camPos.absolutePosition.subtract(pos).normalize();
-        this.leftArm.targetAnchor = HandTargetAnchor.Palm;
+        let pos = BABYLON.Vector3.TransformCoordinates(new BABYLON.Vector3(0.1, 1.4, 0.3), this.player.getWorldMatrix());
+        let right = this.player.right;
+        let up = BABYLON.Vector3.Cross(right, this.player.camPos.absolutePosition.subtract(pos)).normalize();
         this.leftArm.setTarget(pos);
         this.leftArm.handUp = up;
         this._updateRequestedTargetIdle(this.rightArm);

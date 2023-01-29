@@ -144,6 +144,9 @@ class MainMenu extends Main {
 						let hud = new HeadUpDisplay(this.player, this.cameraManager);
 						hud.instantiate();
 
+						let wristWatch = new WristWatch(this.player, this.cameraManager);
+						wristWatch.instantiate();
+
 						this.actionManager = new PlayerActionManager(this.player, hud, this);
 						this.actionManager.initialize();
 						let ass = async () => {

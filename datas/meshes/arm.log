@@ -30,13 +30,13 @@ Exporter version: 6.4.5, Blender version: 2.90.1
 		registered as also a user of material:  Steel
 		registered as also a user of material:  ColoredSteel
 		processing begun of multimaterial:  arm.Multimaterial#1
-		num positions      :  566
-		num normals        :  566
+		num positions      :  697
+		num normals        :  697
 		num tangents       :  0
-		num uvs            :  1132
+		num uvs            :  1394
 		num uvs2           :  0
-		num colors         :  2264
-		num triangles      :  230
+		num colors         :  2788
+		num triangles      :  282
 	processing begun of mesh:  1-elbow
 		processing begun of material:  Steel
 		processing begun of material:  ColoredSteel
@@ -120,4 +120,4 @@ Exporter version: 6.4.5, Blender version: 2.90.1
 	writing mesh:  6-finger-tip
 ========= Writing of JSON file completed =========
 ========= end of processing =========
-elapsed time:  0 min, 0.1047 secs
+elapsed time:  0 min, 0.1655 secs

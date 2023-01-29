@@ -3,7 +3,8 @@ enum HandMode {
     Point,
     PointPress,
     Grab,
-    Like
+    Like,
+    WristWatch
 }
 
 enum HandTargetAnchor {
@@ -16,6 +17,12 @@ enum HandTargetAnchor {
     Knucles = 6
 }
 
+enum ElbowHeight {
+    Low,
+    Hand,
+    High
+}
+
 class PlayerArm extends BABYLON.Mesh {
 
     public targetPosition: BABYLON.Vector3 = BABYLON.Vector3.Zero();
@@ -24,8 +31,8 @@ class PlayerArm extends BABYLON.Mesh {
     public targetAnchor: HandTargetAnchor = HandTargetAnchor.Palm;
 
     private _arm: BABYLON.Mesh;
-    private _elbow: BABYLON.Mesh;
-    private _foreArm: BABYLON.Mesh;
+    public elbowMesh: BABYLON.Mesh;
+    public foreArmMesh: BABYLON.Mesh;
     private _wrist: BABYLON.Mesh;
     private _hand: BABYLON.Mesh;
     private _fingers: BABYLON.Mesh[][];
@@ -56,6 +63,7 @@ class PlayerArm extends BABYLON.Mesh {
         return this.isLeftArm ? 1 : - 1;
     }
 
+    public elbowHeight: ElbowHeight = ElbowHeight.Low;
     public handUp: BABYLON.Vector3 = new BABYLON.Vector3(- 0.5, 1, 0);
     public handUpStrictness: number = 0;
 
@@ -79,17 +87,17 @@ class PlayerArm extends BABYLON.Mesh {
         this._arm.material = mat;
         this._arm.rotationQuaternion = BABYLON.Quaternion.Identity();
 
-        this._elbow = new BABYLON.Mesh("elbow");
-        this._elbow.material = mat;
+        this.elbowMesh = new BABYLON.Mesh("elbow");
+        this.elbowMesh.material = mat;
         //this._elbow.parent = this._arm;
         //this._elbow.position.z = this._armLength;
-        this._elbow.rotationQuaternion = BABYLON.Quaternion.Identity();
+        this.elbowMesh.rotationQuaternion = BABYLON.Quaternion.Identity();
 
-        this._foreArm = new BABYLON.Mesh("foreArm");
-        this._foreArm.material = mat;
+        this.foreArmMesh = new BABYLON.Mesh("foreArm");
+        this.foreArmMesh.material = mat;
         //this._foreArm.parent = this._arm;
         //this._foreArm.position.z = this._armLength;
-        this._foreArm.rotationQuaternion = BABYLON.Quaternion.Identity();
+        this.foreArmMesh.rotationQuaternion = BABYLON.Quaternion.Identity();
 
         this._wrist = new BABYLON.Mesh("wrist");
         this._wrist.material = mat;
@@ -156,8 +164,8 @@ class PlayerArm extends BABYLON.Mesh {
             data = data.map(d => { return VertexDataUtils.MirrorX(d); });
         }
         data[0].applyToMesh(this._arm);
-        data[1].applyToMesh(this._elbow);
-        data[2].applyToMesh(this._foreArm);
+        data[1].applyToMesh(this.elbowMesh);
+        data[2].applyToMesh(this.foreArmMesh);
         data[3].applyToMesh(this._wrist);
         data[4].applyToMesh(this._hand);
         VertexDataUtils.Scale(data[5], this._fingersLength[0][0] / 0.05).applyToMesh(this._fingers[0][0]);
@@ -211,6 +219,15 @@ class PlayerArm extends BABYLON.Mesh {
         });
     }
 
+    public updateElbowHeight(): void {
+        if (this.handMode === HandMode.WristWatch) {
+            this.elbowHeight = ElbowHeight.Hand;
+        }
+        else {
+            this.elbowHeight = ElbowHeight.Low;
+        }
+    }
+
     public updateHandUp(): void {
         if (this.handMode === HandMode.Point || this.handMode === HandMode.PointPress) {
             let delta = this.targetPosition.subtract(this.position);
@@ -231,10 +248,16 @@ class PlayerArm extends BABYLON.Mesh {
             VMath.RotateVectorByQuaternionToRef(target, this.rotationQuaternion, target);
             this.handUp.copyFrom(target);
         }
+        else if (this.handMode === HandMode.WristWatch) {
+            
+        }
     }
 
     public updateHandUpStrictness(): void {
         if (this.handMode === HandMode.Grab) {
+            this.handUpStrictness = 1;
+        }
+        else if (this.handMode === HandMode.WristWatch) {
             this.handUpStrictness = 1;
         }
         else {
@@ -247,6 +270,9 @@ class PlayerArm extends BABYLON.Mesh {
             this.targetAnchor = HandTargetAnchor.IndexTip;
         }
         else if (this.handMode === HandMode.Grab) {
+            this.targetAnchor = HandTargetAnchor.Palm;
+        }
+        else if (this.handMode === HandMode.WristWatch) {
             this.targetAnchor = HandTargetAnchor.Palm;
         }
         else {
@@ -331,6 +357,7 @@ class PlayerArm extends BABYLON.Mesh {
     private _update = () => {
         let dt = this.scene.getEngine().getDeltaTime() / 1000;
         
+        this.updateElbowHeight();
         this.updateHandUp();
         this.updateHandUpStrictness();
         this.updateTargetAnchor();
@@ -348,7 +375,11 @@ class PlayerArm extends BABYLON.Mesh {
         }
         
         this._arm.position.copyFrom(this.absolutePosition);
-        this._elbowPosition.copyFromFloats(- this.signLeft * 0.1, - this._armLength * 0.5, 0);
+        let elbowZeroPositionY = 0;
+        if (this.elbowHeight === ElbowHeight.Low) {
+            elbowZeroPositionY = - this._armLength * 0.5;
+        } 
+        this._elbowPosition.copyFromFloats(- this.signLeft * 0.1, elbowZeroPositionY, 0);
         VMath.RotateVectorByQuaternionToRef(this._elbowPosition, this.rotationQuaternion, this._elbowPosition);
         this._elbowPosition.addInPlace(this._arm.absolutePosition);
         this._wristPosition.copyFrom(this._elbowPosition).addInPlace(this.targetPosition).scaleInPlace(0.5);
@@ -382,22 +413,22 @@ class PlayerArm extends BABYLON.Mesh {
         VMath.QuaternionFromZYAxisToRef(armZ, armY, this._q0);
         BABYLON.Quaternion.SlerpToRef(this._arm.rotationQuaternion, this._q0, magicNumber2, this._arm.rotationQuaternion);
         
-        this._foreArm.position.copyFromFloats(0, 0, this._armLength);
-        VMath.RotateVectorByQuaternionToRef(this._foreArm.position, this._arm.rotationQuaternion, this._foreArm.position);
-        this._foreArm.position.addInPlace(this._arm.position);
+        this.foreArmMesh.position.copyFromFloats(0, 0, this._armLength);
+        VMath.RotateVectorByQuaternionToRef(this.foreArmMesh.position, this._arm.rotationQuaternion, this.foreArmMesh.position);
+        this.foreArmMesh.position.addInPlace(this._arm.position);
 
         let foreArmX = armZ.scale(- 1 * this.signLeft);
         VMath.QuaternionFromZXAxisToRef(foreArmZ, foreArmX, this._q0);
-        BABYLON.Quaternion.SlerpToRef(this._foreArm.rotationQuaternion, this._q0, magicNumber2, this._foreArm.rotationQuaternion);
+        BABYLON.Quaternion.SlerpToRef(this.foreArmMesh.rotationQuaternion, this._q0, magicNumber2, this.foreArmMesh.rotationQuaternion);
 
-        this._elbow.position.copyFrom(this._foreArm.position);
+        this.elbowMesh.position.copyFrom(this.foreArmMesh.position);
         let elbowX = foreArmZ.scale(this.signLeft);
         let elbowZ = armZ;
-        VMath.QuaternionFromZXAxisToRef(elbowZ, elbowX, this._elbow.rotationQuaternion);
+        VMath.QuaternionFromZXAxisToRef(elbowZ, elbowX, this.elbowMesh.rotationQuaternion);
 
         this._hand.position.copyFromFloats(0, 0, this._foreArmLength);
-        VMath.RotateVectorByQuaternionToRef(this._hand.position, this._foreArm.rotationQuaternion, this._hand.position);
-        this._hand.position.addInPlace(this._foreArm.position);
+        VMath.RotateVectorByQuaternionToRef(this._hand.position, this.foreArmMesh.rotationQuaternion, this._hand.position);
+        this._hand.position.addInPlace(this.foreArmMesh.position);
 
         let handY = this.handUp;
         if (this.handUpStrictness < 0.5) {
