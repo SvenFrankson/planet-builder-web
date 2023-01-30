@@ -22,6 +22,7 @@ class Player extends BABYLON.Mesh {
     public sqrDistToPlanet = Infinity;
     public altitudeOnPlanet: number = 0;
 
+    public headMove: boolean = false;
     public targetLookStrength: number = 0.5;
     public targetLook: BABYLON.Vector3;
     public targetDestination: BABYLON.Vector3;
@@ -419,9 +420,17 @@ class Player extends BABYLON.Mesh {
 
         let rotationPower: number = inputHeadRight * Math.PI * deltaTime;
         let rotationCamPower: number = inputHeadUp * Math.PI * deltaTime;
-        let localY: BABYLON.Vector3 = BABYLON.Vector3.TransformNormal(BABYLON.Axis.Y, this.getWorldMatrix());
-        let rotation: BABYLON.Quaternion = BABYLON.Quaternion.RotationAxis(localY, rotationPower);
-        this.rotationQuaternion = rotation.multiply(this.rotationQuaternion);
+        if (!this.headMove) {
+            this.camPos.rotation.y *= 0.5;
+            let localY: BABYLON.Vector3 = BABYLON.Vector3.TransformNormal(BABYLON.Axis.Y, this.getWorldMatrix());
+            let rotation: BABYLON.Quaternion = BABYLON.Quaternion.RotationAxis(localY, rotationPower);
+            this.rotationQuaternion = rotation.multiply(this.rotationQuaternion);
+        }
+        else {
+            this.camPos.rotation.y += rotationPower;
+            this.camPos.rotation.y = Math.max(this.camPos.rotation.y, -Math.PI / 2);
+            this.camPos.rotation.y = Math.min(this.camPos.rotation.y, Math.PI / 2);
+        }
         this.camPos.rotation.x += rotationCamPower;
         this.camPos.rotation.x = Math.max(this.camPos.rotation.x, -Math.PI / 2);
         this.camPos.rotation.x = Math.min(this.camPos.rotation.x, Math.PI / 2);

@@ -7,6 +7,7 @@ class MainMenu extends Main {
 	public planetSky: PlanetSky;
 	public skybox: BABYLON.Mesh;
 	public tutorialManager: TutorialManager;
+	public wristWatch: WristWatch;
 
 	public createScene(): void {
 		super.createScene();

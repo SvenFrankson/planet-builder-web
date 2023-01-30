@@ -68,11 +68,17 @@ class PlayerArmManager {
         if (this.mode === ArmManagerMode.Idle) {
             this._updateIdle();
         }
-        else if (this.mode === ArmManagerMode.Aim) {
+        
+        if (this.mode === ArmManagerMode.Aim) {
             this._updateAim();
         }
-        else if (this.mode === ArmManagerMode.WristWatch) {
+        
+        if (this.mode === ArmManagerMode.WristWatch) {
+            this.player.headMove = true;
             this._updateWristWatch();
+        }
+        else {
+            this.player.headMove = false;
         }
     }
 
@@ -81,6 +87,7 @@ class PlayerArmManager {
             this.mode = ArmManagerMode.Aim;
             return;
         }
+
         if (this.inputManager.inventoryOpened) {
             this.mode = ArmManagerMode.WristWatch;
             return;
@@ -181,6 +188,14 @@ class PlayerArmManager {
         this.leftArm.setTarget(pos);
         this.leftArm.handUp = up;
         this._updateRequestedTargetIdle(this.rightArm);
+
+        // 4 - Update target look.
+        let wristWatch = WristWatch.Instances.find(ww => { return ww.player === this.player; });
+        if (wristWatch) {
+            let pos = wristWatch.holoMesh.absolutePosition;
+            this.player.targetLook = pos;
+            this.player.targetLookStrength = 1;
+        }
     }
 
     public async startActionAnimation(actionCallback?: () => void): Promise<void> {
