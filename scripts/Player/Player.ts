@@ -49,6 +49,9 @@ class Player extends BABYLON.Mesh {
         return this._scene;
     }
 
+    public animateCamPosRotX = AnimationFactory.EmptyNumberCallback;
+    public animateCamPosRotY = AnimationFactory.EmptyNumberCallback;
+
     constructor(position: BABYLON.Vector3, public main: Main) {
         super("Player", main.scene);
         Player.DEBUG_INSTANCE = this;
@@ -76,7 +79,10 @@ class Player extends BABYLON.Mesh {
         this.moveIndicatorLandmark = new PlanetObject("player-move-indicator-landmark", this.main);
         this.moveIndicatorLandmark.material = mat;
         this.moveIndicatorLandmark.rotationQuaternion = BABYLON.Quaternion.Identity();
-        this.moveIndicatorLandmark.isVisible = false; 
+        this.moveIndicatorLandmark.isVisible = false;
+        
+        this.animateCamPosRotX = AnimationFactory.CreateNumber(this, this.camPos.rotation, "x");
+        this.animateCamPosRotY = AnimationFactory.CreateNumber(this, this.camPos.rotation, "y");
     }
 
     public async initialize(): Promise<void> {
@@ -421,7 +427,6 @@ class Player extends BABYLON.Mesh {
         let rotationPower: number = inputHeadRight * Math.PI * deltaTime;
         let rotationCamPower: number = inputHeadUp * Math.PI * deltaTime;
         if (!this.headMove) {
-            this.camPos.rotation.y *= 0.5;
             let localY: BABYLON.Vector3 = BABYLON.Vector3.TransformNormal(BABYLON.Axis.Y, this.getWorldMatrix());
             let rotation: BABYLON.Quaternion = BABYLON.Quaternion.RotationAxis(localY, rotationPower);
             this.rotationQuaternion = rotation.multiply(this.rotationQuaternion);

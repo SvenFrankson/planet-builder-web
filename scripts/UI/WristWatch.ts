@@ -46,14 +46,14 @@ class WristWatch extends BABYLON.Mesh {
     public async powerOn(): Promise<void> {
         this.power = true;
         this.holoMesh.isVisible = true;
-        this.animateMeshPosY(0.146, 0.2);
-        await this.animateMeshScaleY(1, 0.2);
+        this.animateMeshPosY(0.146, 1);
+        await this.animateMeshScaleY(1, 1);
     }
 
     public async powerOff(): Promise<void> {
         this.power = false;
-        this.animateMeshPosY(0.51, 0.2);
-        await this.animateMeshScaleY(0, 0.2);
+        this.animateMeshPosY(0.51, 1);
+        await this.animateMeshScaleY(0, 1);
         this.holoMesh.isVisible = false;
     }
 

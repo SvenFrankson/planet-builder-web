@@ -20,6 +20,8 @@ class PlayerArmManager {
     private _dpLeftArm: BABYLON.Vector3 = BABYLON.Vector3.Zero();
     private _dpRightArm: BABYLON.Vector3 = BABYLON.Vector3.Zero();
 
+    private _tmpPreviousCamPosRotationX: number = 0;
+
     public get inputManager(): InputManager {
         return this.player.inputManager;
     }
@@ -89,6 +91,9 @@ class PlayerArmManager {
         }
 
         if (this.inputManager.inventoryOpened) {
+            if (this.mode != ArmManagerMode.WristWatch) {
+                this._tmpPreviousCamPosRotationX = this.player.camPos.rotation.x;
+            }
             this.mode = ArmManagerMode.WristWatch;
             return;
         }
@@ -173,6 +178,8 @@ class PlayerArmManager {
     private _updateWristWatch(): void {
         if (!this.inputManager.inventoryOpened) {
             this.mode = ArmManagerMode.Idle;
+            this.player.animateCamPosRotX(this._tmpPreviousCamPosRotationX, 0.3);
+            this.player.animateCamPosRotY(0, 0.3);
             return;
         }
 
@@ -182,7 +189,7 @@ class PlayerArmManager {
         }
 
         // 3 - Update arm target position.
-        let pos = BABYLON.Vector3.TransformCoordinates(new BABYLON.Vector3(0.1, 1.4, 0.3), this.player.getWorldMatrix());
+        let pos = BABYLON.Vector3.TransformCoordinates(new BABYLON.Vector3(0, 1.4, 0.4), this.player.getWorldMatrix());
         let right = this.player.right;
         let up = BABYLON.Vector3.Cross(right, this.player.camPos.absolutePosition.subtract(pos)).normalize();
         this.leftArm.setTarget(pos);
