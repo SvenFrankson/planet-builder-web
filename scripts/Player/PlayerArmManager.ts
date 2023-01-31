@@ -7,6 +7,8 @@ enum ArmManagerMode {
 
 class PlayerArmManager {
 
+    public static POS: BABYLON.Vector3 = new BABYLON.Vector3(0.14, 1.25, 0.34);
+
     public leftArm: PlayerArm;
     public rightArm: PlayerArm;
     public other(arm: PlayerArm): PlayerArm {
@@ -93,6 +95,7 @@ class PlayerArmManager {
         if (this.inputManager.inventoryOpened) {
             if (this.mode != ArmManagerMode.WristWatch) {
                 this._tmpPreviousCamPosRotationX = this.player.camPos.rotation.x;
+                
             }
             this.mode = ArmManagerMode.WristWatch;
             return;
@@ -189,7 +192,7 @@ class PlayerArmManager {
         }
 
         // 3 - Update arm target position.
-        let pos = BABYLON.Vector3.TransformCoordinates(new BABYLON.Vector3(0, 1.4, 0.4), this.player.getWorldMatrix());
+        let pos = BABYLON.Vector3.TransformCoordinates(PlayerArmManager.POS, this.player.getWorldMatrix());
         let right = this.player.right;
         let up = BABYLON.Vector3.Cross(right, this.player.camPos.absolutePosition.subtract(pos)).normalize();
         this.leftArm.setTarget(pos);

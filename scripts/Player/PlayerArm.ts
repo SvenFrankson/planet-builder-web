@@ -375,11 +375,7 @@ class PlayerArm extends BABYLON.Mesh {
         }
         
         this._arm.position.copyFrom(this.absolutePosition);
-        let elbowZeroPositionY = 0;
-        if (this.elbowHeight === ElbowHeight.Low) {
-            elbowZeroPositionY = - this._armLength * 0.5;
-        } 
-        this._elbowPosition.copyFromFloats(- this.signLeft * 0.1, elbowZeroPositionY, 0);
+        this._elbowPosition.copyFromFloats(- this.signLeft * 0.1, - this._armLength * 0.5, 0);
         VMath.RotateVectorByQuaternionToRef(this._elbowPosition, this.rotationQuaternion, this._elbowPosition);
         this._elbowPosition.addInPlace(this._arm.absolutePosition);
         this._wristPosition.copyFrom(this._elbowPosition).addInPlace(this.targetPosition).scaleInPlace(0.5);
@@ -417,8 +413,7 @@ class PlayerArm extends BABYLON.Mesh {
         VMath.RotateVectorByQuaternionToRef(this.foreArmMesh.position, this._arm.rotationQuaternion, this.foreArmMesh.position);
         this.foreArmMesh.position.addInPlace(this._arm.position);
 
-        let foreArmX = armZ.scale(- 1 * this.signLeft);
-        VMath.QuaternionFromZXAxisToRef(foreArmZ, foreArmX, this._q0);
+        VMath.QuaternionFromZYAxisToRef(foreArmZ, this.handUp, this._q0);
         BABYLON.Quaternion.SlerpToRef(this.foreArmMesh.rotationQuaternion, this._q0, magicNumber2, this.foreArmMesh.rotationQuaternion);
 
         this.elbowMesh.position.copyFrom(this.foreArmMesh.position);

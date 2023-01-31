@@ -5,6 +5,10 @@ enum CameraMode {
 
 class CameraManager {
 
+    public get scene(): BABYLON.Scene {
+        return this.main.scene;
+    }
+
     public useOutline: boolean = true;
 
     public cameraMode: CameraMode = CameraMode.Sky;
@@ -15,6 +19,8 @@ class CameraManager {
     public farCamera: BABYLON.FreeCamera;
 
     public player: Player;
+    
+    private _lookingForward: boolean = false;
 
     public get absolutePosition(): BABYLON.Vector3 {
         if (this.cameraMode === CameraMode.Sky) {
@@ -24,6 +30,8 @@ class CameraManager {
             return this.freeCamera.globalPosition;
         }
     }
+
+    public animateCameraPosZ = AnimationFactory.EmptyNumberCallback;
 
     constructor(public main: Main) {
         this.arcRotateCamera = new BABYLON.ArcRotateCamera(
@@ -74,6 +82,25 @@ class CameraManager {
             const pp = new BABYLON.PassPostProcess("pass", 1, this.noOutlineCamera);
             pp.inputTexture = rtt.renderTarget;
             pp.autoClear = false;
+        }
+
+        this.animateCameraPosZ = AnimationFactory.CreateNumber(this, this.freeCamera.position, "z");
+
+        this.scene.onBeforeRenderObservable.add(this._update);
+    }
+
+    private _update = () => {
+        if (this.main.inputManager.inventoryOpened) {
+            if (!this._lookingForward) {
+                this._lookingForward = true;
+                this.animateCameraPosZ(0.1, 0.5);
+            }
+        }
+        else {
+            if (this._lookingForward) {
+                this._lookingForward = false;
+                this.animateCameraPosZ(0, 0.5);
+            }
         }
     }
 
