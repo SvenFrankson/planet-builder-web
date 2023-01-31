@@ -1,5 +1,49 @@
 class VertexDataUtils {
 
+    public static GetPlanePositions(
+        f: number = 1,
+        w: number = 1,
+        h: number = 1,
+        x0?: number,
+        y0?: number,
+    ): number[] {
+        if (!isFinite(x0)) {
+            x0 = - w * 0.5;
+        }
+        if (!isFinite(y0)) {
+            y0 = - h * 0.5;
+        }
+        
+        let x1 = x0 + w;
+        let y1 = y0 + h * f;
+
+        let positions = [
+            x0, y0, 0,
+            x1, y0, 0,
+            x1, y1, 0,
+            x0, y1, 0
+        ];
+
+        return positions;
+    }
+    
+    public static GetPlaneUVs(
+        f: number = 1,
+        u0: number = 0,
+        v0: number = 0,
+        u1: number = 1,
+        v1: number = 1
+    ): number[] {
+        let uvs = [
+            u0, v0,
+            u1, v0,
+            u1, v1 * f,
+            u0, v1 * f
+        ];
+
+        return uvs;
+    }
+
     public static CreatePlane(
         w: number = 1,
         h: number = 1,
