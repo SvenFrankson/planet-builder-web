@@ -163,6 +163,6 @@ class HeadUpDisplay extends BABYLON.Mesh {
             this.hudLateralTileImageMaterials[b].useAlphaFromDiffuseTexture = true;
         }
 
-        this.parent = this.player.camPos;
+        this.parent = this.cameraManager.freeCamera;
     }
 }
