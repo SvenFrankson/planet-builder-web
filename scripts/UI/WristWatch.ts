@@ -26,6 +26,39 @@ class WristWatch extends BABYLON.Mesh {
         this.holoMesh.rotation.y = - Math.PI * 0.5;
         this.holoMesh.parent = this.player.armManager.leftArm.foreArmMesh;
 
+        let hsf = Config.performanceConfiguration.holoScreenFactor;
+
+        let holoScreenMaterial = new HoloPanelMaterial("hud-material", this.scene);
+
+        let holoScreenTexture = new BABYLON.DynamicTexture("hud-texture", { width: 1000 * hsf, height: 1000 * hsf }, this.scene, true);
+        holoScreenTexture.hasAlpha = true;
+        holoScreenMaterial.holoTexture = holoScreenTexture;
+        
+        let holoScreenSlika = new Slika(1000 * hsf, 1000 * hsf, holoScreenTexture.getContext(), holoScreenTexture);
+        holoScreenSlika.texture = holoScreenTexture;
+        holoScreenSlika.context = holoScreenTexture.getContext();
+        holoScreenSlika.needRedraw = true;
+
+        this.holoMesh.material = holoScreenMaterial;
+
+        let M = 20;
+        holoScreenSlika.add(
+            new SlikaPath({
+                points: [
+                    M, M,
+                    1000 - M, M,
+                    1000 - M, 1000 - M,
+                    M, 1000 - M
+                ],
+                close: true,
+                fillColor: BABYLON.Color3.Black(), 
+                fillAlpha: 0.3,
+                strokeColor: BABYLON.Color3.White(), 
+                strokeAlpha: 1,
+                strokeWidth: 20
+            })
+        );
+
         this.scene.onBeforeRenderObservable.add(this._update);
     }
 
