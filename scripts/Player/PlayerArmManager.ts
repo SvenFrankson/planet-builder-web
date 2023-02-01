@@ -28,10 +28,16 @@ class PlayerArmManager {
         return this.player.inputManager;
     }
 
+    public get scene(): BABYLON.Scene {
+        return this.player.scene;
+    }
+
+    public wait = AnimationFactory.EmptyVoidCallback;
+
     constructor(
         public player: Player
     ) {
-        
+        this.wait = AnimationFactory.CreateWait(this);
     }
 
     public initialize(): void {
@@ -88,13 +94,18 @@ class PlayerArmManager {
 
     private _updateIdle(): void {
         if (this.inputManager.aimedPosition) {
+            if (this.mode != ArmManagerMode.Aim) {
+                this._aimingDistance = 0.1;
+            }
             this.mode = ArmManagerMode.Aim;
             return;
         }
 
         if (this.inputManager.inventoryOpened) {
             if (this.mode != ArmManagerMode.WristWatch) {
+                this._aimingDistance = 0.05;
                 this._tmpPreviousCamPosRotationX = this.player.camPos.rotation.x;
+                this.startPowerWristWatchAnimation();
                 
             }
             this.mode = ArmManagerMode.WristWatch;
@@ -190,6 +201,11 @@ class PlayerArmManager {
         if (this.leftArm.handMode != HandMode.WristWatch) {
             this.leftArm.setHandMode(HandMode.WristWatch);
         }
+        if (this.rightArm.handMode != HandMode.Point) {
+            this.rightArm.setHandMode(HandMode.Point);
+        }
+
+        let wristWatch = WristWatch.Instances.find(ww => { return ww.player === this.player; });
 
         // 3 - Update arm target position.
         let pos = BABYLON.Vector3.TransformCoordinates(PlayerArmManager.POS, this.player.getWorldMatrix());
@@ -197,10 +213,12 @@ class PlayerArmManager {
         let up = BABYLON.Vector3.Cross(right, this.player.camPos.absolutePosition.subtract(pos)).normalize();
         this.leftArm.setTarget(pos);
         this.leftArm.handUp = up;
-        this._updateRequestedTargetIdle(this.rightArm);
+        
+        if (wristWatch) {
+            this.rightArm.setTarget(wristWatch.powerButton.absolutePosition.add(up.scale(this._aimingDistance)));
+        }
 
         // 4 - Update target look.
-        let wristWatch = WristWatch.Instances.find(ww => { return ww.player === this.player; });
         if (wristWatch) {
             let pos = wristWatch.holoMesh.absolutePosition;
             this.player.targetLook = pos;
@@ -218,6 +236,18 @@ class PlayerArmManager {
             this._aimingArm.setHandMode(HandMode.Point);
             await this._animateAimingDistance(0.1, 0.3);
         }
+    }
+
+    public async startPowerWristWatchAnimation(actionCallback?: () => void): Promise<void> {
+        await this.wait(0.7);
+        this.rightArm.setHandMode(HandMode.Point);
+        await this._animateAimingDistance(0, 0.3);
+        if (actionCallback) {
+            actionCallback();
+        }
+        await this.wait(0.3);
+        this.rightArm.setHandMode(HandMode.Point);
+        await this._animateAimingDistance(0.05, 0.3);
     }
 
     private _animateAimingDistanceCB: () => void;

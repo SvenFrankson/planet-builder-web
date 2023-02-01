@@ -5,6 +5,7 @@ class WristWatch extends BABYLON.Mesh {
     public power: boolean = false;
 
     public holoMesh: BABYLON.Mesh;
+    public powerButton: BABYLON.Mesh;
     
     public animateExtension = AnimationFactory.EmptyNumberCallback;
 
@@ -12,21 +13,31 @@ class WristWatch extends BABYLON.Mesh {
         return this._scene;
     }
 
+    public wait = AnimationFactory.EmptyVoidCallback;
+
     constructor(public player: Player, public cameraManager: CameraManager) {
         super("head-up-display");
         this.holoMesh = new BABYLON.Mesh("wrist-watch-screen");
-        this.animateExtension = AnimationFactory.CreateNumber(this, this, "screenExtension");
-        WristWatch.Instances.push(this);
-    }
-
-    public async instantiate(): Promise<void> {
-        VertexDataUtils.CreatePlane(0.225, 0.225).applyToMesh(this.holoMesh, true);
         this.holoMesh.layerMask = 0x10000000;
         this.holoMesh.alphaIndex = 1;
         this.holoMesh.position.y = 0.146;
         this.holoMesh.position.z = 0.148;
         this.holoMesh.rotation.y = - Math.PI * 0.5;
         this.holoMesh.parent = this.player.armManager.leftArm.foreArmMesh;
+
+        this.powerButton = new BABYLON.Mesh("wrist-watch-power-button");
+        this.powerButton.position.x = 0.014;
+        this.powerButton.position.y = 0.031;
+        this.powerButton.position.z = 0.258;
+        this.powerButton.parent = this.player.armManager.leftArm.foreArmMesh;
+        
+        this.wait = AnimationFactory.CreateWait(this);
+        this.animateExtension = AnimationFactory.CreateNumber(this, this, "screenExtension");
+        WristWatch.Instances.push(this);
+    }
+
+    public async instantiate(): Promise<void> {
+        VertexDataUtils.CreatePlane(0.225, 0.225).applyToMesh(this.holoMesh, true);
 
         let hsf = Config.performanceConfiguration.holoScreenFactor;
 
@@ -80,6 +91,7 @@ class WristWatch extends BABYLON.Mesh {
         }));
 
         this.scene.onBeforeRenderObservable.add(this._update);
+        this.powerOff();
     }
 
     public dispose(doNotRecurse?: boolean, disposeMaterialAndTextures?: boolean): void {
@@ -112,6 +124,7 @@ class WristWatch extends BABYLON.Mesh {
 
     public async powerOn(): Promise<void> {
         this.power = true;
+        await this.wait(1);
         this.holoMesh.isVisible = true;
         await this.animateExtension(1, 0.5);
     }

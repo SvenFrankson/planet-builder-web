@@ -93,7 +93,7 @@ class CameraManager {
         if (this.main.inputManager.inventoryOpened) {
             if (!this._lookingForward) {
                 this._lookingForward = true;
-                this.animateCameraPosZ(0.1, 0.5);
+                this.animateCameraPosZ(0.07, 0.5);
             }
         }
         else {

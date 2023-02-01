@@ -35,10 +35,10 @@ class VertexDataUtils {
         v1: number = 1
     ): number[] {
         let uvs = [
-            u0, v0,
-            u1, v0,
-            u1, v1 * f,
-            u0, v1 * f
+            u0, v0 * f + v1 * (1 - f),
+            u1, v0 * f + v1 * (1 - f),
+            u1, v1,
+            u0, v1
         ];
 
         return uvs;
