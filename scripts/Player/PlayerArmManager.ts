@@ -204,7 +204,7 @@ class PlayerArmManager {
         if (wristWatch) {
             let pos = wristWatch.holoMesh.absolutePosition;
             this.player.targetLook = pos;
-            this.player.targetLookStrength = 1;
+            this.player.targetLookStrength = 0.35;
         }
     }
 

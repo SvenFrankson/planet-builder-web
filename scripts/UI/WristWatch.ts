@@ -21,6 +21,8 @@ class WristWatch extends BABYLON.Mesh {
 
     public async instantiate(): Promise<void> {
         VertexDataUtils.CreatePlane(0.225, 0.225).applyToMesh(this.holoMesh, true);
+        this.holoMesh.layerMask = 0x10000000;
+        this.holoMesh.alphaIndex = 1;
         this.holoMesh.position.y = 0.146;
         this.holoMesh.position.z = 0.148;
         this.holoMesh.rotation.y = - Math.PI * 0.5;
@@ -41,14 +43,21 @@ class WristWatch extends BABYLON.Mesh {
 
         this.holoMesh.material = holoScreenMaterial;
 
-        let M = 20;
+        let M = 15;
+        let L = 40;
+        let XEdge = 350;
+        let ML = 110;
+        let MR = 35;
         holoScreenSlika.add(
             new SlikaPath({
                 points: [
-                    M, M,
-                    1000 - M, M,
-                    1000 - M, 1000 - M,
-                    M, 1000 - M
+                    M, M + L,
+                    M + L, M,
+                    1000 - M - L, M,
+                    1000 - M, M + L,
+                    1000 - M, 1000 - MR,
+                    XEdge, 1000 - ML,
+                    M, 1000 - ML
                 ],
                 close: true,
                 fillColor: BABYLON.Color3.Black(), 
@@ -58,6 +67,17 @@ class WristWatch extends BABYLON.Mesh {
                 strokeWidth: 20
             })
         );
+
+        let title1 = holoScreenSlika.add(new SlikaText({
+            text: "INVENTORY",
+            x: 500,
+            y: 110,
+            textAlign: "center",
+            color: BABYLON.Color3.FromHexString(Config.uiConfiguration.holoScreenBaseColor),
+            fontSize: 60,
+            fontFamily: "XoloniumRegular",
+            highlightRadius: 0
+        }));
 
         this.scene.onBeforeRenderObservable.add(this._update);
     }
@@ -93,12 +113,12 @@ class WristWatch extends BABYLON.Mesh {
     public async powerOn(): Promise<void> {
         this.power = true;
         this.holoMesh.isVisible = true;
-        await this.animateExtension(1, 2);
+        await this.animateExtension(1, 0.5);
     }
 
     public async powerOff(): Promise<void> {
         this.power = false;
-        await this.animateExtension(0, 2);
+        await this.animateExtension(0, 0.5);
         this.holoMesh.isVisible = false;
     }
 
