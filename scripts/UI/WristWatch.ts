@@ -6,6 +6,8 @@ class WristWatch extends BABYLON.Mesh {
 
     public holoMesh: BABYLON.Mesh;
     public powerButton: BABYLON.Mesh;
+
+    public holoSlika: Slika;
     
     public animateExtension = AnimationFactory.EmptyNumberCallback;
 
@@ -47,10 +49,10 @@ class WristWatch extends BABYLON.Mesh {
         holoScreenTexture.hasAlpha = true;
         holoScreenMaterial.holoTexture = holoScreenTexture;
         
-        let holoScreenSlika = new Slika(1000 * hsf, 1000 * hsf, holoScreenTexture.getContext(), holoScreenTexture);
-        holoScreenSlika.texture = holoScreenTexture;
-        holoScreenSlika.context = holoScreenTexture.getContext();
-        holoScreenSlika.needRedraw = true;
+        this.holoSlika = new Slika(1000 * hsf, 1000 * hsf, holoScreenTexture.getContext(), holoScreenTexture);
+        this.holoSlika.texture = holoScreenTexture;
+        this.holoSlika.context = holoScreenTexture.getContext();
+        this.holoSlika.needRedraw = true;
 
         this.holoMesh.material = holoScreenMaterial;
 
@@ -59,7 +61,7 @@ class WristWatch extends BABYLON.Mesh {
         let XEdge = 350;
         let ML = 110;
         let MR = 35;
-        holoScreenSlika.add(
+        this.holoSlika.add(
             new SlikaPath({
                 points: [
                     M, M + L,
@@ -79,7 +81,7 @@ class WristWatch extends BABYLON.Mesh {
             })
         );
 
-        let title1 = holoScreenSlika.add(new SlikaText({
+        this.holoSlika.add(new SlikaText({
             text: "INVENTORY",
             x: 500,
             y: 110,
@@ -89,6 +91,44 @@ class WristWatch extends BABYLON.Mesh {
             fontFamily: "XoloniumRegular",
             highlightRadius: 0
         }));
+
+        for (let i = 0; i < 12; i++) {
+            let iconW = 50;
+            let lineHeight = 60;
+
+            let itemIcon = this.holoSlika.add(new SlikaImage(
+                new SPosition(60 + iconW * 0.5, 150 + iconW * 0.5 + i * lineHeight),
+                iconW,
+                iconW,
+                "datas/images/block-icon-Ice-miniature.png"
+            ))
+
+            let itemIconBorder = this.holoSlika.add(new SlikaPath({
+                points: [
+                    60, 150 + i * lineHeight,
+                    60 + iconW, 150 + i * lineHeight,
+                    60 + iconW, 150 + iconW + i * lineHeight,
+                    60, 150 + iconW + i * lineHeight,
+                ],
+                close: true,
+                strokeColor: BABYLON.Color3.White(), 
+                strokeAlpha: 1,
+                strokeWidth: 2
+            }));
+
+            let itemName = this.holoSlika.add(new SlikaText({
+                text: "Loreq Ipsum",
+                x: 130,
+                y: 135 + iconW + i * lineHeight,
+                textAlign: "left",
+                color: BABYLON.Color3.FromHexString(Config.uiConfiguration.holoScreenBaseColor),
+                fontSize: 40,
+                fontFamily: "XoloniumRegular",
+                highlightRadius: 0
+            }));
+        }
+
+        this.holoSlika.needRedraw = true;
 
         this.scene.onBeforeRenderObservable.add(this._update);
         this.powerOff();
@@ -124,7 +164,8 @@ class WristWatch extends BABYLON.Mesh {
 
     public async powerOn(): Promise<void> {
         this.power = true;
-        await this.wait(1);
+        await this.wait(1.5);
+        this.holoSlika.needRedraw = true;
         this.holoMesh.isVisible = true;
         await this.animateExtension(1, 0.5);
     }
