@@ -59,7 +59,7 @@ class Player extends BABYLON.Mesh {
         this.rotationQuaternion = BABYLON.Quaternion.Identity();
         this.camPos = new BABYLON.Mesh("Dummy", Game.Scene);
         this.camPos.parent = this;
-        this.camPos.position = new BABYLON.Vector3(0, 1.7, 0);
+        this.camPos.position = new BABYLON.Vector3(0, 1.77, 0);
         this.camPos.rotation.x = Math.PI / 8;
         this.armManager = new PlayerArmManager(this);
         /*

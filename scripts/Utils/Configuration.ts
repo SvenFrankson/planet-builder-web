@@ -115,6 +115,7 @@ class ConfigurationControl {
 class ConfigurationUI {
 
     public holoScreenBaseColor: string = "#35b4d4";
+    public wristWatchScreenBaseColor: string = "#58ff3b";
 }
 
 enum ConfigurationPreset {

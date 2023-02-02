@@ -93,13 +93,13 @@ class CameraManager {
         if (this.main.inputManager.inventoryOpened) {
             if (!this._lookingForward) {
                 this._lookingForward = true;
-                this.animateCameraPosZ(0.07, 0.5);
+                this.animateCameraPosZ(0.2, 0.5);
             }
         }
         else {
             if (this._lookingForward) {
                 this._lookingForward = false;
-                this.animateCameraPosZ(0, 0.5);
+                this.animateCameraPosZ(0.04, 0.5);
             }
         }
     }
@@ -114,7 +114,7 @@ class CameraManager {
 
             if (this.cameraMode === CameraMode.Player) {
                 this.freeCamera.parent = this.player.camPos;
-                this.freeCamera.position.copyFromFloats(0, 0, 0);
+                this.freeCamera.position.copyFromFloats(0, 0, 0.04);
                 this.freeCamera.rotationQuaternion.copyFrom(BABYLON.Quaternion.Identity());
                 this.freeCamera.computeWorldMatrix();
                 if (this.useOutline) {

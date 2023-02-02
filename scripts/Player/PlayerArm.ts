@@ -397,6 +397,11 @@ class PlayerArm extends BABYLON.Mesh {
             armZ.copyFrom(this._elbowPosition).subtractInPlace(this._arm.absolutePosition).normalize().scaleInPlace(this._armLength);
             this._elbowPosition.copyFrom(this._arm.absolutePosition).addInPlace(armZ);
 
+            if (this.elbowHeight === ElbowHeight.Hand) {
+                let deltaY = BABYLON.Vector3.Dot(this.up, this._wristPosition.subtract(this._elbowPosition));
+                this._elbowPosition.addInPlace(this.up.scale(deltaY));
+            }
+
             foreArmZ.copyFrom(this._wristPosition).subtractInPlace(this._elbowPosition).normalize().scaleInPlace(this._foreArmLength);
             this._wristPosition.copyFrom(this._elbowPosition).subtractInPlace(foreArmZ);
         }

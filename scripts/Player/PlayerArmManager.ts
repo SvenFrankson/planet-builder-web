@@ -7,7 +7,7 @@ enum ArmManagerMode {
 
 class PlayerArmManager {
 
-    public static POS: BABYLON.Vector3 = new BABYLON.Vector3(0.14, 1.25, 0.34);
+    public static POS: BABYLON.Vector3 = new BABYLON.Vector3(0.14, 1.3, 0.4);
 
     public leftArm: PlayerArm;
     public rightArm: PlayerArm;
@@ -62,14 +62,14 @@ class PlayerArmManager {
 
     private _update = () => {
         this._dpLeftArm.copyFrom(this.leftArm.position);
-        BABYLON.Vector3.TransformCoordinatesToRef(new BABYLON.Vector3(- 0.2, 1.6, 0), this.player.getWorldMatrix(), this._tmpDP);
+        BABYLON.Vector3.TransformCoordinatesToRef(new BABYLON.Vector3(- 0.2, 1.5, 0), this.player.getWorldMatrix(), this._tmpDP);
         this.leftArm.position.copyFrom(this._tmpDP);
         this._dpLeftArm.subtractInPlace(this.leftArm.position).scaleInPlace(-1);
         this.leftArm.rotationQuaternion.copyFrom(this.player.rotationQuaternion);
         this.leftArm.targetPosition.addInPlace(this._dpLeftArm);
 
         this._dpRightArm.copyFrom(this.rightArm.position);
-        BABYLON.Vector3.TransformCoordinatesToRef(new BABYLON.Vector3(0.2, 1.6, 0), this.player.getWorldMatrix(), this._tmpDP);
+        BABYLON.Vector3.TransformCoordinatesToRef(new BABYLON.Vector3(0.2, 1.5, 0), this.player.getWorldMatrix(), this._tmpDP);
         this.rightArm.position.copyFrom(this._tmpDP);
         this._dpRightArm.subtractInPlace(this.rightArm.position).scaleInPlace(-1);
         this.rightArm.rotationQuaternion.copyFrom(this.player.rotationQuaternion);
@@ -216,7 +216,8 @@ class PlayerArmManager {
         
         if (wristWatch) {
             if (this.inputManager.aimedPosition) {
-                this.rightArm.setTarget(this.inputManager.aimedPosition.add(this.inputManager.aimedNormal.scale(this._aimingDistance)));
+                let offset = this.inputManager.aimedNormal.add(this.player.right).normalize();
+                this.rightArm.setTarget(this.inputManager.aimedPosition.add(offset.scale(this._aimingDistance)));
             }
             else {
                 this.rightArm.setTarget(wristWatch.powerButton.absolutePosition.add(up.scale(this._aimingDistance)));

@@ -65,8 +65,25 @@ class WristWatch extends Pickable {
         let M = 15;
         let L = 40;
         let XEdge = 350;
-        let ML = 110;
-        let MR = 35;
+        let ML = 108;
+        let MR = 33;
+        this.holoSlika.add(
+            new SlikaPath({
+                points: [
+                    M, M + L,
+                    M + L, M,
+                    1000 - M - L, M,
+                    1000 - M, M + L,
+                    1000 - M, 1000 - MR,
+                    XEdge, 1000 - ML,
+                    M, 1000 - ML
+                ],
+                close: true,
+                strokeColor: BABYLON.Color3.Black(),
+                strokeAlpha: 1,
+                strokeWidth: 20
+            })
+        );
         this.holoSlika.add(
             new SlikaPath({
                 points: [
@@ -81,9 +98,9 @@ class WristWatch extends Pickable {
                 close: true,
                 fillColor: BABYLON.Color3.Black(), 
                 fillAlpha: 0.3,
-                strokeColor: BABYLON.Color3.White(), 
+                strokeColor: BABYLON.Color3.FromHexString(Config.uiConfiguration.wristWatchScreenBaseColor),
                 strokeAlpha: 1,
-                strokeWidth: 20
+                strokeWidth: 15
             })
         );
 
@@ -92,45 +109,60 @@ class WristWatch extends Pickable {
             x: 500,
             y: 110,
             textAlign: "center",
-            color: BABYLON.Color3.FromHexString(Config.uiConfiguration.holoScreenBaseColor),
+            color: BABYLON.Color3.FromHexString(Config.uiConfiguration.wristWatchScreenBaseColor),
             fontSize: 60,
             fontFamily: "XoloniumRegular",
-            highlightRadius: 0
+            strokeColor: BABYLON.Color3.Black(),
+            strokeWidth: 6
         }));
 
         for (let i = 0; i < 12; i++) {
             let iconW = 50;
             let lineHeight = 60;
 
+            if (i % 2 === 0) {
+                let itemIconBorder = this.holoSlika.add(new SlikaPath({
+                    points: [
+                        250, 147 + i * lineHeight,
+                        900, 147 + i * lineHeight,
+                        900, 147 + (i + 1) * lineHeight,
+                        250, 147 + (i + 1) * lineHeight,
+                    ],
+                    close: true,
+                    fillColor: BABYLON.Color3.FromHexString(Config.uiConfiguration.wristWatchScreenBaseColor),
+                    fillAlpha: 0.05
+                }));
+            }
+
             let itemIcon = this.holoSlika.add(new SlikaImage(
-                new SPosition(60 + iconW * 0.5, 150 + iconW * 0.5 + i * lineHeight),
+                new SPosition(260 + iconW * 0.5, 150 + iconW * 0.5 + i * lineHeight),
                 iconW,
                 iconW,
-                "datas/images/block-icon-Ice-miniature.png"
+                "datas/images/block-icon-" + BlockTypeNames[BlockType.Grass + i] + "-miniature.png"
             ))
 
-            let itemIconBorder = this.holoSlika.add(new SlikaPath({
-                points: [
-                    60, 150 + i * lineHeight,
-                    60 + iconW, 150 + i * lineHeight,
-                    60 + iconW, 150 + iconW + i * lineHeight,
-                    60, 150 + iconW + i * lineHeight,
-                ],
-                close: true,
-                strokeColor: BABYLON.Color3.White(), 
-                strokeAlpha: 1,
-                strokeWidth: 2
-            }));
-
             let itemName = this.holoSlika.add(new SlikaText({
-                text: "Loreq Ipsum",
-                x: 130,
-                y: 135 + iconW + i * lineHeight,
+                text: BlockTypeNames[BlockType.Grass + i],
+                x: 330,
+                y: 140 + iconW + i * lineHeight,
                 textAlign: "left",
-                color: BABYLON.Color3.FromHexString(Config.uiConfiguration.holoScreenBaseColor),
+                color: BABYLON.Color3.FromHexString(Config.uiConfiguration.wristWatchScreenBaseColor),
                 fontSize: 40,
                 fontFamily: "XoloniumRegular",
-                highlightRadius: 0
+                strokeColor: BABYLON.Color3.Black(),
+                strokeWidth: 4
+            }));
+
+            let itemCount = this.holoSlika.add(new SlikaText({
+                text: "x" + Math.floor(Math.random() * 100).toFixed(0),
+                x: 800,
+                y: 140 + iconW + i * lineHeight,
+                textAlign: "right",
+                color: BABYLON.Color3.FromHexString(Config.uiConfiguration.wristWatchScreenBaseColor),
+                fontSize: 40,
+                fontFamily: "XoloniumRegular",
+                strokeColor: BABYLON.Color3.Black(),
+                strokeWidth: 4
             }));
         }
 
