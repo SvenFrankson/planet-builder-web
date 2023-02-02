@@ -1,6 +1,6 @@
 /// <reference path="Pickable.ts"/>
 
-class HoloPanel extends Pickable {
+class HoloPanel extends PickablePlanetObject {
 
     public frame: BABYLON.Mesh;
 

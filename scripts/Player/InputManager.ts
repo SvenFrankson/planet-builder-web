@@ -33,16 +33,16 @@ class InputManager {
 
     public player: Player;
     public inventoryOpened: boolean = false;
-    public aimedElement: Pickable;
+    public aimedElement: IPickable;
     public aimedPosition: BABYLON.Vector3;
     public aimedNormal: BABYLON.Vector3;
-    public pickableElements: UniqueList<Pickable>;
+    public pickableElements: UniqueList<IPickable>;
 
-    public pointerDownObservable = new BABYLON.Observable<Pickable>();
-    public pointerUpObservable = new BABYLON.Observable<Pickable>();
+    public pointerDownObservable = new BABYLON.Observable<IPickable>();
+    public pointerUpObservable = new BABYLON.Observable<IPickable>();
 
     constructor(public scene: BABYLON.Scene, public canvas: HTMLCanvasElement, public main: Main) {
-        this.pickableElements = new UniqueList<Pickable>();
+        this.pickableElements = new UniqueList<IPickable>();
     }
 
     public initialize(player: Player): void {
@@ -346,7 +346,7 @@ class InputManager {
                 y = this.scene.pointerY;
             }
         }
-        let aimedPickable: Pickable;
+        let aimedPickable: IPickable;
         let aimedDist: number = Infinity;
         let hit = false;
         let ray = this.scene.createPickingRay(x, y, BABYLON.Matrix.Identity(), this.scene.activeCameras[1]);

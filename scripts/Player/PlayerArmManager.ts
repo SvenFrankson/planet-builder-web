@@ -215,7 +215,12 @@ class PlayerArmManager {
         this.leftArm.handUp = up;
         
         if (wristWatch) {
-            this.rightArm.setTarget(wristWatch.powerButton.absolutePosition.add(up.scale(this._aimingDistance)));
+            if (this.inputManager.aimedPosition) {
+                this.rightArm.setTarget(this.inputManager.aimedPosition.add(this.inputManager.aimedNormal.scale(this._aimingDistance)));
+            }
+            else {
+                this.rightArm.setTarget(wristWatch.powerButton.absolutePosition.add(up.scale(this._aimingDistance)));
+            }
         }
 
         // 4 - Update target look.

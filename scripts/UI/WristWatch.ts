@@ -1,4 +1,4 @@
-class WristWatch extends BABYLON.Mesh {
+class WristWatch extends Pickable {
 
     public static Instances: WristWatch[] = [];
 
@@ -15,10 +15,14 @@ class WristWatch extends BABYLON.Mesh {
         return this._scene;
     }
 
+    public get cameraManager(): CameraManager {
+        return this.main.cameraManager;
+    }
+
     public wait = AnimationFactory.EmptyVoidCallback;
 
-    constructor(public player: Player, public cameraManager: CameraManager) {
-        super("head-up-display");
+    constructor(public player: Player, main: Main) {
+        super("head-up-display", main);
         this.holoMesh = new BABYLON.Mesh("wrist-watch-screen");
         this.holoMesh.layerMask = 0x10000000;
         this.holoMesh.alphaIndex = 1;
@@ -26,6 +30,7 @@ class WristWatch extends BABYLON.Mesh {
         this.holoMesh.position.z = 0.148;
         this.holoMesh.rotation.y = - Math.PI * 0.5;
         this.holoMesh.parent = this.player.armManager.leftArm.foreArmMesh;
+        this.proxyPickMesh = this.holoMesh;
 
         this.powerButton = new BABYLON.Mesh("wrist-watch-power-button");
         this.powerButton.position.x = 0.014;
@@ -39,6 +44,7 @@ class WristWatch extends BABYLON.Mesh {
     }
 
     public async instantiate(): Promise<void> {
+        super.instantiate();
         VertexDataUtils.CreatePlane(0.225, 0.225).applyToMesh(this.holoMesh, true);
 
         let hsf = Config.performanceConfiguration.holoScreenFactor;
@@ -143,7 +149,7 @@ class WristWatch extends BABYLON.Mesh {
             WristWatch.Instances.splice(index, 1);
         }
 
-        super.dispose(doNotRecurse, disposeMaterialAndTextures);
+        super.dispose();
     }
 
     private _screenExtension: number = 0;
