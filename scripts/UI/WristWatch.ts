@@ -79,28 +79,11 @@ class WristWatch extends Pickable {
                     M, 1000 - ML
                 ],
                 close: true,
+                fillColor: BABYLON.Color3.Black(), 
+                fillAlpha: 0.3,
                 strokeColor: BABYLON.Color3.Black(),
                 strokeAlpha: 1,
                 strokeWidth: 20
-            })
-        );
-        this.holoSlika.add(
-            new SlikaPath({
-                points: [
-                    M, M + L,
-                    M + L, M,
-                    1000 - M - L, M,
-                    1000 - M, M + L,
-                    1000 - M, 1000 - MR,
-                    XEdge, 1000 - ML,
-                    M, 1000 - ML
-                ],
-                close: true,
-                fillColor: BABYLON.Color3.Black(), 
-                fillAlpha: 0.3,
-                strokeColor: BABYLON.Color3.FromHexString(Config.uiConfiguration.wristWatchScreenBaseColor),
-                strokeAlpha: 1,
-                strokeWidth: 15
             })
         );
 
@@ -124,8 +107,8 @@ class WristWatch extends Pickable {
                 let itemIconBorder = this.holoSlika.add(new SlikaPath({
                     points: [
                         250, 147 + i * lineHeight,
-                        900, 147 + i * lineHeight,
-                        900, 147 + (i + 1) * lineHeight,
+                        1000 - M - 7.5, 147 + i * lineHeight,
+                        1000 - M - 7.5, 147 + (i + 1) * lineHeight,
                         250, 147 + (i + 1) * lineHeight,
                     ],
                     close: true,
@@ -165,6 +148,52 @@ class WristWatch extends Pickable {
                 strokeWidth: 4
             }));
         }
+
+        this.holoSlika.add(
+            new SlikaPath({
+                points: [
+                    M, M + L,
+                    M + L, M,
+                    1000 - M - L, M,
+                    1000 - M, M + L,
+                    1000 - M, 1000 - MR,
+                    XEdge, 1000 - ML,
+                    M, 1000 - ML
+                ],
+                close: true,
+                strokeColor: BABYLON.Color3.FromHexString(Config.uiConfiguration.wristWatchScreenBaseColor),
+                strokeAlpha: 1,
+                strokeWidth: 15
+            })
+        );
+        this.holoSlika.add(
+            new SlikaPath({
+                points: [
+                    M + 7.5, 150,
+                    1000 - M - 7.5, 150
+                ],
+                close: false,
+                strokeColor: BABYLON.Color3.FromHexString(Config.uiConfiguration.wristWatchScreenBaseColor),
+                strokeAlpha: 1,
+                strokeWidth: 4,
+                outlineColor: BABYLON.Color3.Black(),
+                outlineWidth: 2
+            })
+        );
+        this.holoSlika.add(
+            new SlikaPath({
+                points: [
+                    250, 152,
+                    250, 1000 - ML - 7.5
+                ],
+                close: false,
+                strokeColor: BABYLON.Color3.FromHexString(Config.uiConfiguration.wristWatchScreenBaseColor),
+                strokeAlpha: 1,
+                strokeWidth: 4,
+                outlineColor: BABYLON.Color3.Black(),
+                outlineWidth: 2
+            })
+        );
 
         this.holoSlika.needRedraw = true;
 
