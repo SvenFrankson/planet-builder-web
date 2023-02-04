@@ -1,16 +1,28 @@
-class HeadUpDisplay extends BABYLON.Mesh {
+/// <reference path="Pickable.ts"/>
+
+class HeadUpDisplay extends Pickable {
+
+    public interceptsPointerMove(): boolean {
+        return true;
+    }
 
     public hudLateralTileImageMaterials: BABYLON.StandardMaterial[] = [];
 
+    public get cameraManager(): CameraManager {
+        return this.main.cameraManager;
+    }
     public get scene(): BABYLON.Scene {
         return this.player.scene;
     }
 
-    constructor(public player: Player, public cameraManager: CameraManager) {
-        super("head-up-display");
+    constructor(public player: Player, main: Main) {
+        super("head-up-display", main);
+        this.interactionMode = InteractionMode.None;
+        this.proxyPickMeshes = [];
     }
 
     public async instantiate(): Promise<void> {
+        super.instantiate();
         let camera = this.cameraManager.noOutlineCamera;
         let yAngle = camera.fov;
         let w = camera.getEngine().getRenderWidth();
@@ -136,6 +148,7 @@ class HeadUpDisplay extends BABYLON.Mesh {
             let h = Math.abs(beta / yAngleSide);
             h = h * h;
             hudLateralTile.rotateAround(BABYLON.Vector3.Zero(), BABYLON.Axis.Y, - (xAngle * 0.5 - h * xAngle * 0.08 - angularMargin));
+            this.proxyPickMeshes.push(hudLateralTile);
 
 
             let v0 = b * 0.1;
@@ -164,5 +177,9 @@ class HeadUpDisplay extends BABYLON.Mesh {
         }
 
         this.parent = this.cameraManager.freeCamera;
+    }
+
+    public onPointerUp(): void {
+        console.log("HUD picked index " + this.inputManager.aimedProxyIndex);
     }
 }

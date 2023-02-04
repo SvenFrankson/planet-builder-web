@@ -114,7 +114,7 @@ class Player extends BABYLON.Mesh {
 
     private _onPointerUpUIOnly = (pickableElement: Pickable) => {
         if (this.armManager) {
-            this.armManager.startActionAnimation(() => {
+            this.armManager.startActionAnimation(pickableElement, () => {
                 if (pickableElement) {
                     pickableElement.onPointerUp();
                 }
@@ -188,7 +188,7 @@ class Player extends BABYLON.Mesh {
             }
             
             if (this.armManager) {
-                this.armManager.startActionAnimation(() => {
+                this.armManager.startActionAnimation(pickableElement, () => {
                     if (pickableElement) {
                         pickableElement.onPointerUp();
                     }

@@ -17,6 +17,9 @@ class PlayerArmManager {
         }
         return this.leftArm;
     }
+    
+    private _aimingDistance: number = 0.1;
+    private _currentAimingDistance: number = 0.1;
 
     private _tmpDP: BABYLON.Vector3 = BABYLON.Vector3.Zero();
     private _dpLeftArm: BABYLON.Vector3 = BABYLON.Vector3.Zero();
@@ -93,9 +96,10 @@ class PlayerArmManager {
     }
 
     private _updateIdle(): void {
-        if (this.inputManager.aimedPosition) {
+        if (this.inputManager.aimedPosition && this.inputManager.aimedElement.interactionMode != InteractionMode.None) {
             if (this.mode != ArmManagerMode.Aim) {
                 this._aimingDistance = 0.1;
+                this._currentAimingDistance = 0.1;
             }
             this.mode = ArmManagerMode.Aim;
             return;
@@ -104,6 +108,8 @@ class PlayerArmManager {
         if (this.inputManager.inventoryOpened) {
             if (this.mode != ArmManagerMode.WristWatch) {
                 this._aimingDistance = 0.05;
+                this._currentAimingDistance = 0.05;
+                this._aimingArm = this.rightArm;
                 this._tmpPreviousCamPosRotationX = this.player.camPos.rotation.x;
                 this.startPowerWristWatchAnimation();
                 
@@ -140,10 +146,13 @@ class PlayerArmManager {
     }
 
     private _aimingArm: PlayerArm;
-    private _aimingDistance: number = 0.1;
     private _updateAim(): void {
 
         if (!this.inputManager.aimedPosition) {
+            this.mode = ArmManagerMode.Idle;
+            return;
+        }
+        if (this.inputManager.aimedElement && this.inputManager.aimedElement.interactionMode === InteractionMode.None) {
             this.mode = ArmManagerMode.Idle;
             return;
         }
@@ -181,7 +190,7 @@ class PlayerArmManager {
         }
 
         // 3 - Update arm target position.
-        this._aimingArm.setTarget(aimedPointClose.add(this.inputManager.aimedNormal.scale(this._aimingDistance)));
+        this._aimingArm.setTarget(aimedPointClose.add(this.inputManager.aimedNormal.scale(this._currentAimingDistance)));
 
         if (this._aimingArm.handMode === HandMode.Grab) {
             this._aimingArm.targetUp.copyFrom(this.inputManager.aimedNormal);
@@ -217,10 +226,10 @@ class PlayerArmManager {
         if (wristWatch) {
             if (this.inputManager.aimedPosition) {
                 let offset = this.inputManager.aimedNormal.add(this.player.right).normalize();
-                this.rightArm.setTarget(this.inputManager.aimedPosition.add(offset.scale(this._aimingDistance)));
+                this.rightArm.setTarget(this.inputManager.aimedPosition.add(offset.scale(this._currentAimingDistance)));
             }
             else {
-                this.rightArm.setTarget(wristWatch.powerButton.absolutePosition.add(up.scale(this._aimingDistance)));
+                this.rightArm.setTarget(wristWatch.powerButton.absolutePosition.add(up.scale(this._currentAimingDistance)));
             }
         }
 
@@ -232,15 +241,23 @@ class PlayerArmManager {
         }
     }
 
-    public async startActionAnimation(actionCallback?: () => void): Promise<void> {
-        if (this._aimingArm) {
-            this._aimingArm.setHandMode(HandMode.PointPress);
-            await this._animateAimingDistance(0.01, 0.3);
+    public async startActionAnimation(pickableElement: Pickable, actionCallback?: () => void): Promise<void> {
+        if (pickableElement && pickableElement.interactionMode === InteractionMode.Point) {
+            if (this._aimingArm) {
+                this._aimingArm.setHandMode(HandMode.PointPress);
+                await this._animateAimingDistance(0.01, 0.3);
+                if (actionCallback) {
+                    actionCallback();
+                }
+                await this.wait(0.3);
+                this._aimingArm.setHandMode(HandMode.Point);
+                await this._animateAimingDistance(this._aimingDistance, 0.3);
+            }
+        }
+        else {
             if (actionCallback) {
                 actionCallback();
             }
-            this._aimingArm.setHandMode(HandMode.Point);
-            await this._animateAimingDistance(0.1, 0.3);
         }
     }
 
@@ -263,16 +280,16 @@ class PlayerArmManager {
                 this.player.scene.onBeforeRenderObservable.removeCallback(this._animateAimingDistanceCB);
             }
             return new Promise<void>(resolve => {
-                let distanceZero = this._aimingDistance;
+                let distanceZero = this._currentAimingDistance;
                 let t = 0;
                 this._animateAimingDistanceCB = () => {
                     t += this.player.scene.getEngine().getDeltaTime() / 1000;
                     if (t < duration) {
                         let f = t / duration;
-                        this._aimingDistance = distanceZero * (1 - f) + distanceTarget * f;
+                        this._currentAimingDistance = distanceZero * (1 - f) + distanceTarget * f;
                     }
                     else {
-                        this._aimingDistance = distanceTarget;
+                        this._currentAimingDistance = distanceTarget;
                         this.player.scene.onBeforeRenderObservable.removeCallback(this._animateAimingDistanceCB);
                         this._animateAimingDistanceCB = undefined;
                         resolve();

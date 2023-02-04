@@ -1,13 +1,14 @@
 /// <reference path="../PlanetObject.ts"/>
 
 enum InteractionMode {
+    None,
     Point,
     Grab,
 }
 
 interface IPickable extends BABYLON.Mesh {
     interactionMode: InteractionMode;
-    proxyPickMesh: BABYLON.Mesh;
+    proxyPickMeshes: BABYLON.Mesh[];
     scene: BABYLON.Scene;
     inputManager: InputManager;
     instantiate(): void;
@@ -21,7 +22,7 @@ interface IPickable extends BABYLON.Mesh {
 
 class PickablePlanetObject extends PlanetObject implements IPickable {
     public interactionMode: InteractionMode = InteractionMode.Point;
-    public proxyPickMesh: BABYLON.Mesh;
+    public proxyPickMeshes: BABYLON.Mesh[];
 
     public get scene(): BABYLON.Scene {
         return this.main.scene;
@@ -68,7 +69,7 @@ class PickablePlanetObject extends PlanetObject implements IPickable {
 class Pickable extends BABYLON.Mesh implements IPickable {
 
     public interactionMode: InteractionMode = InteractionMode.Point;
-    public proxyPickMesh: BABYLON.Mesh;
+    public proxyPickMeshes: BABYLON.Mesh[];
 
     public get scene(): BABYLON.Scene {
         return this.main.scene;

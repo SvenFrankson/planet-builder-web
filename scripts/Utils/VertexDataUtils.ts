@@ -1,5 +1,29 @@
 class VertexDataUtils {
 
+    public static Merge(...datas: BABYLON.VertexData[]): BABYLON.VertexData {
+        let mergedData = new BABYLON.VertexData();
+        
+        let positions = [];
+        let indices = [];
+        let normals = [];
+        let uvs = [];
+
+        for (let i = 0; i < datas.length; i++) {
+            let offset = positions.length / 3;
+            positions.push(...datas[i].positions);
+            indices.push(...datas[i].indices.map(index => { return index + offset; }));
+            normals.push(...datas[i].normals);
+            uvs.push(...datas[i].uvs);
+        }
+
+        mergedData.positions = positions;
+        mergedData.indices = indices;
+        mergedData.normals = normals;
+        mergedData.uvs = uvs;
+
+        return mergedData;
+    }
+
     public static GetPlanePositions(
         f: number = 1,
         w: number = 1,

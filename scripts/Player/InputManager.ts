@@ -35,6 +35,7 @@ class InputManager {
     public inventoryOpened: boolean = false;
     public aimedElement: IPickable;
     public aimedPosition: BABYLON.Vector3;
+    public aimedProxyIndex: number = - 1;
     public aimedNormal: BABYLON.Vector3;
     public pickableElements: UniqueList<IPickable>;
 
@@ -352,18 +353,33 @@ class InputManager {
         let ray = this.scene.createPickingRay(x, y, BABYLON.Matrix.Identity(), this.scene.activeCameras[1]);
         for (let i = 0; i < this.pickableElements.length; i++) {
             let pickableElement = this.pickableElements.get(i);
-            let mesh: BABYLON.Mesh = pickableElement;
-            if (pickableElement.proxyPickMesh) {
-                mesh = pickableElement.proxyPickMesh;
+            if (pickableElement.proxyPickMeshes) {
+                for (let j = 0; j < pickableElement.proxyPickMeshes.length; j++) {
+                    let mesh: BABYLON.Mesh = pickableElement.proxyPickMeshes[j];
+                    let pick = ray.intersectsMesh(mesh);
+                    if (pick && pick.hit && pick.pickedMesh) {
+                        if (pick.distance < aimedDist) {
+                            aimedPickable = pickableElement;
+                            aimedDist = pick.distance;
+                            this.aimedPosition = pick.pickedPoint;
+                            this.aimedNormal = pick.getNormal(true, true);
+                            this.aimedProxyIndex = j;
+                            hit = true;
+                        }
+                    }
+                }
             }
-            let pick = ray.intersectsMesh(mesh);
-            if (pick && pick.hit && pick.pickedMesh) {
-                if (pick.distance < aimedDist) {
-                    aimedPickable = pickableElement;
-                    aimedDist = pick.distance;
-                    this.aimedPosition = pick.pickedPoint;
-                    this.aimedNormal = pick.getNormal(true, true);
-                    hit = true;
+            else {
+                let mesh: BABYLON.Mesh = pickableElement;
+                let pick = ray.intersectsMesh(mesh);
+                if (pick && pick.hit && pick.pickedMesh) {
+                    if (pick.distance < aimedDist) {
+                        aimedPickable = pickableElement;
+                        aimedDist = pick.distance;
+                        this.aimedPosition = pick.pickedPoint;
+                        this.aimedNormal = pick.getNormal(true, true);
+                        hit = true;
+                    }
                 }
             }
         }

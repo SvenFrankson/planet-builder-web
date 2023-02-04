@@ -178,7 +178,7 @@ class HoloPanel extends PickablePlanetObject {
         this.lines[3] = "Eventually, you do plan to have dinosaurs on your dinosaur tour, right? Just my luck, no ice. Remind me to thank John for a lovely weekend. This thing comes fully loaded. AM/FM radio, reclining bucket seats, and... power windows. Must go faster... go, go, go, go, go!";
         this.lines[4] = "Checkmate... Must go faster... go, go, go, go, go! Hey, you know how I'm, like, always trying to save the planet? Here's my chance. God creates dinosaurs. God destroys dinosaurs. God creates Man. Man destroys God. Man creates Dinosaurs. Checkmate... You're a very talented young man, with your own clever thoughts and ideas. Do you need a manager?";
     
-        this.proxyPickMesh = this.holoMesh;
+        this.proxyPickMeshes = [this.holoMesh];
 
         let off = 5 * Math.random();
         let offPointer = 5 * Math.random();

@@ -190,7 +190,7 @@ class Slika {
         }
     }
 
-    public add(e: SlikaElement): SlikaElement {
+    public add<T extends SlikaElement>(e: T): T {
         this.elements.push(e);
         if (e.isPickable) {
             this.pickableElements.push(e);

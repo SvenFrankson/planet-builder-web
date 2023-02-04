@@ -1,13 +1,18 @@
 class WristWatch extends Pickable {
 
     public static Instances: WristWatch[] = [];
+    public interceptsPointerMove(): boolean {
+        return true;
+    }
 
     public power: boolean = false;
 
     public holoMesh: BABYLON.Mesh;
     public powerButton: BABYLON.Mesh;
 
-    public holoSlika: Slika;
+    public slika: Slika;
+
+    public pages: WristWatchPage[] = [];
     
     public animateExtension = AnimationFactory.EmptyNumberCallback;
 
@@ -30,7 +35,7 @@ class WristWatch extends Pickable {
         this.holoMesh.position.z = 0.148;
         this.holoMesh.rotation.y = - Math.PI * 0.5;
         this.holoMesh.parent = this.player.armManager.leftArm.foreArmMesh;
-        this.proxyPickMesh = this.holoMesh;
+        this.proxyPickMeshes = [this.holoMesh];
 
         this.powerButton = new BABYLON.Mesh("wrist-watch-power-button");
         this.powerButton.position.x = 0.014;
@@ -55,10 +60,10 @@ class WristWatch extends Pickable {
         holoScreenTexture.hasAlpha = true;
         holoScreenMaterial.holoTexture = holoScreenTexture;
         
-        this.holoSlika = new Slika(1000 * hsf, 1000 * hsf, holoScreenTexture.getContext(), holoScreenTexture);
-        this.holoSlika.texture = holoScreenTexture;
-        this.holoSlika.context = holoScreenTexture.getContext();
-        this.holoSlika.needRedraw = true;
+        this.slika = new Slika(1000 * hsf, 1000 * hsf, holoScreenTexture.getContext(), holoScreenTexture);
+        this.slika.texture = holoScreenTexture;
+        this.slika.context = holoScreenTexture.getContext();
+        this.slika.needRedraw = true;
 
         this.holoMesh.material = holoScreenMaterial;
 
@@ -67,7 +72,7 @@ class WristWatch extends Pickable {
         let XEdge = 350;
         let ML = 108;
         let MR = 33;
-        this.holoSlika.add(
+        this.slika.add(
             new SlikaPath({
                 points: [
                     M, M + L,
@@ -87,69 +92,7 @@ class WristWatch extends Pickable {
             })
         );
 
-        this.holoSlika.add(new SlikaText({
-            text: "INVENTORY",
-            x: 500,
-            y: 110,
-            textAlign: "center",
-            color: BABYLON.Color3.FromHexString(Config.uiConfiguration.wristWatchScreenBaseColor),
-            fontSize: 60,
-            fontFamily: "XoloniumRegular",
-            strokeColor: BABYLON.Color3.Black(),
-            strokeWidth: 6
-        }));
-
-        for (let i = 0; i < 12; i++) {
-            let iconW = 50;
-            let lineHeight = 60;
-
-            if (i % 2 === 0) {
-                let itemIconBorder = this.holoSlika.add(new SlikaPath({
-                    points: [
-                        250, 147 + i * lineHeight,
-                        1000 - M - 7.5, 147 + i * lineHeight,
-                        1000 - M - 7.5, 147 + (i + 1) * lineHeight,
-                        250, 147 + (i + 1) * lineHeight,
-                    ],
-                    close: true,
-                    fillColor: BABYLON.Color3.FromHexString(Config.uiConfiguration.wristWatchScreenBaseColor),
-                    fillAlpha: 0.05
-                }));
-            }
-
-            let itemIcon = this.holoSlika.add(new SlikaImage(
-                new SPosition(260 + iconW * 0.5, 150 + iconW * 0.5 + i * lineHeight),
-                iconW,
-                iconW,
-                "datas/images/block-icon-" + BlockTypeNames[BlockType.Grass + i] + "-miniature.png"
-            ))
-
-            let itemName = this.holoSlika.add(new SlikaText({
-                text: BlockTypeNames[BlockType.Grass + i],
-                x: 330,
-                y: 140 + iconW + i * lineHeight,
-                textAlign: "left",
-                color: BABYLON.Color3.FromHexString(Config.uiConfiguration.wristWatchScreenBaseColor),
-                fontSize: 40,
-                fontFamily: "XoloniumRegular",
-                strokeColor: BABYLON.Color3.Black(),
-                strokeWidth: 4
-            }));
-
-            let itemCount = this.holoSlika.add(new SlikaText({
-                text: "x" + Math.floor(Math.random() * 100).toFixed(0),
-                x: 800,
-                y: 140 + iconW + i * lineHeight,
-                textAlign: "right",
-                color: BABYLON.Color3.FromHexString(Config.uiConfiguration.wristWatchScreenBaseColor),
-                fontSize: 40,
-                fontFamily: "XoloniumRegular",
-                strokeColor: BABYLON.Color3.Black(),
-                strokeWidth: 4
-            }));
-        }
-
-        this.holoSlika.add(
+        this.slika.add(
             new SlikaPath({
                 points: [
                     M, M + L,
@@ -166,37 +109,16 @@ class WristWatch extends Pickable {
                 strokeWidth: 15
             })
         );
-        this.holoSlika.add(
-            new SlikaPath({
-                points: [
-                    M + 7.5, 150,
-                    1000 - M - 7.5, 150
-                ],
-                close: false,
-                strokeColor: BABYLON.Color3.FromHexString(Config.uiConfiguration.wristWatchScreenBaseColor),
-                strokeAlpha: 1,
-                strokeWidth: 4,
-                outlineColor: BABYLON.Color3.Black(),
-                outlineWidth: 2
-            })
-        );
-        this.holoSlika.add(
-            new SlikaPath({
-                points: [
-                    250, 152,
-                    250, 1000 - ML - 7.5
-                ],
-                close: false,
-                strokeColor: BABYLON.Color3.FromHexString(Config.uiConfiguration.wristWatchScreenBaseColor),
-                strokeAlpha: 1,
-                strokeWidth: 4,
-                outlineColor: BABYLON.Color3.Black(),
-                outlineWidth: 2
-            })
-        );
 
-        this.holoSlika.needRedraw = true;
+        this.pages.push(
+            new WristWatchHome(this),
+            new WristWatchInventory(this)
+        );
+        this.pages.forEach(p => {
+            p.hide(0);
+        });
 
+        this.slika.needRedraw = true;
         this.scene.onBeforeRenderObservable.add(this._update);
         this.powerOff();
     }
@@ -211,6 +133,13 @@ class WristWatch extends Pickable {
         }
 
         super.dispose();
+    }
+    
+    public currentPage: number = 1;
+    public async showPage(page: number): Promise<void> {
+        await this.pages[this.currentPage].hide(0.3);
+        this.currentPage = page;
+        await this.pages[this.currentPage].show(0.3);
     }
 
     private _screenExtension: number = 0;
@@ -232,15 +161,17 @@ class WristWatch extends Pickable {
     public async powerOn(): Promise<void> {
         this.power = true;
         await this.wait(1.5);
-        this.holoSlika.needRedraw = true;
+        this.slika.needRedraw = true;
         this.holoMesh.isVisible = true;
         await this.animateExtension(1, 0.5);
+        this.showPage(this.currentPage);
     }
 
     public async powerOff(): Promise<void> {
         this.power = false;
         await this.animateExtension(0, 0.5);
         this.holoMesh.isVisible = false;
+        this.pages[this.currentPage].hide(0.3);
     }
 
     private _update = () => {
@@ -251,6 +182,9 @@ class WristWatch extends Pickable {
             else {
                 this.powerOff();
             }
+        }
+        if (this.pages[this.currentPage]) {
+            this.pages[this.currentPage].update();
         }
     }
 }
