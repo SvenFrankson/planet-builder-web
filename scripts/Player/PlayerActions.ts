@@ -5,6 +5,7 @@ interface IPlayerActionManagerData {
 class PlayerAction {
     public iconUrl: string;
     public r: number = 0;
+    public item: InventoryItem;
 
     public onUpdate: (chuncks?: PlanetChunck[]) => void;
     public onClick: (chuncks?: PlanetChunck[]) => void;
@@ -79,15 +80,21 @@ class PlayerActionManager {
     public linkAction(action: PlayerAction, slotIndex: number): void {
         if (slotIndex >= 0 && slotIndex <= 9) {
             this.linkedActions[slotIndex] = action;
+            this.hud.hudLateralTileImageMeshes[slotIndex].isVisible = true;
             this.hud.hudLateralTileImageMaterials[slotIndex].diffuseTexture = new BABYLON.Texture(action.iconUrl);
             this.hud.hudLateralTileImageMaterials[slotIndex].diffuseTexture.hasAlpha = true;
+            this.hud.itemCountTexts[slotIndex].prop.text = action.item.count.toFixed(0);
+            this.hud.slika.needRedraw = true;
         }
     }
 
     public unlinkAction(slotIndex: number): void {
         if (slotIndex >= 0 && slotIndex <= 9) {
             this.linkedActions[slotIndex] = undefined;
+            this.hud.hudLateralTileImageMeshes[slotIndex].isVisible = false;
             this.hud.hudLateralTileImageMaterials[slotIndex].diffuseTexture = undefined;
+            this.hud.itemCountTexts[slotIndex].prop.text = "";
+            this.hud.slika.needRedraw = true;
         }
     }
 

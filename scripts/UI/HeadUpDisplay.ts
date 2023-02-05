@@ -6,7 +6,11 @@ class HeadUpDisplay extends Pickable {
         return true;
     }
 
+    public slika: Slika;
+
+    public hudLateralTileImageMeshes: BABYLON.Mesh[] = [];
     public hudLateralTileImageMaterials: BABYLON.StandardMaterial[] = [];
+    public itemCountTexts: SlikaText[] = [];
 
     public get cameraManager(): CameraManager {
         return this.main.cameraManager;
@@ -45,15 +49,15 @@ class HeadUpDisplay extends Pickable {
         hudTexture.hasAlpha = true;
         hudMaterial.holoTexture = hudTexture;
         
-        let hudSlika = new Slika(1000 * hsf, 1000 * hsf, hudTexture.getContext(), hudTexture);
-        hudSlika.texture = hudTexture;
-        hudSlika.context = hudTexture.getContext();
-        hudSlika.needRedraw = true;
+        this.slika = new Slika(1000 * hsf, 1000 * hsf, hudTexture.getContext(), hudTexture);
+        this.slika.texture = hudTexture;
+        this.slika.context = hudTexture.getContext();
+        this.slika.needRedraw = true;
 
         let M = 20;
         let L1 = 80;
         let L2 = 200;
-        hudSlika.add(
+        this.slika.add(
             new SlikaPath({
                 points: [
                     M, M + L1,
@@ -72,7 +76,7 @@ class HeadUpDisplay extends Pickable {
                 strokeWidth: 20
             })
         );
-        hudSlika.add(
+        this.slika.add(
             new SlikaPath({
                 points: [
                     M, 500 + M + L1,
@@ -101,7 +105,7 @@ class HeadUpDisplay extends Pickable {
             let x1 = 600 - w;
             let y0 = 1000 - 100 * (b + 1) + w;
             let y1 = 1000 - 100 * b - w;
-            hudSlika.add(
+            this.slika.add(
                 new SlikaPath({
                     points: [
                         x0, y0,
@@ -118,8 +122,8 @@ class HeadUpDisplay extends Pickable {
                 })
             );
             */
-            hudSlika.add(new SlikaText({
-                text: Math.floor(Math.random() * 99).toFixed(0),
+            this.itemCountTexts[b] = this.slika.add(new SlikaText({
+                text: "",
                 textAlign: "center",
                 x: 550,
                 y: 1000 - 30 - b * 100,
@@ -163,19 +167,18 @@ class HeadUpDisplay extends Pickable {
             hudLateralTileCount.parent = hudLateralTile;
             hudLateralTileCount.material = hudMaterial;
 
-            let hudLateralTileImage = new BABYLON.Mesh("hud-lateral-tile-" + b + "-image");
-            VertexDataUtils.CreatePlane(size * 0.7, size * 0.7, - size * 0.3, - size * 0.25, 0, 0, 1, 1).applyToMesh(hudLateralTileImage);
-            hudLateralTileImage.layerMask = 0x10000000;
-            hudLateralTileImage.alphaIndex = 1;
-            hudLateralTileImage.position.z = - 0.1;
-            hudLateralTileImage.parent = hudLateralTile;
+            this.hudLateralTileImageMeshes[b] = new BABYLON.Mesh("hud-lateral-tile-" + b + "-image");
+            VertexDataUtils.CreatePlane(size * 0.7, size * 0.7, - size * 0.3, - size * 0.25, 0, 0, 1, 1).applyToMesh(this.hudLateralTileImageMeshes[b]);
+            this.hudLateralTileImageMeshes[b].layerMask = 0x10000000;
+            this.hudLateralTileImageMeshes[b].alphaIndex = 1;
+            this.hudLateralTileImageMeshes[b].position.z = - 0.1;
+            this.hudLateralTileImageMeshes[b].parent = hudLateralTile;
+            this.hudLateralTileImageMeshes[b].isVisible = false;
             
             this.hudLateralTileImageMaterials[b] = new BABYLON.StandardMaterial("hud-lateral-tile-" + b + "-image-material");
-            hudLateralTileImage.material = this.hudLateralTileImageMaterials[b];
+            this.hudLateralTileImageMeshes[b].material = this.hudLateralTileImageMaterials[b];
             this.hudLateralTileImageMaterials[b].emissiveColor.copyFromFloats(1, 1, 1);
             this.hudLateralTileImageMaterials[b].specularColor.copyFromFloats(0, 0, 0);
-            this.hudLateralTileImageMaterials[b].diffuseTexture = new BABYLON.Texture("datas/images/block-icon-" + BlockTypeNames[BlockType.Grass + b] + "-miniature.png");
-            this.hudLateralTileImageMaterials[b].diffuseTexture.hasAlpha = true;
             this.hudLateralTileImageMaterials[b].useAlphaFromDiffuseTexture = true;
         }
 

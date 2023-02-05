@@ -146,14 +146,6 @@ class MainMenu extends Main {
 
 						this.player.playerActionManager = new PlayerActionManager(this.player, hud, this);
 						this.player.playerActionManager.initialize();
-						let ass = async () => {
-							let slotIndex = 0;
-							for (let i = BlockType.Grass; i < BlockType.Unknown; i++) {
-								this.player.playerActionManager.linkAction(await PlayerActionTemplate.CreateBlockAction(this.player, i), slotIndex);
-								slotIndex++;
-							}
-						}
-						ass();
 
 						this.player.inventory = new Inventory(this.player);
 						hud.instantiate();

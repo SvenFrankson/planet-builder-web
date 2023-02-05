@@ -23,6 +23,7 @@ class InventoryItem {
         it.size = 27;
         PlayerActionTemplate.CreateBlockAction(player, blockType).then((action) => {
             it.playerAction = action;
+            action.item = it;
         });
         it.iconUrl = "datas/images/block-icon-" + BlockTypeNames[blockType] + "-miniature.png";
         return it;
