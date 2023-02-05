@@ -210,7 +210,7 @@ class PlayerArmManager {
         if (this.leftArm.handMode != HandMode.WristWatch) {
             this.leftArm.setHandMode(HandMode.WristWatch);
         }
-        if (this.rightArm.handMode != HandMode.Point) {
+        if (this.rightArm.handMode != HandMode.Point && this.rightArm.handMode != HandMode.PointPress) {
             this.rightArm.setHandMode(HandMode.Point);
         }
 
@@ -245,7 +245,7 @@ class PlayerArmManager {
         if (pickableElement && pickableElement.interactionMode === InteractionMode.Point) {
             if (this._aimingArm) {
                 this._aimingArm.setHandMode(HandMode.PointPress);
-                await this._animateAimingDistance(0.01, 0.3);
+                await this._animateAimingDistance(0.01, 0.2);
                 if (actionCallback) {
                     actionCallback();
                 }

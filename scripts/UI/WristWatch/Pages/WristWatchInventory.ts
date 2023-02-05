@@ -147,4 +147,13 @@ class WristWatchInventory extends WristWatchPage {
             }
         }
     }
+
+    public onPointerUp(x: number, y: number): void {
+        if (this.inventory.draggedItem) {
+            let hintedSlotIndex = this.inventory.hintedSlotIndex.getLast();
+            if (isFinite(hintedSlotIndex)) {
+                this.wristWatch.player.playerActionManager.linkAction(this.inventory.draggedItem.playerAction, hintedSlotIndex);
+            }
+        }
+    }
 }

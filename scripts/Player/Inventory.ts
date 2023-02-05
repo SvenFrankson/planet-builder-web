@@ -48,6 +48,7 @@ class Inventory {
     private _brickSorting: BrickSortingOrder = BrickSortingOrder.TypeAsc;
 
     public draggedItem: InventoryItem;
+    public hintedSlotIndex: UniqueList<number> = new UniqueList<number>();
 
     constructor(
         public player: Player

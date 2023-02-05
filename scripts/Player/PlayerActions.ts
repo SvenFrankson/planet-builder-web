@@ -27,7 +27,9 @@ class PlayerActionManager {
 
     public linkedActions: PlayerAction[] = [];
 
-    public hintedSlotIndex: UniqueList<number> = new UniqueList<number>();
+    public get inventory(): Inventory {
+        return this.player.inventory;
+    }
 
     constructor(
         public player: Player,
@@ -43,14 +45,17 @@ class PlayerActionManager {
         this.main.inputManager.addKeyDownListener((e: KeyInput) => {
             let slotIndex = e;
             if (slotIndex >= 0 && slotIndex < 10) {
-                if (!document.pointerLockElement) {
-                    this.startHint(slotIndex);
-                }
+                this.startHint(slotIndex);
             }
         });
         this.main.inputManager.addKeyUpListener((e: KeyInput) => {
             let slotIndex = e;
-            this.equipAction(slotIndex);
+            if (slotIndex >= 0 && slotIndex < 10) {
+                if (this.stopHint(slotIndex)) {
+                    return;
+                }
+                this.equipAction(slotIndex);
+            }
         });
         for (let i = 0; i < 10; i++) {
             let slotIndex = i;
@@ -63,18 +68,7 @@ class PlayerActionManager {
     }
 
     public update = () => {
-        if (this.hintedSlotIndex.length > 0) {
-            let t = (new Date()).getTime();
-            let thickness = Math.cos(2 * Math.PI * t / 1000) * 2 + 3;
-            let opacity = (Math.cos(2 * Math.PI * t / 1000) + 1) * 0.5 * 0.5 + 0.25;
-            for (let i = 0; i < this.hintedSlotIndex.length; i++) {
-                let slotIndex = this.hintedSlotIndex.get(i);
-                /*
-                console.log(thickness);
-                (document.querySelector("#player-action-" + slotIndex) as HTMLDivElement).style.backgroundColor = "rgba(255, 255, 255, " + opacity.toFixed(2) + ")";
-                */
-            }
-        }
+        
     }
 
     public linkAction(action: PlayerAction, slotIndex: number): void {
@@ -93,7 +87,6 @@ class PlayerActionManager {
 
     public equipAction(slotIndex: number): void {
         if (slotIndex >= 0 && slotIndex < 10) {
-            this.stopHint(slotIndex);
             for (let i = 0; i < 10; i++) {
                 //(document.querySelector("#player-action-" + i + " .background") as HTMLImageElement).src ="/datas/images/inventory-item-background.svg";
             }
@@ -128,12 +121,21 @@ class PlayerActionManager {
     }
 
     public startHint(slotIndex: number): void {
-        this.hintedSlotIndex.push(slotIndex);
+        this.inventory.hintedSlotIndex.push(slotIndex);
+        setTimeout(() => {
+            if (this.inventory.hintedSlotIndex.contains(slotIndex)) {
+                this.hud.onHintStart(slotIndex);
+            }
+        }, 200);
     }
 
-    public stopHint(slotIndex: number): void {
-        this.hintedSlotIndex.remove(slotIndex);
-        //(document.querySelector("#player-action-" + slotIndex) as HTMLDivElement).style.backgroundColor = "";
+    public stopHint(slotIndex: number): boolean {
+        let needStopHint = this.inventory.hintedSlotIndex.remove(slotIndex) >= 0;
+        this.hud.onHintEnd(slotIndex);
+        if (needStopHint) {
+            return true;
+        }
+        return false;
     }
 
     public serialize(): IPlayerActionManagerData {

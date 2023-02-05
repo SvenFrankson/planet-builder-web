@@ -20,11 +20,13 @@ class UniqueList<T> {
         }
     }
 
-    public remove(e: T) {
+    public remove(e: T): T {
         let i = this._elements.indexOf(e);
         if (i != -1) {
             this._elements.splice(i, 1);
+            return e;
         }
+        return undefined;
     }
 
     public contains(e: T): boolean {

@@ -14,6 +14,7 @@ class HeadUpDisplay extends Pickable {
     public hudLateralTileImageMeshes: BABYLON.Mesh[] = [];
     public hudLateralTileImageMaterials: BABYLON.StandardMaterial[] = [];
     public itemCountTexts: SlikaText[] = [];
+    public itemKeyHintTexts: SlikaText[] = [];
     public itemNameTexts: SlikaText[] = [];
 
     public get cameraManager(): CameraManager {
@@ -136,7 +137,7 @@ class HeadUpDisplay extends Pickable {
                 fontFamily: "XoloniumRegular"
             }));
 
-            let keyText = this.slika.add(new SlikaText({
+            this.itemKeyHintTexts[b] = this.slika.add(new SlikaText({
                 text: b.toFixed(0),
                 textAlign: "center",
                 x: 950,
@@ -235,6 +236,24 @@ class HeadUpDisplay extends Pickable {
     public onActionUnequiped(action: PlayerAction, slotIndex: number): void {
         if (slotIndex >= 0 && slotIndex <= 9) {
             this.unlit(slotIndex);
+        }
+    }
+
+    public onHintStart(slotIndex: number): void {
+        if (slotIndex >= 0 && slotIndex <= 9) {
+            this.itemKeyHintTexts[slotIndex].prop.fontSize = 60;
+            this.itemKeyHintTexts[slotIndex].prop.color = BABYLON.Color3.White();
+            this.itemKeyHintTexts[slotIndex].prop.strokeWidth = 8;
+            this.slika.needRedraw = true;
+        }
+    }
+
+    public onHintEnd(slotIndex: number): void {
+        if (slotIndex >= 0 && slotIndex <= 9) {
+            this.itemKeyHintTexts[slotIndex].prop.fontSize = 50;
+            this.itemKeyHintTexts[slotIndex].prop.color = new BABYLON.Color3(0.8, 0.8, 0.8);
+            this.itemKeyHintTexts[slotIndex].prop.strokeWidth = 4;
+            this.slika.needRedraw = true;
         }
     }
 

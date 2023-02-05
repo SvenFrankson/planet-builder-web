@@ -49,6 +49,6 @@ class WristWatchPage {
     }
 
     public update(): void {}
-
     public onPointerDown(x: number, y: number): void {}
+    public onPointerUp(x: number, y: number): void {}
 }
