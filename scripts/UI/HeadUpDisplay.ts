@@ -185,6 +185,25 @@ class HeadUpDisplay extends Pickable {
         this.parent = this.cameraManager.freeCamera;
     }
 
+    public onActionLinked(action: PlayerAction, slotIndex: number): void {
+        if (slotIndex >= 0 && slotIndex <= 9) {
+            this.hudLateralTileImageMeshes[slotIndex].isVisible = true;
+            this.hudLateralTileImageMaterials[slotIndex].diffuseTexture = new BABYLON.Texture(action.iconUrl);
+            this.hudLateralTileImageMaterials[slotIndex].diffuseTexture.hasAlpha = true;
+            this.itemCountTexts[slotIndex].prop.text = action.item.count.toFixed(0);
+            this.slika.needRedraw = true;
+        }
+    }
+
+    public onActionUnlinked(slotIndex: number): void {
+        if (slotIndex >= 0 && slotIndex <= 9) {
+            this.hudLateralTileImageMeshes[slotIndex].isVisible = false;
+            this.hudLateralTileImageMaterials[slotIndex].diffuseTexture = undefined;
+            this.itemCountTexts[slotIndex].prop.text = "";
+            this.slika.needRedraw = true;
+        }
+    }
+
     public onPointerUp(): void {
         console.log("HUD picked index " + this.inputManager.aimedProxyIndex);
         let index = this.inputManager.aimedProxyIndex;
