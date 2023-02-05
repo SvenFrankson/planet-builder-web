@@ -46,6 +46,7 @@ class WristWatch extends Pickable {
         this.wait = AnimationFactory.CreateWait(this);
         this.animateExtension = AnimationFactory.CreateNumber(this, this, "screenExtension");
         WristWatch.Instances.push(this);
+        this.interactionMode = InteractionMode.Touch;
     }
 
     public async instantiate(): Promise<void> {

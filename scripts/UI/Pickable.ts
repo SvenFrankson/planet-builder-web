@@ -3,6 +3,7 @@
 enum InteractionMode {
     None,
     Point,
+    Touch,
     Grab,
 }
 

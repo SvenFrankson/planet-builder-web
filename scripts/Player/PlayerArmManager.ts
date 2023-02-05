@@ -107,8 +107,8 @@ class PlayerArmManager {
 
         if (this.inputManager.inventoryOpened) {
             if (this.mode != ArmManagerMode.WristWatch) {
-                this._aimingDistance = 0.05;
-                this._currentAimingDistance = 0.05;
+                this._aimingDistance = 0.1;
+                this._currentAimingDistance = 0.1;
                 this._aimingArm = this.rightArm;
                 this._tmpPreviousCamPosRotationX = this.player.camPos.rotation.x;
                 this.startPowerWristWatchAnimation();
@@ -211,7 +211,7 @@ class PlayerArmManager {
             this.leftArm.setHandMode(HandMode.WristWatch);
         }
         if (this.rightArm.handMode != HandMode.Point && this.rightArm.handMode != HandMode.PointPress) {
-            this.rightArm.setHandMode(HandMode.Point);
+            this.rightArm.setHandMode(HandMode.PointPress);
         }
 
         let wristWatch = WristWatch.Instances.find(ww => { return ww.player === this.player; });
@@ -254,6 +254,18 @@ class PlayerArmManager {
                 await this._animateAimingDistance(this._aimingDistance, 0.3);
             }
         }
+        else if (pickableElement && pickableElement.interactionMode === InteractionMode.Touch) {
+            if (this._aimingArm) {
+                this._aimingArm.setHandMode(HandMode.Point);
+                await this._animateAimingDistance(0, 0.1);
+                if (actionCallback) {
+                    actionCallback();
+                }
+                await this.wait(0.4);
+                this._aimingArm.setHandMode(HandMode.PointPress);
+                await this._animateAimingDistance(this._aimingDistance, 0.1);
+            }
+        }
         else {
             if (actionCallback) {
                 actionCallback();
@@ -269,7 +281,7 @@ class PlayerArmManager {
             actionCallback();
         }
         await this.wait(0.3);
-        this.rightArm.setHandMode(HandMode.Point);
+        this.rightArm.setHandMode(HandMode.PointPress);
         await this._animateAimingDistance(0.05, 0.3);
     }
 
