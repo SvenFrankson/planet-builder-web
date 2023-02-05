@@ -14,6 +14,9 @@ class HeadUpDisplay extends Pickable {
     public get scene(): BABYLON.Scene {
         return this.player.scene;
     }
+    public get inventory(): Inventory {
+        return this.player.inventory;
+    }
 
     constructor(public player: Player, main: Main) {
         super("head-up-display", main);
@@ -181,5 +184,9 @@ class HeadUpDisplay extends Pickable {
 
     public onPointerUp(): void {
         console.log("HUD picked index " + this.inputManager.aimedProxyIndex);
+        let index = this.inputManager.aimedProxyIndex;
+        if (this.inventory.draggedItem) {
+            this.player.playerActionManager.linkAction(this.inventory.draggedItem.playerAction, index);
+        }
     }
 }

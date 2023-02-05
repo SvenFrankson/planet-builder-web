@@ -142,7 +142,7 @@ class WristWatchInventory extends WristWatchPage {
             if (y > 150) {
                 let n = Math.floor((y - 150) / this._lineHeight);
                 if (this.inventory.items[n]) {
-                    console.log(this.inventory.items[n].name);
+                    this.inventory.draggedItem = this.inventory.items[n];
                 }
             }
         }
