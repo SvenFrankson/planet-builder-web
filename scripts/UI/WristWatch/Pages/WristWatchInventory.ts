@@ -3,6 +3,7 @@ class WristWatchInventory extends WristWatchPage {
     private _lineCount: number = 12;
     private _lineHeight: number = 60;
 
+    private _itemHighlight: SlikaPath;
     private _itemIcons: SlikaImage[] = [];
     private _itemNames: SlikaText[] = [];
     private _itemCounts: SlikaText[] = [];
@@ -29,6 +30,14 @@ class WristWatchInventory extends WristWatchPage {
             strokeWidth: 6
         }));
         this.elements.push(title);
+
+        this._itemHighlight = this.slika.add(new SlikaPath({
+            points: [],
+            close: true,
+            fillColor: BABYLON.Color3.White(),
+            fillAlpha: 0.5
+        }));
+        this.elements.push(this._itemHighlight);
 
         for (let i = 0; i < this._lineCount; i++) {
             let iconW = 50;
@@ -116,6 +125,12 @@ class WristWatchInventory extends WristWatchPage {
         this.elements.push(separator2);
     }
 
+    public update(): void {
+        if (!this.inventory.draggedItem && this._highlitIndex === - 1) {
+            this.unlit();
+        }
+    }
+
     public async show(duration: number): Promise<void> {
         this.refresh();
         await super.show(duration);
@@ -137,12 +152,54 @@ class WristWatchInventory extends WristWatchPage {
         }
     }
 
+    private _highlitIndex = -1;
+    public highlight(line: number, fillAlpha: number): void {
+        if (line != this._highlitIndex || fillAlpha != this._itemHighlight.prop.fillAlpha) {
+            this._highlitIndex = line;
+            let M = 15;
+            this._itemHighlight.prop.points = [
+                250, 147 + line * this._lineHeight,
+                1000 - M - 7.5, 147 + line * this._lineHeight,
+                1000 - M - 7.5, 147 + (line + 1) * this._lineHeight,
+                250, 147 + (line + 1) * this._lineHeight,
+            ];
+            this._itemHighlight.prop.fillAlpha = fillAlpha;
+            this.slika.needRedraw = true;
+        }
+    }
+
+    public unlit(): void {
+        if (this._itemHighlight.prop.points.length > 0) {
+            this._highlitIndex = - 1;
+            this._itemHighlight.prop.points = [];
+            this.slika.needRedraw = true;
+        }
+    }
+
+    public onHoverEnd(): void {
+        this._highlitIndex = - 1;
+    }
+
+    public onPointerMove(x: number, y: number): void {
+        if (x > 250) {
+            if (y > 150) {
+                let n = Math.floor((y - 150) / this._lineHeight);
+                if (this.inventory.items[n] && !this.inventory.draggedItem) {
+                    this.highlight(n, 0.25);
+                    return;
+                }
+                this._highlitIndex = - 1;
+            }
+        }
+    }
+
     public onPointerDown(x: number, y: number): void {
         if (x > 250) {
             if (y > 150) {
                 let n = Math.floor((y - 150) / this._lineHeight);
                 if (this.inventory.items[n]) {
                     this.inventory.draggedItem = this.inventory.items[n];
+                    this.highlight(n, 0.5);
                 }
             }
         }
@@ -154,6 +211,7 @@ class WristWatchInventory extends WristWatchPage {
             if (isFinite(hintedSlotIndex)) {
                 this.wristWatch.player.playerActionManager.linkAction(this.inventory.draggedItem.playerAction, hintedSlotIndex);
             }
+            this.inventory.draggedItem = undefined;
         }
     }
 }

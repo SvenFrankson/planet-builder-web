@@ -184,8 +184,10 @@ class WristWatch extends Pickable {
                 this.powerOff();
             }
         }
-        if (this.pages[this.currentPage]) {
-            this.pages[this.currentPage].update();
+        if (this.power) {
+            if (this.pages[this.currentPage]) {
+                this.pages[this.currentPage].update();
+            }
         }
     }
 
@@ -195,6 +197,29 @@ class WristWatch extends Pickable {
 
     private posYToYTexture(posY: number): number {
         return 500 - posY / (0.225 * 0.5) * 500;
+    }
+
+    public onHoverStart(): void {
+        if (this.pages[this.currentPage]) {
+            this.pages[this.currentPage].onHoverStart();
+        }
+        this.scene.onBeforeRenderObservable.add(this.onPointerMove);
+    }
+
+    public onHoverEnd(): void {
+        if (this.pages[this.currentPage]) {
+            this.pages[this.currentPage].onHoverEnd();
+        }
+        this.scene.onBeforeRenderObservable.removeCallback(this.onPointerMove);
+    }
+
+    private onPointerMove = () => {
+        let local = BABYLON.Vector3.TransformCoordinates(this.inputManager.aimedPosition, this.holoMesh.getWorldMatrix().clone().invert());
+        let x = this.posXToXTexture(local.x);
+        let y = this.posYToYTexture(local.y);
+        if (this.pages[this.currentPage]) {
+            this.pages[this.currentPage].onPointerMove(x, y);
+        }
     }
 
     public onPointerDown(): void {

@@ -68,7 +68,6 @@ class WristWatchHome extends WristWatchPage {
         let h = date.getHours();
         let m = date.getMinutes();
         if (m != this._lastM) {
-            console.log(h + " " + m);
             this._lastM = m;
 
             let angleHour = ((h % 12) / 12 + (m / 60 / 12)) * 2 * Math.PI;
