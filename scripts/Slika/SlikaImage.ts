@@ -4,6 +4,25 @@ class SlikaImage extends SlikaElement {
     private _isLoaded: boolean = false;
     public size: number = 1;
 
+    private _url: string;
+    public get url(): string {
+        return this._url;
+    }
+    public set url(s: string) {
+        if (s != this._url) {
+            this._isLoaded = false;
+            this._url = s;
+
+            if (this._url != "") {
+                this._img = new Image();
+                this._img.src = this._url;
+                this._img.onload = () => {
+                    this._isLoaded = true;
+                };
+            }
+        }
+    }
+
     public get isVisible(): boolean {
         return this.display && this.size != 0;
     }
@@ -12,26 +31,24 @@ class SlikaImage extends SlikaElement {
         public p: SPosition = new SPosition(),
         public w: number,
         public h: number,
-        public url: string
+        url: string
     ) {
         super();
-        this._img = new Image();
-        this._img.src = url;
-        this._img.onload = () => {
-            this._isLoaded = true;
-        };
+        this.url = url;
     }
 
     public redraw(context: BABYLON.ICanvasRenderingContext): void {
-        let hsf = Config.performanceConfiguration.holoScreenFactor;
-        
-        if (this._isLoaded) {
-            context.drawImage(this._img, (this.p.x - this.w * 0.5 * this.size) * hsf, (this.p.y - this.h * 0.5 * this.size) * hsf, (this.w * this.size) * hsf, (this.h * this.size) * hsf);
-        }
-        else {
-            requestAnimationFrame(() => {
-                this.redraw(context);
-            })
+        if (this.url != "") {
+            let hsf = Config.performanceConfiguration.holoScreenFactor;
+            
+            if (this._isLoaded) {
+                context.drawImage(this._img, (this.p.x - this.w * 0.5 * this.size) * hsf, (this.p.y - this.h * 0.5 * this.size) * hsf, (this.w * this.size) * hsf, (this.h * this.size) * hsf);
+            }
+            else {
+                requestAnimationFrame(() => {
+                    this.redraw(context);
+                })
+            }
         }
     }
 

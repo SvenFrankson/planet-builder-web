@@ -1,5 +1,15 @@
 class WristWatchInventory extends WristWatchPage {
 
+    private _lineCount: number = 12;
+
+    private _itemIcons: SlikaImage[] = [];
+    private _itemNames: SlikaText[] = [];
+    private _itemCounts: SlikaText[] = [];
+
+    public get inventory(): Inventory {
+        return this.wristWatch.player.inventory;
+    }
+
     constructor(wristWatch: WristWatch) {
         super(wristWatch);
 
@@ -19,7 +29,7 @@ class WristWatchInventory extends WristWatchPage {
         }));
         this.elements.push(title);
 
-        for (let i = 0; i < 12; i++) {
+        for (let i = 0; i < this._lineCount; i++) {
             let iconW = 50;
             let lineHeight = 60;
 
@@ -38,16 +48,16 @@ class WristWatchInventory extends WristWatchPage {
                 this.elements.push(itemIconBorder);
             }
 
-            let itemIcon = this.slika.add(new SlikaImage(
+            this._itemIcons[i] = this.slika.add(new SlikaImage(
                 new SPosition(260 + iconW * 0.5, 150 + iconW * 0.5 + i * lineHeight),
                 iconW,
                 iconW,
-                "datas/images/block-icon-" + BlockTypeNames[BlockType.Grass + i] + "-miniature.png"
+                "datas/images/block-icon-" + BlockTypeNames[BlockType.Ice] + "-miniature.png"
             ))
-            this.elements.push(itemIcon);
+            this.elements.push(this._itemIcons[i]);
 
-            let itemName = this.slika.add(new SlikaText({
-                text: BlockTypeNames[BlockType.Grass + i],
+            this._itemNames[i] = this.slika.add(new SlikaText({
+                text: "",
                 x: 330,
                 y: 140 + iconW + i * lineHeight,
                 textAlign: "left",
@@ -57,10 +67,10 @@ class WristWatchInventory extends WristWatchPage {
                 strokeColor: BABYLON.Color3.Black(),
                 strokeWidth: 4
             }));
-            this.elements.push(itemName);
+            this.elements.push(this._itemNames[i]);
 
-            let itemCount = this.slika.add(new SlikaText({
-                text: "x" + Math.floor(Math.random() * 100).toFixed(0),
+            this._itemCounts[i] = this.slika.add(new SlikaText({
+                text: "",
                 x: 800,
                 y: 140 + iconW + i * lineHeight,
                 textAlign: "right",
@@ -70,7 +80,7 @@ class WristWatchInventory extends WristWatchPage {
                 strokeColor: BABYLON.Color3.Black(),
                 strokeWidth: 4
             }));
-            this.elements.push(itemCount);
+            this.elements.push(this._itemCounts[i]);
         }
         let separator1 = this.slika.add(
             new SlikaPath({
@@ -103,5 +113,26 @@ class WristWatchInventory extends WristWatchPage {
             })
         );
         this.elements.push(separator2);
+    }
+
+    public async show(duration: number): Promise<void> {
+        this.refresh();
+        await super.show(duration);
+    }
+
+    public refresh(): void {
+        for (let i = 0; i < this._lineCount; i++) {
+            let inventoryItem = this.inventory.items[i];
+            if (inventoryItem) {
+                this._itemCounts[i].prop.text = "x" + inventoryItem.count.toFixed(0);
+                this._itemNames[i].prop.text = inventoryItem.name;
+                this._itemIcons[i].url = inventoryItem.iconUrl;
+            }
+            else {
+                this._itemCounts[i].prop.text = "";
+                this._itemNames[i].prop.text = "";
+                this._itemIcons[i].url = "";
+            }
+        }
     }
 }

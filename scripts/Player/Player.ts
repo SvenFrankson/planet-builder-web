@@ -41,6 +41,9 @@ class Player extends BABYLON.Mesh {
     private _isRegisteredUIOnly: boolean = false;
     private _isRegistered: boolean = false;
 
+    public playerActionManager: PlayerActionManager;
+    public inventory: Inventory;
+
     public get inputManager(): InputManager {
         return this.main.inputManager;
     }
