@@ -14,6 +14,7 @@ class HeadUpDisplay extends Pickable {
     public hudLateralTileImageMeshes: BABYLON.Mesh[] = [];
     public hudLateralTileImageMaterials: BABYLON.StandardMaterial[] = [];
     public itemCountTexts: SlikaText[] = [];
+    public itemNameTexts: SlikaText[] = [];
 
     public get cameraManager(): CameraManager {
         return this.main.cameraManager;
@@ -135,6 +136,29 @@ class HeadUpDisplay extends Pickable {
                 fontFamily: "XoloniumRegular"
             }));
 
+            let keyText = this.slika.add(new SlikaText({
+                text: b.toFixed(0),
+                textAlign: "center",
+                x: 950,
+                y: 1000 - 30 - b * 100,
+                fontSize: 50,
+                color: new BABYLON.Color3(0.8, 0.8, 0.8),
+                strokeColor: BABYLON.Color3.Black(),
+                strokeWidth: 4,
+                fontFamily: "XoloniumRegular"
+            }));
+
+            this.itemNameTexts[b] = this.slika.add(new SlikaText({
+                text: "",
+                textAlign: "left",
+                x: 670,
+                y: 1000 - 25 - b * 100,
+                fontSize: 50,
+                strokeColor: BABYLON.Color3.Black(),
+                strokeWidth: 12,
+                fontFamily: "XoloniumRegular"
+            }));
+
             let beta = yAngleSide * 0.5 - angularMargin - (yAngleSide - 2 * angularMargin) * ((b + 9) % 10) / 9;
 
             this.hudLateralTileMeshes[b] = new BABYLON.Mesh("hud-lateral-tile-" + b);
@@ -155,13 +179,21 @@ class HeadUpDisplay extends Pickable {
 
 
             let v0 = b * 0.1;
-            let hudLateralTileCount = new BABYLON.Mesh("hud-lateral-tile-" + b + "-image");
-            VertexDataUtils.CreatePlane(this.tileSize * 0.35, this.tileSize * 0.35, - this.tileSize * 0.55, - this.tileSize * 0.55, 0.5, v0, 0.6, v0 + 0.1).applyToMesh(hudLateralTileCount);
-            hudLateralTileCount.layerMask = 0x10000000;
-            hudLateralTileCount.alphaIndex = 1;
-            hudLateralTileCount.position.z = - 0.1;
-            hudLateralTileCount.parent = this.hudLateralTileMeshes[b];
-            hudLateralTileCount.material = hudMaterial;
+            let hudLateralTileDesc = new BABYLON.Mesh("hud-lateral-tile-" + b + "-desc");
+            VertexDataUtils.CreatePlane(this.tileSize * 0.35 * 4, this.tileSize * 0.35, - this.tileSize * 0.55, - this.tileSize * 0.55, 0.5, v0, 0.9, v0 + 0.1).applyToMesh(hudLateralTileDesc);
+            hudLateralTileDesc.layerMask = 0x10000000;
+            hudLateralTileDesc.alphaIndex = 1;
+            hudLateralTileDesc.position.z = - 0.1;
+            hudLateralTileDesc.parent = this.hudLateralTileMeshes[b];
+            hudLateralTileDesc.material = hudMaterial;
+            
+            let hudLateralTileKey = new BABYLON.Mesh("hud-lateral-tile-" + b + "-key");
+            VertexDataUtils.CreatePlane(this.tileSize * 0.35, this.tileSize * 0.35, - this.tileSize * 0.70, this.tileSize * 0.0, 0.9, v0, 1, v0 + 0.1).applyToMesh(hudLateralTileKey);
+            hudLateralTileKey.layerMask = 0x10000000;
+            hudLateralTileKey.alphaIndex = 1;
+            hudLateralTileKey.position.z = - 0.1;
+            hudLateralTileKey.parent = this.hudLateralTileMeshes[b];
+            hudLateralTileKey.material = hudMaterial;
 
             this.hudLateralTileImageMeshes[b] = new BABYLON.Mesh("hud-lateral-tile-" + b + "-image");
             VertexDataUtils.CreatePlane(this.tileSize * 0.7, this.tileSize * 0.7, - this.tileSize * 0.3, - this.tileSize * 0.25, 0, 0, 1, 1).applyToMesh(this.hudLateralTileImageMeshes[b]);
@@ -212,6 +244,7 @@ class HeadUpDisplay extends Pickable {
             this.hudLateralTileImageMaterials[slotIndex].diffuseTexture = new BABYLON.Texture(action.iconUrl);
             this.hudLateralTileImageMaterials[slotIndex].diffuseTexture.hasAlpha = true;
             this.itemCountTexts[slotIndex].prop.text = action.item.count.toFixed(0);
+            this.itemNameTexts[slotIndex].prop.text = action.item.name;
             this.slika.needRedraw = true;
         }
     }
@@ -221,6 +254,7 @@ class HeadUpDisplay extends Pickable {
             this.hudLateralTileImageMeshes[slotIndex].isVisible = false;
             this.hudLateralTileImageMaterials[slotIndex].diffuseTexture = undefined;
             this.itemCountTexts[slotIndex].prop.text = "";
+            this.itemNameTexts[slotIndex].prop.text = "";
             this.slika.needRedraw = true;
         }
     }
