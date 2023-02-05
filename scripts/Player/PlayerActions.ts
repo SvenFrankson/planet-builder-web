@@ -102,6 +102,7 @@ class PlayerActionManager {
                 if (this.player.currentAction.onUnequip) {
                     this.player.currentAction.onUnequip();
                 }
+                this.hud.onActionUnequiped(this.player.currentAction, slotIndex);
             }
             if (this.linkedActions[slotIndex]) {
                 // If request action was already equiped, remove it.
@@ -116,6 +117,7 @@ class PlayerActionManager {
                         if (this.player.currentAction.onEquip) {
                             this.player.currentAction.onEquip();
                         }
+                        this.hud.onActionEquiped(this.player.currentAction, slotIndex);
                     }
                 }
             }

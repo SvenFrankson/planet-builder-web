@@ -76,6 +76,10 @@ class PlayerActionTemplate {
             if (previewMesh) {
                 previewMesh.dispose();
                 previewMesh = undefined;
+                lastSize = undefined;
+                lastI = undefined;
+                lastJ = undefined;
+                lastK = undefined;
             }
         }
         

@@ -6,8 +6,11 @@ class HeadUpDisplay extends Pickable {
         return true;
     }
 
+    public tileSize: number = 0.055;
+
     public slika: Slika;
 
+    public hudLateralTileMeshes: BABYLON.Mesh[] = [];
     public hudLateralTileImageMeshes: BABYLON.Mesh[] = [];
     public hudLateralTileImageMaterials: BABYLON.StandardMaterial[] = [];
     public itemCountTexts: SlikaText[] = [];
@@ -97,7 +100,6 @@ class HeadUpDisplay extends Pickable {
         );
 
         let angularMargin = 0.04;
-        let size = 0.055;
         for (let b = 0; b < 10; b ++) {
             /*
             let w = 10;
@@ -133,46 +135,40 @@ class HeadUpDisplay extends Pickable {
                 fontFamily: "XoloniumRegular"
             }));
 
-            let beta = - yAngleSide * 0.5 + angularMargin + (yAngleSide - 2 * angularMargin) * b / 9;
+            let beta = yAngleSide * 0.5 - angularMargin - (yAngleSide - 2 * angularMargin) * ((b + 9) % 10) / 9;
 
-            let hudLateralTile = new BABYLON.Mesh("hud-lateral-tile-" + b);
-            let highlight = Math.random() > 0.5
-            if (highlight) {
-                VertexDataUtils.CreatePlane(size, size, undefined, undefined, 0, 0.5, 0.5, 1).applyToMesh(hudLateralTile);
-            }
-            else {
-                VertexDataUtils.CreatePlane(size, size, undefined, undefined, 0, 0, 0.5, 0.5).applyToMesh(hudLateralTile);
-            }
-            hudLateralTile.layerMask = 0x10000000;
-            hudLateralTile.alphaIndex = 1;
-            hudLateralTile.parent = this;
-            hudLateralTile.material = hudMaterial;
+            this.hudLateralTileMeshes[b] = new BABYLON.Mesh("hud-lateral-tile-" + b);
+            VertexDataUtils.CreatePlane(this.tileSize, this.tileSize, undefined, undefined, 0, 0, 0.5, 0.5).applyToMesh(this.hudLateralTileMeshes[b]);
+            this.hudLateralTileMeshes[b].layerMask = 0x10000000;
+            this.hudLateralTileMeshes[b].alphaIndex = 1;
+            this.hudLateralTileMeshes[b].parent = this;
+            this.hudLateralTileMeshes[b].material = hudMaterial;
 
-            hudLateralTile.position.y = Math.sin(beta);
-            hudLateralTile.position.z = Math.cos(beta);
-            hudLateralTile.rotationQuaternion = BABYLON.Quaternion.Identity();
-            VMath.QuaternionFromZYAxisToRef(hudLateralTile.position, BABYLON.Axis.Y, hudLateralTile.rotationQuaternion);
+            this.hudLateralTileMeshes[b].position.y = Math.sin(beta);
+            this.hudLateralTileMeshes[b].position.z = Math.cos(beta);
+            this.hudLateralTileMeshes[b].rotationQuaternion = BABYLON.Quaternion.Identity();
+            VMath.QuaternionFromZYAxisToRef(this.hudLateralTileMeshes[b].position, BABYLON.Axis.Y, this.hudLateralTileMeshes[b].rotationQuaternion);
             let h = Math.abs(beta / yAngleSide);
             h = h * h;
-            hudLateralTile.rotateAround(BABYLON.Vector3.Zero(), BABYLON.Axis.Y, - (xAngle * 0.5 - h * xAngle * 0.08 - angularMargin));
-            this.proxyPickMeshes.push(hudLateralTile);
+            this.hudLateralTileMeshes[b].rotateAround(BABYLON.Vector3.Zero(), BABYLON.Axis.Y, - (xAngle * 0.5 - h * xAngle * 0.08 - angularMargin));
+            this.proxyPickMeshes.push(this.hudLateralTileMeshes[b]);
 
 
             let v0 = b * 0.1;
             let hudLateralTileCount = new BABYLON.Mesh("hud-lateral-tile-" + b + "-image");
-            VertexDataUtils.CreatePlane(size * 0.35, size * 0.35, - size * 0.55, - size * 0.55, 0.5, v0, 0.6, v0 + 0.1).applyToMesh(hudLateralTileCount);
+            VertexDataUtils.CreatePlane(this.tileSize * 0.35, this.tileSize * 0.35, - this.tileSize * 0.55, - this.tileSize * 0.55, 0.5, v0, 0.6, v0 + 0.1).applyToMesh(hudLateralTileCount);
             hudLateralTileCount.layerMask = 0x10000000;
             hudLateralTileCount.alphaIndex = 1;
             hudLateralTileCount.position.z = - 0.1;
-            hudLateralTileCount.parent = hudLateralTile;
+            hudLateralTileCount.parent = this.hudLateralTileMeshes[b];
             hudLateralTileCount.material = hudMaterial;
 
             this.hudLateralTileImageMeshes[b] = new BABYLON.Mesh("hud-lateral-tile-" + b + "-image");
-            VertexDataUtils.CreatePlane(size * 0.7, size * 0.7, - size * 0.3, - size * 0.25, 0, 0, 1, 1).applyToMesh(this.hudLateralTileImageMeshes[b]);
+            VertexDataUtils.CreatePlane(this.tileSize * 0.7, this.tileSize * 0.7, - this.tileSize * 0.3, - this.tileSize * 0.25, 0, 0, 1, 1).applyToMesh(this.hudLateralTileImageMeshes[b]);
             this.hudLateralTileImageMeshes[b].layerMask = 0x10000000;
             this.hudLateralTileImageMeshes[b].alphaIndex = 1;
             this.hudLateralTileImageMeshes[b].position.z = - 0.1;
-            this.hudLateralTileImageMeshes[b].parent = hudLateralTile;
+            this.hudLateralTileImageMeshes[b].parent = this.hudLateralTileMeshes[b];
             this.hudLateralTileImageMeshes[b].isVisible = false;
             
             this.hudLateralTileImageMaterials[b] = new BABYLON.StandardMaterial("hud-lateral-tile-" + b + "-image-material");
@@ -183,6 +179,31 @@ class HeadUpDisplay extends Pickable {
         }
 
         this.parent = this.cameraManager.freeCamera;
+    }
+
+    public highlight(slotIndex: number): void {
+        VertexDataUtils.CreatePlane(this.tileSize, this.tileSize, undefined, undefined, 0, 0.5, 0.5, 1).applyToMesh(this.hudLateralTileMeshes[slotIndex]);
+    }
+
+    public unlit(slotIndex: number): void {
+        VertexDataUtils.CreatePlane(this.tileSize, this.tileSize, undefined, undefined, 0, 0, 0.5, 0.5).applyToMesh(this.hudLateralTileMeshes[slotIndex]);
+    }
+
+    private _equipedSlotIndex: number = - 1;
+    public onActionEquiped(action: PlayerAction, slotIndex: number): void {
+        if (this._equipedSlotIndex >= 0 && this._equipedSlotIndex <= 9) {
+            this.unlit(this._equipedSlotIndex);
+        }
+        if (slotIndex >= 0 && slotIndex <= 9) {
+            this.highlight(slotIndex);
+            this._equipedSlotIndex = slotIndex;
+        }
+    }
+
+    public onActionUnequiped(action: PlayerAction, slotIndex: number): void {
+        if (slotIndex >= 0 && slotIndex <= 9) {
+            this.unlit(slotIndex);
+        }
     }
 
     public onActionLinked(action: PlayerAction, slotIndex: number): void {
