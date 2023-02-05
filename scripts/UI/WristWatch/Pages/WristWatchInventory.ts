@@ -1,6 +1,7 @@
 class WristWatchInventory extends WristWatchPage {
 
     private _lineCount: number = 12;
+    private _lineHeight: number = 60;
 
     private _itemIcons: SlikaImage[] = [];
     private _itemNames: SlikaText[] = [];
@@ -31,15 +32,15 @@ class WristWatchInventory extends WristWatchPage {
 
         for (let i = 0; i < this._lineCount; i++) {
             let iconW = 50;
-            let lineHeight = 60;
+            this._lineHeight = 60;
 
             if (i % 2 === 0) {
                 let itemIconBorder = this.slika.add(new SlikaPath({
                     points: [
-                        250, 147 + i * lineHeight,
-                        1000 - M - 7.5, 147 + i * lineHeight,
-                        1000 - M - 7.5, 147 + (i + 1) * lineHeight,
-                        250, 147 + (i + 1) * lineHeight,
+                        250, 147 + i * this._lineHeight,
+                        1000 - M - 7.5, 147 + i * this._lineHeight,
+                        1000 - M - 7.5, 147 + (i + 1) * this._lineHeight,
+                        250, 147 + (i + 1) * this._lineHeight,
                     ],
                     close: true,
                     fillColor: BABYLON.Color3.FromHexString(Config.uiConfiguration.wristWatchScreenBaseColor),
@@ -49,7 +50,7 @@ class WristWatchInventory extends WristWatchPage {
             }
 
             this._itemIcons[i] = this.slika.add(new SlikaImage(
-                new SPosition(260 + iconW * 0.5, 150 + iconW * 0.5 + i * lineHeight),
+                new SPosition(260 + iconW * 0.5, 150 + iconW * 0.5 + i * this._lineHeight),
                 iconW,
                 iconW,
                 "datas/images/block-icon-" + BlockTypeNames[BlockType.Ice] + "-miniature.png"
@@ -59,7 +60,7 @@ class WristWatchInventory extends WristWatchPage {
             this._itemNames[i] = this.slika.add(new SlikaText({
                 text: "",
                 x: 330,
-                y: 140 + iconW + i * lineHeight,
+                y: 140 + iconW + i * this._lineHeight,
                 textAlign: "left",
                 color: BABYLON.Color3.FromHexString(Config.uiConfiguration.wristWatchScreenBaseColor),
                 fontSize: 40,
@@ -72,7 +73,7 @@ class WristWatchInventory extends WristWatchPage {
             this._itemCounts[i] = this.slika.add(new SlikaText({
                 text: "",
                 x: 800,
-                y: 140 + iconW + i * lineHeight,
+                y: 140 + iconW + i * this._lineHeight,
                 textAlign: "right",
                 color: BABYLON.Color3.FromHexString(Config.uiConfiguration.wristWatchScreenBaseColor),
                 fontSize: 40,
@@ -132,6 +133,17 @@ class WristWatchInventory extends WristWatchPage {
                 this._itemCounts[i].prop.text = "";
                 this._itemNames[i].prop.text = "";
                 this._itemIcons[i].url = "";
+            }
+        }
+    }
+
+    public onPointerDown(x: number, y: number): void {
+        if (x > 250) {
+            if (y > 150) {
+                let n = Math.floor((y - 150) / this._lineHeight);
+                if (this.inventory.items[n]) {
+                    console.log(this.inventory.items[n].name);
+                }
             }
         }
     }
