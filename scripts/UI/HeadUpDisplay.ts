@@ -279,10 +279,10 @@ class HeadUpDisplay extends Pickable {
     }
 
     public onPointerUp(): void {
-        console.log("HUD picked index " + this.inputManager.aimedProxyIndex);
         let index = this.inputManager.aimedProxyIndex;
         if (this.inventory.draggedItem) {
             this.player.playerActionManager.linkAction(this.inventory.draggedItem.playerAction, index);
+            this.inventory.draggedItem = undefined;
         }
     }
 }

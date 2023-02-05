@@ -51,9 +51,7 @@ class PlayerActionManager {
         this.main.inputManager.addKeyUpListener((e: KeyInput) => {
             let slotIndex = e;
             if (slotIndex >= 0 && slotIndex < 10) {
-                if (this.stopHint(slotIndex)) {
-                    return;
-                }
+                this.stopHint(slotIndex);
                 this.equipAction(slotIndex);
             }
         });
@@ -129,13 +127,9 @@ class PlayerActionManager {
         }, 200);
     }
 
-    public stopHint(slotIndex: number): boolean {
-        let needStopHint = this.inventory.hintedSlotIndex.remove(slotIndex) >= 0;
+    public stopHint(slotIndex: number): void {
+        this.inventory.hintedSlotIndex.remove(slotIndex) >= 0;
         this.hud.onHintEnd(slotIndex);
-        if (needStopHint) {
-            return true;
-        }
-        return false;
     }
 
     public serialize(): IPlayerActionManagerData {

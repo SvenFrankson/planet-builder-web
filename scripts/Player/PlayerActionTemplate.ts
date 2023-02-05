@@ -16,44 +16,47 @@ class PlayerActionTemplate {
         let lastK: number;
 
         action.onUpdate = () => {
-            let hit = player.inputManager.getPickInfo(player.meshes);
-            if (hit && hit.pickedPoint) {
-                let n =  hit.getNormal(true).scaleInPlace(0.2);
-                let localIJK = PlanetTools.WorldPositionToLocalIJK(player.planet, hit.pickedPoint.add(n));
-                if (localIJK) {
-                    // Redraw block preview
-                    if (!previewMesh) {
-                        previewMesh = new BABYLON.Mesh("preview-mesh");
-                        if (player.planet) {
-                            previewMesh.material = player.planet.chunckMaterial;
+            if (!player.inputManager.inventoryOpened) {
+                let hit = player.inputManager.getPickInfo(player.meshes);
+                if (hit && hit.pickedPoint) {
+                    let n =  hit.getNormal(true).scaleInPlace(0.2);
+                    let localIJK = PlanetTools.WorldPositionToLocalIJK(player.planet, hit.pickedPoint.add(n));
+                    if (localIJK) {
+                        // Redraw block preview
+                        if (!previewMesh) {
+                            previewMesh = new BABYLON.Mesh("preview-mesh");
+                            if (player.planet) {
+                                previewMesh.material = player.planet.chunckMaterial;
+                            }
                         }
-                    }
-                    let globalIJK = PlanetTools.LocalIJKToGlobalIJK(localIJK);
-                    let needRedrawMesh: boolean = false;
-                    if (lastSize != localIJK.planetChunck.size) {
-                        lastSize = localIJK.planetChunck.size;
-                        needRedrawMesh = true;
-                    }
-                    if (lastI != localIJK.i) {
-                        lastI = localIJK.i;
-                        needRedrawMesh = true;
-                    }
-                    if (lastJ != localIJK.j) {
-                        lastJ = localIJK.j;
-                        needRedrawMesh = true;
-                    }
-                    if (lastK != localIJK.k) {
-                        lastK = localIJK.k;
-                        needRedrawMesh = true;
-                    }
-                    if (needRedrawMesh) {
-                        PlanetTools.SkewVertexData(vData, localIJK.planetChunck.size, globalIJK.i, globalIJK.j, globalIJK.k, localIJK.planetChunck.side, blockType).applyToMesh(previewMesh);
-                        previewMesh.parent = localIJK.planetChunck.planetSide;
-                    }
+                        let globalIJK = PlanetTools.LocalIJKToGlobalIJK(localIJK);
+                        let needRedrawMesh: boolean = false;
+                        if (lastSize != localIJK.planetChunck.size) {
+                            lastSize = localIJK.planetChunck.size;
+                            needRedrawMesh = true;
+                        }
+                        if (lastI != localIJK.i) {
+                            lastI = localIJK.i;
+                            needRedrawMesh = true;
+                        }
+                        if (lastJ != localIJK.j) {
+                            lastJ = localIJK.j;
+                            needRedrawMesh = true;
+                        }
+                        if (lastK != localIJK.k) {
+                            lastK = localIJK.k;
+                            needRedrawMesh = true;
+                        }
+                        if (needRedrawMesh) {
+                            PlanetTools.SkewVertexData(vData, localIJK.planetChunck.size, globalIJK.i, globalIJK.j, globalIJK.k, localIJK.planetChunck.side, blockType).applyToMesh(previewMesh);
+                            previewMesh.parent = localIJK.planetChunck.planetSide;
+                        }
 
-                    return;
+                        return;
+                    }
                 }
             }
+            
             if (previewMesh) {
                 previewMesh.dispose();
                 previewMesh = undefined;
@@ -61,13 +64,15 @@ class PlayerActionTemplate {
         }
 
         action.onClick = () => {
-            let hit = player.inputManager.getPickInfo(player.meshes);
-            if (hit && hit.pickedPoint) {
-                let n =  hit.getNormal(true).scaleInPlace(0.2);
-                let localIJK = PlanetTools.WorldPositionToLocalIJK(player.planet, hit.pickedPoint.add(n));
-                if (localIJK) {
-                    localIJK.planetChunck.SetData(localIJK.i, localIJK.j, localIJK.k, blockType);
-                    localIJK.planetChunck.planetSide.planet.chunckManager.requestDraw(localIJK.planetChunck, localIJK.planetChunck.lod, "PlayerAction.onClick");
+            if (!player.inputManager.inventoryOpened) {
+                let hit = player.inputManager.getPickInfo(player.meshes);
+                if (hit && hit.pickedPoint) {
+                    let n =  hit.getNormal(true).scaleInPlace(0.2);
+                    let localIJK = PlanetTools.WorldPositionToLocalIJK(player.planet, hit.pickedPoint.add(n));
+                    if (localIJK) {
+                        localIJK.planetChunck.SetData(localIJK.i, localIJK.j, localIJK.k, blockType);
+                        localIJK.planetChunck.planetSide.planet.chunckManager.requestDraw(localIJK.planetChunck, localIJK.planetChunck.lod, "PlayerAction.onClick");
+                    }
                 }
             }
         }

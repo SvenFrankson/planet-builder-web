@@ -183,10 +183,12 @@ class Player extends BABYLON.Mesh {
 
             this._headMoveWithMouse = false;
 
-            if (this.currentAction) {
-                if (this.currentAction.onClick) {
-                    this.currentAction.onClick();
-                    return;
+            if (!pickableElement) {
+                if (this.currentAction) {
+                    if (this.currentAction.onClick) {
+                        this.currentAction.onClick();
+                        return;
+                    }
                 }
             }
             
@@ -203,9 +205,11 @@ class Player extends BABYLON.Mesh {
             if (this.inputManager.aimedElement) {
                 this.inputManager.aimedElement.onPointerDown();
             }
-            this.startTeleportation();
-            if (!this.inputManager.aimedElement || !this.inputManager.aimedElement.interceptsPointerMove()) {
-                this._headMoveWithMouse = true;
+            if (!this.inputManager.inventoryOpened) {
+                this.startTeleportation();
+                if (!this.inputManager.aimedElement || !this.inputManager.aimedElement.interceptsPointerMove()) {
+                    this._headMoveWithMouse = true;
+                }
             }
         });
 
@@ -683,7 +687,7 @@ class Player extends BABYLON.Mesh {
         this.position.addInPlace(this.velocity.scale(deltaTime));
 
         // Update action
-        if (this.currentAction) {
+        if (!this.inputManager.aimedElement && this.currentAction) {
             if (this.currentAction.onUpdate) {
                 this.currentAction.onUpdate();
             }
