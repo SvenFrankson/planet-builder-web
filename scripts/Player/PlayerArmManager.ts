@@ -26,6 +26,7 @@ class PlayerArmManager {
     private _dpRightArm: BABYLON.Vector3 = BABYLON.Vector3.Zero();
 
     private _tmpPreviousCamPosRotationX: number = 0;
+    private _pointerDown: boolean = false;
 
     public get inputManager(): InputManager {
         return this.player.inputManager;
@@ -222,13 +223,21 @@ class PlayerArmManager {
         let up = BABYLON.Vector3.Cross(right, this.player.camPos.absolutePosition.subtract(pos)).normalize();
         this.leftArm.setTarget(pos);
         this.leftArm.handUp = up;
+        this.rightArm.handUp = this.player.up;
         
         if (wristWatch) {
             if (this.inputManager.aimedPosition && this.inputManager.aimedElement.interactionMode === InteractionMode.Touch) {
                 let offset = this.inputManager.aimedNormal.add(this.player.right).normalize();
-                this.rightArm.setTarget(this.inputManager.aimedPosition.add(offset.scale(this._currentAimingDistance)));
+                let pos = this.inputManager.aimedPosition;
+                if (this._pointerDown && this.inputManager.aimedElement.dragMode === DragMode.Static) {
+                    pos = this._pointerDownAimedPosition;
+                }
+                this.rightArm.setTarget(pos.add(offset.scale(this._currentAimingDistance)));
             }
             else {
+                if (this._currentAimingDistance === 0) {
+                    this._currentAimingDistance = this._aimingDistance;
+                }
                 this.rightArm.setTarget(wristWatch.powerButton.absolutePosition.add(up.scale(this._currentAimingDistance)));
             }
         }
@@ -241,8 +250,11 @@ class PlayerArmManager {
         }
     }
 
-    public async startActionAnimation(pickableElement: Pickable, actionCallback?: () => void): Promise<void> {
-        if (pickableElement && pickableElement.interactionMode === InteractionMode.Point) {
+    private _pointerDownAimedPosition: BABYLON.Vector3 = BABYLON.Vector3.Zero();
+
+    public async pointerUpAnimation(pickable: IPickable, actionCallback?: () => void): Promise<void> {
+        this._pointerDown = false;
+        if (pickable && pickable.interactionMode === InteractionMode.Point) {
             if (this._aimingArm) {
                 this._aimingArm.setHandMode(HandMode.PointPress);
                 await this._animateAimingDistance(0.01, 0.2);
@@ -254,14 +266,20 @@ class PlayerArmManager {
                 await this._animateAimingDistance(this._aimingDistance, 0.3);
             }
         }
-        else if (pickableElement && pickableElement.interactionMode === InteractionMode.Touch) {
+        else if (pickable && pickable.interactionMode === InteractionMode.Touch) {
             if (this._aimingArm) {
-                this._aimingArm.setHandMode(HandMode.TouchPress);
-                await this._animateAimingDistance(0, 0.1);
-                if (actionCallback) {
-                    actionCallback();
+                if (this._currentAimingDistance > 0) {
+                    await this.pointerDownAnimation(pickable);
+                    if (actionCallback) {
+                        actionCallback();
+                    }
+                    await this.wait(0.3);
                 }
-                await this.wait(0.3);
+                else {
+                    if (actionCallback) {
+                        actionCallback();
+                    }
+                }
                 this._aimingArm.setHandMode(HandMode.Touch);
                 await this._animateAimingDistance(this._aimingDistance, 0.1);
             }
@@ -273,15 +291,31 @@ class PlayerArmManager {
         }
     }
 
+    public async pointerDownAnimation(pickable: IPickable, actionCallback?: () => void): Promise<void> {
+        this._pointerDown = true;
+        if (this.inputManager.aimedPosition) {
+            this._pointerDownAimedPosition.copyFrom(this.inputManager.aimedPosition);
+        }
+        if (pickable && pickable.interactionMode === InteractionMode.Touch) {
+            if (this._aimingArm) {
+                this._aimingArm.setHandMode(HandMode.TouchPress);
+                if (actionCallback) {
+                    actionCallback();
+                }
+                await this._animateAimingDistance(0, 0.1);
+            }
+        }
+    }
+
     public async startPowerWristWatchAnimation(actionCallback?: () => void): Promise<void> {
         await this.wait(0.7);
-        this.rightArm.setHandMode(HandMode.Point);
-        await this._animateAimingDistance(0, 0.3);
+        this.rightArm.setHandMode(HandMode.Touch);
+        await this._animateAimingDistance(0.01, 0.3);
         if (actionCallback) {
             actionCallback();
         }
         await this.wait(0.3);
-        this.rightArm.setHandMode(HandMode.PointPress);
+        this.rightArm.setHandMode(HandMode.TouchPress);
         await this._animateAimingDistance(0.05, 0.3);
     }
 

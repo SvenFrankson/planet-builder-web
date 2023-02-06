@@ -232,10 +232,12 @@ class WristWatch extends Pickable {
     }
 
     public onPointerUp(): void {
+        console.log("aaa");
         let local = BABYLON.Vector3.TransformCoordinates(this.inputManager.aimedPosition, this.holoMesh.getWorldMatrix().clone().invert());
         let x = this.posXToXTexture(local.x);
         let y = this.posYToYTexture(local.y);
         if (this.pages[this.currentPage]) {
+            console.log("bbb");
             this.pages[this.currentPage].onPointerUp(x, y);
         }
     }

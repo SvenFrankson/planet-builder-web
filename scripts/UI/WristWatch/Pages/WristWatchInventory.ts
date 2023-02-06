@@ -194,11 +194,13 @@ class WristWatchInventory extends WristWatchPage {
     }
 
     public onPointerDown(x: number, y: number): void {
+        this.wristWatch.dragMode = DragMode.Move;
         if (x > 250) {
             if (y > 150) {
                 let n = Math.floor((y - 150) / this._lineHeight);
                 if (this.inventory.items[n]) {
                     this.inventory.draggedItem = this.inventory.items[n];
+                    this.wristWatch.dragMode = DragMode.Static;
                     this.highlight(n, 0.5);
                 }
             }
@@ -206,7 +208,9 @@ class WristWatchInventory extends WristWatchPage {
     }
 
     public onPointerUp(x: number, y: number): void {
+        console.log("?");
         if (this.inventory.draggedItem) {
+            console.log("!");
             let hintedSlotIndex = this.inventory.hintedSlotIndex.getLast();
             if (isFinite(hintedSlotIndex)) {
                 this.wristWatch.player.playerActionManager.linkAction(this.inventory.draggedItem.playerAction, hintedSlotIndex);

@@ -117,7 +117,7 @@ class Player extends BABYLON.Mesh {
 
     private _onPointerUpUIOnly = (pickableElement: Pickable) => {
         if (this.armManager) {
-            this.armManager.startActionAnimation(pickableElement, () => {
+            this.armManager.pointerUpAnimation(pickableElement, () => {
                 if (pickableElement) {
                     pickableElement.onPointerUp();
                 }
@@ -178,12 +178,12 @@ class Player extends BABYLON.Mesh {
 
         this.main.canvas.addEventListener("pointermove", this._mouseMove);
 
-        this.inputManager.pointerUpObservable.add((pickableElement: Pickable) => {
+        this.inputManager.pointerUpObservable.add((pickable: IPickable) => {
             this.abortTeleportation();
 
             this._headMoveWithMouse = false;
 
-            if (!pickableElement) {
+            if (!pickable) {
                 if (this.currentAction) {
                     if (this.currentAction.onClick) {
                         this.currentAction.onClick();
@@ -193,18 +193,24 @@ class Player extends BABYLON.Mesh {
             }
             
             if (this.armManager) {
-                this.armManager.startActionAnimation(pickableElement, () => {
-                    if (pickableElement) {
-                        pickableElement.onPointerUp();
+                this.armManager.pointerUpAnimation(pickable, () => {
+                    if (pickable) {
+                        pickable.onPointerUp();
                     }
                 });
             }
         });
 
-        this.inputManager.pointerDownObservable.add(() => {
-            if (this.inputManager.aimedElement) {
-                this.inputManager.aimedElement.onPointerDown();
+        this.inputManager.pointerDownObservable.add((pickable: IPickable) => {
+            
+            if (this.armManager) {
+                this.armManager.pointerDownAnimation(pickable, () => {
+                    if (pickable) {
+                        pickable.onPointerDown();
+                    }
+                });
             }
+
             if (!this.inputManager.inventoryOpened) {
                 this.startTeleportation();
                 if (!this.inputManager.aimedElement || !this.inputManager.aimedElement.interceptsPointerMove()) {

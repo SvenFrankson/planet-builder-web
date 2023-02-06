@@ -7,8 +7,14 @@ enum InteractionMode {
     Grab,
 }
 
+enum DragMode {
+    Move,
+    Static
+}
+
 interface IPickable extends BABYLON.Mesh {
     interactionMode: InteractionMode;
+    dragMode: DragMode;
     proxyPickMeshes: BABYLON.Mesh[];
     scene: BABYLON.Scene;
     inputManager: InputManager;
@@ -23,6 +29,7 @@ interface IPickable extends BABYLON.Mesh {
 
 class PickablePlanetObject extends PlanetObject implements IPickable {
     public interactionMode: InteractionMode = InteractionMode.Point;
+    public dragMode: DragMode = DragMode.Move;
     public proxyPickMeshes: BABYLON.Mesh[];
 
     public get scene(): BABYLON.Scene {
@@ -70,6 +77,7 @@ class PickablePlanetObject extends PlanetObject implements IPickable {
 class Pickable extends BABYLON.Mesh implements IPickable {
 
     public interactionMode: InteractionMode = InteractionMode.Point;
+    public dragMode: DragMode = DragMode.Move;
     public proxyPickMeshes: BABYLON.Mesh[];
 
     public get scene(): BABYLON.Scene {
