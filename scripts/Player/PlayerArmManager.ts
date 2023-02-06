@@ -107,8 +107,8 @@ class PlayerArmManager {
 
         if (this.inputManager.inventoryOpened) {
             if (this.mode != ArmManagerMode.WristWatch) {
-                this._aimingDistance = 0.1;
-                this._currentAimingDistance = 0.1;
+                this._aimingDistance = 0.05;
+                this._currentAimingDistance = 0.05;
                 this._aimingArm = this.rightArm;
                 this._tmpPreviousCamPosRotationX = this.player.camPos.rotation.x;
                 this.startPowerWristWatchAnimation();
@@ -210,8 +210,8 @@ class PlayerArmManager {
         if (this.leftArm.handMode != HandMode.WristWatch) {
             this.leftArm.setHandMode(HandMode.WristWatch);
         }
-        if (this.rightArm.handMode != HandMode.Point && this.rightArm.handMode != HandMode.PointPress) {
-            this.rightArm.setHandMode(HandMode.PointPress);
+        if (this.rightArm.handMode != HandMode.Touch && this.rightArm.handMode != HandMode.TouchPress) {
+            this.rightArm.setHandMode(HandMode.Touch);
         }
 
         let wristWatch = WristWatch.Instances.find(ww => { return ww.player === this.player; });
@@ -224,7 +224,7 @@ class PlayerArmManager {
         this.leftArm.handUp = up;
         
         if (wristWatch) {
-            if (this.inputManager.aimedPosition) {
+            if (this.inputManager.aimedPosition && this.inputManager.aimedElement.interactionMode === InteractionMode.Touch) {
                 let offset = this.inputManager.aimedNormal.add(this.player.right).normalize();
                 this.rightArm.setTarget(this.inputManager.aimedPosition.add(offset.scale(this._currentAimingDistance)));
             }
@@ -256,13 +256,13 @@ class PlayerArmManager {
         }
         else if (pickableElement && pickableElement.interactionMode === InteractionMode.Touch) {
             if (this._aimingArm) {
-                this._aimingArm.setHandMode(HandMode.Point);
+                this._aimingArm.setHandMode(HandMode.TouchPress);
                 await this._animateAimingDistance(0, 0.1);
                 if (actionCallback) {
                     actionCallback();
                 }
-                await this.wait(0.4);
-                this._aimingArm.setHandMode(HandMode.PointPress);
+                await this.wait(0.3);
+                this._aimingArm.setHandMode(HandMode.Touch);
                 await this._animateAimingDistance(this._aimingDistance, 0.1);
             }
         }

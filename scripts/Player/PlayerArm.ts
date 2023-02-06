@@ -2,6 +2,8 @@ enum HandMode {
     Idle,
     Point,
     PointPress,
+    Touch,
+    TouchPress,
     Grab,
     Like,
     WristWatch
@@ -144,6 +146,9 @@ class PlayerArm extends BABYLON.Mesh {
                 }
                 this._fingers[i][j].parent = this._fingers[i][j - 1];
                 this._fingers[i][j].position.z = this._fingersLength[i][j - 1];
+                if (j === 3) {
+                    this._fingers[i][j].position.z -= 0.005;
+                }
                 //this._fingers[i][j].rotationQuaternion = BABYLON.Quaternion.Identity();
             }
         }
@@ -269,6 +274,9 @@ class PlayerArm extends BABYLON.Mesh {
         if (this.handMode === HandMode.Point || this.handMode === HandMode.PointPress) {
             this.targetAnchor = HandTargetAnchor.IndexTip;
         }
+        else if (this.handMode === HandMode.Touch || this.handMode === HandMode.TouchPress) {
+            this.targetAnchor = HandTargetAnchor.IndexTip;
+        }
         else if (this.handMode === HandMode.Grab) {
             this.targetAnchor = HandTargetAnchor.Palm;
         }
@@ -308,6 +316,20 @@ class PlayerArm extends BABYLON.Mesh {
             this._animateGrabness(2, 0.45, 0.2);
             this._animateGrabness(3, 0.6, 0.2);
             this._animateGrabness(4, 0.75, 0.2);
+        }
+        else if (mode === HandMode.Touch) {
+            this._animateGrabness(0, 0.6, 0.3);
+            this._animateGrabness(1, 0.05, 0.3);
+            this._animateGrabness(2, 0.9, 0.3);
+            this._animateGrabness(3, 0.9, 0.3);
+            this._animateGrabness(4, 0.9, 0.3);
+        }
+        else if (mode === HandMode.TouchPress) {
+            this._animateGrabness(0, 0.6, 0.3);
+            this._animateGrabness(1, 0.1, 0.3);
+            this._animateGrabness(2, 0.9, 0.3);
+            this._animateGrabness(3, 0.9, 0.3);
+            this._animateGrabness(4, 0.9, 0.3);
         }
         else if (mode === HandMode.Grab) {
             this._animateGrabness(0, 0.1, 0.6);
