@@ -48,21 +48,16 @@ class PlayerActionManager {
                 this.startHint(slotIndex);
             }
         });
+        
         this.main.inputManager.addKeyUpListener((e: KeyInput) => {
             let slotIndex = e;
             if (slotIndex >= 0 && slotIndex < 10) {
                 this.stopHint(slotIndex);
-                this.equipAction(slotIndex);
+                if (!this.main.inputManager.inventoryOpened) {
+                    this.equipAction(slotIndex);
+                }
             }
         });
-        for (let i = 0; i < 10; i++) {
-            let slotIndex = i;
-            /*
-            (document.querySelector("#player-action-" + slotIndex) as HTMLDivElement).addEventListener("touchend", () => {
-                this.equipAction(slotIndex);
-            });
-            */
-        }
     }
 
     public update = () => {
