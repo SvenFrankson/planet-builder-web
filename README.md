@@ -5,7 +5,7 @@ Typescript implementation of PlanetBuilder generation algorithms.
 
 # Try it here !
 
-Go to https://svenfrankson.github.io/PlanetBuilder2022/demo.html
+Go to https://svenfrankson.github.io/PlanetBuilder2022/index.html
 
 # Compiling
 
