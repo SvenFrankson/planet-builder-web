@@ -64,16 +64,25 @@ class PlayerArmManager {
 
     private mode: ArmManagerMode = ArmManagerMode.Idle;
 
+    private _timer: number = 0;
+    private _breathAmplitude: number = 0.02;
+    private _breathPeriod: number = 6;
     private _update = () => {
+        this._timer += this.scene.getEngine().getDeltaTime() / 1000;
+
+        let breathY = Math.cos(this._timer / this._breathPeriod * 2 * Math.PI) * 0.5 * this._breathAmplitude;
+        let breathYL = this.leftArm.handMode === HandMode.WristWatch ? breathY * 0.1 : breathY;
+        let breathYR = this.rightArm.handMode === HandMode.WristWatch ? breathY * 0.1 : breathY;
+
         this._dpLeftArm.copyFrom(this.leftArm.position);
-        BABYLON.Vector3.TransformCoordinatesToRef(new BABYLON.Vector3(- 0.2, 1.5, 0), this.player.getWorldMatrix(), this._tmpDP);
+        BABYLON.Vector3.TransformCoordinatesToRef(new BABYLON.Vector3(- 0.2, 1.5 + breathYL, 0), this.player.getWorldMatrix(), this._tmpDP);
         this.leftArm.position.copyFrom(this._tmpDP);
         this._dpLeftArm.subtractInPlace(this.leftArm.position).scaleInPlace(-1);
         this.leftArm.rotationQuaternion.copyFrom(this.player.rotationQuaternion);
         this.leftArm.targetPosition.addInPlace(this._dpLeftArm);
 
         this._dpRightArm.copyFrom(this.rightArm.position);
-        BABYLON.Vector3.TransformCoordinatesToRef(new BABYLON.Vector3(0.2, 1.5, 0), this.player.getWorldMatrix(), this._tmpDP);
+        BABYLON.Vector3.TransformCoordinatesToRef(new BABYLON.Vector3(0.2, 1.5 + breathYR, 0), this.player.getWorldMatrix(), this._tmpDP);
         this.rightArm.position.copyFrom(this._tmpDP);
         this._dpRightArm.subtractInPlace(this.rightArm.position).scaleInPlace(-1);
         this.rightArm.rotationQuaternion.copyFrom(this.player.rotationQuaternion);
