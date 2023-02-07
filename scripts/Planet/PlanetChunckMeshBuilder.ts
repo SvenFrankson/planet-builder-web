@@ -518,6 +518,7 @@ class PlanetChunckMeshBuilder {
                         }
                         */
                         
+                        let epsilon = 0.02;
                         let l = positions.length / 3;
                         let partColors = [...partVertexData.colors];
                         let partUvs = [...partVertexData.uvs];
@@ -529,44 +530,44 @@ class PlanetChunckMeshBuilder {
                             let y = partVertexData.positions[3 * n + 1];
                             let z = partVertexData.positions[3 * n + 2];
 
-                            let edgeCase: boolean = Math.abs(x - 0.5) <= 0.01 || Math.abs(y - 0.5) <= 0.01 || Math.abs(z - 0.5) <= 0.01;
+                            let edgeCase: boolean = Math.abs(x - 0.5) <= epsilon || Math.abs(y - 0.5) <= epsilon || Math.abs(z - 0.5) <= epsilon;
                             if (edgeCase) {
                                 let unstretchedPosition = { x: x + i, y: y + k, z: z + j, index: pIndex };
                                 let existingIndex = - 1;
                                 let edge = 0;
-                                if (Math.abs(x - 0.5) <= 0.01) {
+                                if (Math.abs(x - 0.5) <= epsilon) {
                                     edge = 1;
                                     let existing = unstretchedPositionsX.find(
                                         uP => {
-                                            return Math.abs(uP.x - unstretchedPosition.x) < 0.01 && 
-                                            Math.abs(uP.y - unstretchedPosition.y) < 0.01 &&
-                                            Math.abs(uP.z - unstretchedPosition.z) < 0.01;
+                                            return Math.abs(uP.x - unstretchedPosition.x) <= epsilon && 
+                                            Math.abs(uP.y - unstretchedPosition.y) <= epsilon &&
+                                            Math.abs(uP.z - unstretchedPosition.z) <= epsilon;
                                         }
                                     );
                                     if (existing) {
                                         existingIndex = existing.index;
                                     }
                                 }
-                                else if (Math.abs(y - 0.5) <= 0.01) {
+                                else if (Math.abs(y - 0.5) <= epsilon) {
                                     edge = 2;
                                     let existing = unstretchedPositionsY.find(
                                         uP => {
-                                            return Math.abs(uP.x - unstretchedPosition.x) < 0.01 && 
-                                            Math.abs(uP.y - unstretchedPosition.y) < 0.01 &&
-                                            Math.abs(uP.z - unstretchedPosition.z) < 0.01;
+                                            return Math.abs(uP.x - unstretchedPosition.x) <= epsilon && 
+                                            Math.abs(uP.y - unstretchedPosition.y) <= epsilon &&
+                                            Math.abs(uP.z - unstretchedPosition.z) <= epsilon;
                                         }
                                     );
                                     if (existing) {
                                         existingIndex = existing.index;
                                     }
                                 }
-                                else if (Math.abs(z - 0.5) <= 0.01) {
+                                else if (Math.abs(z - 0.5) <= epsilon) {
                                     edge = 3;
                                     let existing = unstretchedPositionsZ.find(
                                         uP => {
-                                            return Math.abs(uP.x - unstretchedPosition.x) < 0.01 && 
-                                            Math.abs(uP.y - unstretchedPosition.y) < 0.01 &&
-                                            Math.abs(uP.z - unstretchedPosition.z) < 0.01;
+                                            return Math.abs(uP.x - unstretchedPosition.x) <= epsilon && 
+                                            Math.abs(uP.y - unstretchedPosition.y) <= epsilon &&
+                                            Math.abs(uP.z - unstretchedPosition.z) <= epsilon;
                                         }
                                     );
                                     if (existing) {

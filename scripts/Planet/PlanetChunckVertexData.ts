@@ -311,6 +311,7 @@ class PlanetChunckVertexData {
         }
         let data = BABYLON.VertexData.ExtractFromMesh(mesh);
         
+        /*
         let normals = []
         for (let j = 0; j < data.positions.length / 3; j++) {
             let x = data.positions[3 * j];
@@ -388,6 +389,7 @@ class PlanetChunckVertexData {
             normals[3 * j + 2] = nz / l;
         }
         data.normals = normals;
+        */
 
         data.positions = data.positions.map((p: number) => {
             p += 0.5;
