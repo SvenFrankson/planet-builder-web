@@ -128,7 +128,7 @@ class MainMenuPlanetSelectionPage extends MainMenuPanelPage {
             60
         );
         buttonGo.onPointerUp = async () => {
-            let destinationPlanet = this.mainMenuPanel.main.planets[this.currentPlanetIndex];
+            let destinationPlanet = this.mainMenuPanel.main.currentGalaxy.planets[this.currentPlanetIndex];
             if (this.mainMenuPanel.main.cameraManager.player.planet != destinationPlanet) {
                 let randomPosition = new BABYLON.Vector3(
                     Math.random(),
@@ -160,7 +160,7 @@ class MainMenuPlanetSelectionPage extends MainMenuPanelPage {
             80
         );
         buttonKillChunckManagers.onPointerUp = () => {
-            this.mainMenuPanel.main.planets.forEach(p => {
+            this.mainMenuPanel.main.currentGalaxy.planets.forEach(p => {
                 p.chunckManager.dispose();
             });
         }
@@ -171,15 +171,15 @@ class MainMenuPlanetSelectionPage extends MainMenuPanelPage {
     }
     
     public async show(duration: number): Promise<void> {
-        let planet = this.mainMenuPanel.main.planets[this.currentPlanetIndex];
+        let planet = this.mainMenuPanel.main.currentGalaxy.planets[this.currentPlanetIndex];
         if (this.mainMenuPanel.main.cameraManager.player && this.mainMenuPanel.main.cameraManager.player.planet === planet) {
             this.locationImage.display = true;
         }
         else {
             this.locationImage.display = false;
         }
-        this.planetNames = this.mainMenuPanel.main.planets.map(p => { return p.name; });
-        this.planetDescriptions = this.mainMenuPanel.main.planets.map(p => { return "\n- radius " + p.seaAltitude.toFixed(0) + "m\n- type " + p.generator.type + "\n" });
+        this.planetNames = this.mainMenuPanel.main.currentGalaxy.planets.map(p => { return p.name; });
+        this.planetDescriptions = this.mainMenuPanel.main.currentGalaxy.planets.map(p => { return "\n- radius " + p.seaAltitude.toFixed(0) + "m\n- type " + p.generator.type + "\n" });
         this.planetDescElement.prop.text = this.planetDescriptions[this.currentPlanetIndex];
         this.planetNameElement.prop.text = "id: " + this.planetNames[this.currentPlanetIndex];
         /*"\n- radius : 623m\n\n- type : dry\n\n- moons : 0"*/
@@ -187,7 +187,7 @@ class MainMenuPlanetSelectionPage extends MainMenuPanelPage {
     }
 
     public async updateCurrentPlanetIndex(left?: boolean): Promise<void> {
-        let planet = this.mainMenuPanel.main.planets[this.currentPlanetIndex];
+        let planet = this.mainMenuPanel.main.currentGalaxy.planets[this.currentPlanetIndex];
         if (this.mainMenuPanel.main.cameraManager.player && this.mainMenuPanel.main.cameraManager.player.planet === planet) {
             this.locationImage.display = true;
             this.locationImage.animateSize(1, 0.3);

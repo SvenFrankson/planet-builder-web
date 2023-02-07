@@ -111,15 +111,15 @@ class DebugPlanetPerf {
 		this._frameRate.addValue(Game.Engine.getFps());
         
         let sortRatio = 0;
-        for (let i = 0; i < this.game.planets.length; i++) {
-            sortRatio += this.game.planets[i].chunckManager.chunckSortedRatio * 100;
+        for (let i = 0; i < this.game.currentGalaxy.planets.length; i++) {
+            sortRatio += this.game.currentGalaxy.planets[i].chunckManager.chunckSortedRatio * 100;
         }
-        sortRatio /= this.game.planets.length;
+        sortRatio /= this.game.currentGalaxy.planets.length;
         this._chunckSort.addValue(sortRatio);
 
         let needRedrawCount = 0;
-        for (let i = 0; i < this.game.planets.length; i++) {
-            needRedrawCount += this.game.planets[i].chunckManager.needRedrawCount;
+        for (let i = 0; i < this.game.currentGalaxy.planets.length; i++) {
+            needRedrawCount += this.game.currentGalaxy.planets[i].chunckManager.needRedrawCount;
         }
         this._drawRequestCount.addValue(needRedrawCount);
 
@@ -130,8 +130,8 @@ class DebugPlanetPerf {
         if (this._showLayer) {
             for (let i = 0; i < 6; i++) {
                 let lodLayerCount = 0;
-                for (let j = 0; j < this.game.planets.length; j++) {
-                    lodLayerCount += this.game.planets[j].chunckManager.lodLayerCount(i);
+                for (let j = 0; j < this.game.currentGalaxy.planets.length; j++) {
+                    lodLayerCount += this.game.currentGalaxy.planets[j].chunckManager.lodLayerCount(i);
                 }
                 this._layerCounts[i].setText(lodLayerCount.toFixed(0));
             }

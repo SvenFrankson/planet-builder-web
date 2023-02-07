@@ -21,6 +21,7 @@ class Planet extends BABYLON.Mesh {
     public chunckMaterial: PlanetMaterial;
 
     constructor(
+        public galaxy: Galaxy,
         name: string,
         position: BABYLON.Vector3,
         public kPosMax: number,
@@ -29,6 +30,7 @@ class Planet extends BABYLON.Mesh {
         createGenerator: (planet: Planet) => PlanetGenerator
     ) {
         super(name, scene);
+        this.galaxy.planets.push(this);
         this.position.copyFrom(position);
         this.freezeWorldMatrix();
         Planet.DEBUG_INSTANCE = this;

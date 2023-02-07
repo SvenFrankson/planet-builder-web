@@ -81,9 +81,11 @@ class MainMenu extends Main {
 			//testGrab.position = new BABYLON.Vector3(- 0.3, this._testAltitude + 1.1, - 0.1);
 			//testGrab.instantiate();
 			
-			let mainMenuPlanet: Planet = PlanetGeneratorFactory.Create(BABYLON.Vector3.Zero(), PlanetGeneratorType.Moon, 2, this.scene);
+			this.universe = new Universe();
+			this.currentGalaxy = new Galaxy(this.universe);
+			
+			let mainMenuPlanet: Planet = PlanetGeneratorFactory.Create(this.currentGalaxy, BABYLON.Vector3.Zero(), PlanetGeneratorType.Moon, 2, this.scene);
 			mainMenuPlanet.instantiate();
-			this.planets = [mainMenuPlanet];
 			
 			let dir = new BABYLON.Vector3(
 				Math.random() - 0.5,
@@ -133,7 +135,7 @@ class MainMenu extends Main {
 						this.generatePlanets();
 					}
 
-					this.planets.forEach(p => {
+					this.currentGalaxy.planets.forEach(p => {
 						p.register();
 					});
 					
@@ -194,10 +196,9 @@ class MainMenu extends Main {
 		let alpha = Math.PI / 2;
 		for (let i = 0; i < orbitCount; i++) {
 			let kPosMax = Math.floor(6 + 8 * Math.random());
-			let planet: Planet = PlanetGeneratorFactory.Create(new BABYLON.Vector3(Math.cos(alpha) * orbitRadius * (i + 1), 0, Math.sin(alpha) * orbitRadius * (i + 1)), i + 1, kPosMax, this.scene);
+			let planet: Planet = PlanetGeneratorFactory.Create(this.currentGalaxy, new BABYLON.Vector3(Math.cos(alpha) * orbitRadius * (i + 1), 0, Math.sin(alpha) * orbitRadius * (i + 1)), i + 1, kPosMax, this.scene);
 			//let planet: Planet = PlanetGeneratorFactory.Create(new BABYLON.Vector3(Math.cos(alpha) * orbitRadius * (i + 1), 0, Math.sin(alpha) * orbitRadius * (i + 1)), PlanetGeneratorType.Earth, kPosMax, this.scene);
 			planet.instantiate();
-			this.planets.push(planet);
 			alpha += Math.PI * 0.5 + Math.PI * Math.random();
 		}
 	}

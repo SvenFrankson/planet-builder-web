@@ -344,8 +344,8 @@ class Player extends BABYLON.Mesh {
 
     public updatePlanet(): void {
         this.sqrDistToPlanet = Infinity;
-        for (let i = 0; i < this.main.planets.length; i++) {
-            let p = this.main.planets[i];
+        for (let i = 0; i < this.main.currentGalaxy.planets.length; i++) {
+            let p = this.main.currentGalaxy.planets[i];
             let sqrDist = BABYLON.Vector3.DistanceSquared(this.position, p.position);
             if (sqrDist < this.sqrDistToPlanet) {
                 this.planet = p;

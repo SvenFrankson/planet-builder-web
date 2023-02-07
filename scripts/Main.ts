@@ -11,7 +11,9 @@ class Main {
 	public cameraManager: CameraManager;
     public subtitleManager: SubtitleManager;
 
-	public planets: Planet[] = [];
+    public universe: Universe;
+    public currentGalaxy: Galaxy;
+
     private _chunckManagersWorkingTimer: number = 3
     public get chunckManagerWorking(): boolean {
         return this._chunckManagersWorkingTimer > 0;
@@ -56,7 +58,7 @@ class Main {
     }
 
     public update(): void {
-        if (this.planets.length > 0) {
+        if (this.currentGalaxy && this.currentGalaxy.planets.length > 0) {
             let checkIfReachesZero = false;
             if (this._chunckManagersWorkingTimer > 0) {
                 checkIfReachesZero = true;
@@ -64,8 +66,8 @@ class Main {
     
             this._chunckManagersWorkingTimer = Math.max(this._chunckManagersWorkingTimer - 1, 0);
             let needRedrawCount = 0;
-            for (let i = 0; i < this.planets.length; i++) {
-                needRedrawCount += this.planets[i].chunckManager.needRedrawCount;
+            for (let i = 0; i < this.currentGalaxy.planets.length; i++) {
+                needRedrawCount += this.currentGalaxy.planets[i].chunckManager.needRedrawCount;
             }
             if (needRedrawCount > 0) {
                 this._chunckManagersWorkingTimer = 3;
