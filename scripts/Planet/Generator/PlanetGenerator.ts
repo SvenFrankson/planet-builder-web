@@ -10,7 +10,8 @@ class PlanetGeneratorFactory {
 
     public static Counter: number = 0;
 
-    public static Create(galaxy: Galaxy, position: BABYLON.Vector3, type: PlanetGeneratorType, kPosMax: number, scene: BABYLON.Scene): Planet {
+    public static Create(galaxy: Galaxy, position: BABYLON.Vector3, type: PlanetGeneratorType, kPosMax: number, main: Main): Planet {
+        //let name = "paulita-planet";
         let name = "paulita-" + Math.floor(Math.random() * 1000).toString(16) + "-" + PlanetGeneratorFactory.Counter.toFixed(0);
         PlanetGeneratorFactory.Counter++;
         let seaLevelRatio = 0.6;
@@ -23,7 +24,7 @@ class PlanetGeneratorFactory {
             position,
             kPosMax,
             seaLevelRatio,
-            scene, 
+            main, 
             (p) => {
                 if (type === PlanetGeneratorType.Moon) {
                     return new PlanetGeneratorMoon(p);

@@ -11,6 +11,7 @@ class Main {
 	public cameraManager: CameraManager;
     public subtitleManager: SubtitleManager;
 
+    public rand: Rand;
     public universe: Universe;
     public currentGalaxy: Galaxy;
 
@@ -29,6 +30,7 @@ class Main {
         this.canvas.requestPointerLock = this.canvas.requestPointerLock || this.canvas.msRequestPointerLock || this.canvas.mozRequestPointerLock || this.canvas.webkitRequestPointerLock;
 		Main.Engine = new BABYLON.Engine(this.canvas, true);
         this.engine = Main.Engine;
+        this.rand = new Rand();
 		BABYLON.Engine.ShadersRepository = "./shaders/";
 	}
 

@@ -59,7 +59,7 @@ class Game extends Main {
 			let kPosMax = 7;
 			this.universe = new Universe();
 			this.currentGalaxy = new Galaxy(this.universe);
-			let planetTest: Planet = PlanetGeneratorFactory.Create(this.currentGalaxy, BABYLON.Vector3.Zero(), PlanetGeneratorType.Earth, kPosMax, this.scene);
+			let planetTest: Planet = PlanetGeneratorFactory.Create(this.currentGalaxy, BABYLON.Vector3.Zero(), PlanetGeneratorType.Earth, kPosMax, this);
 			planetTest.instantiate();
 			window["PlanetTest"] = planetTest;
 

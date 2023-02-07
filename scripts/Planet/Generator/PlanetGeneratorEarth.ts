@@ -18,7 +18,7 @@ class PlanetGeneratorEarth extends PlanetGenerator {
             timers.push(performance.now());
             logOutput = "PlanetGeneratorEarth constructor for " + planet.name;
         }
-        this._mainHeightMap = PlanetHeightMap.CreateMap(planet.degree);
+        this._mainHeightMap = PlanetHeightMap.CreateMap(planet.degree, planet.main, planet.randSeed);
         if (useLog) {
             timers.push(performance.now());
             logOutput += "\n  _mainHeightMap created in " + (timers[timers.length - 1] - timers[timers.length - 2]).toFixed(0) + " ms";
@@ -27,6 +27,8 @@ class PlanetGeneratorEarth extends PlanetGenerator {
 
         this._tunnelMap = PlanetHeightMap.CreateMap(
             planet.degree,
+            planet.main,
+            planet.randSeed,
             {
                 firstNoiseDegree : planet.degree - 5,
                 lastNoiseDegree: planet.degree - 1,
@@ -40,9 +42,9 @@ class PlanetGeneratorEarth extends PlanetGenerator {
         );
         this._tunnelMap.smooth();
         this._tunnelMap.smooth();
-        this._tunnelAltitudeMap = PlanetHeightMap.CreateMap(planet.degree);
+        this._tunnelAltitudeMap = PlanetHeightMap.CreateMap(planet.degree, planet.main, planet.randSeed);
         
-        this._rockMap = PlanetHeightMap.CreateMap(planet.degree, { firstNoiseDegree : planet.degree - 3});
+        this._rockMap = PlanetHeightMap.CreateMap(planet.degree, planet.main, planet.randSeed, { firstNoiseDegree : planet.degree - 3});
 
         this.altitudeMap = PlanetHeightMap.CreateConstantMap(planet.degree, 0).addInPlace(this._mainHeightMap).multiplyInPlace(_mountainHeight).addInPlace(PlanetHeightMap.CreateConstantMap(planet.degree, this.planet.seaLevelRatio));
         this.altitudeMap.maxInPlace(PlanetHeightMap.CreateConstantMap(planet.degree, this.planet.seaLevelRatio));

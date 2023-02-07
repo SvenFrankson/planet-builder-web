@@ -15,8 +15,13 @@ class Planet extends BABYLON.Mesh {
         return this.name;
     }
 
+    public get scene(): BABYLON.Scene {
+        return this.main.scene;
+    }
+
     public chunckManager: PlanetChunckManager;
     public generator: PlanetGenerator;
+    public randSeed: RandSeed;
 
     public chunckMaterial: PlanetMaterial;
 
@@ -26,10 +31,13 @@ class Planet extends BABYLON.Mesh {
         position: BABYLON.Vector3,
         public kPosMax: number,
         public seaLevelRatio: number,
-        public scene: BABYLON.Scene,
+        public main: Main,
         createGenerator: (planet: Planet) => PlanetGenerator
     ) {
-        super(name, scene);
+        super(name, main.scene);
+        console.log(this.getFullName());
+        this.randSeed = new RandSeed(this.getFullName());
+        console.log(this.randSeed);
         this.galaxy.planets.push(this);
         this.position.copyFrom(position);
         this.freezeWorldMatrix();
@@ -118,5 +126,9 @@ class Planet extends BABYLON.Mesh {
         for (let i = 0; i < this.planetSides.length; i++) {
             chunckCount += this.planetSides[i].register();
         }
+    }
+
+    public getFullName(): string {
+        return this.galaxy.universe.name + "-" + this.galaxy.name + "-" + this.name;
     }
 }

@@ -19,7 +19,7 @@ class PlanetGeneratorCold extends PlanetGenerator {
             logOutput = "PlanetGeneratorCold constructor for " + planet.name;
         }
 
-        this._mainHeightMap = PlanetHeightMap.CreateMap(planet.degree);
+        this._mainHeightMap = PlanetHeightMap.CreateMap(planet.degree, planet.main, planet.randSeed);
 
         if (useLog) {
             timers.push(performance.now());

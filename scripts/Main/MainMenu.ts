@@ -84,8 +84,9 @@ class MainMenu extends Main {
 			this.universe = new Universe();
 			this.currentGalaxy = new Galaxy(this.universe);
 			
-			let mainMenuPlanet: Planet = PlanetGeneratorFactory.Create(this.currentGalaxy, BABYLON.Vector3.Zero(), PlanetGeneratorType.Moon, 2, this.scene);
+			let mainMenuPlanet: Planet = PlanetGeneratorFactory.Create(this.currentGalaxy, BABYLON.Vector3.Zero(), PlanetGeneratorType.Moon, 2, this);
 			mainMenuPlanet.instantiate();
+			mainMenuPlanet.generator.showDebug();
 			
 			let dir = new BABYLON.Vector3(
 				Math.random() - 0.5,
@@ -196,7 +197,7 @@ class MainMenu extends Main {
 		let alpha = Math.PI / 2;
 		for (let i = 0; i < orbitCount; i++) {
 			let kPosMax = Math.floor(6 + 8 * Math.random());
-			let planet: Planet = PlanetGeneratorFactory.Create(this.currentGalaxy, new BABYLON.Vector3(Math.cos(alpha) * orbitRadius * (i + 1), 0, Math.sin(alpha) * orbitRadius * (i + 1)), i + 1, kPosMax, this.scene);
+			let planet: Planet = PlanetGeneratorFactory.Create(this.currentGalaxy, new BABYLON.Vector3(Math.cos(alpha) * orbitRadius * (i + 1), 0, Math.sin(alpha) * orbitRadius * (i + 1)), i + 1, kPosMax, this);
 			//let planet: Planet = PlanetGeneratorFactory.Create(new BABYLON.Vector3(Math.cos(alpha) * orbitRadius * (i + 1), 0, Math.sin(alpha) * orbitRadius * (i + 1)), PlanetGeneratorType.Earth, kPosMax, this.scene);
 			planet.instantiate();
 			alpha += Math.PI * 0.5 + Math.PI * Math.random();

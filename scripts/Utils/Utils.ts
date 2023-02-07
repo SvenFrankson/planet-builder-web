@@ -27,11 +27,12 @@ class Utils {
 		}
 		scene.onBeforeRenderObservable.add(
 			() => {
-                scene.activeCamera.computeWorldMatrix();
-				debugPlanet.position.copyFrom(scene.activeCamera.position);
-				debugPlanet.position.addInPlace(scene.activeCamera.getDirection(BABYLON.Axis.Z).scale(7));
-				debugPlanet.position.addInPlace(scene.activeCamera.getDirection(BABYLON.Axis.X).scale(x));
-				debugPlanet.position.addInPlace(scene.activeCamera.getDirection(BABYLON.Axis.Y).scale(y));
+                let activeCamera = scene.activeCameras[0];
+                activeCamera.computeWorldMatrix();
+				debugPlanet.position.copyFrom(activeCamera.position);
+				debugPlanet.position.addInPlace(activeCamera.getDirection(BABYLON.Axis.Z).scale(7));
+				debugPlanet.position.addInPlace(activeCamera.getDirection(BABYLON.Axis.X).scale(x));
+				debugPlanet.position.addInPlace(activeCamera.getDirection(BABYLON.Axis.Y).scale(y));
 			}
 		)
     }
@@ -63,11 +64,12 @@ class Utils {
 		}
 		scene.onBeforeRenderObservable.add(
 			() => {
-                scene.activeCamera.computeWorldMatrix();
-				debugPlanet.position.copyFrom(scene.activeCamera.position);
-				debugPlanet.position.addInPlace(scene.activeCamera.getDirection(BABYLON.Axis.Z).scale(7));
-				debugPlanet.position.addInPlace(scene.activeCamera.getDirection(BABYLON.Axis.X).scale(x));
-				debugPlanet.position.addInPlace(scene.activeCamera.getDirection(BABYLON.Axis.Y).scale(y));
+                let activeCamera = scene.activeCameras[0];
+                activeCamera.computeWorldMatrix();
+				debugPlanet.position.copyFrom(activeCamera.position);
+				debugPlanet.position.addInPlace(activeCamera.getDirection(BABYLON.Axis.Z).scale(7));
+				debugPlanet.position.addInPlace(activeCamera.getDirection(BABYLON.Axis.X).scale(x));
+				debugPlanet.position.addInPlace(activeCamera.getDirection(BABYLON.Axis.Y).scale(y));
 			}
 		)
     }

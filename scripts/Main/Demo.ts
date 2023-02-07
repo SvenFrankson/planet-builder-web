@@ -47,7 +47,7 @@ class Demo extends Main {
 			let kPosMax = 7;
 			this.universe = new Universe();
 			this.currentGalaxy = new Galaxy(this.universe);
-			let planetTest: Planet = PlanetGeneratorFactory.Create(this.currentGalaxy, BABYLON.Vector3.Zero(), PlanetGeneratorType.Mars, kPosMax, this.scene);
+			let planetTest: Planet = PlanetGeneratorFactory.Create(this.currentGalaxy, BABYLON.Vector3.Zero(), PlanetGeneratorType.Mars, kPosMax, this);
 			planetTest.instantiate();
 			//let moon: Planet = new Planet("Moon", 2, 0.60, this.scene);
 			//moon.position.x = 160;

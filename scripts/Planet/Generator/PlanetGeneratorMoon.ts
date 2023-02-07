@@ -8,9 +8,12 @@ class PlanetGeneratorMoon extends PlanetGenerator {
         super(planet);
         this.type = "Moon";
 
+        console.log("!!");
+        console.log(planet.randSeed.values.toString());
+
         this.altitudeMap = PlanetHeightMap.CreateConstantMap(planet.degree, this.planet.seaLevelRatio);
 
-        this._moutainHeightMap = PlanetHeightMap.CreateMap(planet.degree).multiplyInPlace(4 / (this.planet.kPosMax * PlanetTools.CHUNCKSIZE));
+        this._moutainHeightMap = PlanetHeightMap.CreateMap(planet.degree, planet.main, planet.randSeed).multiplyInPlace(4 / (this.planet.kPosMax * PlanetTools.CHUNCKSIZE));
 
         this._craterMap = PlanetHeightMap.CreateConstantMap(planet.degree, 0);
         for (let i = 0; i < 200; i++) {
@@ -21,6 +24,8 @@ class PlanetGeneratorMoon extends PlanetGenerator {
 
         this._iceMap = PlanetHeightMap.CreateMap(
             planet.degree,
+            planet.main,
+            planet.randSeed,
             {
                 firstNoiseDegree : planet.degree - 5,
                 lastNoiseDegree: planet.degree - 1,
@@ -34,6 +39,8 @@ class PlanetGeneratorMoon extends PlanetGenerator {
         );
         this._iceMap.smooth();
         this._iceMap.smooth();
+
+        this.heightMaps = [this._moutainHeightMap, this._craterMap, this._iceMap];
 
         this.altitudeMap.addInPlace(this._moutainHeightMap).substractInPlace(this._craterMap);
 
@@ -145,5 +152,9 @@ class PlanetGeneratorMoon extends PlanetGenerator {
                 }
             }
         }
+    }
+
+    public showDebug(): void {
+        Utils.showDebugPlanetMap(this, - 3.5, 1.5);
     }
 }

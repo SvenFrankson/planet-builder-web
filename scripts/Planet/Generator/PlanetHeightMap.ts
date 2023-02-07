@@ -17,6 +17,9 @@ class PlanetHeightMap {
 
     public size: number;
 
+    public debug: number = 0;
+    public count: number = 0;
+
     constructor(
         public degree: number
     ) {
@@ -38,7 +41,7 @@ class PlanetHeightMap {
         return constantMap;
     }
 
-    public static CreateMap(degree: number, options?: IPlanetHeightMapOptions): PlanetHeightMap {
+    public static CreateMap(degree: number, main: Main, randSeed: RandSeed, options?: IPlanetHeightMapOptions): PlanetHeightMap {
         let map = new PlanetHeightMap(0);
 
         let firstNoiseDegree: number = 1;
@@ -59,7 +62,8 @@ class PlanetHeightMap {
             map = map.scale2();
             if (map.degree >= firstNoiseDegree && map.degree < lastNoiseDegree) {
                 noise = noise * 0.5;
-                map.noise(noise);
+                map.noise(noise, main, randSeed);
+                console.log("debug " + (map.debug / map.count).toFixed(5))
             }
         }
 
@@ -74,10 +78,13 @@ class PlanetHeightMap {
         return map;
     }
 
-    public noise(range: number): void {
+    public noise(range: number, main: Main, randSeed: RandSeed): void {
         this.enumerate((i, j, k) => {
             let v = this.getValue(i, j, k);
-            v += (Math.random() * 2 - 1) * range;
+            let r = (main.rand.getValue4D(randSeed, i, j, k, this.degree + 10) * 2 - 1) * range;
+            v += r;
+            this.debug += r;
+            this.count++;
             this.setValue(v, i, j, k);
         });
     }
