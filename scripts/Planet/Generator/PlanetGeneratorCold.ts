@@ -55,12 +55,21 @@ class PlanetGeneratorCold extends PlanetGenerator {
             console.log(logOutput);
         }
         
+        let randIndex: number = 0;
         for (let i = 0; i < 50; i++) {
-            let p = new BABYLON.Vector3(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5);
+            let p = new BABYLON.Vector3(
+                planet.main.rand.getValue1D(planet.randSeed, randIndex++) - 0.5,
+                planet.main.rand.getValue1D(planet.randSeed, randIndex++) - 0.5,
+                planet.main.rand.getValue1D(planet.randSeed, randIndex++) - 0.5
+            );
             p.normalize();
 
             let up = p.clone();
-            let forward = new BABYLON.Vector3(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5);
+            let forward = new BABYLON.Vector3(
+                planet.main.rand.getValue1D(planet.randSeed, randIndex++) - 0.5,
+                planet.main.rand.getValue1D(planet.randSeed, randIndex++) - 0.5,
+                planet.main.rand.getValue1D(planet.randSeed, randIndex++) - 0.5
+            );
             forward.normalize();
             
             let side = PlanetTools.PlanetPositionToSide(p);
@@ -70,9 +79,9 @@ class PlanetGeneratorCold extends PlanetGenerator {
             let pBase = p.scale(PlanetTools.KGlobalToAltitude(kGlobal));
             p.scaleInPlace(PlanetTools.KGlobalToAltitude(kGlobal + 7));
 
-            let w = 2 + 6 * Math.random();
-            let h = 1.5 + 3 * Math.random();
-            let d = 2 + 6 * Math.random();
+            let w = 2 + 6 * planet.main.rand.getValue1D(planet.randSeed, randIndex++);
+            let h = 1.5 + 3 * planet.main.rand.getValue1D(planet.randSeed, randIndex++);
+            let d = 2 + 6 * planet.main.rand.getValue1D(planet.randSeed, randIndex++);
             this.elements.push(new GeneratorBox(BlockType.Ice, pBase, up, forward, w, h, d));
         }
         if (useLog) {

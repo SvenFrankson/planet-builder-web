@@ -54,8 +54,13 @@ class PlanetGeneratorEarth extends PlanetGenerator {
             logOutput += "\n  altitudeMap created in " + (timers[timers.length - 1] - timers[timers.length - 2]).toFixed(0) + " ms";
         }
         
+        let randIndex = 0;
         for (let i = 0; i < 100; i++) {
-            let p = new BABYLON.Vector3(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5);
+            let p = new BABYLON.Vector3(
+                planet.main.rand.getValue1D(planet.randSeed, randIndex++) - 0.5,
+                planet.main.rand.getValue1D(planet.randSeed, randIndex++) - 0.5,
+                planet.main.rand.getValue1D(planet.randSeed, randIndex++) - 0.5
+            );
             p.normalize();
             
             let side = PlanetTools.PlanetPositionToSide(p);

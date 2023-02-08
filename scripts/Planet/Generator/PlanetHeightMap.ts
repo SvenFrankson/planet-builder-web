@@ -89,39 +89,7 @@ class PlanetHeightMap {
         });
     }
 
-    public setRandomDisc(v: number, rMin: number, rMax: number, shadow: number = 0): void {
-        let i = Math.random();
-        let j = Math.random();
-        let k = Math.random();
-        if (i >= j && i >= k) {
-            i = 1;
-        }
-        else if (j >= i && j >= k) {
-            j = 1;
-        }
-        else if (k >= i && k >= j) {
-            k = 1;
-        }
-
-        if (Math.random() > 0.5) {
-            i = - i;
-        }
-        if (Math.random() > 0.5) {
-            j = - j;
-        }
-        if (Math.random() > 0.5) {
-            k = - k;
-        }
-
-        i = 0.5 - 0.5 * i;
-        j = 0.5 - 0.5 * j;
-        k = 0.5 - 0.5 * k;
-
-        i = Math.round(i * this.size);
-        j = Math.round(j * this.size);
-        k = Math.round(k * this.size);
-
-        let r = (rMax - rMin) * Math.random() + rMin;
+    public setRandomDisc(v: number, i: number, j: number, k: number, r: number, shadow: number = 0): void {
         for (let n = shadow; n > 0; n--) {
             let vv = v * (1 - n / (shadow + 1))
             this.fillDisc(vv, i, j, k, r + n);

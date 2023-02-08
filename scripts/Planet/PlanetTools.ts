@@ -236,7 +236,6 @@ class PlanetTools {
             for (let j: number = 0; j < PlanetTools.CHUNCKSIZE; j++) {
                 data[i][j] = [];
                 for (let k: number = 0; k < PlanetTools.CHUNCKSIZE; k++) {
-                    //data[i][j][k] = 128 + 9 + Math.floor(4 * Math.random());
                     data[i][j][k] = 3;
                 }
             }

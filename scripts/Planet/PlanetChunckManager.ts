@@ -132,17 +132,11 @@ class PlanetChunckManager {
         if (!chunck.registered) {
             return;
         }
-        if (Math.random() < 1 / 100) {
-            //console.log("chunck lod = " + chunck.lod + " " + chunck.sqrDistanceToViewpoint.toFixed(0) + " " + chunck.planetName);
-        }
         if (layerIndex < Config.performanceConfiguration.lodCount) {
             if (chunck instanceof PlanetChunck) {
                 this.requestDraw(chunck, 0, "ChunckManager.update");
             }
             else if (chunck instanceof PlanetChunckGroup) {
-                if (Math.random() < 1 / 100) {
-                    console.log("wtf !");
-                }
                 return chunck.subdivide();
             }
         }

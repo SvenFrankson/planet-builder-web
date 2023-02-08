@@ -16,8 +16,41 @@ class PlanetGeneratorMoon extends PlanetGenerator {
         this._moutainHeightMap = PlanetHeightMap.CreateMap(planet.degree, planet.main, planet.randSeed).multiplyInPlace(4 / (this.planet.kPosMax * PlanetTools.CHUNCKSIZE));
 
         this._craterMap = PlanetHeightMap.CreateConstantMap(planet.degree, 0);
-        for (let i = 0; i < 200; i++) {
-            this._craterMap.setRandomDisc(3 / (this.planet.kPosMax * PlanetTools.CHUNCKSIZE), 2, 4);
+        let randIndex: number = 0;
+        for (let n = 0; n < 200; n++) {
+            let i = planet.main.rand.getValue1D(planet.randSeed, randIndex++);
+            let j = planet.main.rand.getValue1D(planet.randSeed, randIndex++);
+            let k = planet.main.rand.getValue1D(planet.randSeed, randIndex++);
+            if (i >= j && i >= k) {
+                i = 1;
+            }
+            else if (j >= i && j >= k) {
+                j = 1;
+            }
+            else if (k >= i && k >= j) {
+                k = 1;
+            }
+    
+            if (planet.main.rand.getValue1D(planet.randSeed, randIndex++) > 0.5) {
+                i = - i;
+            }
+            if (planet.main.rand.getValue1D(planet.randSeed, randIndex++) > 0.5) {
+                j = - j;
+            }
+            if (planet.main.rand.getValue1D(planet.randSeed, randIndex++) > 0.5) {
+                k = - k;
+            }
+    
+            i = 0.5 - 0.5 * i;
+            j = 0.5 - 0.5 * j;
+            k = 0.5 - 0.5 * k;
+    
+            i = Math.round(i * this._craterMap.size);
+            j = Math.round(j * this._craterMap.size);
+            k = Math.round(k * this._craterMap.size);
+    
+            let r = 2 * planet.main.rand.getValue1D(planet.randSeed, randIndex++) + 2;
+            this._craterMap.setRandomDisc(3 / (this.planet.kPosMax * PlanetTools.CHUNCKSIZE), i, j, k, r);
         }
         this._craterMap.smooth();
         this._craterMap.smooth();

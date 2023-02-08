@@ -68,7 +68,6 @@ class PlanetToy extends Main {
 					let v1 = vertices[i + 1][j].clone();
 					let v2 = vertices[i + 1][j + 1].clone();
 					let v3 = vertices[i][j + 1].clone();
-					let h = Math.floor(Math.random() * 3) * 0.3;
 					v0.scaleInPlace(10);
 					v1.scaleInPlace(10);
 					v2.scaleInPlace(10);
