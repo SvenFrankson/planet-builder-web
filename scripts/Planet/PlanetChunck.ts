@@ -76,6 +76,7 @@ class PlanetChunck extends AbstractPlanetChunck {
     public get firstK(): number {
         return this._firstK;
     }
+    private modDataOctree: OctreeNode<BlockType>;
     protected data: number[][][];
     private proceduralItems: ProceduralTree[];
     private _proceduralItemsGenerated: boolean = false;
@@ -125,6 +126,11 @@ class PlanetChunck extends AbstractPlanetChunck {
             this.syncWithAdjacents();
         }
         this.data[i - this.firstI][j - this.firstJ][k - this.firstK] = value;
+        if (!this.modDataOctree) {
+            this.modDataOctree = new OctreeNode<BlockType>();
+        }
+        this.modDataOctree.set(value, i, j, k);
+        window.localStorage.setItem(this.getUniqueName(), this.modDataOctree.serializeToString());
         if (noDataSafety) {
             return;
         }
@@ -335,6 +341,13 @@ class PlanetChunck extends AbstractPlanetChunck {
                         }
                     }
                 }
+            }
+            let modData = window.localStorage.getItem(this.getUniqueName());
+            if (modData) {
+                this.modDataOctree = OctreeNode.DeserializeFromString(modData);
+                this.modDataOctree.forEach((v, i, j, k) => {
+                    this.data[i - this.firstI][j - this.firstJ][k - this.firstK] = v;
+                });
             }
             this._dataInitialized = true;
             this.updateIsEmptyIsFull();

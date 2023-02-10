@@ -78,6 +78,10 @@ abstract class AbstractPlanetChunck {
         }   
     }
 
+    public getUniqueName(): string {
+        return this.planet.galaxy.universe.name + "-" + this.planet.galaxy.name + "-" + this.planet.name + "." + this.side + ":" + this.iPos + "-" + this.jPos	+ "-" + this.kPos;
+    }
+
     public canCollapse(): boolean {
         if (this.parentGroup) {
             let siblings = this.parentGroup.children;
