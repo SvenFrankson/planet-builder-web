@@ -86,6 +86,19 @@ class Player extends BABYLON.Mesh {
         
         this.animateCamPosRotX = AnimationFactory.CreateNumber(this, this.camPos.rotation, "x");
         this.animateCamPosRotY = AnimationFactory.CreateNumber(this, this.camPos.rotation, "y");
+        
+        let savedPlayerPosString = window.localStorage.getItem("player-position");
+        if (savedPlayerPosString) {
+            let savedPlayerPos = JSON.parse(savedPlayerPosString);
+            this.position.x = savedPlayerPos.x;
+            this.position.y = savedPlayerPos.y;
+            this.position.z = savedPlayerPos.z;
+            this.camPos.rotation.x = savedPlayerPos.rx;
+            this.rotationQuaternion.x = savedPlayerPos.qx;
+            this.rotationQuaternion.y = savedPlayerPos.qy;
+            this.rotationQuaternion.z = savedPlayerPos.qz;
+            this.rotationQuaternion.w = savedPlayerPos.qw;
+        }
     }
 
     public async initialize(): Promise<void> {
@@ -356,6 +369,7 @@ class Player extends BABYLON.Mesh {
     }
 
     private _currentChunck: PlanetChunck;
+    private _savePositionTimer: number = 0;
     private _update = () => {
         if (this.main.cameraManager.cameraMode != CameraMode.Player) {
             return;
@@ -363,6 +377,7 @@ class Player extends BABYLON.Mesh {
         this.updatePlanet();
 
         let deltaTime: number = this.main.engine.getDeltaTime() / 1000;
+        this._savePositionTimer += deltaTime;
 
         if (isFinite(this._moveTimer)) {
             let p = this.inputManager.getPickInfo(this._meshes);
@@ -697,6 +712,21 @@ class Player extends BABYLON.Mesh {
             if (this.currentAction.onUpdate) {
                 this.currentAction.onUpdate();
             }
+        }
+
+        if (this._savePositionTimer > 0.5) {
+            this._savePositionTimer = 0;
+            let savedPlayerPos = {
+                x: this.position.x,
+                y: this.position.y,
+                z: this.position.z,                
+                rx: this.camPos.rotation.x,
+                qx: this.rotationQuaternion.x,
+                qy: this.rotationQuaternion.y,
+                qz: this.rotationQuaternion.z,
+                qw: this.rotationQuaternion.w
+            };
+            window.localStorage.setItem("player-position", JSON.stringify(savedPlayerPos));
         }
 
         //document.querySelector("#camera-altitude").textContent = this.camPos.absolutePosition.length().toFixed(1);
