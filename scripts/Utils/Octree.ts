@@ -115,7 +115,6 @@ class OctreeNode<T> {
 
         let l1 = compressedOutput.length;
 
-        /*
         compressedOutput = compressedOutput.replaceAll("________", "H");
         compressedOutput = compressedOutput.replaceAll("_______", "G");
         compressedOutput = compressedOutput.replaceAll("______", "F");
@@ -133,7 +132,6 @@ class OctreeNode<T> {
         compressedOutput = compressedOutput.replaceAll("...", "K");
         compressedOutput = compressedOutput.replaceAll("..", "J");
         //compressedOutput = compressedOutput.replaceAll(".", "I");
-        */
 
         let l2 = compressedOutput.length;
 
@@ -170,7 +168,6 @@ class OctreeNode<T> {
     public static DeserializeFromString(input: string): OctreeNode<number> {
         let deCompressedInput = input;
 
-        /*
         deCompressedInput = deCompressedInput.replaceAll("H", "________");
         deCompressedInput = deCompressedInput.replaceAll("G", "_______");
         deCompressedInput = deCompressedInput.replaceAll("F", "______");
@@ -188,7 +185,6 @@ class OctreeNode<T> {
         deCompressedInput = deCompressedInput.replaceAll("K", "...");
         deCompressedInput = deCompressedInput.replaceAll("J", "..");
         //deCompressedInput = deCompressedInput.replaceAll("I", ".");
-        */
 
         let split = deCompressedInput.split("#");
         return OctreeNode.Deserialize([undefined, split[2], split[1], split[0]]);
@@ -214,6 +210,9 @@ class OctreeNode<T> {
             }
             else {
                 let v = parseInt(c);
+                if (isNaN(v)) {
+                    return undefined;
+                }
                 node._setNthChild(v, n);
             }
             cursor++;
@@ -238,6 +237,9 @@ class OctreeNode<T> {
                 }
                 else {
                     let v = parseInt(input[2].substring(cursor, cursor + 3));
+                    if (isNaN(v)) {
+                        return undefined;
+                    }
                     cursor += 3;
                     nodeDeg2._setNthChild(v, n);
                 }
@@ -258,6 +260,9 @@ class OctreeNode<T> {
                 }
                 else {
                     let v = parseInt(input[1].substring(cursor, cursor + 3));
+                    if (isNaN(v)) {
+                        return undefined;
+                    }
                     cursor += 3;
                     nodeDeg1._setNthChild(v, n);
                 }
