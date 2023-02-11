@@ -254,10 +254,8 @@ class Player extends BABYLON.Mesh {
             let movementX: number = event.movementX;
             let movementY: number = event.movementY;
             let size = Math.min(this.main.canvas.width, this.main.canvas.height)
-            this.inputHeadRight += movementX / size * 10;
-            this.inputHeadRight = Math.max(Math.min(this.inputHeadRight, 1), - 1);
-            this.inputHeadUp += movementY / size * 10;
-            this.inputHeadUp = Math.max(Math.min(this.inputHeadUp, 1), - 1);
+            this.inputHeadRight += movementX / size * 5;
+            this.inputHeadUp += movementY / size * 5;
         }
     };
 
@@ -446,11 +444,8 @@ class Player extends BABYLON.Mesh {
             }
         }
 
-        let inputHeadRight = Math.max(Math.min(this.inputHeadRight, 1), -1);
-        let inputHeadUp = Math.max(Math.min(this.inputHeadUp, 1), -1);
-
-        let rotationPower: number = inputHeadRight * Math.PI * deltaTime;
-        let rotationCamPower: number = inputHeadUp * Math.PI * deltaTime;
+        let rotationPower: number = this.inputHeadRight * Math.PI * deltaTime;
+        let rotationCamPower: number = this.inputHeadUp * Math.PI * deltaTime;
         if (!this.headMove) {
             let localY: BABYLON.Vector3 = BABYLON.Vector3.TransformNormal(BABYLON.Axis.Y, this.getWorldMatrix());
             let rotation: BABYLON.Quaternion = BABYLON.Quaternion.RotationAxis(localY, rotationPower);
@@ -484,7 +479,7 @@ class Player extends BABYLON.Mesh {
             }
         }
 
-        let inputFactor = Easing.smooth025Sec(this.getEngine().getFps());
+        let inputFactor = Easing.smooth010Sec(this.getEngine().getFps());
         this.inputHeadRight *= inputFactor;
         this.inputHeadUp *= inputFactor;
 
