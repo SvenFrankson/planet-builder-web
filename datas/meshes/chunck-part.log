@@ -21,7 +21,7 @@ Exporter version: 6.4.5, Blender version: 2.90.1
 		num uvs2           :  0
 		num colors         :  0
 		num triangles      :  12
-	processing begun of mesh:  1-block
+	processing begun of mesh:  0-block
 		processing begun of material:  Green
 		num positions      :  56
 		num normals        :  56
@@ -39,10 +39,20 @@ Exporter version: 6.4.5, Blender version: 2.90.1
 		num uvs2           :  0
 		num colors         :  0
 		num triangles      :  12
+	processing begun of mesh:  1-block-box
+		WARNING: No materials have been assigned: 
+		num positions      :  158
+		num normals        :  158
+		num tangents       :  0
+		num uvs            :  316
+		num uvs2           :  0
+		num colors         :  0
+		num triangles      :  96
 ========= Writing of JSON file started =========
 	writing mesh:  2-ground-collider
-	writing mesh:  1-block
+	writing mesh:  0-block
 	writing mesh:  3-wall-collider
+	writing mesh:  1-block-box
 ========= Writing of JSON file completed =========
 ========= end of processing =========
-elapsed time:  0 min, 0.0923 secs
+elapsed time:  0 min, 0.0209 secs

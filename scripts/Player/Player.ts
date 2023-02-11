@@ -106,8 +106,8 @@ class Player extends BABYLON.Mesh {
             Game.Scene.onBeforeRenderObservable.add(this._update);
             this.armManager.initialize();
             this._initialized = true;
-            this.groundCollisionVData = (await this.main.vertexDataLoader.get("chunck-part"))[1];
-            this.wallCollisionVData = (await this.main.vertexDataLoader.get("chunck-part"))[2];
+            this.groundCollisionVData = (await this.main.vertexDataLoader.get("chunck-part"))[2];
+            this.wallCollisionVData = (await this.main.vertexDataLoader.get("chunck-part"))[3];
             (await this.main.vertexDataLoader.get("landmark"))[0].applyToMesh(this.moveIndicatorDisc);
             (await this.main.vertexDataLoader.get("landmark"))[1].applyToMesh(this.moveIndicatorLandmark);
         }
