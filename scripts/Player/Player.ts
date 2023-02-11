@@ -184,9 +184,6 @@ class Player extends BABYLON.Mesh {
                 this._jumpTimer = 0.2;
             }
         });
-        this.inputManager.addMappedKeyUpListener(KeyInput.INVENTORY, () => {
-            this.inputManager.inventoryOpened = !this.inputManager.inventoryOpened;
-        });
         this.main.canvas.addEventListener("keyup", this._keyUp);
 
         this.main.canvas.addEventListener("pointermove", this._mouseMove);

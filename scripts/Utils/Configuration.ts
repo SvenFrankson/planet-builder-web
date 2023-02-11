@@ -109,7 +109,7 @@ class ConfigurationPerformance {
 
 class ConfigurationControl {
 
-    public canLockPointer: boolean = false;
+    public canLockPointer: boolean = true;
 }
 
 class ConfigurationUI {

@@ -54,8 +54,10 @@ class InputManager {
             this.updateAimedElement(ev.x, ev.y);
             this.isPointerDown = true;
             if (Config.controlConfiguration.canLockPointer) {
-                this.canvas.requestPointerLock();
-                this.isPointerLocked = true;
+                if (!this.inventoryOpened) {
+                    this.canvas.requestPointerLock();
+                    this.isPointerLocked = true;
+                }
             }
             this.pointerDownObservable.notifyObservers(this.aimedElement);
         });
@@ -134,6 +136,19 @@ class InputManager {
                 this.doKeyInputUp(keyInput);
             }
         })
+        this.addMappedKeyUpListener(KeyInput.INVENTORY, () => {
+            this.inventoryOpened = !this.inventoryOpened;
+            if (Config.controlConfiguration.canLockPointer) {
+                if (this.inventoryOpened) {
+                    document.exitPointerLock();
+                    this.isPointerLocked = false;
+                }
+                else {
+                    this.canvas.requestPointerLock();
+                    this.isPointerLocked = true;
+                }
+            }
+        });
     }
 
     private doKeyInputDown(keyInput: KeyInput): void {
