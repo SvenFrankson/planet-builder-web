@@ -60,6 +60,7 @@ class Inventory {
                 this.addItem(InventoryItem.Block(this.player, blockType));
             }
         }
+        this.addItem(InventoryItem.Block(this.player, BlockType.None));
     }
 
     public initialize(): void {

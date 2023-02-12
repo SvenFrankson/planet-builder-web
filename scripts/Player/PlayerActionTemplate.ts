@@ -21,11 +21,11 @@ class PlayerActionTemplate {
             if (!player.inputManager.inventoryOpened) {
                 let hit = player.inputManager.getPickInfo(player.meshes);
                 if (hit && hit.pickedPoint) {
-                    let n =  hit.getNormal(true).scaleInPlace(0.2);
+                    let n =  hit.getNormal(true).scaleInPlace(blockType === BlockType.None ? - 0.2 : 0.2);
                     let localIJK = PlanetTools.WorldPositionToLocalIJK(player.planet, hit.pickedPoint.add(n));
                     if (localIJK) {
                         // Redraw block preview
-                        if (!previewMesh) {
+                        if (!previewMesh && blockType != BlockType.None) {
                             previewMesh = new BABYLON.Mesh("preview-mesh");
                             if (player.planet) {
                                 previewMesh.material = player.planet.chunckMaterial;
@@ -33,7 +33,12 @@ class PlayerActionTemplate {
                         }
                         if (!previewBox) {
                             previewBox = new BABYLON.Mesh("preview-box");
-                            previewBox.material = SharedMaterials.WhiteEmissiveMaterial();
+                            if (blockType === BlockType.None) {
+                                previewBox.material = SharedMaterials.RedEmissiveMaterial();
+                            }
+                            else {
+                                previewBox.material = SharedMaterials.WhiteEmissiveMaterial();
+                            }
                             previewBox.layerMask = 0x1;
                         }
                         let globalIJK = PlanetTools.LocalIJKToGlobalIJK(localIJK);
@@ -55,9 +60,11 @@ class PlayerActionTemplate {
                             needRedrawMesh = true;
                         }
                         if (needRedrawMesh) {
-                            PlanetTools.SkewVertexData(previewMeshData, localIJK.planetChunck.size, globalIJK.i, globalIJK.j, globalIJK.k, localIJK.planetChunck.side, blockType).applyToMesh(previewMesh);
+                            if (previewMesh) {
+                                PlanetTools.SkewVertexData(previewMeshData, localIJK.planetChunck.size, globalIJK.i, globalIJK.j, globalIJK.k, localIJK.planetChunck.side, blockType).applyToMesh(previewMesh);
+                                previewMesh.parent = localIJK.planetChunck.planetSide;
+                            }
                             PlanetTools.SkewVertexData(previewBoxData, localIJK.planetChunck.size, globalIJK.i, globalIJK.j, globalIJK.k, localIJK.planetChunck.side).applyToMesh(previewBox);
-                            previewMesh.parent = localIJK.planetChunck.planetSide;
                             previewBox.parent = localIJK.planetChunck.planetSide;
                         }
 
@@ -80,7 +87,7 @@ class PlayerActionTemplate {
             if (!player.inputManager.inventoryOpened) {
                 let hit = player.inputManager.getPickInfo(player.meshes);
                 if (hit && hit.pickedPoint) {
-                    let n =  hit.getNormal(true).scaleInPlace(0.2);
+                    let n =  hit.getNormal(true).scaleInPlace(blockType === BlockType.None ? - 0.2 : 0.2);
                     let localIJK = PlanetTools.WorldPositionToLocalIJK(player.planet, hit.pickedPoint.add(n));
                     if (localIJK) {
                         localIJK.planetChunck.SetData(localIJK.i, localIJK.j, localIJK.k, blockType);
