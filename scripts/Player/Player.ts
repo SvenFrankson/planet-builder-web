@@ -262,6 +262,9 @@ class Player extends BABYLON.Mesh {
     private _moveTarget: BABYLON.Vector3;
     private _moveTimer: number = Infinity;
     private startTeleportation(): void {
+        if (this.inputManager.isPointerLocked) {
+            return;
+        }
         this._moveTimer = 1;
         this._moveTarget = undefined;
     }
