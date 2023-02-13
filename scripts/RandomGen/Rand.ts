@@ -24,8 +24,6 @@ class Rand {
 
     public L: number;
     public values: number[] = [];
-    public sorted: number[] = [];
-    public hits: number[] = [];
 
     constructor() {
         let N = PIString.length;
@@ -36,15 +34,6 @@ class Rand {
             i++;
         }
         this.L = this.values.length;
-        for (let i = 0; i < this.L; i++) {
-            this.hits[i] = 0;
-        }
-        this.sorted = this.values.sort((a, b) => { return a - b; });
-        this.test();
-        setTimeout(() => {
-            this.hits = this.hits.sort((a, b) => { return b - a; });
-            console.log(this.hits);
-        }, 5000);
     }
     
     public getValue1D(seed: RandSeed, i: number): number {
@@ -61,9 +50,7 @@ class Rand {
         n4 = n4 % this.L;
         
         let index = Math.floor(Math.abs(n1 + n2 + n3 + n4)) % this.L;
-        this.hits[index]++;
         let v = this.values[index];
-        //console.log(v);
         return v;
     }
     
@@ -93,20 +80,8 @@ class Rand {
         n8 = n8 % this.L;
         
         let index = Math.floor(Math.abs(n1 + n2 + n3 + n4 + n5 + n6 + n7 + n8)) % this.L;
-        this.hits[index]++;
         let v = this.values[index];
         //console.log(v);
         return v;
-    }
-
-    public test(): void {
-        console.log("count      " + this.L);
-        console.log("1st centi  " + this.sorted[Math.floor(this.L / 100)]);
-        console.log("1st decil  " + this.sorted[Math.floor(this.L / 10)]);
-        console.log("1st quart  " + this.sorted[Math.floor(this.L / 4)]);
-        console.log("median     " + this.sorted[Math.floor(this.L / 2)]);
-        console.log("3rd quart  " + this.sorted[Math.floor(3 * this.L / 4)]);
-        console.log("9th decil  " + this.sorted[Math.floor(9 * this.L / 10)]);
-        console.log("99th centi " + this.sorted[Math.floor(99 * this.L / 100)]);
     }
 }

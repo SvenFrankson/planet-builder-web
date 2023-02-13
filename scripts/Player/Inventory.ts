@@ -40,6 +40,10 @@ enum BrickSortingOrder {
     ColorDesc
 }
 
+interface IInventoryData {
+    items: { r: string, c: number }[];
+}
+
 class Inventory {
 
     public currentSection: InventorySection;
@@ -55,12 +59,14 @@ class Inventory {
     ) {
         player.inventory = this;
         
-        for (let blockType = BlockType.Grass; blockType < BlockType.Unknown; blockType++) {
-            for (let n = 0; n < 42; n++) {
-                this.addItem(InventoryItem.Block(this.player, blockType));
-            }
+        let savedInventoryString = window.localStorage.getItem("player-inventory");
+        if (savedInventoryString) {
+            let savedInventory = JSON.parse(savedInventoryString);
+            this.deserializeInPlace(savedInventory);
         }
-        this.addItem(InventoryItem.Block(this.player, BlockType.None));
+        else {
+            this.addItem(InventoryItem.Block(this.player, BlockType.None));
+        }
     }
 
     public initialize(): void {
@@ -75,6 +81,8 @@ class Inventory {
         else {
             this.items.push(item);
         }
+        let data = this.serialize();
+        window.localStorage.setItem("player-inventory", JSON.stringify(data));
     }
 
     public getCurrentSectionItems(): InventoryItem[] {
@@ -94,5 +102,32 @@ class Inventory {
 
     public update(): void {
 
+    }
+
+    public serialize(): IInventoryData {
+        let data: IInventoryData = {
+            items: []
+        };
+        for (let i = 0; i < this.items.length; i++) {
+            let item = this.items[i];
+            data.items.push({
+                r: item.name,
+                c: item.count
+            });
+        }
+        return data;
+    }
+
+    public deserializeInPlace(input: IInventoryData) {
+        this.items = [];
+        for (let i = 0; i < input.items.length; i++) {
+            let data = input.items[i];
+            let blockType = BlockTypeNames.indexOf(data.r);
+            if (blockType != -1) {
+                let item = InventoryItem.Block(this.player, blockType);
+                item.count = data.c;
+                this.items.push(item);
+            }
+        }
     }
 }

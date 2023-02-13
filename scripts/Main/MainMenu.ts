@@ -25,7 +25,7 @@ class MainMenu extends Main {
 	private _textPage: HoloPanel;
 
     public async initialize(): Promise<void> {
-		window.localStorage.clear();
+		//window.localStorage.clear();
 		let timers: number[];
         let logOutput: string;
         let useLog = DebugDefine.LOG_GLOBAL_START_TIME_PERFORMANCE;
