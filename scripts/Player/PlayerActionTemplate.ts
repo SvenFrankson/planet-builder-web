@@ -5,7 +5,7 @@ var ADD_BRICK_ANIMATION_DURATION = 1000;
 class PlayerActionTemplate {
 
     public static async CreateBlockAction(player: Player, blockType: BlockType): Promise<PlayerAction> {
-        let action = new PlayerAction("cube-", player);
+        let action = new PlayerAction(BlockTypeNames[blockType], player);
         let previewMesh: BABYLON.Mesh;
         let previewBox: BABYLON.Mesh;
         action.iconUrl = "/datas/images/block-icon-" + BlockTypeNames[blockType] + "-miniature.png";

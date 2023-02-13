@@ -145,17 +145,19 @@ class MainMenu extends Main {
 					
 					this.onChunckManagerNotWorking(async () => {
 						await this.player.initialize();
+
+						this.player.inventory = new Inventory(this.player);
+						await this.player.inventory.initialize();
 						
 						let hud = new HeadUpDisplay(this.player, this);
 
+						let wristWatch = new WristWatch(this.player, this);
+						await wristWatch.instantiate();
+
+						await hud.instantiate();
+
 						this.player.playerActionManager = new PlayerActionManager(this.player, hud, this);
 						this.player.playerActionManager.initialize();
-
-						this.player.inventory = new Inventory(this.player);
-						hud.instantiate();
-
-						let wristWatch = new WristWatch(this.player, this);
-						wristWatch.instantiate();
 
 						if (DebugDefine.SKIP_MAINMENU_PANEL) {
 							this.player.registerControl();
