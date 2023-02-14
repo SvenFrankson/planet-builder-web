@@ -21,6 +21,12 @@ class Main {
     }
     private _onNextChunckManagerNotWorking: (() => void)[] = [];
 
+    private _chunckManagersWorkingNearTimer: number = 3
+    public get chunckManagerWorkingNear(): boolean {
+        return this._chunckManagersWorkingNearTimer > 0;
+    }
+    private _onNextChunckManagerNotWorkingNear: (() => void)[] = [];
+
     public isTouch: boolean = false;
 
     constructor(canvasElement: string) {
@@ -65,15 +71,27 @@ class Main {
             if (this._chunckManagersWorkingTimer > 0) {
                 checkIfReachesZero = true;
             }
+            
+            let checkIfReachesZeroNear = false;
+            if (this._chunckManagersWorkingNearTimer > 0) {
+                checkIfReachesZeroNear = true;
+            }
     
             this._chunckManagersWorkingTimer = Math.max(this._chunckManagersWorkingTimer - 1, 0);
+            this._chunckManagersWorkingNearTimer = Math.max(this._chunckManagersWorkingNearTimer - 1, 0);
             let needRedrawCount = 0;
+            let needRedrawSqrDist = Infinity;
             for (let i = 0; i < this.currentGalaxy.planets.length; i++) {
                 needRedrawCount += this.currentGalaxy.planets[i].chunckManager.needRedrawCount;
+                needRedrawSqrDist = Math.min(needRedrawSqrDist, this.currentGalaxy.planets[i].chunckManager.getNeedRedrawMinSqrDistance());
             }
             if (needRedrawCount > 0) {
                 this._chunckManagersWorkingTimer = 3;
             }
+            if (needRedrawSqrDist < 30 * 30) {
+                this._chunckManagersWorkingNearTimer = 3;
+            }
+
             if (needRedrawCount > 10) {
                 if (showLoading(false)) {
                     this._onNextChunckManagerNotWorking.push(() => { hideLoading(); });
@@ -85,6 +103,21 @@ class Main {
                     this._onNextChunckManagerNotWorking.pop()();
                 }
             }
+    
+            if (checkIfReachesZeroNear && this._chunckManagersWorkingNearTimer <= 0) {
+                while (this._onNextChunckManagerNotWorkingNear.length > 0) {
+                    this._onNextChunckManagerNotWorkingNear.pop()();
+                }
+            }
+        }
+    }
+    
+    public onChunckManagerNotWorkingNear(callback: () => void): void {
+        if (!this.chunckManagerWorkingNear) {
+            callback();
+        }
+        else {
+            this._onNextChunckManagerNotWorkingNear.push(callback);
         }
     }
     

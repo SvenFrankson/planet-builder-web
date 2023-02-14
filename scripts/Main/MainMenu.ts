@@ -142,7 +142,7 @@ class MainMenu extends Main {
 					
 					this.inputManager.initialize(this.player);
 					
-					this.onChunckManagerNotWorking(async () => {
+					this.onChunckManagerNotWorkingNear(async () => {
 						await this.player.initialize();
 						
 						let hud = new HeadUpDisplay(this.player, this);

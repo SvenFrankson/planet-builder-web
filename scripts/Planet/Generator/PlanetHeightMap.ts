@@ -63,7 +63,6 @@ class PlanetHeightMap {
             if (map.degree >= firstNoiseDegree && map.degree < lastNoiseDegree) {
                 noise = noise * 0.5;
                 map.noise(noise, main, randSeed);
-                console.log("debug " + (map.debug / map.count).toFixed(5))
             }
         }
 

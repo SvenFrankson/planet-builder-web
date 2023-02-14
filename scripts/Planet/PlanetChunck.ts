@@ -21,7 +21,7 @@ class PlanetChunck extends AbstractPlanetChunck {
         };
     }
     protected _adjacents: PlanetChunck[][][][];
-    public adjacentsAsArray: PlanetChunck[];
+    public adjacentsAsArray: PlanetChunck[] = [];
     public findAdjacents(): void {
         this._adjacents = [];
         this.adjacentsAsArray = [];

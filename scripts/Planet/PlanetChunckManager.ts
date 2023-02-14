@@ -16,6 +16,12 @@ class PlanetChunckManager {
     public get needRedrawCount(): number {
         return this._needRedraw.length;
     }
+    public getNeedRedrawMinSqrDistance(): number {
+        if (this._needRedraw.length === 0) {
+            return Infinity;
+        }
+        return Math.min(...this._needRedraw.map(r => { return r.chunck.sqrDistanceToViewpoint; }));
+    }
 
     private _layersCount: number = 6;
     private _layers: AbstractPlanetChunck[][];
