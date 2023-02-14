@@ -29,37 +29,44 @@ class Easing {
         : (Math.pow(2 * x - 2, 2) * ((c2 + 1) * (x * 2 - 2) + c2) + 2) / 2;
     }
 
+    public static smooth010Sec(fps: number): number {
+        if (fps < 13) {
+            return 0;
+        }
+        return 1 - 1 / (0.08 * fps);
+    }
+
     public static smooth025Sec(fps: number): number {
         if (fps < 8) {
-            return 1;
+            return 0;
         }
         return 1 - 1 / (0.13 * fps);
     }
 
     public static smooth05Sec(fps: number): number {
         if (fps < 4) {
-            return 1;
+            return 0;
         }
         return 1 - 1 / (0.25 * fps);
     }
 
     public static smooth1Sec(fps: number): number {
         if (fps < 2.25) {
-            return 1;
+            return 0;
         }
         return 1 - 1 / (0.45 * fps);
     }
 
     public static smooth2Sec(fps: number): number {
         if (fps < 1.2) {
-            return 1;
+            return 0;
         }
         return 1 - 1 / (0.9 * fps);
     }
 
     public static smooth3Sec(fps: number): number {
         if (fps < 1) {
-            return 1;
+            return 0;
         }
         return 1 - 1 / (1.35 * fps);
     }

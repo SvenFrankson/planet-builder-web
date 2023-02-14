@@ -16,17 +16,17 @@ class InventoryItem {
     public iconUrl: string;
     public timeUse: number = 0;
 
-    public static Block(player: Player, blockType: BlockType): InventoryItem {
-        let it = new InventoryItem();
-        it.section = InventorySection.Block;
-        it.name = BlockTypeNames[blockType];
-        it.size = 27;
-        PlayerActionTemplate.CreateBlockAction(player, blockType).then((action) => {
-            it.playerAction = action;
-            action.item = it;
+    public static async Block(player: Player, blockType: BlockType): Promise<InventoryItem> {
+        return new Promise<InventoryItem>(async resolve => {
+            let it = new InventoryItem();
+            it.section = InventorySection.Block;
+            it.name = BlockTypeNames[blockType];
+            it.size = 27;
+            it.playerAction = await PlayerActionTemplate.CreateBlockAction(player, blockType);
+            it.playerAction.item = it;
+            it.iconUrl = "datas/images/block-icon-" + BlockTypeNames[blockType] + "-miniature.png";
+            resolve(it);
         });
-        it.iconUrl = "datas/images/block-icon-" + BlockTypeNames[blockType] + "-miniature.png";
-        return it;
     }
 }
 
@@ -38,6 +38,10 @@ enum BrickSortingOrder {
     SizeDesc,
     ColorAsc,
     ColorDesc
+}
+
+interface IInventoryData {
+    items: { r: string, c: number }[];
 }
 
 class Inventory {
@@ -54,15 +58,19 @@ class Inventory {
         public player: Player
     ) {
         player.inventory = this;
-        
-        for (let blockType = BlockType.Grass; blockType < BlockType.Unknown; blockType++) {
-            for (let n = 0; n < 42; n++) {
-                this.addItem(InventoryItem.Block(this.player, blockType));
-            }
-        }
     }
 
-    public initialize(): void {
+    public async initialize(): Promise<void> {
+        
+        let savedInventoryString = window.localStorage.getItem("player-inventory");
+        if (savedInventoryString) {
+            let savedInventory = JSON.parse(savedInventoryString);
+            await this.deserializeInPlace(savedInventory);
+        }
+        else {
+            this.addItem(await InventoryItem.Block(this.player, BlockType.None));
+        }
+
         this.update();
     }
 
@@ -74,6 +82,8 @@ class Inventory {
         else {
             this.items.push(item);
         }
+        let data = this.serialize();
+        window.localStorage.setItem("player-inventory", JSON.stringify(data));
     }
 
     public getCurrentSectionItems(): InventoryItem[] {
@@ -87,11 +97,42 @@ class Inventory {
         return sectionItems;
     }
 
+    public getItemByName(name: string): InventoryItem {
+        return this.items.find(it => { return it.name === name; });
+    }
+
     public getItemByPlayerActionName(playerActionName: string): InventoryItem {
         return this.items.find(it => { return it.playerAction.name === playerActionName; });
     }
 
     public update(): void {
 
+    }
+
+    public serialize(): IInventoryData {
+        let data: IInventoryData = {
+            items: []
+        };
+        for (let i = 0; i < this.items.length; i++) {
+            let item = this.items[i];
+            data.items.push({
+                r: item.name,
+                c: item.count
+            });
+        }
+        return data;
+    }
+
+    public async deserializeInPlace(input: IInventoryData) {
+        this.items = [];
+        for (let i = 0; i < input.items.length; i++) {
+            let data = input.items[i];
+            let blockType = BlockTypeNames.indexOf(data.r);
+            if (blockType != -1) {
+                let item = await InventoryItem.Block(this.player, blockType);
+                item.count = data.c;
+                this.items.push(item);
+            }
+        }
     }
 }

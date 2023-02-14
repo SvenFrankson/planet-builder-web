@@ -151,7 +151,10 @@ class PlanetTools {
         
         let skewedVertexData = new BABYLON.VertexData();
         let positions: number[] = [];
-        let normals: number[] = [...vertexData.normals];
+        let normals: number[];
+        if (vertexData.normals) {
+            normals = [...vertexData.normals];
+        }
         let indices: number[] = [...vertexData.indices];
         
         let colors = [];
@@ -205,7 +208,9 @@ class PlanetTools {
         }
 
         skewedVertexData.positions = positions;
-        skewedVertexData.normals = normals;
+        if (normals) {
+            skewedVertexData.normals = normals;
+        }
         skewedVertexData.indices = indices;
         skewedVertexData.colors = colors;
         skewedVertexData.uvs = uvs;

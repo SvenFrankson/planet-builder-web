@@ -1,5 +1,5 @@
 interface IPlayerActionManagerData {
-    linkedActionsNames: string[];
+    linkedItemNames: string[];
 }
 
 class PlayerAction {
@@ -36,10 +36,15 @@ class PlayerActionManager {
         public hud: HeadUpDisplay,
         public main: Main
     ) {
-
     }
 
     public initialize(): void {
+        let savedPlayerActionString = window.localStorage.getItem("player-action-manager");
+        if (savedPlayerActionString) {
+            let savedPlayerAction = JSON.parse(savedPlayerActionString);
+            this.deserializeInPlace(savedPlayerAction);
+        }
+        
         Main.Scene.onBeforeRenderObservable.add(this.update);
         
         this.main.inputManager.addKeyDownListener((e: KeyInput) => {
@@ -68,6 +73,7 @@ class PlayerActionManager {
         if (slotIndex >= 0 && slotIndex <= 9) {
             this.linkedActions[slotIndex] = action;
             this.hud.onActionLinked(action, slotIndex);
+            window.localStorage.setItem("player-action-manager", JSON.stringify(this.serialize()));
         }
     }
 
@@ -75,6 +81,7 @@ class PlayerActionManager {
         if (slotIndex >= 0 && slotIndex <= 9) {
             this.linkedActions[slotIndex] = undefined;
             this.hud.onActionUnlinked(slotIndex);
+            window.localStorage.setItem("player-action-manager", JSON.stringify(this.serialize()));
         }
     }
 
@@ -131,23 +138,23 @@ class PlayerActionManager {
         let linkedActionsNames: string[] = [];
         for (let i = 0; i < this.linkedActions.length; i++) {
             if (this.linkedActions[i]) {
-                linkedActionsNames[i] = this.linkedActions[i].name;
+                linkedActionsNames[i] = this.linkedActions[i].item.name;
             }
         }
         return {
-            linkedActionsNames: linkedActionsNames
+            linkedItemNames: linkedActionsNames
         }
     }
 
-    public deserialize(data: IPlayerActionManagerData): void {
-        if (data && data.linkedActionsNames) {
-            for (let i = 0; i < data.linkedActionsNames.length; i++) {
-                let linkedActionName = data.linkedActionsNames[i];
-                //let item = this.player.inventory.getItemByPlayerActionName(linkedActionName);
-                //if (item) {
-                //    this.linkAction(item.playerAction, i);
-                //    item.timeUse = (new Date()).getTime();
-                //}
+    public deserializeInPlace(data: IPlayerActionManagerData): void {
+        if (data && data.linkedItemNames) {
+            for (let i = 0; i < data.linkedItemNames.length; i++) {
+                let linkedItemName = data.linkedItemNames[i];
+                let item = this.player.inventory.getItemByName(linkedItemName);
+                if (item) {
+                    this.linkAction(item.playerAction, i);
+                    item.timeUse = (new Date()).getTime();
+                }
             }
         }
     }

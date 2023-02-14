@@ -88,4 +88,26 @@ class SharedMaterials {
         }
         return SharedMaterials.cyanMaterial;
     }
+
+    private static redEmissiveMaterial: BABYLON.StandardMaterial;
+    public static RedEmissiveMaterial(): BABYLON.StandardMaterial {
+        if (!SharedMaterials.redEmissiveMaterial) {
+            SharedMaterials.redEmissiveMaterial = new BABYLON.StandardMaterial("redEmissiveMaterial", Game.Scene);
+            SharedMaterials.redEmissiveMaterial.diffuseColor.copyFromFloats(1, 0, 0);
+            SharedMaterials.redEmissiveMaterial.emissiveColor.copyFromFloats(1, 0, 0);
+            SharedMaterials.redEmissiveMaterial.specularColor.copyFromFloats(0, 0, 0);
+        }
+        return SharedMaterials.redEmissiveMaterial;
+    }
+
+    private static whiteEmissiveMaterial: BABYLON.StandardMaterial;
+    public static WhiteEmissiveMaterial(): BABYLON.StandardMaterial {
+        if (!SharedMaterials.whiteEmissiveMaterial) {
+            SharedMaterials.whiteEmissiveMaterial = new BABYLON.StandardMaterial("whiteEmissiveMaterial", Game.Scene);
+            SharedMaterials.whiteEmissiveMaterial.diffuseColor.copyFromFloats(1, 1, 1);
+            SharedMaterials.whiteEmissiveMaterial.emissiveColor.copyFromFloats(1, 1, 1);
+            SharedMaterials.whiteEmissiveMaterial.specularColor.copyFromFloats(0, 0, 0);
+        }
+        return SharedMaterials.whiteEmissiveMaterial;
+    }
 }
