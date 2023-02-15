@@ -82,6 +82,18 @@ class CameraManager {
             const pp = new BABYLON.PassPostProcess("pass", 1, this.noOutlineCamera);
             pp.inputTexture = rtt.renderTarget;
             pp.autoClear = false;
+
+            this.main.engine.onResizeObservable.add(() => {
+                //console.log("w " + this.main.engine.getRenderWidth());
+                //console.log("h " + this.main.engine.getRenderHeight());
+                //postProcess.getEffect().setFloat("width", this.main.engine.getRenderWidth());
+                //postProcess.getEffect().setFloat("height", this.main.engine.getRenderHeight());
+                rtt.resize({ width: this.main.engine.getRenderWidth(), height: this.main.engine.getRenderHeight() });
+                postProcess.inputTexture.createDepthStencilTexture(0, true, false, 4);
+                postProcess.inputTexture._shareDepth(rtt.renderTarget);
+                this.freeCamera.outputRenderTarget = rtt;
+                pp.inputTexture = rtt.renderTarget;
+            });
         }
 
         this.animateCameraPosZ = AnimationFactory.CreateNumber(this, this.freeCamera.position, "z");
