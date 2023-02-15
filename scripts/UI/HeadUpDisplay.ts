@@ -8,6 +8,8 @@ class HeadUpDisplay extends Pickable {
 
     public tileSize: number = 0.055;
 
+    public hudMaterial: HoloPanelMaterial;
+    public hudTexture: BABYLON.DynamicTexture;
     public slika: Slika;
 
     public hudLateralTileMeshes: BABYLON.Mesh[] = [];
@@ -35,6 +37,32 @@ class HeadUpDisplay extends Pickable {
 
     public async instantiate(): Promise<void> {
         super.instantiate();
+        
+        let hsf = Config.performanceConfiguration.holoScreenFactor;
+
+        this.hudMaterial = new HoloPanelMaterial("hud-material", this.scene);
+
+        this.hudTexture = new BABYLON.DynamicTexture("hud-texture", { width: 1000 * hsf, height: 1000 * hsf }, this.scene, true);
+        this.hudTexture.hasAlpha = true;
+        this.hudMaterial.holoTexture = this.hudTexture;
+        
+        this.slika = new Slika(1000 * hsf, 1000 * hsf, this.hudTexture.getContext(), this.hudTexture);
+        this.slika.texture = this.hudTexture;
+        this.slika.context = this.hudTexture.getContext();
+        this.slika.needRedraw = true;
+
+        this.main.engine.onResizeObservable.add(() => {
+            this.resize();
+        })
+
+        this.resize();
+    }
+
+    public resize(): void {
+        this.getChildMeshes().forEach(mesh => {
+            mesh.dispose(false, false);
+        });
+
         let camera = this.cameraManager.noOutlineCamera;
         let yAngle = camera.fov;
         let w = camera.getEngine().getRenderWidth();
@@ -45,19 +73,6 @@ class HeadUpDisplay extends Pickable {
         let distSide = dist / Math.cos(xAngle * 0.5);
         let yAngleSide = 2 * Math.atan(h * 0.5 / distSide);
         //console.log("xAngle = " + (xAngle / Math.PI * 180).toFixed(1) + " | yAngle = " + (yAngle / Math.PI * 180).toFixed(1) + " | yAngleSide = " + (yAngleSide / Math.PI * 180).toFixed(1));
-
-        let hsf = Config.performanceConfiguration.holoScreenFactor;
-
-        let hudMaterial = new HoloPanelMaterial("hud-material", this.scene);
-
-        let hudTexture = new BABYLON.DynamicTexture("hud-texture", { width: 1000 * hsf, height: 1000 * hsf }, this.scene, true);
-        hudTexture.hasAlpha = true;
-        hudMaterial.holoTexture = hudTexture;
-        
-        this.slika = new Slika(1000 * hsf, 1000 * hsf, hudTexture.getContext(), hudTexture);
-        this.slika.texture = hudTexture;
-        this.slika.context = hudTexture.getContext();
-        this.slika.needRedraw = true;
 
         let M = 20;
         let L1 = 80;
@@ -167,7 +182,7 @@ class HeadUpDisplay extends Pickable {
             this.hudLateralTileMeshes[b].layerMask = 0x10000000;
             this.hudLateralTileMeshes[b].alphaIndex = 1;
             this.hudLateralTileMeshes[b].parent = this;
-            this.hudLateralTileMeshes[b].material = hudMaterial;
+            this.hudLateralTileMeshes[b].material = this.hudMaterial;
 
             this.hudLateralTileMeshes[b].position.y = Math.sin(beta);
             this.hudLateralTileMeshes[b].position.z = Math.cos(beta);
@@ -186,7 +201,7 @@ class HeadUpDisplay extends Pickable {
             hudLateralTileDesc.alphaIndex = 1;
             hudLateralTileDesc.position.z = - 0.1;
             hudLateralTileDesc.parent = this.hudLateralTileMeshes[b];
-            hudLateralTileDesc.material = hudMaterial;
+            hudLateralTileDesc.material = this.hudMaterial;
             
             let hudLateralTileKey = new BABYLON.Mesh("hud-lateral-tile-" + b + "-key");
             VertexDataUtils.CreatePlane(this.tileSize * 0.35, this.tileSize * 0.35, - this.tileSize * 0.70, this.tileSize * 0.0, 0.9, v0, 1, v0 + 0.1).applyToMesh(hudLateralTileKey);
@@ -194,7 +209,7 @@ class HeadUpDisplay extends Pickable {
             hudLateralTileKey.alphaIndex = 1;
             hudLateralTileKey.position.z = - 0.1;
             hudLateralTileKey.parent = this.hudLateralTileMeshes[b];
-            hudLateralTileKey.material = hudMaterial;
+            hudLateralTileKey.material = this.hudMaterial;
 
             this.hudLateralTileImageMeshes[b] = new BABYLON.Mesh("hud-lateral-tile-" + b + "-image");
             VertexDataUtils.CreatePlane(this.tileSize * 0.7, this.tileSize * 0.7, - this.tileSize * 0.3, - this.tileSize * 0.25, 0, 0, 1, 1).applyToMesh(this.hudLateralTileImageMeshes[b]);
@@ -204,11 +219,13 @@ class HeadUpDisplay extends Pickable {
             this.hudLateralTileImageMeshes[b].parent = this.hudLateralTileMeshes[b];
             this.hudLateralTileImageMeshes[b].isVisible = false;
             
-            this.hudLateralTileImageMaterials[b] = new BABYLON.StandardMaterial("hud-lateral-tile-" + b + "-image-material");
+            if (!this.hudLateralTileImageMaterials[b]) {
+                this.hudLateralTileImageMaterials[b] = new BABYLON.StandardMaterial("hud-lateral-tile-" + b + "-image-material");
+                this.hudLateralTileImageMaterials[b].emissiveColor.copyFromFloats(1, 1, 1);
+                this.hudLateralTileImageMaterials[b].specularColor.copyFromFloats(0, 0, 0);
+                this.hudLateralTileImageMaterials[b].useAlphaFromDiffuseTexture = true;
+            }
             this.hudLateralTileImageMeshes[b].material = this.hudLateralTileImageMaterials[b];
-            this.hudLateralTileImageMaterials[b].emissiveColor.copyFromFloats(1, 1, 1);
-            this.hudLateralTileImageMaterials[b].specularColor.copyFromFloats(0, 0, 0);
-            this.hudLateralTileImageMaterials[b].useAlphaFromDiffuseTexture = true;
         }
 
         this.parent = this.cameraManager.freeCamera;
