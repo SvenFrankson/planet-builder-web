@@ -303,6 +303,9 @@ class Player extends BABYLON.Mesh {
     private _debugCollisionWallMesh: BABYLON.Mesh;
     private _debugAimGroundMesh: BABYLON.Mesh;
     private _chuncks: PlanetChunck[] = [];
+    public get chuncks(): PlanetChunck[] {
+        return this._chuncks;
+    }
     private _meshes: BABYLON.Mesh[] = [];
     public get meshes(): BABYLON.Mesh[] {
         return this._meshes;
@@ -473,7 +476,12 @@ class Player extends BABYLON.Mesh {
 
             if (this._currentChunck) {
                 //this._currentChunck.highlight();
-                this._chuncks = [...this._currentChunck.adjacentsAsArray, this._currentChunck];
+                if (this._currentChunck.adjacentsAsArray) {
+                    this._chuncks = [...this._currentChunck.adjacentsAsArray, this._currentChunck];
+                }
+                else {
+                    this._chuncks = [this._currentChunck];
+                }
                 this._meshes = this._chuncks.map(c => { return c ? c.mesh : undefined; });
             }
             else {

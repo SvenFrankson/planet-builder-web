@@ -1,0 +1,74 @@
+Exporter version: 6.4.5, Blender version: 2.90.1
+========= Conversion from Blender to Babylon.js =========
+	Scene settings used :
+		Inline textures     :  false
+		Material Type       :  PBR
+		Positions Precision :  4
+		Normals Precision   :  3
+		UVs Precision       :  3
+		Vert Color Precision:  3
+		Mat Weight Precision:  2
+		Keep Z-up r-handed  :  no
+		Texture directory   :  C:\Users\svent\Documents\Sven Frankson\planet-builder-web\datas\meshes\
+	Python World class constructor completed
+	WARNING: No active camera has been assigned, or is not in a currently selected Blender layer
+	processing begun of mesh:  body
+		processing begun of material:  Material.001
+		num positions      :  332
+		num normals        :  332
+		num tangents       :  0
+		num uvs            :  0
+		num uvs2           :  0
+		num colors         :  0
+		num triangles      :  660
+	processing begun of mesh:  Cube.002
+		processing begun of material:  Material.001
+		registered as also a user of material:  Material.001
+		num positions      :  264
+		num normals        :  264
+		num tangents       :  0
+		num uvs            :  0
+		num uvs2           :  0
+		num colors         :  0
+		num triangles      :  504
+	processing begun of mesh:  1-upper-leg
+		processing begun of material:  Material.001
+		registered as also a user of material:  Material.001
+		num positions      :  44
+		num normals        :  44
+		num tangents       :  0
+		num uvs            :  0
+		num uvs2           :  0
+		num colors         :  0
+		num triangles      :  80
+		WARNING: # of 0 area faces found:  6
+	processing begun of mesh:  0-torso
+		processing begun of material:  Material.001
+		registered as also a user of material:  Material.001
+		num positions      :  188
+		num normals        :  188
+		num tangents       :  0
+		num uvs            :  0
+		num uvs2           :  0
+		num colors         :  0
+		num triangles      :  372
+	processing begun of mesh:  2-leg
+		processing begun of material:  Material.001
+		registered as also a user of material:  Material.001
+		num positions      :  70
+		num normals        :  70
+		num tangents       :  0
+		num uvs            :  0
+		num uvs2           :  0
+		num colors         :  0
+		num triangles      :  132
+		WARNING: # of 0 area faces found:  6
+========= Writing of JSON file started =========
+	writing mesh:  body
+	writing mesh:  Cube.002
+	writing mesh:  1-upper-leg
+	writing mesh:  0-torso
+	writing mesh:  2-leg
+========= Writing of JSON file completed =========
+========= end of processing =========
+elapsed time:  0 min, 0.1339 secs
