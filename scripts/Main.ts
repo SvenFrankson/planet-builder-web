@@ -215,6 +215,13 @@ window.addEventListener("DOMContentLoaded", () => {
             vMathTest.animate();
         });
     }
+    else if (window.location.href.indexOf("octree-test.html") != -1) {
+        let octreeTest: OctreeTest = new OctreeTest("renderCanvas");
+        octreeTest.createScene();
+        octreeTest.initialize().then(() => {
+            octreeTest.animate();
+        });
+    }
     else {
         let mainMenu: MainMenu = new MainMenu("renderCanvas");
         showLoading(true);

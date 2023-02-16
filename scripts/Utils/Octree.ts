@@ -9,10 +9,15 @@ class OctreeNode<T> {
     public j: number;
     public k: number;
 
-    constructor(parent?: OctreeNode<T>) {
-        if (parent) {
-            this.parent = parent;
-            this.degree = parent.degree - 1;
+    constructor(parent: OctreeNode<T>);
+    constructor(degree?: number);
+    constructor(arg1?: OctreeNode<T> | number) {
+        if (arg1 instanceof OctreeNode) {
+            this.parent = arg1;
+            this.degree = arg1.degree - 1;
+        }
+        else if (isFinite(arg1)) {
+            this.degree = arg1;
         }
         this.size = Math.pow(2, this.degree - 1);
     }
