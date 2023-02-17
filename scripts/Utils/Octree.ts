@@ -5,9 +5,9 @@ class OctreeNode<T> {
     public parent: OctreeNode<T>;
     public children: any[];
 
-    public i: number;
-    public j: number;
-    public k: number;
+    public i: number = 0;
+    public j: number = 0;
+    public k: number = 0;
 
     constructor(parent: OctreeNode<T>);
     constructor(degree?: number);
@@ -19,7 +19,7 @@ class OctreeNode<T> {
         else if (isFinite(arg1)) {
             this.degree = arg1;
         }
-        this.size = Math.pow(2, this.degree - 1);
+        this.size = Math.pow(2, this.degree);
     }
 
     public forEach(callback: (v: T, i: number, j: number, k: number) => void) {
@@ -59,6 +59,11 @@ class OctreeNode<T> {
         if (this.children === undefined) {
             this.children = [];
         }
+        if (child instanceof OctreeNode) {
+            child.i = 2 * this.i + ii;
+            child.j = 2 * this.j + jj;
+            child.k = 2 * this.k + kk;
+        }
         this.children[4 * ii + 2 * jj + kk] = child;
     }
     
@@ -73,9 +78,9 @@ class OctreeNode<T> {
         if (!this.children) {
             return undefined;
         }
-        let ii = Math.floor(i / this.size) % 2;
-        let jj = Math.floor(j / this.size) % 2;
-        let kk = Math.floor(k / this.size) % 2;
+        let ii = Math.floor(i - 2 * this.i) % 2;
+        let jj = Math.floor(j - 2 * this.j) % 2;
+        let kk = Math.floor(k - 2 * this.k) % 2;
 
         let child = this._getChild(ii, jj, kk);
         if (!child) {
@@ -90,9 +95,9 @@ class OctreeNode<T> {
     }
 
     public set(v: T, i: number, j: number, k: number): void {
-        let ii = Math.floor(i / this.size) % 2;
-        let jj = Math.floor(j / this.size) % 2;
-        let kk = Math.floor(k / this.size) % 2;
+        let ii = Math.floor(i - 2 * this.i) % 2;
+        let jj = Math.floor(j - 2 * this.j) % 2;
+        let kk = Math.floor(k - 2 * this.k) % 2;
 
         if (this.degree === 1) {
             this._setChild(v, ii, jj, kk);
