@@ -1,5 +1,151 @@
 /// <reference path="../../lib/babylon.d.ts"/>
 
+class Vertex {
+
+	public point: BABYLON.Vector3;
+	public tmp: BABYLON.Vector3;
+	public edges: Edge[] = [];
+
+	constructor(public mesh: HeavyMesh, x: number, y: number, z: number) {
+		this.point = new BABYLON.Vector3(x, y, z);
+	}
+
+	public getEdge(other: Vertex): Edge {
+		for (let i = 0; i < this.edges.length; i++) {
+			if (this.edges[i].other(this) === other) {
+				return this.edges[i];
+			}
+		}
+		return undefined;
+	}
+
+	public others(d: number): Vertex[] {
+		let others: Vertex[] = [this];
+		for (let n = 0; n < d; n++) {
+			let prevOthers = [...others];
+			prevOthers.forEach(prevOther => {
+				for (let i = 0; i < prevOther.edges.length; i++) {
+					let v = prevOther.edges[i].other(prevOther);
+					if (others.indexOf(v) === - 1) {
+						others.push(v);
+					}
+				}
+			});
+		}
+		others.splice(0, 1);
+		return others;
+	}
+}
+
+class Edge {
+
+	public v0: Vertex;
+	public v1: Vertex;
+
+	constructor(public mesh: HeavyMesh, v0: Vertex, v1: Vertex) {
+		this.v0 = v0;
+		this.v1 = v1;
+		this.mesh.edges.push(this);
+	}
+
+	public static Connect(v0: Vertex, v1: Vertex): Edge {
+		let edge = v0.getEdge(v1);
+		if (!edge) {
+			edge = new Edge(v0.mesh, v0, v1);
+			v0.edges.push(edge);
+			v1.edges.push(edge);
+		}
+		return edge;
+	}
+
+	public other(v: Vertex): Vertex {
+		if (v === this.v0) {
+			return this.v1;
+		}
+		return this.v0;
+	}
+}
+
+class Triangle {
+
+	public vertices: Vertex[];
+	public edges: Edge[];
+
+	constructor(public mesh: HeavyMesh, v0: Vertex, v1: Vertex, v2: Vertex) {
+		this.vertices = [v0, v1, v2];
+		this.edges = [
+			Edge.Connect(v0, v1),
+			Edge.Connect(v1, v2),
+			Edge.Connect(v2, v0)
+		];
+	}
+}
+
+class HeavyMesh {
+
+	public vertices: Vertex[] = [];
+	public edges: Edge[] = [];
+	public triangles: Triangle[] = [];
+	
+	constructor(positions: number[], indices: number[]) {
+		for (let i = 0; i < positions.length / 3; i++) {
+			let x = positions[3 * i];
+			let y = positions[3 * i + 1];
+			let z = positions[3 * i + 2];
+			this.vertices.push(new Vertex(this, x, y, z));
+		}
+
+		for (let i = 0; i < indices.length / 3; i++) {
+			let v0 = indices[3 * i];
+			let v1 = indices[3 * i + 1];
+			let v2 = indices[3 * i + 2];
+			this.triangles.push(new Triangle(this, this.vertices[v0], this.vertices[v1], this.vertices[v2]));
+		}
+	}
+
+	public getPositions(): number[] {
+		let positions = [];
+		for (let i = 0; i < this.vertices.length; i++) {
+			positions.push(this.vertices[i].point.x, this.vertices[i].point.y, this.vertices[i].point.z);
+		}
+		return positions;
+	}
+
+	public getIndices(): number[] {
+		let indices = [];
+		for (let i = 0; i < this.triangles.length; i++) {
+			indices.push(
+				this.vertices.indexOf(this.triangles[i].vertices[0]),
+				this.vertices.indexOf(this.triangles[i].vertices[1]),
+				this.vertices.indexOf(this.triangles[i].vertices[2]),
+			);
+		}
+		return indices;
+	}
+
+	public smooth(f: number): void {
+		for (let i = 0; i < this.vertices.length; i++) {
+			let vertex = this.vertices[i];
+			vertex.tmp = vertex.point.clone();
+			vertex.tmp.scaleInPlace(f);
+		}
+		
+		for (let i = 0; i < this.vertices.length; i++) {
+			let vertex = this.vertices[i];
+			let others = vertex.others(2);
+			others.forEach(other => {
+				vertex.tmp.addInPlace(other.point);
+			});
+			vertex.tmp.scaleInPlace(1 / (f + others.length));
+		}
+
+		for (let i = 0; i < this.vertices.length; i++) {
+			let vertex = this.vertices[i];
+			vertex.point.copyFrom(vertex.tmp);
+		}
+	}
+}
+
 class OctreeToMesh {
 
 	public blocks: number[][][] = [];
@@ -91,7 +237,7 @@ class OctreeToMesh {
 										}
 	
 									}
-									console.log(partIndexes);
+									//console.log(partIndexes);
 									indices.push(...vData.indices.map(index => { return partIndexes[index]; }));
 								}
 							}
@@ -101,9 +247,58 @@ class OctreeToMesh {
 			}
 		}
 
-		vertexData.positions = positions;
-		vertexData.indices = indices;
-		BABYLON.VertexData.ComputeNormals(positions, indices, normals);
+		for (let n = 0; n < 0; n++) {
+			let smoothedPositions = positions.map(v => { return 0; })
+			let count = positions.map(v => { return 0; });
+			let sf = 1;
+			for (let t = 0; t < indices.length / 3; t++) {
+				let p0 = indices[3 * t];
+				let p1 = indices[3 * t + 1];
+				let p2 = indices[3 * t + 2];
+	
+				let x0 = positions[3 * p0];
+				let y0 = positions[3 * p0 + 1];
+				let z0 = positions[3 * p0 + 2];
+				let x1 = positions[3 * p1];
+				let y1 = positions[3 * p1 + 1];
+				let z1 = positions[3 * p1 + 2];
+				let x2 = positions[3 * p2];
+				let y2 = positions[3 * p2 + 1];
+				let z2 = positions[3 * p2 + 2];
+	
+				smoothedPositions[3 * p0 + 0] += sf * x0 + x1 + x2;
+				count[3 * p0 + 0] += 2 + sf;
+				smoothedPositions[3 * p0 + 1] += sf * y0 + y1 + y2;
+				count[3 * p0 + 1] += 2 + sf;
+				smoothedPositions[3 * p0 + 2] += sf * z0 + z1 + z2;
+				count[3 * p0 + 2] += 2 + sf;
+	
+				smoothedPositions[3 * p1 + 0] += x0 + sf * x1 + x2;
+				count[3 * p1 + 0] += 2 + sf;
+				smoothedPositions[3 * p1 + 1] += y0 + sf * y1 + y2;
+				count[3 * p1 + 1] += 2 + sf;
+				smoothedPositions[3 * p1 + 2] += z0 + sf * z1 + z2;
+				count[3 * p1 + 2] += 2 + sf;
+	
+				smoothedPositions[3 * p2 + 0] += x0 + x1 + sf * x2;
+				count[3 * p2 + 0] += 2 + sf;
+				smoothedPositions[3 * p2 + 1] += y0 + y1 + sf * y2;
+				count[3 * p2 + 1] += 2 + sf;
+				smoothedPositions[3 * p2 + 2] += z0 + z1 + sf * z2;
+				count[3 * p2 + 2] += 2 + sf;
+			}
+			positions = smoothedPositions.map((v, index) => { return v / count[index]; });
+		}
+
+		let mesh = new HeavyMesh(positions, indices);
+		for (let n = 0; n < 2; n++) {
+			mesh.smooth(2);
+		}
+
+		vertexData.positions = mesh.getPositions();
+		vertexData.indices = mesh.getIndices();
+
+		BABYLON.VertexData.ComputeNormals(vertexData.positions, vertexData.indices, normals);
 		vertexData.normals = normals;
 
 		return vertexData;
@@ -144,7 +339,14 @@ class OctreeTest extends Main {
 
 	public makeLine(root: OctreeNode<number>, p0: BABYLON.Vector3, p1: BABYLON.Vector3, d: number): void {
 		let pMin = BABYLON.Vector3.Minimize(p0, p1);
+		pMin.x -= d;
+		pMin.y -= d;
+		pMin.z -= d;
 		let pMax = BABYLON.Vector3.Maximize(p0, p1);
+		pMax.x += d;
+		pMax.y += d;
+		pMax.z += d;
+
 		let n = p1.subtract(p0).normalize();
 
 		let di = pMax.x - pMin.x;
@@ -160,7 +362,14 @@ class OctreeTest extends Main {
 					let p2 = n.scale(dot);
 					let pDist = BABYLON.Vector3.Distance(p, p2);
 					if (pDist <= d) {
-						root.set(42, pMin.x + i, pMin.y + j, pMin.z + k);
+						let I = pMin.x + i;
+						let J = pMin.y + j;
+						let K = pMin.z + k;
+						if (I >= 0 && J >= 0 && K >= 0) {
+							if (I < root.size && J < root.size && K < root.size) {
+								root.set(42, I, J, K);
+							}
+						}
 					}
 				}
 			}
@@ -175,15 +384,18 @@ class OctreeTest extends Main {
 			let S = Math.pow(2, N);
 
             let root = new OctreeNode<number>(N);
-			let prev = new BABYLON.Vector3(Math.floor(Math.random() * S), Math.floor(Math.random() * S), Math.floor(Math.random() * S));
+			let prev = new BABYLON.Vector3(Math.floor(0.5 * S), 0, Math.floor(0.5 * S));
 			
 			for (let n = 0; n < 12; n++) {
-				let next = new BABYLON.Vector3(Math.floor(Math.random() * S), Math.floor(Math.random() * S), Math.floor(Math.random() * S));
+				let next = prev.clone();
+				next.x += Math.random() * 10 - 5;
+				next.y += 10;
+				next.z += Math.random() * 10 - 5;
 				this.makeLine(
 					root,
 					prev,
 					next,
-					1 + 2 * Math.random()
+					2
 				);
 				prev = next;
 			}
