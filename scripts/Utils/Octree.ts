@@ -36,9 +36,21 @@ class OctreeNode<T> {
         this.forEachNode((node) => {
             for (let n = 0; n < 8; n++) {
                 let child = node.children[n];
-                if (child != undefined && node.degree === 1) {
-                    let ijk = OctreeNode.NToIJK[n];
-                    callback(child, 2 * node.i + ijk.i, 2 * node.j + ijk.j, 2 * node.k + ijk.k);
+                if (child != undefined) {
+                    if (!(child instanceof OctreeNode)) {
+                        let ijk = OctreeNode.NToIJK[n];
+                        let I = 2 * node.i + ijk.i;
+                        let J = 2 * node.j + ijk.j;
+                        let K = 2 * node.k + ijk.k;
+                        let S = node.size * 0.5;
+                        for (let ii = 0; ii < S; ii++) {
+                            for (let jj = 0; jj < S; jj++) {
+                                for (let kk = 0; kk < S; kk++) {
+                                    callback(child, S * I + ii, S * J + jj, S * K + kk);
+                                }
+                            }
+                        }
+                    }
                 }
             }
         });

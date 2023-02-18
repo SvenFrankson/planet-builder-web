@@ -33,7 +33,7 @@ class OctreeTest extends Main {
 
             let root = new OctreeNode<number>(N);
             root.set(42, 0, 0, 0);
-			for (let i = 0; i < 10; i++) {
+			for (let i = 0; i < 1024; i++) {
 				root.set(42, Math.floor(Math.random() * 8), Math.floor(Math.random() * 8), Math.floor(Math.random() * 8));
 			}
             
@@ -53,7 +53,7 @@ class OctreeTest extends Main {
             
             clonedRoot.forEach((v, i, j, k) => {
                 if (v > 0) {
-                    let cube = BABYLON.MeshBuilder.CreateBox("cube");
+                    let cube = BABYLON.MeshBuilder.CreateBox("cube", { size: 0.99 });
                     cube.position.x = i + 0.5;
                     cube.position.y = k + 0.5;
                     cube.position.z = j + 0.5;
