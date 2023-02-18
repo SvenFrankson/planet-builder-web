@@ -160,7 +160,10 @@ class OctreeNode<T> {
 
     public serializeToString(): string {
         let output = this.serialize();
-        let compressedOutput = output[0] + "#" + output[3] + "#" + output[2] + "#" + output[1];
+        let compressedOutput = output[0];
+        for (let d = this.degree; d > 0; d--) {
+            compressedOutput += "#" + output[d];
+        }
 
         let l1 = compressedOutput.length;
 
@@ -245,85 +248,42 @@ class OctreeNode<T> {
     }
 
     public static Deserialize(input: string[]): OctreeNode<number> {
-        let node = new OctreeNode<number>(parseInt(input[0]));
-        
-        // degree 3
-        let inputDeg3 = input[3];
-        let degree2Nodes: OctreeNode<number>[] = [];
-        let degree1Nodes: OctreeNode<number>[] = [];
-        let cursor = 0;
-        for (let n = 0; n < inputDeg3.length; n++) {
-            let c = inputDeg3[cursor];
-            if (c === ".") {
-                let newNode = new OctreeNode<number>(node);
-                degree2Nodes.push(newNode);
-                node._setNthChild(newNode, n);
-            }
-            else if (c === "_") {
+        let dMax = parseInt(input[0]);
+        let rootNode = new OctreeNode<number>(dMax);
+        let previousDegreeNodes = [rootNode];
 
-            }
-            else {
-                let v = parseInt(c);
-                if (isNaN(v)) {
-                    return undefined;
-                }
-                node._setNthChild(v, n);
-            }
-            cursor++;
-        }
-
-        // degree 2
-        cursor = 0;
-        while (degree2Nodes.length > 0) {
-            let nodeDeg2 = degree2Nodes.splice(0, 1)[0];
-
-            let n = 0;
-            while (n < 8) {
-                let c = input[2][cursor];
-                if (c === "_") {
-                    cursor++;
-                }
-                else if (c === ".") {
-                    let newNode = new OctreeNode<number>(nodeDeg2);
-                    degree1Nodes.push(newNode);
-                    nodeDeg2._setNthChild(newNode, n);
-                    cursor++;
-                }
-                else {
-                    let v = parseInt(input[2].substring(cursor, cursor + 3));
-                    if (isNaN(v)) {
-                        return undefined;
+        for (let d = dMax; d > 0; d--) {
+            let currentDegreeNodes = [];
+            let cursor = 0;
+            while (previousDegreeNodes.length > 0) {
+                let node = previousDegreeNodes.splice(0, 1)[0];
+    
+                let n = 0;
+                while (n < 8) {
+                    let c = input[d][cursor];
+                    if (c === "_") {
+                        cursor++;
                     }
-                    cursor += 3;
-                    nodeDeg2._setNthChild(v, n);
-                }
-                n++
-            }
-        }
-
-        // degree 1
-        cursor = 0;
-        while (degree1Nodes.length > 0) {
-            let nodeDeg1 = degree1Nodes.splice(0, 1)[0];
-
-            let n = 0;
-            while (n < 8) {
-                let c = input[1][cursor];
-                if (c === "_") {
-                    cursor++;
-                }
-                else {
-                    let v = parseInt(input[1].substring(cursor, cursor + 3));
-                    if (isNaN(v)) {
-                        return undefined;
+                    else if (c === ".") {
+                        let newNode = new OctreeNode<number>(node);
+                        currentDegreeNodes.push(newNode);
+                        node._setNthChild(newNode, n);
+                        cursor++;
                     }
-                    cursor += 3;
-                    nodeDeg1._setNthChild(v, n);
+                    else {
+                        let v = parseInt(input[d].substring(cursor, cursor + 3));
+                        if (isNaN(v)) {
+                            return undefined;
+                        }
+                        cursor += 3;
+                        node._setNthChild(v, n);
+                    }
+                    n++
                 }
-                n++
             }
+            previousDegreeNodes = currentDegreeNodes;
         }
 
-        return node;
+        return rootNode;
     }
 }
