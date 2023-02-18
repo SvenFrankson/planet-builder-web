@@ -3,11 +3,20 @@
 class OctreeToMesh {
 
 	public blocks: number[][][] = [];
+	public vertices: number[][][] = [];
 
 	public get(i: number, j: number, k: number): number {
 		if (this.blocks[i]) {
 			if (this.blocks[i][j]) {
 				return this.blocks[i][j][k];
+			}
+		}
+	}
+
+	public getVertex(i: number, j: number, k: number): number {
+		if (this.vertices[i]) {
+			if (this.vertices[i][j]) {
+				return this.vertices[i][j][k];
 			}
 		}
 	}
@@ -35,6 +44,16 @@ class OctreeToMesh {
 		this.blocks[i][j][k] = v;
 	}
 
+	public setVertex(v: number, i: number, j: number, k: number): void {
+		if (!this.vertices[i]) {
+			this.vertices[i] = [];
+		}
+		if (!this.vertices[i][j]) {
+			this.vertices[i][j] = [];
+		}
+		this.vertices[i][j][k] = v;
+	}
+
 	public buildMesh(): BABYLON.VertexData {
 		let vertexData = new BABYLON.VertexData();
 		let positions: number[] = [];
@@ -50,21 +69,30 @@ class OctreeToMesh {
 						for (let k = 0; k < jLine.length; k++) {
 							let value = jLine[k];
 							if (isFinite(value) && value != 0 && value != 0b11111111) {
-								console.log(value.toString(2));
+								//console.log(value.toString(2));
 								let extendedpartVertexData = PlanetChunckVertexData.Get(2, value);
 								if (extendedpartVertexData) {
 									let vData = extendedpartVertexData.vertexData;
-									let l = positions.length / 3;
+									let partIndexes = [];
 									for (let p = 0; p < vData.positions.length / 3; p++) {
-										positions.push(vData.positions[3 * p] + i);
-										positions.push(vData.positions[3 * p + 1] + j);
-										positions.push(vData.positions[3 * p + 2] + k);
+										let x = vData.positions[3 * p] + i;
+										let y = vData.positions[3 * p + 1] + j;
+										let z = vData.positions[3 * p + 2] + k;
+
+										let existingIndex = this.getVertex(Math.round(2 * x), Math.round(2 * y), Math.round(2 * z));
+										if (isFinite(existingIndex)) {
+											partIndexes[p] = existingIndex;
+										}
+										else {
+											let l = positions.length / 3;
+											partIndexes[p] = l;
+											positions.push(x, y, z);
+											this.setVertex(l, Math.round(2 * x), Math.round(2 * y), Math.round(2 * z))
+										}
 	
-										normals.push(vData.normals[3 * p]);
-										normals.push(vData.normals[3 * p + 1]);
-										normals.push(vData.normals[3 * p + 2]);
 									}
-									indices.push(...vData.indices.map(index => { return index + l; }));
+									console.log(partIndexes);
+									indices.push(...vData.indices.map(index => { return partIndexes[index]; }));
 								}
 							}
 						}
@@ -75,6 +103,7 @@ class OctreeToMesh {
 
 		vertexData.positions = positions;
 		vertexData.indices = indices;
+		BABYLON.VertexData.ComputeNormals(positions, indices, normals);
 		vertexData.normals = normals;
 
 		return vertexData;
@@ -147,7 +176,8 @@ class OctreeTest extends Main {
 
             let root = new OctreeNode<number>(N);
 			let prev = new BABYLON.Vector3(Math.floor(Math.random() * S), Math.floor(Math.random() * S), Math.floor(Math.random() * S));
-			for (let n = 0; n < 80; n++) {
+			
+			for (let n = 0; n < 12; n++) {
 				let next = new BABYLON.Vector3(Math.floor(Math.random() * S), Math.floor(Math.random() * S), Math.floor(Math.random() * S));
 				this.makeLine(
 					root,
@@ -157,6 +187,7 @@ class OctreeTest extends Main {
 				);
 				prev = next;
 			}
+			
 			root.set(42, Math.floor(S * 0.5), Math.floor(S * 0.5), Math.floor(S * 0.5));
             
 			let serial = root.serializeToString();
