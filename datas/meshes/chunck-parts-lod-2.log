@@ -44,10 +44,10 @@ Exporter version: 6.4.5, Blender version: 2.90.1
 	processing begun of mesh:  10110010
 		processing begun of material:  Green
 		registered as also a user of material:  Green
-		num positions      :  7
-		num normals        :  7
+		num positions      :  15
+		num normals        :  15
 		num tangents       :  0
-		num uvs            :  14
+		num uvs            :  30
 		num uvs2           :  0
 		num colors         :  0
 		num triangles      :  6
@@ -64,43 +64,33 @@ Exporter version: 6.4.5, Blender version: 2.90.1
 	processing begun of mesh:  10101000
 		processing begun of material:  Green
 		registered as also a user of material:  Green
-		num positions      :  8
-		num normals        :  8
+		num positions      :  21
+		num normals        :  21
 		num tangents       :  0
-		num uvs            :  16
+		num uvs            :  42
 		num uvs2           :  0
 		num colors         :  0
 		num triangles      :  7
 	processing begun of mesh:  10000100
 		processing begun of material:  Green
 		registered as also a user of material:  Green
-		num positions      :  7
-		num normals        :  7
+		num positions      :  18
+		num normals        :  18
 		num tangents       :  0
-		num uvs            :  14
+		num uvs            :  36
 		num uvs2           :  0
 		num colors         :  0
 		num triangles      :  6
 	processing begun of mesh:  11100000
 		processing begun of material:  Green
 		registered as also a user of material:  Green
-		num positions      :  6
-		num normals        :  6
+		num positions      :  10
+		num normals        :  10
 		num tangents       :  0
-		num uvs            :  12
+		num uvs            :  20
 		num uvs2           :  0
 		num colors         :  0
 		num triangles      :  5
-	processing begun of mesh:  10000010
-		processing begun of material:  Green
-		registered as also a user of material:  Green
-		num positions      :  6
-		num normals        :  6
-		num tangents       :  0
-		num uvs            :  12
-		num uvs2           :  0
-		num colors         :  0
-		num triangles      :  2
 ========= Writing of JSON file started =========
 	writing mesh:  11110000
 	writing mesh:  10000000
@@ -110,7 +100,6 @@ Exporter version: 6.4.5, Blender version: 2.90.1
 	writing mesh:  10101000
 	writing mesh:  10000100
 	writing mesh:  11100000
-	writing mesh:  10000010
 ========= Writing of JSON file completed =========
 ========= end of processing =========
-elapsed time:  0 min, 0.017 secs
+elapsed time:  0 min, 0.092 secs

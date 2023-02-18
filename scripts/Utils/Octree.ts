@@ -160,10 +160,7 @@ class OctreeNode<T> {
 
     public serializeToString(): string {
         let output = this.serialize();
-        let compressedOutput = output[0];
-        for (let d = this.degree; d > 0; d--) {
-            compressedOutput += "#" + output[d];
-        }
+        let compressedOutput = output.reduce((prev, curr) => { return prev + "#" + curr });
 
         let l1 = compressedOutput.length;
 
@@ -228,7 +225,7 @@ class OctreeNode<T> {
         deCompressedInput = deCompressedInput.replaceAll("D", "____");
         deCompressedInput = deCompressedInput.replaceAll("C", "___");
         deCompressedInput = deCompressedInput.replaceAll("B", "__");
-        //deCompressedInput = deCompressedInput.replaceAll("A", "_");
+        deCompressedInput = deCompressedInput.replaceAll("A", "_");
         
         deCompressedInput = deCompressedInput.replaceAll("P", "........");
         deCompressedInput = deCompressedInput.replaceAll("O", ".......");
@@ -237,13 +234,9 @@ class OctreeNode<T> {
         deCompressedInput = deCompressedInput.replaceAll("L", "....");
         deCompressedInput = deCompressedInput.replaceAll("K", "...");
         deCompressedInput = deCompressedInput.replaceAll("J", "..");
-        //deCompressedInput = deCompressedInput.replaceAll("I", ".");
+        deCompressedInput = deCompressedInput.replaceAll("I", ".");
 
-        let split = deCompressedInput.split("#");
-        let input = [split[0]];
-        for (let n = split.length - 1; n > 0; n--) {
-            input.push(split[n]);
-        }
+        let input = deCompressedInput.split("#");
         return OctreeNode.Deserialize(input);
     }
 
