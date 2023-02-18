@@ -1,5 +1,15 @@
 class OctreeNode<T> {
 
+    public static NToIJK = [
+        { i: 0, j: 0, k: 0},
+        { i: 0, j: 0, k: 1},
+        { i: 0, j: 1, k: 0},
+        { i: 0, j: 1, k: 1},
+        { i: 1, j: 0, k: 0},
+        { i: 1, j: 0, k: 1},
+        { i: 1, j: 1, k: 0},
+        { i: 1, j: 1, k: 1}
+    ]
     public size: number;
     public degree: number = 3;
     public parent: OctreeNode<T>;
@@ -23,14 +33,23 @@ class OctreeNode<T> {
     }
 
     public forEach(callback: (v: T, i: number, j: number, k: number) => void) {
-        for (let i = 0; i < 8; i++) {
-            for (let j = 0; j < 8; j++) {
-                for (let k = 0; k < 8; k++) {
-                    let v = this.get(i, j, k);
-                    if (v != undefined) {
-                        callback(v, i, j, k);
-                    }
+        this.forEachNode((node) => {
+            for (let n = 0; n < 8; n++) {
+                let child = node.children[n];
+                if (child != undefined && node.degree === 1) {
+                    let ijk = OctreeNode.NToIJK[n];
+                    callback(child, 2 * node.i + ijk.i, 2 * node.j + ijk.j, 2 * node.k + ijk.k);
                 }
+            }
+        });
+    }
+
+    public forEachNode(callback: (node: OctreeNode<T>) => void) {
+        callback(this);
+        for (let n = 0; n < 8; n++) {
+            let child = this.children[n];
+            if (child instanceof OctreeNode) {
+                child.forEachNode(callback);
             }
         }
     }
@@ -71,6 +90,14 @@ class OctreeNode<T> {
         if (this.children === undefined) {
             this.children = [];
         }
+        if (child instanceof OctreeNode) {
+            let k = n % 2;
+            let j = ((n - k) / 2) % 2;
+            let i = ((n - 2 * j - k) / 4);
+            child.i = 2 * this.i + i;
+            child.j = 2 * this.j + j;
+            child.k = 2 * this.k + k;
+        }
         this.children[n] = child;
     }
 
@@ -78,9 +105,9 @@ class OctreeNode<T> {
         if (!this.children) {
             return undefined;
         }
-        let ii = Math.floor(i - 2 * this.i) % 2;
-        let jj = Math.floor(j - 2 * this.j) % 2;
-        let kk = Math.floor(k - 2 * this.k) % 2;
+        let ii = Math.floor((i - this.size * this.i) / (this.size / 2));
+        let jj = Math.floor((j - this.size * this.j) / (this.size / 2));
+        let kk = Math.floor((k - this.size * this.k) / (this.size / 2));
 
         let child = this._getChild(ii, jj, kk);
         if (!child) {
@@ -95,9 +122,9 @@ class OctreeNode<T> {
     }
 
     public set(v: T, i: number, j: number, k: number): void {
-        let ii = Math.floor(i - 2 * this.i) % 2;
-        let jj = Math.floor(j - 2 * this.j) % 2;
-        let kk = Math.floor(k - 2 * this.k) % 2;
+        let ii = Math.floor((i - this.size * this.i) / (this.size / 2));
+        let jj = Math.floor((j - this.size * this.j) / (this.size / 2));
+        let kk = Math.floor((k - this.size * this.k) / (this.size / 2));
 
         if (this.degree === 1) {
             this._setChild(v, ii, jj, kk);
@@ -121,7 +148,7 @@ class OctreeNode<T> {
 
     public serializeToString(): string {
         let output = this.serialize();
-        let compressedOutput = output[3] + "#" + output[2] + "#" + output[1];
+        let compressedOutput = output[0] + "#" + output[3] + "#" + output[2] + "#" + output[1];
 
         let l1 = compressedOutput.length;
 
@@ -153,6 +180,7 @@ class OctreeNode<T> {
     public serialize(output?: string[]): string[] {
         if (!output) {
             output = [];
+            output[0] = this.degree.toFixed(0);
         }
         if (!output[this.degree]) {
             output[this.degree] = "";
@@ -175,8 +203,8 @@ class OctreeNode<T> {
         return output;
     }
 
-    public static DeserializeFromString(input: string): OctreeNode<number> {
-        let deCompressedInput = input;
+    public static DeserializeFromString(strInput: string): OctreeNode<number> {
+        let deCompressedInput = strInput;
 
         deCompressedInput = deCompressedInput.replaceAll("H", "________");
         deCompressedInput = deCompressedInput.replaceAll("G", "_______");
@@ -197,11 +225,15 @@ class OctreeNode<T> {
         //deCompressedInput = deCompressedInput.replaceAll("I", ".");
 
         let split = deCompressedInput.split("#");
-        return OctreeNode.Deserialize([undefined, split[2], split[1], split[0]]);
+        let input = [split[0]];
+        for (let n = split.length - 1; n > 0; n--) {
+            input.push(split[n]);
+        }
+        return OctreeNode.Deserialize(input);
     }
 
     public static Deserialize(input: string[]): OctreeNode<number> {
-        let node = new OctreeNode<number>();
+        let node = new OctreeNode<number>(parseInt(input[0]));
         
         // degree 3
         let inputDeg3 = input[3];

@@ -29,19 +29,41 @@ class OctreeTest extends Main {
     public async initialize(): Promise<void> {
 		return new Promise<void>(resolve => {
 
-            let root = new OctreeNode<number>(5);
+			let N = 3;
+
+            let root = new OctreeNode<number>(N);
             root.set(42, 0, 0, 0);
-            root.set(42, 1, 0, 0);
-            root.set(42, 45, 67, 13);
+			for (let i = 0; i < 10; i++) {
+				root.set(42, Math.floor(Math.random() * 8), Math.floor(Math.random() * 8), Math.floor(Math.random() * 8));
+			}
             
-            root.forEach((v, i, j, k) => {
+			let serial = root.serializeToString();
+			let clonedRoot = OctreeNode.DeserializeFromString(serial);
+			let clonedSerial = clonedRoot.serializeToString();
+			
+            clonedRoot.forEachNode((node) => {
+				let cube = BABYLON.MeshBuilder.CreateBox("cube", {size: node.size * 0.99});
+				let material = new BABYLON.StandardMaterial("cube-material");
+				material.alpha = (1 - node.degree / (N + 1)) * 0.5;
+				cube.material = material;
+				cube.position.x = node.i * node.size + node.size * 0.5;
+				cube.position.y = node.k * node.size + node.size * 0.5;
+				cube.position.z = node.j * node.size + node.size * 0.5;
+            });
+            
+            clonedRoot.forEach((v, i, j, k) => {
                 if (v > 0) {
                     let cube = BABYLON.MeshBuilder.CreateBox("cube");
-                    cube.position.x = i;
-                    cube.position.y = k;
-                    cube.position.z = j;
+                    cube.position.x = i + 0.5;
+                    cube.position.y = k + 0.5;
+                    cube.position.z = j + 0.5;
                 }
             });
+
+
+			console.log(serial);
+			console.log(clonedSerial);
+			console.log(serial === clonedSerial);
 
 			resolve();
 		})

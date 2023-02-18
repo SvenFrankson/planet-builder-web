@@ -127,7 +127,7 @@ class PlanetChunck extends AbstractPlanetChunck {
         }
         this.data[i - this.firstI][j - this.firstJ][k - this.firstK] = value;
         if (!this.modDataOctree) {
-            this.modDataOctree = new OctreeNode<BlockType>();
+            this.modDataOctree = new OctreeNode<BlockType>(3);
         }
         this.modDataOctree.set(value, i, j, k);
         let serial = this.modDataOctree.serializeToString();
@@ -348,6 +348,7 @@ class PlanetChunck extends AbstractPlanetChunck {
             if (modData) {
                 this.modDataOctree = OctreeNode.DeserializeFromString(modData);
                 if (this.modDataOctree) {
+                    console.log(this.modDataOctree);
                     this.modDataOctree.forEach((v, i, j, k) => {
                         this.data[i - this.firstI][j - this.firstJ][k - this.firstK] = v;
                     });
