@@ -5,6 +5,7 @@ class Vertex {
 	public point: BABYLON.Vector3;
 	public tmp: BABYLON.Vector3;
 	public edges: Edge[] = [];
+	public triangles: Triangle[] = [];
 
 	constructor(public mesh: HeavyMesh, x: number, y: number, z: number) {
 		this.point = new BABYLON.Vector3(x, y, z);
@@ -41,6 +42,7 @@ class Edge {
 
 	public v0: Vertex;
 	public v1: Vertex;
+	public triangles: Triangle[] = [];
 
 	constructor(public mesh: HeavyMesh, v0: Vertex, v1: Vertex) {
 		this.v0 = v0;
@@ -64,6 +66,113 @@ class Edge {
 		}
 		return this.v0;
 	}
+
+	public otherTriangle(t: Triangle): Triangle {
+		if (this.triangles.length === 2) {
+			if (this.triangles[0] === t) {
+				return this.triangles[1];
+			}
+			return this.triangles[0];
+		}
+	}
+
+	public replace(vOld: Vertex, vNew: Vertex) {
+		if (this.v0 === vOld) {
+			this.v0 = vNew;
+		}
+		if (this.v1 === vOld) {
+			this.v1 = vNew;
+		}
+	}
+
+	public collapse(): void {
+
+		//console.log("start");
+		//console.log("verticesCount = " + this.mesh.vertices.length);
+		//console.log("edgesCount = " + this.mesh.edges.length);
+		//console.log("triangleCount = " + this.mesh.triangles.length);
+
+		this.mesh.vertices.remove(this.v1);
+		this.triangles.forEach(tri => {
+			this.mesh.triangles.remove(tri);
+		})
+		this.mesh.edges.remove(this);
+		
+		let affectedTriangles = new UniqueList<Triangle>();
+		this.v0.triangles.forEach(tri => {
+			affectedTriangles.push(tri);
+		});
+		this.v1.triangles.forEach(tri => {
+			affectedTriangles.push(tri);
+		});
+		this.triangles.forEach(tri => {
+			affectedTriangles.remove(tri);
+		})
+		//console.log("AffectedTriangles " + affectedTriangles.length);
+
+		let Aedges: Edge[] = [];
+		let Bedges: Edge[] = [];
+
+		this.triangles.forEach(tri => {
+			Aedges.push(tri.getEdgeWithout(this.v1));
+			let bEdge = tri.getEdgeWithout(this.v0);
+			this.mesh.edges.remove(bEdge);
+			Bedges.push(bEdge);
+		});
+
+		//console.log("Aedges " + Aedges.length);
+		//console.log("Bedges " + Bedges.length);
+
+		if (Aedges.length != Bedges.length) {
+			debugger;
+		}
+		if (Aedges.length > 2 || Bedges.length > 2) {
+			debugger;
+		}
+
+		affectedTriangles.forEach(tri => {
+			tri.replace(this.v1, this.v0);
+			for (let i = 0; i < Aedges.length; i++) {
+				tri.replaceEdge(Bedges[i], Aedges[i]);
+			}
+		});
+
+		this.v1.edges.forEach(edge => {
+			edge.replace(this.v1, this.v0);
+		});
+
+		// sanity check
+		this.mesh.triangles.forEach(tri => {
+			tri.edges.forEach(edge => {
+				if (!this.mesh.edges.contains(edge)) {
+					debugger;
+				}
+			})
+			tri.vertices.forEach(vertex => {
+				if (!this.mesh.vertices.contains(vertex)) {
+					debugger;
+				}
+			})
+		})
+		this.mesh.edges.forEach(edge => {
+			edge.triangles.forEach(tri => {
+				if (!this.mesh.triangles.contains(tri)) {
+					debugger;
+				}
+			})
+			if (!this.mesh.vertices.contains(edge.v0)) {
+				debugger;
+			}
+			if (!this.mesh.vertices.contains(edge.v1)) {
+				debugger;
+			}
+		})
+		
+		//console.log("verticesCount = " + this.mesh.vertices.length);
+		//console.log("edgesCount = " + this.mesh.edges.length);
+		//console.log("triangleCount = " + this.mesh.triangles.length);
+		//console.log("end");
+	}
 }
 
 class Triangle {
@@ -78,14 +187,61 @@ class Triangle {
 			Edge.Connect(v1, v2),
 			Edge.Connect(v2, v0)
 		];
+		this.vertices[0].triangles.push(this);
+		this.vertices[1].triangles.push(this);
+		this.vertices[2].triangles.push(this);
+		this.edges[0].triangles.push(this);
+		this.edges[1].triangles.push(this);
+		this.edges[2].triangles.push(this);
+		if (this.edges[0].triangles.length > 2) {
+			console.warn("!");
+		}
+		if (this.edges[1].triangles.length > 2) {
+			console.warn("!");
+		}
+		if (this.edges[2].triangles.length > 2) {
+			console.warn("!");
+		}
+	}
+
+	public getEdgeWithout(v: Vertex): Edge {
+		for (let i = 0; i < this.edges.length; i++) {
+			if (this.edges[i].v0 != v && this.edges[i].v1 != v) {
+				return this.edges[i];
+			}
+		}
+	}
+
+	public replace(vOld: Vertex, vNew: Vertex) {
+		if (this.vertices[0] === vOld) {
+			this.vertices[0] = vNew;
+		}
+		if (this.vertices[1] === vOld) {
+			this.vertices[1] = vNew;
+		}
+		if (this.vertices[2] === vOld) {
+			this.vertices[2] = vNew;
+		}
+	}
+
+	public replaceEdge(eOld: Edge, eNew: Edge) {
+		if (this.edges[0] === eOld) {
+			this.edges[0] = eNew;
+		}
+		else if (this.edges[1] === eOld) {
+			this.edges[1] = eNew;
+		}
+		else if (this.edges[2] === eOld) {
+			this.edges[2] = eNew;
+		}
 	}
 }
 
 class HeavyMesh {
 
-	public vertices: Vertex[] = [];
-	public edges: Edge[] = [];
-	public triangles: Triangle[] = [];
+	public vertices: UniqueList<Vertex> = new UniqueList<Vertex>();
+	public triangles: UniqueList<Triangle> = new UniqueList<Triangle>();
+	public edges: UniqueList<Edge> = new UniqueList<Edge>();
 	
 	constructor(positions: number[], indices: number[]) {
 		for (let i = 0; i < positions.length / 3; i++) {
@@ -99,14 +255,23 @@ class HeavyMesh {
 			let v0 = indices[3 * i];
 			let v1 = indices[3 * i + 1];
 			let v2 = indices[3 * i + 2];
-			this.triangles.push(new Triangle(this, this.vertices[v0], this.vertices[v1], this.vertices[v2]));
+			this.triangles.push(new Triangle(this, this.vertices.get(v0), this.vertices.get(v1), this.vertices.get(v2)));
 		}
+	}
+
+	public rebuildEdges(): void {
+		this.edges = new UniqueList<Edge>();
+		this.triangles.forEach(tri => {
+			tri.edges.forEach(edge => {
+				this.edges.push(edge);
+			})
+		})
 	}
 
 	public getPositions(): number[] {
 		let positions = [];
 		for (let i = 0; i < this.vertices.length; i++) {
-			positions.push(this.vertices[i].point.x, this.vertices[i].point.y, this.vertices[i].point.z);
+			positions.push(this.vertices.get(i).point.x, this.vertices.get(i).point.y, this.vertices.get(i).point.z);
 		}
 		return positions;
 	}
@@ -115,9 +280,9 @@ class HeavyMesh {
 		let indices = [];
 		for (let i = 0; i < this.triangles.length; i++) {
 			indices.push(
-				this.vertices.indexOf(this.triangles[i].vertices[0]),
-				this.vertices.indexOf(this.triangles[i].vertices[1]),
-				this.vertices.indexOf(this.triangles[i].vertices[2]),
+				this.vertices.indexOf(this.triangles.get(i).vertices[0]),
+				this.vertices.indexOf(this.triangles.get(i).vertices[1]),
+				this.vertices.indexOf(this.triangles.get(i).vertices[2]),
 			);
 		}
 		return indices;
@@ -125,13 +290,13 @@ class HeavyMesh {
 
 	public smooth(f: number): void {
 		for (let i = 0; i < this.vertices.length; i++) {
-			let vertex = this.vertices[i];
+			let vertex = this.vertices.get(i);
 			vertex.tmp = vertex.point.clone();
 			vertex.tmp.scaleInPlace(f);
 		}
 		
 		for (let i = 0; i < this.vertices.length; i++) {
-			let vertex = this.vertices[i];
+			let vertex = this.vertices.get(i);
 			let others = vertex.others(2);
 			others.forEach(other => {
 				vertex.tmp.addInPlace(other.point);
@@ -140,7 +305,7 @@ class HeavyMesh {
 		}
 
 		for (let i = 0; i < this.vertices.length; i++) {
-			let vertex = this.vertices[i];
+			let vertex = this.vertices.get(i);
 			vertex.point.copyFrom(vertex.tmp);
 		}
 	}
@@ -291,9 +456,14 @@ class OctreeToMesh {
 		}
 
 		let mesh = new HeavyMesh(positions, indices);
-		for (let n = 0; n < 2; n++) {
-			mesh.smooth(2);
+		mesh.smooth(1);
+
+		for (let n = 0; n < 100; n++) {
+			let index = Math.floor(Math.random() * mesh.edges.length);
+			mesh.edges.get(index).collapse();
 		}
+
+		mesh.smooth(1);
 
 		vertexData.positions = mesh.getPositions();
 		vertexData.indices = mesh.getIndices();

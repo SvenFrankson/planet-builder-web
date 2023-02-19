@@ -14,6 +14,10 @@ class UniqueList<T> {
         return this.get(this.length - 1);
     }
 
+    public indexOf(e: T) {
+        return this._elements.indexOf(e);
+    }
+
     public push(e: T) {
         if (this._elements.indexOf(e) === -1) {
             this._elements.push(e);
