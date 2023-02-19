@@ -11,6 +11,13 @@ class Vertex {
 		this.point = new BABYLON.Vector3(x, y, z);
 	}
 
+	public delete(): void {
+		while (this.edges.length > 0) {
+			this.edges[0].delete();
+		}
+		this.mesh.vertices.remove(this);
+	}
+
 	public getEdge(other: Vertex): Edge {
 		for (let i = 0; i < this.edges.length; i++) {
 			if (this.edges[i].other(this) === other) {
@@ -85,63 +92,25 @@ class Edge {
 		}
 	}
 
-	public collapse(): void {
+	public delete(): void {
+		this.v0.edges.splice(this.v0.edges.indexOf(this), 1);
+		this.v1.edges.splice(this.v1.edges.indexOf(this), 1);
 
-		//console.log("start");
-		//console.log("verticesCount = " + this.mesh.vertices.length);
-		//console.log("edgesCount = " + this.mesh.edges.length);
-		//console.log("triangleCount = " + this.mesh.triangles.length);
-
-		this.mesh.vertices.remove(this.v1);
 		this.triangles.forEach(tri => {
 			this.mesh.triangles.remove(tri);
+			tri.vertices.forEach(vertex => {
+				vertex.triangles.splice(vertex.triangles.indexOf(tri), 1);
+			})
+			tri.edges.forEach(edge => {
+				if (edge != this) {
+					edge.triangles.splice(edge.triangles.indexOf(tri), 1);
+				}
+			})
 		})
 		this.mesh.edges.remove(this);
-		
-		let affectedTriangles = new UniqueList<Triangle>();
-		this.v0.triangles.forEach(tri => {
-			affectedTriangles.push(tri);
-		});
-		this.v1.triangles.forEach(tri => {
-			affectedTriangles.push(tri);
-		});
-		this.triangles.forEach(tri => {
-			affectedTriangles.remove(tri);
-		})
-		//console.log("AffectedTriangles " + affectedTriangles.length);
-
-		let Aedges: Edge[] = [];
-		let Bedges: Edge[] = [];
-
-		this.triangles.forEach(tri => {
-			Aedges.push(tri.getEdgeWithout(this.v1));
-			let bEdge = tri.getEdgeWithout(this.v0);
-			this.mesh.edges.remove(bEdge);
-			Bedges.push(bEdge);
-		});
-
-		//console.log("Aedges " + Aedges.length);
-		//console.log("Bedges " + Bedges.length);
-
-		if (Aedges.length != Bedges.length) {
-			debugger;
-		}
-		if (Aedges.length > 2 || Bedges.length > 2) {
-			debugger;
-		}
-
-		affectedTriangles.forEach(tri => {
-			tri.replace(this.v1, this.v0);
-			for (let i = 0; i < Aedges.length; i++) {
-				tri.replaceEdge(Bedges[i], Aedges[i]);
-			}
-		});
-
-		this.v1.edges.forEach(edge => {
-			edge.replace(this.v1, this.v0);
-		});
 
 		// sanity check
+		/*
 		this.mesh.triangles.forEach(tri => {
 			tri.edges.forEach(edge => {
 				if (!this.mesh.edges.contains(edge)) {
@@ -167,6 +136,76 @@ class Edge {
 				debugger;
 			}
 		})
+		*/
+	}
+
+	public collapse(): void {
+
+		//this.delete();
+		//return;
+
+		//console.log("start");
+		//console.log("verticesCount = " + this.mesh.vertices.length);
+		//console.log("edgesCount = " + this.mesh.edges.length);
+		//console.log("triangleCount = " + this.mesh.triangles.length);
+
+		let affectedTriangles = new UniqueList<Triangle>();
+
+		this.v0.point.addInPlace(this.v1.point).scaleInPlace(0.5);
+		
+		this.v1.triangles.forEach(tri => {
+			affectedTriangles.push(tri);
+		});
+		this.triangles.forEach(tri => {
+			affectedTriangles.remove(tri);
+		});
+
+
+		let needToRebuildTriangles: Vertex[] = [];
+		affectedTriangles.forEach(tri => {
+			needToRebuildTriangles.push(...tri.vertices);
+		});
+
+		for (let i = 0; i < needToRebuildTriangles.length; i++) {
+			if (needToRebuildTriangles[i] === this.v1) {
+				needToRebuildTriangles[i] = this.v0;
+			}
+		}
+
+		this.v1.delete();
+		
+		for (let i = 0; i < needToRebuildTriangles.length / 3; i++) {
+			this.mesh.triangles.push(new Triangle(this.mesh, needToRebuildTriangles[3 * i], needToRebuildTriangles[3 * i + 1], needToRebuildTriangles[3 * i + 2]));
+		}
+		
+		// sanity check
+		/*
+		this.mesh.triangles.forEach(tri => {
+			tri.edges.forEach(edge => {
+				if (!this.mesh.edges.contains(edge)) {
+					debugger;
+				}
+			})
+			tri.vertices.forEach(vertex => {
+				if (!this.mesh.vertices.contains(vertex)) {
+					debugger;
+				}
+			})
+		})
+		this.mesh.edges.forEach(edge => {
+			edge.triangles.forEach(tri => {
+				if (!this.mesh.triangles.contains(tri)) {
+					debugger;
+				}
+			})
+			if (!this.mesh.vertices.contains(edge.v0)) {
+				debugger;
+			}
+			if (!this.mesh.vertices.contains(edge.v1)) {
+				debugger;
+			}
+		})
+		*/
 		
 		//console.log("verticesCount = " + this.mesh.vertices.length);
 		//console.log("edgesCount = " + this.mesh.edges.length);
@@ -193,15 +232,6 @@ class Triangle {
 		this.edges[0].triangles.push(this);
 		this.edges[1].triangles.push(this);
 		this.edges[2].triangles.push(this);
-		if (this.edges[0].triangles.length > 2) {
-			console.warn("!");
-		}
-		if (this.edges[1].triangles.length > 2) {
-			console.warn("!");
-		}
-		if (this.edges[2].triangles.length > 2) {
-			console.warn("!");
-		}
 	}
 
 	public getEdgeWithout(v: Vertex): Edge {
@@ -224,16 +254,20 @@ class Triangle {
 		}
 	}
 
-	public replaceEdge(eOld: Edge, eNew: Edge) {
+	public replaceEdge(eOld: Edge, eNew: Edge): boolean {
 		if (this.edges[0] === eOld) {
 			this.edges[0] = eNew;
+			return true;
 		}
 		else if (this.edges[1] === eOld) {
 			this.edges[1] = eNew;
+			return true;
 		}
 		else if (this.edges[2] === eOld) {
 			this.edges[2] = eNew;
+			return true;
 		}
+		return false;
 	}
 }
 
@@ -297,7 +331,7 @@ class HeavyMesh {
 		
 		for (let i = 0; i < this.vertices.length; i++) {
 			let vertex = this.vertices.get(i);
-			let others = vertex.others(2);
+			let others = vertex.others(1);
 			others.forEach(other => {
 				vertex.tmp.addInPlace(other.point);
 			});
@@ -390,7 +424,7 @@ class OctreeToMesh {
 										let y = vData.positions[3 * p + 1] + j;
 										let z = vData.positions[3 * p + 2] + k;
 
-										let existingIndex = this.getVertex(Math.round(2 * x), Math.round(2 * y), Math.round(2 * z));
+										let existingIndex = this.getVertex(Math.round(4 * x), Math.round(4 * y), Math.round(4 * z));
 										if (isFinite(existingIndex)) {
 											partIndexes[p] = existingIndex;
 										}
@@ -398,7 +432,7 @@ class OctreeToMesh {
 											let l = positions.length / 3;
 											partIndexes[p] = l;
 											positions.push(x, y, z);
-											this.setVertex(l, Math.round(2 * x), Math.round(2 * y), Math.round(2 * z))
+											this.setVertex(l, Math.round(4 * x), Math.round(4 * y), Math.round(4 * z))
 										}
 	
 									}
@@ -412,58 +446,27 @@ class OctreeToMesh {
 			}
 		}
 
-		for (let n = 0; n < 0; n++) {
-			let smoothedPositions = positions.map(v => { return 0; })
-			let count = positions.map(v => { return 0; });
-			let sf = 1;
-			for (let t = 0; t < indices.length / 3; t++) {
-				let p0 = indices[3 * t];
-				let p1 = indices[3 * t + 1];
-				let p2 = indices[3 * t + 2];
-	
-				let x0 = positions[3 * p0];
-				let y0 = positions[3 * p0 + 1];
-				let z0 = positions[3 * p0 + 2];
-				let x1 = positions[3 * p1];
-				let y1 = positions[3 * p1 + 1];
-				let z1 = positions[3 * p1 + 2];
-				let x2 = positions[3 * p2];
-				let y2 = positions[3 * p2 + 1];
-				let z2 = positions[3 * p2 + 2];
-	
-				smoothedPositions[3 * p0 + 0] += sf * x0 + x1 + x2;
-				count[3 * p0 + 0] += 2 + sf;
-				smoothedPositions[3 * p0 + 1] += sf * y0 + y1 + y2;
-				count[3 * p0 + 1] += 2 + sf;
-				smoothedPositions[3 * p0 + 2] += sf * z0 + z1 + z2;
-				count[3 * p0 + 2] += 2 + sf;
-	
-				smoothedPositions[3 * p1 + 0] += x0 + sf * x1 + x2;
-				count[3 * p1 + 0] += 2 + sf;
-				smoothedPositions[3 * p1 + 1] += y0 + sf * y1 + y2;
-				count[3 * p1 + 1] += 2 + sf;
-				smoothedPositions[3 * p1 + 2] += z0 + sf * z1 + z2;
-				count[3 * p1 + 2] += 2 + sf;
-	
-				smoothedPositions[3 * p2 + 0] += x0 + x1 + sf * x2;
-				count[3 * p2 + 0] += 2 + sf;
-				smoothedPositions[3 * p2 + 1] += y0 + y1 + sf * y2;
-				count[3 * p2 + 1] += 2 + sf;
-				smoothedPositions[3 * p2 + 2] += z0 + z1 + sf * z2;
-				count[3 * p2 + 2] += 2 + sf;
-			}
-			positions = smoothedPositions.map((v, index) => { return v / count[index]; });
+		for (let i = 0; i < positions.length; i++) {
+			positions[i] += Math.random() * 0.1;
 		}
 
 		let mesh = new HeavyMesh(positions, indices);
-		mesh.smooth(1);
 
-		for (let n = 0; n < 100; n++) {
+		console.log(mesh.triangles.length);
+
+
+		let t0 = performance.now();
+		for (let n = 0; n < 2000; n++) {
+			console.log(".");
 			let index = Math.floor(Math.random() * mesh.edges.length);
 			mesh.edges.get(index).collapse();
 		}
+		let t1 = performance.now();
+		console.log((t1 - t0).toFixed(3));
 
-		mesh.smooth(1);
+		for (let n = 0; n < 10; n++) {
+			mesh.smooth(0);
+		}
 
 		vertexData.positions = mesh.getPositions();
 		vertexData.indices = mesh.getIndices();
