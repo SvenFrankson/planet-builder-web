@@ -2,13 +2,57 @@
 
 class Vertex {
 
+	private static _V3: BABYLON.Vector3[];
+	private static get V3(): BABYLON.Vector3[] {
+		if (!Vertex._V3) {
+			Vertex._V3 = [
+				BABYLON.Vector3.Zero()
+			]
+		}
+		return Vertex._V3;
+	}
+
 	public point: BABYLON.Vector3;
 	public tmp: BABYLON.Vector3;
 	public edges: Edge[] = [];
 	public triangles: Triangle[] = [];
+	public normal: BABYLON.Vector3 = BABYLON.Vector3.Up();
+	public localAltitude: number;
 
 	constructor(public mesh: HeavyMesh, x: number, y: number, z: number) {
 		this.point = new BABYLON.Vector3(x, y, z);
+	}
+
+	public computeNormal(): void {
+		if (this.triangles.length === 0) {
+			this.normal.copyFromFloats(0, 1, 0);
+		}
+		else {
+			this.normal.copyFromFloats(0, 0, 0);
+			this.triangles.forEach(tri => {
+				this.normal.addInPlace(tri.normal);
+			})
+		}
+		this.normal.normalize();
+	}
+
+	public computeLocalAltitude(): void {
+		this.localAltitude = 0;
+		if (this.edges.length > 0) {
+			this.edges.forEach(edge => {
+				let other = edge.other(this);
+				Vertex.V3[0].copyFrom(this.point);
+				Vertex.V3[0].subtractInPlace(other.point);
+				this.localAltitude += BABYLON.Vector3.Dot(Vertex.V3[0], this.normal);
+			});
+			this.localAltitude /= this.edges.length;
+		}
+	}
+
+	public scaleAltitude(scale: number): void {
+		Vertex.V3[0].copyFrom(this.normal);
+		Vertex.V3[0].scaleInPlace(this.localAltitude * scale);
+		this.point.subtractInPlace(Vertex.V3[0]);
 	}
 
 	public delete(): void {
@@ -216,8 +260,20 @@ class Edge {
 
 class Triangle {
 
+	private static _V3: BABYLON.Vector3[];
+	private static get V3(): BABYLON.Vector3[] {
+		if (!Triangle._V3) {
+			Triangle._V3 = [
+				BABYLON.Vector3.Zero(),
+				BABYLON.Vector3.Zero()
+			]
+		}
+		return Triangle._V3;
+	}
+
 	public vertices: Vertex[];
 	public edges: Edge[];
+	public normal: BABYLON.Vector3 = BABYLON.Vector3.Up();
 
 	constructor(public mesh: HeavyMesh, v0: Vertex, v1: Vertex, v2: Vertex) {
 		this.vertices = [v0, v1, v2];
@@ -232,6 +288,13 @@ class Triangle {
 		this.edges[0].triangles.push(this);
 		this.edges[1].triangles.push(this);
 		this.edges[2].triangles.push(this);
+	}
+
+	public computeNormal(): void {
+		Triangle.V3[0].copyFrom(this.vertices[1].point).subtractInPlace(this.vertices[0].point);
+		Triangle.V3[1].copyFrom(this.vertices[2].point).subtractInPlace(this.vertices[0].point);
+		BABYLON.Vector3.CrossToRef(Triangle.V3[1], Triangle.V3[0], this.normal);
+		this.normal.normalize();
 	}
 
 	public getEdgeWithout(v: Vertex): Edge {
@@ -291,15 +354,13 @@ class HeavyMesh {
 			let v2 = indices[3 * i + 2];
 			this.triangles.push(new Triangle(this, this.vertices.get(v0), this.vertices.get(v1), this.vertices.get(v2)));
 		}
-	}
 
-	public rebuildEdges(): void {
-		this.edges = new UniqueList<Edge>();
 		this.triangles.forEach(tri => {
-			tri.edges.forEach(edge => {
-				this.edges.push(edge);
-			})
-		})
+			tri.computeNormal();
+		});
+		this.vertices.forEach(vertex => {
+			vertex.computeNormal();
+		});
 	}
 
 	public getPositions(): number[] {
@@ -308,6 +369,14 @@ class HeavyMesh {
 			positions.push(this.vertices.get(i).point.x, this.vertices.get(i).point.y, this.vertices.get(i).point.z);
 		}
 		return positions;
+	}
+
+	public getNormals(): number[] {
+		let normals = [];
+		for (let i = 0; i < this.vertices.length; i++) {
+			normals.push(this.vertices.get(i).normal.x, this.vertices.get(i).normal.y, this.vertices.get(i).normal.z);
+		}
+		return normals;
 	}
 
 	public getIndices(): number[] {
@@ -342,6 +411,29 @@ class HeavyMesh {
 			let vertex = this.vertices.get(i);
 			vertex.point.copyFrom(vertex.tmp);
 		}
+
+		this.triangles.forEach(tri => {
+			tri.computeNormal();
+		});
+		this.vertices.forEach(vertex => {
+			vertex.computeNormal();
+		});
+	}
+
+	public scaleAltitude(scale: number): void {
+		this.vertices.forEach(vertex => {
+			vertex.computeLocalAltitude();
+		});
+		this.vertices.forEach(vertex => {
+			vertex.scaleAltitude(scale);
+		});
+
+		this.triangles.forEach(tri => {
+			tri.computeNormal();
+		});
+		this.vertices.forEach(vertex => {
+			vertex.computeNormal();
+		});
 	}
 }
 
@@ -465,11 +557,16 @@ class OctreeToMesh {
 			mesh.smooth(1);
 		}
 
+		mesh.scaleAltitude(0.5);
+		mesh.scaleAltitude(0.5);
+		mesh.scaleAltitude(0.5);
+		mesh.scaleAltitude(0.5);
+		mesh.scaleAltitude(0.5);
+		
+
 		vertexData.positions = mesh.getPositions();
 		vertexData.indices = mesh.getIndices();
-
-		BABYLON.VertexData.ComputeNormals(vertexData.positions, vertexData.indices, normals);
-		vertexData.normals = normals;
+		vertexData.normals = mesh.getNormals();
 
 		return vertexData;
 	}
@@ -495,11 +592,11 @@ class OctreeTest extends Main {
 
 		let light = new BABYLON.HemisphericLight(
 			"light",
-			new BABYLON.Vector3(0.6, 1, 0.3),
+			new BABYLON.Vector3(0, 1, 0),
 			this.scene
 		);
 		light.diffuse = new BABYLON.Color3(1, 1, 1);
-		light.groundColor = new BABYLON.Color3(0.5, 0.5, 0.5);
+		light.groundColor = new BABYLON.Color3(0, 0, 0);
 
 		this.camera = new BABYLON.ArcRotateCamera("camera", 5 * Math.PI / 4, Math.PI / 4, 20, BABYLON.Vector3.Zero(), this.scene);
 		this.camera.attachControl(this.canvas);
@@ -633,16 +730,16 @@ class OctreeTest extends Main {
                 }
             });
 
-			let data = meshMaker.buildMesh(1);
+			let data = meshMaker.buildMesh(0);
 			let mesh = new BABYLON.Mesh("mesh");
 			mesh.position.x -= S * 0.5;
 			mesh.position.y -= S * 0.5;
 			mesh.position.z -= S * 0.5;
 			data.applyToMesh(mesh);
 
-			//mesh.enableEdgesRendering(1);
-			//mesh.edgesWidth = 4.0;
-			//mesh.edgesColor = new BABYLON.Color4(0, 0, 1, 1);
+			mesh.enableEdgesRendering(1);
+			mesh.edgesWidth = 4.0;
+			mesh.edgesColor = new BABYLON.Color4(0, 0, 1, 1);
 
 			console.log(serial);
 			console.log(clonedSerial);
