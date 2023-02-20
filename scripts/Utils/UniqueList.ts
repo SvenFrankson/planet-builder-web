@@ -42,4 +42,8 @@ class UniqueList<T> {
             callback(e);
         });
     }
+
+    public sort(callback: (e1: T, e2: T) => number): void {
+        this._elements = this._elements.sort(callback);
+    }
 }

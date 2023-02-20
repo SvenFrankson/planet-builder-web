@@ -94,6 +94,7 @@ class Edge {
 	public v0: Vertex;
 	public v1: Vertex;
 	public triangles: Triangle[] = [];
+	public cost: number;
 
 	constructor(public mesh: HeavyMesh, v0: Vertex, v1: Vertex) {
 		this.v0 = v0;
@@ -109,6 +110,11 @@ class Edge {
 			v1.edges.push(edge);
 		}
 		return edge;
+	}
+
+	public computeCost(): void {
+		this.cost = BABYLON.Vector3.Distance(this.v0.point, this.v1.point);
+		this.cost *= (1 - BABYLON.Vector3.Dot(this.v0.normal, this.v1.normal));
 	}
 
 	public other(v: Vertex): Vertex {
@@ -221,6 +227,22 @@ class Edge {
 		for (let i = 0; i < needToRebuildTriangles.length / 3; i++) {
 			this.mesh.triangles.push(new Triangle(this.mesh, needToRebuildTriangles[3 * i], needToRebuildTriangles[3 * i + 1], needToRebuildTriangles[3 * i + 2]));
 		}
+
+		this.v0.triangles.forEach(tri => {
+			tri.computeNormal();
+		})
+
+		this.v0.triangles.forEach(tri => {
+			tri.vertices.forEach(vertex => {
+				vertex.computeNormal();
+			})
+			tri.vertices.forEach(vertex => {
+				vertex.computeLocalAltitude();
+			})
+			tri.edges.forEach(edge => {
+				edge.computeCost();
+			});
+		})
 		
 		// sanity check
 		/*
@@ -361,6 +383,14 @@ class HeavyMesh {
 		this.vertices.forEach(vertex => {
 			vertex.computeNormal();
 		});
+		this.edges.forEach(edge => {
+			edge.computeCost();
+		});
+		this.sortEdges();
+	}
+
+	public sortEdges(): void {
+		this.edges.sort((e1, e2) => { return e1.cost - e2.cost; });
 	}
 
 	public getPositions(): number[] {
@@ -418,6 +448,9 @@ class HeavyMesh {
 		this.vertices.forEach(vertex => {
 			vertex.computeNormal();
 		});
+		this.edges.forEach(edge => {
+			edge.computeCost();
+		});
 	}
 
 	public scaleAltitude(scale: number): void {
@@ -433,6 +466,9 @@ class HeavyMesh {
 		});
 		this.vertices.forEach(vertex => {
 			vertex.computeNormal();
+		});
+		this.edges.forEach(edge => {
+			edge.computeCost();
 		});
 	}
 }
@@ -544,24 +580,20 @@ class OctreeToMesh {
 
 		console.log(mesh.triangles.length);
 
-		let t0 = performance.now();
-		for (let n = 0; n < 0; n++) {
-			console.log(".");
-			let index = Math.floor(Math.random() * mesh.edges.length);
-			mesh.edges.get(index).collapse();
-		}
-		let t1 = performance.now();
-		console.log((t1 - t0).toFixed(3));
-
 		for (let n = 0; n < smoothCount; n++) {
 			mesh.smooth(1);
 		}
 
 		mesh.scaleAltitude(0.5);
 		mesh.scaleAltitude(0.5);
-		mesh.scaleAltitude(0.5);
-		mesh.scaleAltitude(0.5);
-		mesh.scaleAltitude(0.5);
+
+		let t0 = performance.now();
+		for (let n = 0; n < 100; n++) {
+			mesh.edges.get(0).collapse();
+			mesh.sortEdges();
+		}
+		let t1 = performance.now();
+		console.log((t1 - t0).toFixed(3));
 		
 
 		vertexData.positions = mesh.getPositions();
