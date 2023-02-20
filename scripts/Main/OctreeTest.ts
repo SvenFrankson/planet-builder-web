@@ -399,7 +399,9 @@ class OctreeToMesh {
 		this.vertices[i][j][k] = v;
 	}
 
-	public buildMesh(): BABYLON.VertexData {
+	public buildMesh(smoothCount: number): BABYLON.VertexData {
+		this.vertices = [];
+
 		let vertexData = new BABYLON.VertexData();
 		let positions: number[] = [];
 		let indices: number[] = [];
@@ -446,17 +448,12 @@ class OctreeToMesh {
 			}
 		}
 
-		for (let i = 0; i < positions.length; i++) {
-			positions[i] += Math.random() * 0.1;
-		}
-
 		let mesh = new HeavyMesh(positions, indices);
 
 		console.log(mesh.triangles.length);
 
-
 		let t0 = performance.now();
-		for (let n = 0; n < 2000; n++) {
+		for (let n = 0; n < 0; n++) {
 			console.log(".");
 			let index = Math.floor(Math.random() * mesh.edges.length);
 			mesh.edges.get(index).collapse();
@@ -464,8 +461,8 @@ class OctreeToMesh {
 		let t1 = performance.now();
 		console.log((t1 - t0).toFixed(3));
 
-		for (let n = 0; n < 10; n++) {
-			mesh.smooth(0);
+		for (let n = 0; n < smoothCount; n++) {
+			mesh.smooth(1);
 		}
 
 		vertexData.positions = mesh.getPositions();
@@ -511,6 +508,8 @@ class OctreeTest extends Main {
 	}
 
 	public makeLine(root: OctreeNode<number>, p0: BABYLON.Vector3, p1: BABYLON.Vector3, d: number): void {
+		let l = BABYLON.Vector3.Distance(p0, p1);
+
 		let pMin = BABYLON.Vector3.Minimize(p0, p1);
 		pMin.x -= d;
 		pMin.y -= d;
@@ -529,12 +528,28 @@ class OctreeTest extends Main {
 		for (let i = 0; i <= di; i++) {
 			for (let j = 0; j <= dj; j++) {
 				for (let k = 0; k <= dk; k++) {
+					let ok = false;
+
 					let p = new BABYLON.Vector3(i, j, k);
 					p.addInPlace(pMin).subtractInPlace(p0);
 					let dot = BABYLON.Vector3.Dot(p, n);
-					let p2 = n.scale(dot);
-					let pDist = BABYLON.Vector3.Distance(p, p2);
-					if (pDist <= d) {
+					if (dot >= 0 && dot <= l) {
+						let p2 = n.scale(dot);
+						let pDist = BABYLON.Vector3.Distance(p, p2);
+						if (pDist <= d) {
+							ok = true;
+						}
+					}
+					else {
+						if (BABYLON.Vector3.Distance(p, p0) <= d) {
+							ok = true;
+						}
+						if (BABYLON.Vector3.Distance(p, p1) <= d) {
+							ok = true;
+						}
+					}
+					
+					if (ok) {
 						let I = pMin.x + i;
 						let J = pMin.y + j;
 						let K = pMin.z + k;
@@ -558,22 +573,30 @@ class OctreeTest extends Main {
 
             let root = new OctreeNode<number>(N);
 			let prev = new BABYLON.Vector3(Math.floor(0.5 * S), 0, Math.floor(0.5 * S));
+			prev.x = Math.round(prev.x);
+			prev.y = Math.round(prev.y);
+			prev.z = Math.round(prev.z);
 			
-			for (let n = 0; n < 12; n++) {
+			let points = [];
+			for (let n = 0; n < 128; n++) {
 				let next = prev.clone();
-				next.x += Math.random() * 10 - 5;
-				next.y += 10;
-				next.z += Math.random() * 10 - 5;
+				next.x += Math.random() * 16 - 8;
+				next.y += 5;
+				next.z += Math.random() * 16 - 8;
+				next.x = Math.round(next.x);
+				next.y = Math.round(next.y);
+				next.z = Math.round(next.z);
+				points.push(next.clone());
 				this.makeLine(
 					root,
 					prev,
 					next,
-					2
+					0.8
 				);
-				prev = next;
+				prev = points[Math.floor(Math.random() * points.length)];
 			}
 			
-			root.set(42, Math.floor(S * 0.5), Math.floor(S * 0.5), Math.floor(S * 0.5));
+			//root.set(42, Math.floor(S * 0.5), Math.floor(S * 0.5), Math.floor(S * 0.5));
             
 			let serial = root.serializeToString();
 			let clonedRoot = OctreeNode.DeserializeFromString(serial);
@@ -610,12 +633,16 @@ class OctreeTest extends Main {
                 }
             });
 
-			let data = meshMaker.buildMesh();
+			let data = meshMaker.buildMesh(1);
 			let mesh = new BABYLON.Mesh("mesh");
 			mesh.position.x -= S * 0.5;
 			mesh.position.y -= S * 0.5;
 			mesh.position.z -= S * 0.5;
 			data.applyToMesh(mesh);
+
+			//mesh.enableEdgesRendering(1);
+			//mesh.edgesWidth = 4.0;
+			//mesh.edgesColor = new BABYLON.Color4(0, 0, 1, 1);
 
 			console.log(serial);
 			console.log(clonedSerial);
