@@ -103,6 +103,9 @@ class Edge {
 	}
 
 	public static Connect(v0: Vertex, v1: Vertex): Edge {
+		if (BABYLON.Vector3.DistanceSquared(v0.point, v1.point) === 0) {
+			debugger;
+		}
 		let edge = v0.getEdge(v1);
 		if (!edge) {
 			edge = new Edge(v0.mesh, v0, v1);
@@ -114,7 +117,8 @@ class Edge {
 
 	public computeCost(): void {
 		this.cost = BABYLON.Vector3.Distance(this.v0.point, this.v1.point);
-		this.cost *= (1 - BABYLON.Vector3.Dot(this.v0.normal, this.v1.normal));
+		let dot = BABYLON.Vector3.Dot(this.v0.normal, this.v1.normal);
+		this.cost *= (1 - dot * 0.9);
 	}
 
 	public other(v: Vertex): Vertex {
@@ -298,6 +302,9 @@ class Triangle {
 	public normal: BABYLON.Vector3 = BABYLON.Vector3.Up();
 
 	constructor(public mesh: HeavyMesh, v0: Vertex, v1: Vertex, v2: Vertex) {
+		if (v0 === v1 || v1 === v2 || v2 === v0) {
+			debugger;
+		}
 		this.vertices = [v0, v1, v2];
 		this.edges = [
 			Edge.Connect(v0, v1),
@@ -374,7 +381,9 @@ class HeavyMesh {
 			let v0 = indices[3 * i];
 			let v1 = indices[3 * i + 1];
 			let v2 = indices[3 * i + 2];
-			this.triangles.push(new Triangle(this, this.vertices.get(v0), this.vertices.get(v1), this.vertices.get(v2)));
+			if (v0 != v1 && v1 != v2 && v2 != v0) {
+				this.triangles.push(new Triangle(this, this.vertices.get(v0), this.vertices.get(v1), this.vertices.get(v2)));
+			}
 		}
 
 		this.triangles.forEach(tri => {
@@ -391,6 +400,8 @@ class HeavyMesh {
 
 	public sortEdges(): void {
 		this.edges.sort((e1, e2) => { return e1.cost - e2.cost; });
+		console.log("first cost " + this.edges.get(0).cost);
+		console.log("last cost " + this.edges.getLast().cost);
 	}
 
 	public getPositions(): number[] {
@@ -527,13 +538,12 @@ class OctreeToMesh {
 		this.vertices[i][j][k] = v;
 	}
 
-	public buildMesh(smoothCount: number): BABYLON.VertexData {
+	public buildMesh(smoothCount: number, maxTriangles: number = Infinity): BABYLON.VertexData {
 		this.vertices = [];
 
 		let vertexData = new BABYLON.VertexData();
 		let positions: number[] = [];
 		let indices: number[] = [];
-		let normals: number[] = [];
 
 		for (let i = 0; i < this.blocks.length; i++) {
 			let iLine = this.blocks[i];
@@ -554,7 +564,7 @@ class OctreeToMesh {
 										let y = vData.positions[3 * p + 1] + j;
 										let z = vData.positions[3 * p + 2] + k;
 
-										let existingIndex = this.getVertex(Math.round(4 * x), Math.round(4 * y), Math.round(4 * z));
+										let existingIndex = this.getVertex(Math.round(10 * x), Math.round(10 * y), Math.round(10 * z));
 										if (isFinite(existingIndex)) {
 											partIndexes[p] = existingIndex;
 										}
@@ -562,7 +572,7 @@ class OctreeToMesh {
 											let l = positions.length / 3;
 											partIndexes[p] = l;
 											positions.push(x, y, z);
-											this.setVertex(l, Math.round(4 * x), Math.round(4 * y), Math.round(4 * z))
+											this.setVertex(l, Math.round(10 * x), Math.round(10 * y), Math.round(10 * z))
 										}
 	
 									}
@@ -579,16 +589,15 @@ class OctreeToMesh {
 		let mesh = new HeavyMesh(positions, indices);
 
 		console.log(mesh.triangles.length);
+		let l = mesh.triangles.length;
 
 		for (let n = 0; n < smoothCount; n++) {
-			mesh.smooth(1);
+			mesh.scaleAltitude(0.5);
 		}
 
-		mesh.scaleAltitude(0.5);
-		mesh.scaleAltitude(0.5);
 
 		let t0 = performance.now();
-		for (let n = 0; n < 100; n++) {
+		while (mesh.triangles.length > maxTriangles) {
 			mesh.edges.get(0).collapse();
 			mesh.sortEdges();
 		}
@@ -697,17 +706,17 @@ class OctreeTest extends Main {
 		return new Promise<void>(async resolve => {
 			await PlanetChunckVertexData.InitializeData();
 
-			let N = 6;
+			let N = 5;
 			let S = Math.pow(2, N);
 
             let root = new OctreeNode<number>(N);
-			let prev = new BABYLON.Vector3(Math.floor(0.5 * S), 0, Math.floor(0.5 * S));
+			let prev = new BABYLON.Vector3(Math.floor(0.5 * S), 4, Math.floor(0.5 * S));
 			prev.x = Math.round(prev.x);
 			prev.y = Math.round(prev.y);
 			prev.z = Math.round(prev.z);
 			
 			let points = [];
-			for (let n = 0; n < 128; n++) {
+			for (let n = 0; n < 24; n++) {
 				let next = prev.clone();
 				next.x += Math.random() * 16 - 8;
 				next.y += 5;
@@ -720,7 +729,7 @@ class OctreeTest extends Main {
 					root,
 					prev,
 					next,
-					0.8
+					2
 				);
 				prev = points[Math.floor(Math.random() * points.length)];
 			}
@@ -764,14 +773,36 @@ class OctreeTest extends Main {
 
 			let data = meshMaker.buildMesh(0);
 			let mesh = new BABYLON.Mesh("mesh");
-			mesh.position.x -= S * 0.5;
+			mesh.position.x -= S;
 			mesh.position.y -= S * 0.5;
 			mesh.position.z -= S * 0.5;
 			data.applyToMesh(mesh);
 
-			mesh.enableEdgesRendering(1);
-			mesh.edgesWidth = 4.0;
-			mesh.edgesColor = new BABYLON.Color4(0, 0, 1, 1);
+			//mesh.enableEdgesRendering(1);
+			//mesh.edgesWidth = 4.0;
+			//mesh.edgesColor = new BABYLON.Color4(0, 0, 1, 1);
+
+			let data2 = meshMaker.buildMesh(2, 500);
+			let mesh2 = new BABYLON.Mesh("mesh2");
+			mesh2.position.x = 0;
+			mesh2.position.y -= S * 0.5;
+			mesh2.position.z -= S * 0.5;
+			data2.applyToMesh(mesh2);
+
+			//mesh2.enableEdgesRendering(1);
+			//mesh2.edgesWidth = 4.0;
+			//mesh2.edgesColor = new BABYLON.Color4(0, 0, 1, 1);
+
+			let data3 = meshMaker.buildMesh(2, 200);
+			let mesh3 = new BABYLON.Mesh("mesh3");
+			mesh3.position.x = S;
+			mesh3.position.y -= S * 0.5;
+			mesh3.position.z -= S * 0.5;
+			data3.applyToMesh(mesh3);
+
+			//mesh3.enableEdgesRendering(1);
+			//mesh3.edgesWidth = 4.0;
+			//mesh3.edgesColor = new BABYLON.Color4(0, 0, 1, 1);
 
 			console.log(serial);
 			console.log(clonedSerial);
