@@ -117,8 +117,38 @@ class Edge {
 
 	public computeCost(): void {
 		this.cost = BABYLON.Vector3.Distance(this.v0.point, this.v1.point);
-		let dot = BABYLON.Vector3.Dot(this.v0.normal, this.v1.normal);
-		this.cost *= (1 - dot * 0.9);
+
+		// case collapse v0 into v1
+		let dotV0IntoV1 = 1;
+		this.v0.triangles.forEach(v0Tri => {
+			let maxDot = BABYLON.Vector3.Dot(v0Tri.normal, this.triangles[0].normal);
+			for (let i = 1; i < this.triangles.length; i++) {
+				maxDot = Math.min(maxDot, BABYLON.Vector3.Dot(v0Tri.normal, this.triangles[i].normal))
+			}
+			dotV0IntoV1 = Math.min(dotV0IntoV1, maxDot);
+		})
+		let costV0IntoV1 = this.cost * (1 - dotV0IntoV1 * 0.99);
+		
+		// case collapse v1 into v0
+		let dotV1IntoV0 = 1;
+		this.v1.triangles.forEach(v1Tri => {
+			let maxDot = BABYLON.Vector3.Dot(v1Tri.normal, this.triangles[0].normal);
+			for (let i = 1; i < this.triangles.length; i++) {
+				maxDot = Math.min(maxDot, BABYLON.Vector3.Dot(v1Tri.normal, this.triangles[i].normal))
+			}
+			dotV1IntoV0 = Math.min(dotV1IntoV0, maxDot);
+		})
+		let costV1IntoV0 = this.cost * (1 - dotV1IntoV0 * 0.99);
+
+		if (costV0IntoV1 > costV1IntoV0) {
+			this.cost = costV0IntoV1;
+		}
+		else {
+			this.cost = costV1IntoV0;
+			let tmp = this.v1;
+			this.v1 = this.v0;
+			this.v0 = tmp;
+		}
 	}
 
 	public other(v: Vertex): Vertex {
@@ -204,8 +234,6 @@ class Edge {
 		//console.log("triangleCount = " + this.mesh.triangles.length);
 
 		let affectedTriangles = new UniqueList<Triangle>();
-
-		this.v0.point.addInPlace(this.v1.point).scaleInPlace(0.5);
 		
 		this.v1.triangles.forEach(tri => {
 			affectedTriangles.push(tri);
@@ -778,31 +806,31 @@ class OctreeTest extends Main {
 			mesh.position.z -= S * 0.5;
 			data.applyToMesh(mesh);
 
-			//mesh.enableEdgesRendering(1);
-			//mesh.edgesWidth = 4.0;
-			//mesh.edgesColor = new BABYLON.Color4(0, 0, 1, 1);
+			mesh.enableEdgesRendering(1);
+			mesh.edgesWidth = 4.0;
+			mesh.edgesColor = new BABYLON.Color4(0, 0, 1, 1);
 
-			let data2 = meshMaker.buildMesh(2, 500);
+			let data2 = meshMaker.buildMesh(4, 1000);
 			let mesh2 = new BABYLON.Mesh("mesh2");
 			mesh2.position.x = 0;
 			mesh2.position.y -= S * 0.5;
 			mesh2.position.z -= S * 0.5;
 			data2.applyToMesh(mesh2);
 
-			//mesh2.enableEdgesRendering(1);
-			//mesh2.edgesWidth = 4.0;
-			//mesh2.edgesColor = new BABYLON.Color4(0, 0, 1, 1);
+			mesh2.enableEdgesRendering(1);
+			mesh2.edgesWidth = 4.0;
+			mesh2.edgesColor = new BABYLON.Color4(0, 0, 1, 1);
 
-			let data3 = meshMaker.buildMesh(2, 200);
+			let data3 = meshMaker.buildMesh(4, 500);
 			let mesh3 = new BABYLON.Mesh("mesh3");
 			mesh3.position.x = S;
 			mesh3.position.y -= S * 0.5;
 			mesh3.position.z -= S * 0.5;
 			data3.applyToMesh(mesh3);
 
-			//mesh3.enableEdgesRendering(1);
-			//mesh3.edgesWidth = 4.0;
-			//mesh3.edgesColor = new BABYLON.Color4(0, 0, 1, 1);
+			mesh3.enableEdgesRendering(1);
+			mesh3.edgesWidth = 4.0;
+			mesh3.edgesColor = new BABYLON.Color4(0, 0, 1, 1);
 
 			console.log(serial);
 			console.log(clonedSerial);
