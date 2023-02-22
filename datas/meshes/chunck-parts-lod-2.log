@@ -14,13 +14,13 @@ Exporter version: 6.4.5, Blender version: 2.90.1
 	WARNING: No active camera has been assigned, or is not in a currently selected Blender layer
 	processing begun of mesh:  11110000
 		processing begun of material:  Green
-		num positions      :  9
-		num normals        :  9
+		num positions      :  4
+		num normals        :  4
 		num tangents       :  0
-		num uvs            :  18
+		num uvs            :  8
 		num uvs2           :  0
 		num colors         :  0
-		num triangles      :  8
+		num triangles      :  2
 	processing begun of mesh:  10000000
 		processing begun of material:  Green
 		registered as also a user of material:  Green
@@ -34,6 +34,16 @@ Exporter version: 6.4.5, Blender version: 2.90.1
 	processing begun of mesh:  11000000
 		processing begun of material:  Green
 		registered as also a user of material:  Green
+		num positions      :  4
+		num normals        :  4
+		num tangents       :  0
+		num uvs            :  8
+		num uvs2           :  0
+		num colors         :  0
+		num triangles      :  2
+	processing begun of mesh:  10110010
+		processing begun of material:  Green
+		registered as also a user of material:  Green
 		num positions      :  6
 		num normals        :  6
 		num tangents       :  0
@@ -41,17 +51,17 @@ Exporter version: 6.4.5, Blender version: 2.90.1
 		num uvs2           :  0
 		num colors         :  0
 		num triangles      :  4
-	processing begun of mesh:  10110010
+	processing begun of mesh:  11100100
 		processing begun of material:  Green
 		registered as also a user of material:  Green
-		num positions      :  19
-		num normals        :  19
+		num positions      :  6
+		num normals        :  6
 		num tangents       :  0
-		num uvs            :  38
+		num uvs            :  12
 		num uvs2           :  0
 		num colors         :  0
-		num triangles      :  8
-	processing begun of mesh:  11100100
+		num triangles      :  4
+	processing begun of mesh:  10101000
 		processing begun of material:  Green
 		registered as also a user of material:  Green
 		num positions      :  7
@@ -60,37 +70,27 @@ Exporter version: 6.4.5, Blender version: 2.90.1
 		num uvs            :  14
 		num uvs2           :  0
 		num colors         :  0
-		num triangles      :  6
-	processing begun of mesh:  10101000
-		processing begun of material:  Green
-		registered as also a user of material:  Green
-		num positions      :  28
-		num normals        :  28
-		num tangents       :  0
-		num uvs            :  56
-		num uvs2           :  0
-		num colors         :  0
-		num triangles      :  10
+		num triangles      :  5
 	processing begun of mesh:  10000100
 		processing begun of material:  Green
 		registered as also a user of material:  Green
-		num positions      :  18
-		num normals        :  18
+		num positions      :  6
+		num normals        :  6
 		num tangents       :  0
-		num uvs            :  36
+		num uvs            :  12
 		num uvs2           :  0
 		num colors         :  0
-		num triangles      :  6
+		num triangles      :  4
 	processing begun of mesh:  11100000
 		processing begun of material:  Green
 		registered as also a user of material:  Green
-		num positions      :  14
-		num normals        :  14
+		num positions      :  5
+		num normals        :  5
 		num tangents       :  0
-		num uvs            :  28
+		num uvs            :  10
 		num uvs2           :  0
 		num colors         :  0
-		num triangles      :  7
+		num triangles      :  3
 ========= Writing of JSON file started =========
 	writing mesh:  11110000
 	writing mesh:  10000000
@@ -102,4 +102,4 @@ Exporter version: 6.4.5, Blender version: 2.90.1
 	writing mesh:  11100000
 ========= Writing of JSON file completed =========
 ========= end of processing =========
-elapsed time:  0 min, 0.0869 secs
+elapsed time:  0 min, 0.014 secs

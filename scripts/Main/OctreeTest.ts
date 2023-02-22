@@ -24,8 +24,13 @@ class Vertex {
 	}
 
 	public computeNormal(): void {
-		if (this.triangles.length === 0) {
+		if (this.triangles.length < 2) {
 			this.normal.copyFromFloats(0, 1, 0);
+		}
+		else if (this.triangles.length === 2) {
+			let other0 = this.edges[0].other(this);
+			let other1 = this.edges[1].other(this);
+			this.normal.copyFrom(this.point).scaleInPlace(2).subtractInPlace(other0.point).subtractInPlace(other1.point);
 		}
 		else {
 			this.normal.copyFromFloats(0, 0, 0);
@@ -116,38 +121,54 @@ class Edge {
 	}
 
 	public computeCost(): void {
-		this.cost = BABYLON.Vector3.Distance(this.v0.point, this.v1.point);
 
-		// case collapse v0 into v1
-		let dotV0IntoV1 = 1;
-		this.v0.triangles.forEach(v0Tri => {
-			let maxDot = BABYLON.Vector3.Dot(v0Tri.normal, this.triangles[0].normal);
-			for (let i = 1; i < this.triangles.length; i++) {
-				maxDot = Math.min(maxDot, BABYLON.Vector3.Dot(v0Tri.normal, this.triangles[i].normal))
-			}
-			dotV0IntoV1 = Math.min(dotV0IntoV1, maxDot);
-		})
-		let costV0IntoV1 = this.cost * (1 - dotV0IntoV1 * 0.99);
-		
-		// case collapse v1 into v0
-		let dotV1IntoV0 = 1;
-		this.v1.triangles.forEach(v1Tri => {
-			let maxDot = BABYLON.Vector3.Dot(v1Tri.normal, this.triangles[0].normal);
-			for (let i = 1; i < this.triangles.length; i++) {
-				maxDot = Math.min(maxDot, BABYLON.Vector3.Dot(v1Tri.normal, this.triangles[i].normal))
-			}
-			dotV1IntoV0 = Math.min(dotV1IntoV0, maxDot);
-		})
-		let costV1IntoV0 = this.cost * (1 - dotV1IntoV0 * 0.99);
-
-		if (costV0IntoV1 > costV1IntoV0) {
-			this.cost = costV0IntoV1;
-		}
-		else {
-			this.cost = costV1IntoV0;
+		if (this.v0.triangles.length === 2) {
+			this.cost = 0;
 			let tmp = this.v1;
 			this.v1 = this.v0;
 			this.v0 = tmp;
+			console.log(".");
+		}
+		else if (this.v1.triangles.length === 2) {
+			this.cost = 0;
+			console.log(".");
+		}
+		else {
+			this.cost = BABYLON.Vector3.Distance(this.v0.point, this.v1.point);
+	
+			// case collapse v0 into v1
+			let dotV0IntoV1 = 1;
+			this.v0.triangles.forEach(v0Tri => {
+				let dot = BABYLON.Vector3.Dot(v0Tri.normal, this.triangles[0].normal);
+				for (let i = 1; i < this.triangles.length; i++) {
+					dot = Math.max(dot, BABYLON.Vector3.Dot(v0Tri.normal, this.triangles[i].normal))
+				}
+				dotV0IntoV1 = Math.min(dotV0IntoV1, dot);
+			})
+			dotV0IntoV1 = Math.max(0, dotV0IntoV1);
+			let costV0IntoV1 = this.cost * (1 - dotV0IntoV1 * 0.5);
+			
+			// case collapse v1 into v0
+			let dotV1IntoV0 = 1;
+			this.v1.triangles.forEach(v1Tri => {
+				let dot = BABYLON.Vector3.Dot(v1Tri.normal, this.triangles[0].normal);
+				for (let i = 1; i < this.triangles.length; i++) {
+					dot = Math.max(dot, BABYLON.Vector3.Dot(v1Tri.normal, this.triangles[i].normal))
+				}
+				dotV1IntoV0 = Math.min(dotV1IntoV0, dot);
+			})
+			dotV1IntoV0 = Math.max(0, dotV1IntoV0);
+			let costV1IntoV0 = this.cost * (1 - dotV1IntoV0 * 0.5);
+	
+			if (costV0IntoV1 > costV1IntoV0) {
+				this.cost = costV0IntoV1;
+			}
+			else {
+				this.cost = costV1IntoV0;
+				let tmp = this.v1;
+				this.v1 = this.v0;
+				this.v0 = tmp;
+			}
 		}
 	}
 
@@ -195,31 +216,6 @@ class Edge {
 
 		// sanity check
 		/*
-		this.mesh.triangles.forEach(tri => {
-			tri.edges.forEach(edge => {
-				if (!this.mesh.edges.contains(edge)) {
-					debugger;
-				}
-			})
-			tri.vertices.forEach(vertex => {
-				if (!this.mesh.vertices.contains(vertex)) {
-					debugger;
-				}
-			})
-		})
-		this.mesh.edges.forEach(edge => {
-			edge.triangles.forEach(tri => {
-				if (!this.mesh.triangles.contains(tri)) {
-					debugger;
-				}
-			})
-			if (!this.mesh.vertices.contains(edge.v0)) {
-				debugger;
-			}
-			if (!this.mesh.vertices.contains(edge.v1)) {
-				debugger;
-			}
-		})
 		*/
 	}
 
@@ -242,6 +238,7 @@ class Edge {
 			affectedTriangles.remove(tri);
 		});
 
+		this.v0.point.scaleInPlace(0.8).addInPlace(this.v1.point.scale(0.2));
 
 		let needToRebuildTriangles: Vertex[] = [];
 		affectedTriangles.forEach(tri => {
@@ -264,17 +261,25 @@ class Edge {
 			tri.computeNormal();
 		})
 
-		this.v0.triangles.forEach(tri => {
-			tri.vertices.forEach(vertex => {
-				vertex.computeNormal();
-			})
-			tri.vertices.forEach(vertex => {
-				vertex.computeLocalAltitude();
-			})
-			tri.edges.forEach(edge => {
-				edge.computeCost();
-			});
+		let others = this.v0.others(1);
+	
+		others.forEach(vertex => {
+			vertex.computeNormal();
 		})
+		others.forEach(vertex => {
+			vertex.computeLocalAltitude();
+		})
+		
+		let edges = new UniqueList<Edge>();
+		others.forEach(vertex => {
+			vertex.edges.forEach(edge => {
+				edges.push(edge);
+			})
+		});
+
+		edges.forEach(edge => {
+			edge.computeCost();
+		});
 		
 		// sanity check
 		/*
@@ -426,10 +431,51 @@ class HeavyMesh {
 		this.sortEdges();
 	}
 
+	public sanityCheck(): void {
+		this.triangles.forEach(tri => {
+			tri.edges.forEach(edge => {
+				if (!this.edges.contains(edge)) {
+					debugger;
+				}
+			})
+			tri.vertices.forEach(vertex => {
+				if (!this.vertices.contains(vertex)) {
+					debugger;
+				}
+			})
+		})
+		this.edges.forEach(edge => {
+			edge.triangles.forEach(tri => {
+				if (!this.triangles.contains(tri)) {
+					debugger;
+				}
+			})
+			if (!this.vertices.contains(edge.v0)) {
+				debugger;
+			}
+			if (!this.vertices.contains(edge.v1)) {
+				debugger;
+			}
+		})
+		this.vertices.forEach(vertex => {
+			vertex.edges.forEach(edge => {
+				if (!this.edges.contains(edge)) {
+					debugger;
+				}
+			})
+			vertex.triangles.forEach(tri => {
+				if (!this.triangles.contains(tri)) {
+					debugger;
+				}
+			})
+			if (vertex.triangles.length === 2) {
+				debugger;
+			}
+		})
+	}
+
 	public sortEdges(): void {
 		this.edges.sort((e1, e2) => { return e1.cost - e2.cost; });
-		console.log("first cost " + this.edges.get(0).cost);
-		console.log("last cost " + this.edges.getLast().cost);
 	}
 
 	public getPositions(): number[] {
@@ -566,7 +612,9 @@ class OctreeToMesh {
 		this.vertices[i][j][k] = v;
 	}
 
-	public buildMesh(smoothCount: number, maxTriangles: number = Infinity): BABYLON.VertexData {
+	public heavyMesh: HeavyMesh;
+
+	public buildMesh(smoothCount: number, maxTriangles: number = Infinity, minCost: number = 0): BABYLON.VertexData {
 		this.vertices = [];
 
 		let vertexData = new BABYLON.VertexData();
@@ -614,28 +662,58 @@ class OctreeToMesh {
 			}
 		}
 
-		let mesh = new HeavyMesh(positions, indices);
-
-		console.log(mesh.triangles.length);
-		let l = mesh.triangles.length;
-
-		for (let n = 0; n < smoothCount; n++) {
-			mesh.scaleAltitude(0.5);
+		for (let i = 0; i < positions.length; i++) {
+			//positions[i] += (Math.random() - 0.5) * 0.2;
 		}
 
+		this.heavyMesh = new HeavyMesh(positions, indices);
+
+		console.log("initial tri count = " + this.heavyMesh.triangles.length);
+		let l = this.heavyMesh.triangles.length;
+
+		for (let n = 0; n < smoothCount; n++) {
+			this.heavyMesh.scaleAltitude(0.5);
+		}
+
+		this.heavyMesh.smooth(0);
+		this.heavyMesh.smooth(0);
+		this.heavyMesh.sortEdges();
 
 		let t0 = performance.now();
-		while (mesh.triangles.length > maxTriangles) {
-			mesh.edges.get(0).collapse();
-			mesh.sortEdges();
+		while (this.heavyMesh.triangles.length > maxTriangles) {
+			this.heavyMesh.edges.get(0).collapse();
+			this.heavyMesh.sortEdges();
+		}
+		while (this.heavyMesh.edges.get(0).cost < minCost) {
+			this.heavyMesh.edges.get(0).collapse();
+			this.heavyMesh.sortEdges();
 		}
 		let t1 = performance.now();
 		console.log((t1 - t0).toFixed(3));
-		
 
-		vertexData.positions = mesh.getPositions();
-		vertexData.indices = mesh.getIndices();
-		vertexData.normals = mesh.getNormals();
+		this.heavyMesh.sanityCheck();
+		
+		this.heavyMesh.triangles.forEach(tri => {
+			tri.computeNormal();
+		});
+		this.heavyMesh.vertices.forEach(vertex => {
+			vertex.computeNormal();
+		});
+		this.heavyMesh.edges.forEach(edge => {
+			edge.computeCost();
+		});
+		this.heavyMesh.sortEdges();
+
+		//this.heavyMesh.edges.get(0).delete();
+
+		console.log("decimated min cost = " + this.heavyMesh.edges.get(0).cost);
+		console.log("decimated tri count = " + this.heavyMesh.triangles.length);
+
+		//this.heavyMesh.smooth(0.5);
+
+		vertexData.positions = this.heavyMesh.getPositions();
+		vertexData.indices = this.heavyMesh.getIndices();
+		vertexData.normals = this.heavyMesh.getNormals();
 
 		return vertexData;
 	}
@@ -671,6 +749,30 @@ class OctreeTest extends Main {
 		this.camera.attachControl(this.canvas);
 
 		this.scene.clearColor.copyFromFloats(0, 0, 0, 1);
+	}
+
+	public makeBall(root: OctreeNode<number>, center: BABYLON.Vector3, radius: number): void {
+		let n = Math.ceil(radius);
+		let rr = radius * radius;
+
+		for (let i = - n; i <= n; i++) {
+			for (let j = - n; j <= n; j++) {
+				for (let k = - n; k <= n; k++) {
+					let sqrDist = i * i + j * j + k * k;
+					
+					if (sqrDist <= rr) {
+						let I = center.x + i;
+						let J = center.y + j;
+						let K = center.z + k;
+						if (I >= 0 && J >= 0 && K >= 0) {
+							if (I < root.size && J < root.size && K < root.size) {
+								root.set(42, I, J, K);
+							}
+						}
+					}
+				}
+			}
+		}
 	}
 
 	public makeLine(root: OctreeNode<number>, p0: BABYLON.Vector3, p1: BABYLON.Vector3, d: number): void {
@@ -734,20 +836,28 @@ class OctreeTest extends Main {
 		return new Promise<void>(async resolve => {
 			await PlanetChunckVertexData.InitializeData();
 
-			let N = 5;
+			let N = 6;
 			let S = Math.pow(2, N);
 
             let root = new OctreeNode<number>(N);
-			let prev = new BABYLON.Vector3(Math.floor(0.5 * S), 4, Math.floor(0.5 * S));
+			
+
+			this.makeBall(
+				root,
+				new BABYLON.Vector3(Math.floor(0.5 * S), Math.floor(0.5 * S), Math.floor(0.5 * S)),
+				8
+			);
+
+			let prev = new BABYLON.Vector3(Math.floor(0.5 * S), Math.floor(0.5 * S), Math.floor(0.5 * S));
 			prev.x = Math.round(prev.x);
 			prev.y = Math.round(prev.y);
 			prev.z = Math.round(prev.z);
 			
-			let points = [];
+			let points = [prev.clone()];
 			for (let n = 0; n < 24; n++) {
 				let next = prev.clone();
 				next.x += Math.random() * 16 - 8;
-				next.y += 5;
+				next.y += Math.random() * 16 - 8;
 				next.z += Math.random() * 16 - 8;
 				next.x = Math.round(next.x);
 				next.y = Math.round(next.y);
@@ -799,6 +909,7 @@ class OctreeTest extends Main {
                 }
             });
 
+			/*
 			let data = meshMaker.buildMesh(0);
 			let mesh = new BABYLON.Mesh("mesh");
 			mesh.position.x -= S;
@@ -810,7 +921,7 @@ class OctreeTest extends Main {
 			mesh.edgesWidth = 4.0;
 			mesh.edgesColor = new BABYLON.Color4(0, 0, 1, 1);
 
-			let data2 = meshMaker.buildMesh(4, 1000);
+			let data2 = meshMaker.buildMesh(0, 1000);
 			let mesh2 = new BABYLON.Mesh("mesh2");
 			mesh2.position.x = 0;
 			mesh2.position.y -= S * 0.5;
@@ -820,10 +931,11 @@ class OctreeTest extends Main {
 			mesh2.enableEdgesRendering(1);
 			mesh2.edgesWidth = 4.0;
 			mesh2.edgesColor = new BABYLON.Color4(0, 0, 1, 1);
+			*/
 
-			let data3 = meshMaker.buildMesh(4, 500);
+			let data3 = meshMaker.buildMesh(0, Infinity, 0.5);
 			let mesh3 = new BABYLON.Mesh("mesh3");
-			mesh3.position.x = S;
+			mesh3.position.x -= S * 0.5;
 			mesh3.position.y -= S * 0.5;
 			mesh3.position.z -= S * 0.5;
 			data3.applyToMesh(mesh3);
@@ -835,6 +947,17 @@ class OctreeTest extends Main {
 			console.log(serial);
 			console.log(clonedSerial);
 			console.log(serial === clonedSerial);
+
+			meshMaker.heavyMesh.vertices.forEach(vertex => {
+				let cube = BABYLON.MeshBuilder.CreateBox("cube", { size: 0.1 });
+				cube.position.copyFrom(vertex.point);
+				cube.position.x -= S * 0.5;
+				cube.position.y -= S * 0.5;
+				cube.position.z -= S * 0.5;
+				cube.rotation.x = Math.random() * Math.PI;
+				cube.rotation.y = Math.random() * Math.PI;
+				cube.rotation.z = Math.random() * Math.PI;
+			});
 
 			resolve();
 		})
