@@ -430,12 +430,12 @@ class OctreeTest extends Main {
 			mesh3.position.z -= S * 0.5;
 			data3.applyToMesh(mesh3);
 
-			mesh3.simplify([{ quality: 0.1, distance: 100 }], true, BABYLON.SimplificationType.QUADRATIC, function() {
-		
-				const decimatedMesh = mesh3.getLODLevelAtDistance(100);
-				const clonedDecimated = decimatedMesh.clone("SimplifiedMesh");
-				clonedDecimated.position.copyFrom(mesh3.position);
-				clonedDecimated.position.x += 10;
+			let decimator = new BABYLON.QuadraticErrorSimplification(mesh3);
+			decimator.simplify({ quality: 0.1, distance: 0 }, (simplifiedMesh: BABYLON.Mesh) => {
+				console.log("done");
+				simplifiedMesh.isVisible = true;
+				simplifiedMesh.position.copyFrom(mesh3.position);
+				simplifiedMesh.position.x += 10;
 			});
 
 			//mesh3.enableEdgesRendering(1);
