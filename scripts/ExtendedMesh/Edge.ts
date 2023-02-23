@@ -45,24 +45,24 @@ class Edge {
 			this.v0.triangles.forEach(v0Tri => {
 				let dot = BABYLON.Vector3.Dot(v0Tri.normal, this.triangles[0].normal);
 				for (let i = 1; i < this.triangles.length; i++) {
-					dot = Math.max(dot, BABYLON.Vector3.Dot(v0Tri.normal, this.triangles[i].normal))
+					dot = Math.min(dot, BABYLON.Vector3.Dot(v0Tri.normal, this.triangles[i].normal))
 				}
 				dotV0IntoV1 = Math.min(dotV0IntoV1, dot);
 			})
 			dotV0IntoV1 = Math.max(0, dotV0IntoV1);
-			let costV0IntoV1 = this.cost * (1 - dotV0IntoV1 * 0.5);
+			let costV0IntoV1 = this.cost * (1 - dotV0IntoV1 * 1);
 			
 			// case collapse v1 into v0
 			let dotV1IntoV0 = 1;
 			this.v1.triangles.forEach(v1Tri => {
 				let dot = BABYLON.Vector3.Dot(v1Tri.normal, this.triangles[0].normal);
 				for (let i = 1; i < this.triangles.length; i++) {
-					dot = Math.max(dot, BABYLON.Vector3.Dot(v1Tri.normal, this.triangles[i].normal))
+					dot = Math.min(dot, BABYLON.Vector3.Dot(v1Tri.normal, this.triangles[i].normal))
 				}
 				dotV1IntoV0 = Math.min(dotV1IntoV0, dot);
 			})
 			dotV1IntoV0 = Math.max(0, dotV1IntoV0);
-			let costV1IntoV0 = this.cost * (1 - dotV1IntoV0 * 0.5);
+			let costV1IntoV0 = this.cost * (1 - dotV1IntoV0 * 1);
 	
 			if (costV0IntoV1 > costV1IntoV0) {
 				this.cost = costV0IntoV1;
@@ -182,7 +182,7 @@ class Edge {
 			affectedTriangles.remove(tri);
 		});
 
-		this.v0.point.scaleInPlace(0.8).addInPlace(this.v1.point.scale(0.2));
+		//this.v0.point.scaleInPlace(0.8).addInPlace(this.v1.point.scale(0.2));
 
 		let needToRebuildTriangles: Vertex[] = [];
 		affectedTriangles.forEach(tri => {

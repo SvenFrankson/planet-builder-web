@@ -117,7 +117,7 @@ class OctreeToMesh {
 			this.exMesh.scaleAltitude(0.5);
 		}
 
-		this.exMesh.smooth(2);
+		//this.exMesh.smooth(1);
 		this.exMesh.sortEdges();
 
 		let t0 = performance.now();
@@ -134,7 +134,7 @@ class OctreeToMesh {
 
 		this.exMesh.sanityCheck();
 		
-		this.exMesh.smooth(2);
+		//this.exMesh.smooth(1);
 
 		this.exMesh.triangles.forEach(tri => {
 			tri.computeNormal();
@@ -194,6 +194,25 @@ class OctreeTest extends Main {
 		this.camera.attachControl(this.canvas);
 
 		this.scene.clearColor.copyFromFloats(0, 0, 0, 1);
+	}
+
+	public makeCube(root: OctreeNode<number>, center: BABYLON.Vector3, size: number): void {
+		let n = Math.floor(size * 0.5);
+
+		for (let i = - n; i <= n; i++) {
+			for (let j = - n; j <= n; j++) {
+				for (let k = - n; k <= n; k++) {
+					let I = center.x + i;
+					let J = center.y + j;
+					let K = center.z + k;
+					if (I >= 0 && J >= 0 && K >= 0) {
+						if (I < root.size && J < root.size && K < root.size) {
+							root.set(42, I, J, K);
+						}
+					}
+				}
+			}
+		}
 	}
 
 	public makeBall(root: OctreeNode<number>, center: BABYLON.Vector3, radius: number): void {
@@ -278,6 +297,16 @@ class OctreeTest extends Main {
 	}
 
     public async initialize(): Promise<void> {
+
+		let axisX = BABYLON.MeshBuilder.CreateBox("axisX", { width: 20, height: 0.05, depth: 0.05 });
+		axisX.material = SharedMaterials.RedMaterial();
+
+		let axisY = BABYLON.MeshBuilder.CreateBox("axisY", { width: 0.05, height: 20, depth: 0.05 });
+		axisY.material = SharedMaterials.GreenMaterial();
+
+		let axisZ = BABYLON.MeshBuilder.CreateBox("axisZ", { width: 0.05, height: 0.05, depth: 20 });
+		axisZ.material = SharedMaterials.BlueMaterial();
+
 		return new Promise<void>(async resolve => {
 			await PlanetChunckVertexData.InitializeData();
 
@@ -287,12 +316,13 @@ class OctreeTest extends Main {
             let root = new OctreeNode<number>(N);
 			
 
-			this.makeBall(
+			this.makeCube(
 				root,
 				new BABYLON.Vector3(Math.floor(0.5 * S), Math.floor(0.5 * S), Math.floor(0.5 * S)),
-				3
+				5
 			);
 
+			/*
 			this.makeLine(
 				root,
 				new BABYLON.Vector3(Math.floor(0.5 * S), Math.floor(0.5 * S), Math.floor(0.5 * S)),
@@ -305,6 +335,7 @@ class OctreeTest extends Main {
 				new BABYLON.Vector3(Math.floor(0.5 * S), Math.floor(0.5 * S - 15), Math.floor(0.5 * S)),
 				1.9
 			);
+			*/
 
 			let prev = new BABYLON.Vector3(Math.floor(0.5 * S), Math.floor(0.5 * S), Math.floor(0.5 * S));
 			prev.x = Math.round(prev.x);
@@ -392,12 +423,20 @@ class OctreeTest extends Main {
 			mesh2.edgesColor = new BABYLON.Color4(0, 0, 1, 1);
 			*/
 
-			let data3 = meshMaker.buildMesh(0, Infinity, 0.5);
+			let data3 = meshMaker.buildMesh(0, Infinity, 0);
 			let mesh3 = new BABYLON.Mesh("mesh3");
 			mesh3.position.x -= S * 0.5;
 			mesh3.position.y -= S * 0.5;
 			mesh3.position.z -= S * 0.5;
 			data3.applyToMesh(mesh3);
+
+			mesh3.simplify([{ quality: 0.1, distance: 100 }], true, BABYLON.SimplificationType.QUADRATIC, function() {
+		
+				const decimatedMesh = mesh3.getLODLevelAtDistance(100);
+				const clonedDecimated = decimatedMesh.clone("SimplifiedMesh");
+				clonedDecimated.position.copyFrom(mesh3.position);
+				clonedDecimated.position.x += 10;
+			});
 
 			//mesh3.enableEdgesRendering(1);
 			//mesh3.edgesWidth = 4.0;
