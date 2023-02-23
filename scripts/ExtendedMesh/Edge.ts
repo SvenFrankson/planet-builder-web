@@ -123,6 +123,46 @@ class Edge {
 		*/
 	}
 
+	public isStretched(): boolean {
+		if (this.triangles.length === 2) {
+			let pivot = this.triangles[0].getVertexWithout(this);
+			let last = this.triangles[1].getVertexWithout(this);
+			let sqrLen = BABYLON.Vector3.DistanceSquared(pivot.point, last.point);
+
+			if (sqrLen > BABYLON.Vector3.DistanceSquared(this.v0.point, this.v1.point)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public cross(): void {
+		if (this.triangles.length === 2) {
+
+			let tri = [...this.triangles[0].vertices];
+			let pivot = this.triangles[0].getVertexWithout(this);
+
+			let last = this.triangles[1].getVertexWithout(this);
+
+
+			if (tri.indexOf(pivot) === 0) {
+				this.delete();
+				this.mesh.triangles.push(new Triangle(this.mesh, tri[1], last, tri[0]));
+				this.mesh.triangles.push(new Triangle(this.mesh, tri[0], last, tri[2]));
+			}
+			else if (tri.indexOf(pivot) === 1) {
+				//this.delete();
+				//this.mesh.triangles.push(new Triangle(this.mesh, tri[2], last, tri[1]));
+				//this.mesh.triangles.push(new Triangle(this.mesh, tri[1], last, tri[0]));
+			}
+			else if (tri.indexOf(pivot) === 2) {
+				//this.delete();
+				//this.mesh.triangles.push(new Triangle(this.mesh, tri[0], last, tri[2]));
+				//this.mesh.triangles.push(new Triangle(this.mesh, tri[2], last, tri[1]));
+			}
+		}
+	}
+
 	public collapse(): void {
 
 		//this.delete();
@@ -158,7 +198,8 @@ class Edge {
 		this.v1.delete();
 		
 		for (let i = 0; i < needToRebuildTriangles.length / 3; i++) {
-			this.mesh.triangles.push(new Triangle(this.mesh, needToRebuildTriangles[3 * i], needToRebuildTriangles[3 * i + 1], needToRebuildTriangles[3 * i + 2]));
+			let tri = new Triangle(this.mesh, needToRebuildTriangles[3 * i], needToRebuildTriangles[3 * i + 1], needToRebuildTriangles[3 * i + 2]);
+			this.mesh.triangles.push(tri);
 		}
 
 		this.v0.triangles.forEach(tri => {
@@ -184,6 +225,7 @@ class Edge {
 		edges.forEach(edge => {
 			edge.computeCost();
 		});
+
 		
 		// sanity check
 		/*

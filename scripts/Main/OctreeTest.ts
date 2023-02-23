@@ -117,8 +117,7 @@ class OctreeToMesh {
 			this.exMesh.scaleAltitude(0.5);
 		}
 
-		this.exMesh.smooth(0);
-		this.exMesh.smooth(0);
+		this.exMesh.smooth(2);
 		this.exMesh.sortEdges();
 
 		let t0 = performance.now();
@@ -135,6 +134,8 @@ class OctreeToMesh {
 
 		this.exMesh.sanityCheck();
 		
+		this.exMesh.smooth(2);
+
 		this.exMesh.triangles.forEach(tri => {
 			tri.computeNormal();
 		});
@@ -150,6 +151,8 @@ class OctreeToMesh {
 
 		console.log("decimated min cost = " + this.exMesh.edges.get(0).cost);
 		console.log("decimated tri count = " + this.exMesh.triangles.length);
+
+		this.exMesh.scaleAltitude(0.5);
 
 		//this.heavyMesh.smooth(0.5);
 
@@ -287,7 +290,20 @@ class OctreeTest extends Main {
 			this.makeBall(
 				root,
 				new BABYLON.Vector3(Math.floor(0.5 * S), Math.floor(0.5 * S), Math.floor(0.5 * S)),
-				8
+				3
+			);
+
+			this.makeLine(
+				root,
+				new BABYLON.Vector3(Math.floor(0.5 * S), Math.floor(0.5 * S), Math.floor(0.5 * S)),
+				new BABYLON.Vector3(Math.floor(0.5 * S), Math.floor(0.5 * S - 15), Math.floor(0.5 * S)),
+				1.2
+			)
+
+			this.makeBall(
+				root,
+				new BABYLON.Vector3(Math.floor(0.5 * S), Math.floor(0.5 * S - 15), Math.floor(0.5 * S)),
+				1.9
 			);
 
 			let prev = new BABYLON.Vector3(Math.floor(0.5 * S), Math.floor(0.5 * S), Math.floor(0.5 * S));
@@ -296,7 +312,7 @@ class OctreeTest extends Main {
 			prev.z = Math.round(prev.z);
 			
 			let points = [prev.clone()];
-			for (let n = 0; n < 24; n++) {
+			for (let n = 0; n < 0; n++) {
 				let next = prev.clone();
 				next.x += Math.random() * 16 - 8;
 				next.y += Math.random() * 16 - 8;
@@ -335,19 +351,20 @@ class OctreeTest extends Main {
 			let meshMaker = new OctreeToMesh();
             clonedRoot.forEach((v, i, j, k) => {
                 if (v > 0) {
-                    //let cube = BABYLON.MeshBuilder.CreateBox("cube", { size: 0.99 });
-                    //cube.position.x = i + 0.5 - S * 0.5;
-                    //cube.position.y = k + 0.5 - S * 0.5;
-                    //cube.position.z = j + 0.5 - S * 0.5;
-					// v |= (0b1 << i);
-					meshMaker.add(0b1 << 6, i, j, k);
-					meshMaker.add(0b1 << 7, i + 1, j, k);
-					meshMaker.add(0b1 << 4, i + 1, j, k + 1);
-					meshMaker.add(0b1 << 5, i, j, k + 1);
-					meshMaker.add(0b1 << 2, i, j + 1, k);
-					meshMaker.add(0b1 << 3, i + 1, j + 1, k);
-					meshMaker.add(0b1 << 0, i + 1, j + 1, k + 1);
-					meshMaker.add(0b1 << 1, i, j + 1, k + 1);
+                    let cube = BABYLON.MeshBuilder.CreateBox("cube", { size: 0.99 });
+					cube.visibility = 0.2;
+                    cube.position.x = i - S * 0.5;
+                    cube.position.y = j - S * 0.5;
+                    cube.position.z = k - S * 0.5;
+
+					meshMaker.add(0b1 << 6, i - 1, j - 1, k - 1);
+					meshMaker.add(0b1 << 7, i, j - 1, k - 1);
+					meshMaker.add(0b1 << 4, i, j - 1, k);
+					meshMaker.add(0b1 << 5, i - 1, j - 1, k);
+					meshMaker.add(0b1 << 2, i - 1, j, k - 1);
+					meshMaker.add(0b1 << 3, i, j, k - 1);
+					meshMaker.add(0b1 << 0, i, j, k);
+					meshMaker.add(0b1 << 1, i - 1, j, k);
                 }
             });
 
@@ -382,9 +399,9 @@ class OctreeTest extends Main {
 			mesh3.position.z -= S * 0.5;
 			data3.applyToMesh(mesh3);
 
-			mesh3.enableEdgesRendering(1);
-			mesh3.edgesWidth = 4.0;
-			mesh3.edgesColor = new BABYLON.Color4(0, 0, 1, 1);
+			//mesh3.enableEdgesRendering(1);
+			//mesh3.edgesWidth = 4.0;
+			//mesh3.edgesColor = new BABYLON.Color4(0, 0, 1, 1);
 
 			console.log(serial);
 			console.log(clonedSerial);

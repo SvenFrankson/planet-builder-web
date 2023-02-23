@@ -48,6 +48,14 @@ class Triangle {
 		}
 	}
 
+	public getVertexWithout(e: Edge): Vertex {
+		for (let i = 0; i < this.vertices.length; i++) {
+			if (this.vertices[i] != e.v0 && this.vertices[i] != e.v1) {
+				return this.vertices[i];
+			}
+		}
+	}
+
 	public replace(vOld: Vertex, vNew: Vertex) {
 		if (this.vertices[0] === vOld) {
 			this.vertices[0] = vNew;
