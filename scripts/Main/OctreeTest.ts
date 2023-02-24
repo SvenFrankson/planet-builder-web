@@ -1,169 +1,5 @@
 /// <reference path="../../lib/babylon.d.ts"/>
 
-class OctreeToMesh {
-
-	public blocks: number[][][] = [];
-	public vertices: number[][][] = [];
-
-	public get(i: number, j: number, k: number): number {
-		if (this.blocks[i]) {
-			if (this.blocks[i][j]) {
-				return this.blocks[i][j][k];
-			}
-		}
-	}
-
-	public getVertex(i: number, j: number, k: number): number {
-		if (this.vertices[i]) {
-			if (this.vertices[i][j]) {
-				return this.vertices[i][j][k];
-			}
-		}
-	}
-
-	public add(v: number, i: number, j: number, k: number): void {
-		if (!this.blocks[i]) {
-			this.blocks[i] = [];
-		}
-		if (!this.blocks[i][j]) {
-			this.blocks[i][j] = [];
-		}
-		if (isNaN(this.blocks[i][j][k])) {
-			this.blocks[i][j][k] = 0;
-		}
-		this.blocks[i][j][k] |= v;
-	}
-
-	public set(v: number, i: number, j: number, k: number): void {
-		if (!this.blocks[i]) {
-			this.blocks[i] = [];
-		}
-		if (!this.blocks[i][j]) {
-			this.blocks[i][j] = [];
-		}
-		this.blocks[i][j][k] = v;
-	}
-
-	public setVertex(v: number, i: number, j: number, k: number): void {
-		if (!this.vertices[i]) {
-			this.vertices[i] = [];
-		}
-		if (!this.vertices[i][j]) {
-			this.vertices[i][j] = [];
-		}
-		this.vertices[i][j][k] = v;
-	}
-
-	public exMesh: ExtendedMesh;
-
-	public buildMesh(smoothCount: number, maxTriangles: number = Infinity, minCost: number = 0): BABYLON.VertexData {
-		this.vertices = [];
-
-		let vertexData = new BABYLON.VertexData();
-		let positions: number[] = [];
-		let indices: number[] = [];
-
-		for (let i = 0; i < this.blocks.length; i++) {
-			let iLine = this.blocks[i];
-			if (iLine) {
-				for (let j = 0; j < iLine.length; j++) {
-					let jLine = iLine[j];
-					if (jLine) {
-						for (let k = 0; k < jLine.length; k++) {
-							let value = jLine[k];
-							if (isFinite(value) && value != 0 && value != 0b11111111) {
-								//console.log(value.toString(2));
-								let extendedpartVertexData = VoxelVertexData.Get(value);
-								if (extendedpartVertexData) {
-									let vData = extendedpartVertexData.vertexData;
-									let partIndexes = [];
-									for (let p = 0; p < vData.positions.length / 3; p++) {
-										let x = vData.positions[3 * p] + i;
-										let y = vData.positions[3 * p + 1] + j;
-										let z = vData.positions[3 * p + 2] + k;
-
-										let existingIndex = this.getVertex(Math.round(10 * x), Math.round(10 * y), Math.round(10 * z));
-										if (isFinite(existingIndex)) {
-											partIndexes[p] = existingIndex;
-										}
-										else {
-											let l = positions.length / 3;
-											partIndexes[p] = l;
-											positions.push(x, y, z);
-											this.setVertex(l, Math.round(10 * x), Math.round(10 * y), Math.round(10 * z))
-										}
-	
-									}
-									//console.log(partIndexes);
-									indices.push(...vData.indices.map(index => { return partIndexes[index]; }));
-								}
-							}
-						}
-					}
-				}
-			}
-		}
-
-		for (let i = 0; i < positions.length; i++) {
-			//positions[i] += (Math.random() - 0.5) * 0.2;
-		}
-
-		this.exMesh = new ExtendedMesh(positions, indices);
-
-		console.log("initial tri count = " + this.exMesh.triangles.length);
-		let l = this.exMesh.triangles.length;
-
-		for (let n = 0; n < smoothCount; n++) {
-			this.exMesh.smooth(1);
-		}
-
-		//this.exMesh.smooth(1);
-		this.exMesh.sortEdges();
-
-		let t0 = performance.now();
-		while (this.exMesh.triangles.length > maxTriangles) {
-			this.exMesh.edges.get(0).collapse();
-			this.exMesh.sortEdges();
-		}
-		while (this.exMesh.edges.get(0).cost < minCost) {
-			this.exMesh.edges.get(0).collapse();
-			this.exMesh.sortEdges();
-		}
-		let t1 = performance.now();
-		console.log((t1 - t0).toFixed(3));
-
-		this.exMesh.sanityCheck();
-		
-		//this.exMesh.smooth(1);
-
-		this.exMesh.triangles.forEach(tri => {
-			tri.computeNormal();
-		});
-		this.exMesh.vertices.forEach(vertex => {
-			vertex.computeNormal();
-		});
-		this.exMesh.edges.forEach(edge => {
-			edge.computeCost();
-		});
-		this.exMesh.sortEdges();
-
-		//this.heavyMesh.edges.get(0).delete();
-
-		console.log("decimated min cost = " + this.exMesh.edges.get(0).cost);
-		console.log("decimated tri count = " + this.exMesh.triangles.length);
-
-		this.exMesh.scaleAltitude(0.5);
-
-		//this.heavyMesh.smooth(0.5);
-
-		vertexData.positions = this.exMesh.getPositions();
-		vertexData.indices = this.exMesh.getIndices();
-		vertexData.normals = this.exMesh.getNormals();
-
-		return vertexData;
-	}
-}
-
 class OctreeTest extends Main {
 
 	public camera: BABYLON.ArcRotateCamera;
@@ -308,45 +144,26 @@ class OctreeTest extends Main {
 			await PlanetChunckVertexData.InitializeData();
 			await VoxelVertexData.InitializeData();
 
-			let N = 6;
-			let S = Math.pow(2, N);
-
-            let root = new OctreeNode<number>(N);
+			let meshMaker = new VoxelMeshMaker(6);
+			let S = meshMaker.size;
 			
 			let x = Math.floor(0.5 * S);
-			let y = 5;
+			let y = Math.floor(0.5 * S);
 			let z = Math.floor(0.5 * S);
-			for (let n = 0; n < 0; n++) {
+			for (let n = 0; n < 16; n++) {
 				this.makeCube(
-					root,
+					meshMaker.root,
 					new BABYLON.Vector3(x, y, z),
 					1.9
 				);
-				x += (Math.random() - 0.5) * 3;
 				y += 1;
-				z += (Math.random() - 0.5) * 3;
 			}
 
 			this.makeCube(
-				root,
+				meshMaker.root,
 				new BABYLON.Vector3(Math.floor(0.5 * S), Math.floor(0.5 * S), Math.floor(0.5 * S)),
 				1.9
 			);
-
-			/*
-			this.makeLine(
-				root,
-				new BABYLON.Vector3(Math.floor(0.5 * S), Math.floor(0.5 * S), Math.floor(0.5 * S)),
-				new BABYLON.Vector3(Math.floor(0.5 * S), Math.floor(0.5 * S - 15), Math.floor(0.5 * S)),
-				1.2
-			)
-
-			this.makeBall(
-				root,
-				new BABYLON.Vector3(Math.floor(0.5 * S), Math.floor(0.5 * S - 15), Math.floor(0.5 * S)),
-				1.9
-			);
-			*/
 
 			let prev = new BABYLON.Vector3(Math.floor(0.5 * S), Math.floor(0.5 * S), Math.floor(0.5 * S));
 			prev.x = Math.round(prev.x);
@@ -364,7 +181,7 @@ class OctreeTest extends Main {
 				next.z = Math.round(next.z);
 				points.push(next.clone());
 				this.makeLine(
-					root,
+					meshMaker.root,
 					prev,
 					next,
 					1
@@ -373,9 +190,9 @@ class OctreeTest extends Main {
 				prev = next;
 			}
 			
-			//root.set(42, Math.floor(S * 0.5), Math.floor(S * 0.5), Math.floor(S * 0.5));
+			//meshMaker.root.set(42, Math.floor(S * 0.5), Math.floor(S * 0.5), Math.floor(S * 0.5));
             
-			let serial = root.serializeToString();
+			let serial = meshMaker.root.serializeToString();
 			let clonedRoot = OctreeNode.DeserializeFromString(serial);
 			let clonedSerial = clonedRoot.serializeToString();
 			
@@ -383,59 +200,15 @@ class OctreeTest extends Main {
 				clonedRoot.forEachNode((node) => {
 					let cube = BABYLON.MeshBuilder.CreateBox("cube", {size: node.size * 0.99});
 					let material = new BABYLON.StandardMaterial("cube-material");
-					material.alpha = (1 - node.degree / (N + 1)) * 0.5;
+					material.alpha = (1 - node.degree / (meshMaker.degree + 1)) * 0.5;
 					cube.material = material;
 					cube.position.x = node.i * node.size + node.size * 0.5 - S * 0.5;
 					cube.position.y = node.k * node.size + node.size * 0.5 - S * 0.5;
 					cube.position.z = node.j * node.size + node.size * 0.5 - S * 0.5;
 				});
 			}
-            
-			let meshMaker = new OctreeToMesh();
-            clonedRoot.forEach((v, i, j, k) => {
-                if (v > 0) {
-                    let cube = BABYLON.MeshBuilder.CreateBox("cube", { size: 0.99 });
-					cube.visibility = 0.2;
-                    cube.position.x = i - S * 0.5;
-                    cube.position.y = j - S * 0.5;
-                    cube.position.z = k - S * 0.5;
 
-					meshMaker.add(0b1 << 6, i - 1, j - 1, k - 1);
-					meshMaker.add(0b1 << 7, i, j - 1, k - 1);
-					meshMaker.add(0b1 << 4, i, j - 1, k);
-					meshMaker.add(0b1 << 5, i - 1, j - 1, k);
-					meshMaker.add(0b1 << 2, i - 1, j, k - 1);
-					meshMaker.add(0b1 << 3, i, j, k - 1);
-					meshMaker.add(0b1 << 0, i, j, k);
-					meshMaker.add(0b1 << 1, i - 1, j, k);
-                }
-            });
-
-			/*
-			let data = meshMaker.buildMesh(0);
-			let mesh = new BABYLON.Mesh("mesh");
-			mesh.position.x -= S;
-			mesh.position.y -= S * 0.5;
-			mesh.position.z -= S * 0.5;
-			data.applyToMesh(mesh);
-
-			mesh.enableEdgesRendering(1);
-			mesh.edgesWidth = 4.0;
-			mesh.edgesColor = new BABYLON.Color4(0, 0, 1, 1);
-
-			let data2 = meshMaker.buildMesh(0, 1000);
-			let mesh2 = new BABYLON.Mesh("mesh2");
-			mesh2.position.x = 0;
-			mesh2.position.y -= S * 0.5;
-			mesh2.position.z -= S * 0.5;
-			data2.applyToMesh(mesh2);
-
-			mesh2.enableEdgesRendering(1);
-			mesh2.edgesWidth = 4.0;
-			mesh2.edgesColor = new BABYLON.Color4(0, 0, 1, 1);
-			*/
-
-			let data3 = meshMaker.buildMesh(1, Infinity, 0);
+			let data3 = meshMaker.buildMesh(0, Infinity, 0);
 			let mesh3 = new BABYLON.Mesh("mesh3");
 			mesh3.position.x -= S * 0.5;
 			mesh3.position.y -= S * 0.5;
@@ -448,15 +221,7 @@ class OctreeTest extends Main {
 				simplifiedMesh.isVisible = true;
 				simplifiedMesh.position.copyFrom(mesh3.position);
 				simplifiedMesh.position.x += 10;
-
-				//simplifiedMesh.enableEdgesRendering(1);
-				//simplifiedMesh.edgesWidth = 4.0;
-				//simplifiedMesh.edgesColor = new BABYLON.Color4(0, 0, 1, 1);
 			});
-
-			//mesh3.enableEdgesRendering(1);
-			//mesh3.edgesWidth = 4.0;
-			//mesh3.edgesColor = new BABYLON.Color4(0, 0, 1, 1);
 
 			console.log(serial);
 			console.log(clonedSerial);

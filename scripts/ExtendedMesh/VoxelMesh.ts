@@ -1,0 +1,151 @@
+class VoxelMeshMaker {
+
+    public root: OctreeNode<number>;
+    public size: number;
+
+	public exMesh: ExtendedMesh;
+
+	private _blocks: number[][][] = [];
+	private _vertices: number[][][] = [];
+
+    constructor(public degree: number) {
+        this.root = new OctreeNode<number>(degree);
+        this.size = Math.pow(2, degree);
+    }
+
+	public getBlock(i: number, j: number, k: number): number {
+		if (this._blocks[i]) {
+			if (this._blocks[i][j]) {
+				return this._blocks[i][j][k];
+			}
+		}
+	}
+
+	public addBlock(v: number, i: number, j: number, k: number): void {
+		if (!this._blocks[i]) {
+			this._blocks[i] = [];
+		}
+		if (!this._blocks[i][j]) {
+			this._blocks[i][j] = [];
+		}
+		if (isNaN(this._blocks[i][j][k])) {
+			this._blocks[i][j][k] = 0;
+		}
+		this._blocks[i][j][k] |= v;
+	}
+
+	public setBlock(v: number, i: number, j: number, k: number): void {
+		if (!this._blocks[i]) {
+			this._blocks[i] = [];
+		}
+		if (!this._blocks[i][j]) {
+			this._blocks[i][j] = [];
+		}
+		this._blocks[i][j][k] = v;
+	}
+
+	public getVertex(i: number, j: number, k: number): number {
+		if (this._vertices[i]) {
+			if (this._vertices[i][j]) {
+				return this._vertices[i][j][k];
+			}
+		}
+	}
+
+	public setVertex(v: number, i: number, j: number, k: number): void {
+		if (!this._vertices[i]) {
+			this._vertices[i] = [];
+		}
+		if (!this._vertices[i][j]) {
+			this._vertices[i][j] = [];
+		}
+		this._vertices[i][j][k] = v;
+	}
+
+    private _syncOctreeAndGrid(): void {
+        this._blocks = [];
+
+        this.root.forEach((v, i, j, k) => {
+            if (v > 0) {
+                let cube = BABYLON.MeshBuilder.CreateBox("cube", { size: 0.99 });
+                cube.visibility = 0.2;
+                cube.position.x = i - this.size * 0.5 + 0.5;
+                cube.position.y = j - this.size * 0.5 + 0.5;
+                cube.position.z = k - this.size * 0.5 + 0.5;
+
+                this.addBlock(0b1 << 6, i - 1, j - 1, k - 1);
+                this.addBlock(0b1 << 7, i, j - 1, k - 1);
+                this.addBlock(0b1 << 4, i, j - 1, k);
+                this.addBlock(0b1 << 5, i - 1, j - 1, k);
+                this.addBlock(0b1 << 2, i - 1, j, k - 1);
+                this.addBlock(0b1 << 3, i, j, k - 1);
+                this.addBlock(0b1 << 0, i, j, k);
+                this.addBlock(0b1 << 1, i - 1, j, k);
+            }
+        });
+    }
+
+	public buildMesh(smoothCount: number, maxTriangles: number = Infinity, minCost: number = 0): BABYLON.VertexData {
+        this._syncOctreeAndGrid();
+
+		this._vertices = [];
+
+		let vertexData = new BABYLON.VertexData();
+		let positions: number[] = [];
+		let indices: number[] = [];
+
+		for (let i = 0; i < this._blocks.length; i++) {
+			let iLine = this._blocks[i];
+			if (iLine) {
+				for (let j = 0; j < iLine.length; j++) {
+					let jLine = iLine[j];
+					if (jLine) {
+						for (let k = 0; k < jLine.length; k++) {
+							let value = jLine[k];
+							if (isFinite(value) && value != 0 && value != 0b11111111) {
+								//console.log(value.toString(2));
+								let extendedpartVertexData = VoxelVertexData.Get(value);
+								if (extendedpartVertexData) {
+									let vData = extendedpartVertexData.vertexData;
+									let partIndexes = [];
+									for (let p = 0; p < vData.positions.length / 3; p++) {
+										let x = vData.positions[3 * p] + i + 0.5;
+										let y = vData.positions[3 * p + 1] + j + 0.5;
+										let z = vData.positions[3 * p + 2] + k + 0.5;
+
+										let existingIndex = this.getVertex(Math.round(10 * x), Math.round(10 * y), Math.round(10 * z));
+										if (isFinite(existingIndex)) {
+											partIndexes[p] = existingIndex;
+										}
+										else {
+											let l = positions.length / 3;
+											partIndexes[p] = l;
+											positions.push(x, y, z);
+											this.setVertex(l, Math.round(10 * x), Math.round(10 * y), Math.round(10 * z))
+										}
+	
+									}
+									//console.log(partIndexes);
+									indices.push(...vData.indices.map(index => { return partIndexes[index]; }));
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+
+		this.exMesh = new ExtendedMesh(positions, indices);
+
+		for (let n = 0; n < smoothCount; n++) {
+			this.exMesh.smooth(1);
+		}
+
+
+		vertexData.positions = this.exMesh.getPositions();
+		vertexData.indices = this.exMesh.getIndices();
+		vertexData.normals = this.exMesh.getNormals();
+
+		return vertexData;
+	}
+}
