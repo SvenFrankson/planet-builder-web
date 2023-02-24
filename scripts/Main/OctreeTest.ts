@@ -73,7 +73,7 @@ class OctreeToMesh {
 							let value = jLine[k];
 							if (isFinite(value) && value != 0 && value != 0b11111111) {
 								//console.log(value.toString(2));
-								let extendedpartVertexData = PlanetChunckVertexData.Get(2, value);
+								let extendedpartVertexData = VoxelVertexData.Get(value);
 								if (extendedpartVertexData) {
 									let vData = extendedpartVertexData.vertexData;
 									let partIndexes = [];
@@ -114,7 +114,7 @@ class OctreeToMesh {
 		let l = this.exMesh.triangles.length;
 
 		for (let n = 0; n < smoothCount; n++) {
-			this.exMesh.scaleAltitude(0.5);
+			this.exMesh.smooth(1);
 		}
 
 		//this.exMesh.smooth(1);
@@ -170,11 +170,6 @@ class OctreeTest extends Main {
 	public planet: BABYLON.Mesh;
 
 	public createScene(): void {
-		
-		Config.chunckPartConfiguration.setFilename("chunck-parts", false);
-		Config.chunckPartConfiguration.useXZAxisRotation = true;
-		Config.chunckPartConfiguration.setLodMin(2);
-		Config.chunckPartConfiguration.setLodMax(2);
 
 		Main.Scene = new BABYLON.Scene(Main.Engine);
 		this.scene = Main.Scene;
@@ -196,18 +191,20 @@ class OctreeTest extends Main {
 		this.scene.clearColor.copyFromFloats(0, 0, 0, 1);
 	}
 
-	public makeCube(root: OctreeNode<number>, center: BABYLON.Vector3, size: number): void {
-		let n = Math.floor(size * 0.5);
+	public makeCube(root: OctreeNode<number>, center: BABYLON.Vector3, size: number, rand: number = 1): void {
+		let n = size * 0.5;
 
-		for (let i = - n; i <= n; i++) {
-			for (let j = - n; j <= n; j++) {
-				for (let k = - n; k <= n; k++) {
-					let I = center.x + i;
-					let J = center.y + j;
-					let K = center.z + k;
-					if (I >= 0 && J >= 0 && K >= 0) {
-						if (I < root.size && J < root.size && K < root.size) {
-							root.set(42, I, J, K);
+		for (let i = Math.floor(-n); i <= Math.floor(n); i++) {
+			for (let j = Math.floor(-n); j <= Math.floor(n); j++) {
+				for (let k = Math.floor(-n); k <= Math.floor(n); k++) {
+					if (Math.random() < rand) {
+						let I = center.x + i;
+						let J = center.y + j;
+						let K = center.z + k;
+						if (I >= 0 && J >= 0 && K >= 0) {
+							if (I < root.size && J < root.size && K < root.size) {
+								root.set(42, I, J, K);
+							}
 						}
 					}
 				}
@@ -309,17 +306,31 @@ class OctreeTest extends Main {
 
 		return new Promise<void>(async resolve => {
 			await PlanetChunckVertexData.InitializeData();
+			await VoxelVertexData.InitializeData();
 
 			let N = 6;
 			let S = Math.pow(2, N);
 
             let root = new OctreeNode<number>(N);
 			
+			let x = Math.floor(0.5 * S);
+			let y = 5;
+			let z = Math.floor(0.5 * S);
+			for (let n = 0; n < 0; n++) {
+				this.makeCube(
+					root,
+					new BABYLON.Vector3(x, y, z),
+					1.9
+				);
+				x += (Math.random() - 0.5) * 3;
+				y += 1;
+				z += (Math.random() - 0.5) * 3;
+			}
 
 			this.makeCube(
 				root,
 				new BABYLON.Vector3(Math.floor(0.5 * S), Math.floor(0.5 * S), Math.floor(0.5 * S)),
-				5
+				1.9
 			);
 
 			/*
@@ -346,7 +357,7 @@ class OctreeTest extends Main {
 			for (let n = 0; n < 0; n++) {
 				let next = prev.clone();
 				next.x += Math.random() * 16 - 8;
-				next.y += Math.random() * 16 - 8;
+				next.y += Math.random() * 8;
 				next.z += Math.random() * 16 - 8;
 				next.x = Math.round(next.x);
 				next.y = Math.round(next.y);
@@ -356,9 +367,10 @@ class OctreeTest extends Main {
 					root,
 					prev,
 					next,
-					2
+					1
 				);
 				prev = points[Math.floor(Math.random() * points.length)];
+				prev = next;
 			}
 			
 			//root.set(42, Math.floor(S * 0.5), Math.floor(S * 0.5), Math.floor(S * 0.5));
@@ -423,7 +435,7 @@ class OctreeTest extends Main {
 			mesh2.edgesColor = new BABYLON.Color4(0, 0, 1, 1);
 			*/
 
-			let data3 = meshMaker.buildMesh(0, Infinity, 0);
+			let data3 = meshMaker.buildMesh(1, Infinity, 0);
 			let mesh3 = new BABYLON.Mesh("mesh3");
 			mesh3.position.x -= S * 0.5;
 			mesh3.position.y -= S * 0.5;
@@ -431,11 +443,15 @@ class OctreeTest extends Main {
 			data3.applyToMesh(mesh3);
 
 			let decimator = new BABYLON.QuadraticErrorSimplification(mesh3);
-			decimator.simplify({ quality: 0.1, distance: 0 }, (simplifiedMesh: BABYLON.Mesh) => {
+			decimator.simplify({ quality: 0.3, distance: 0 }, (simplifiedMesh: BABYLON.Mesh) => {
 				console.log("done");
 				simplifiedMesh.isVisible = true;
 				simplifiedMesh.position.copyFrom(mesh3.position);
 				simplifiedMesh.position.x += 10;
+
+				//simplifiedMesh.enableEdgesRendering(1);
+				//simplifiedMesh.edgesWidth = 4.0;
+				//simplifiedMesh.edgesColor = new BABYLON.Color4(0, 0, 1, 1);
 			});
 
 			//mesh3.enableEdgesRendering(1);
