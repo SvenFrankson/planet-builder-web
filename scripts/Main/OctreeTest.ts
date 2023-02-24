@@ -27,27 +27,6 @@ class OctreeTest extends Main {
 		this.scene.clearColor.copyFromFloats(0, 0, 0, 1);
 	}
 
-	public makeCube(root: OctreeNode<number>, center: BABYLON.Vector3, size: number, rand: number = 1): void {
-		let n = size * 0.5;
-
-		for (let i = Math.floor(-n); i <= Math.floor(n); i++) {
-			for (let j = Math.floor(-n); j <= Math.floor(n); j++) {
-				for (let k = Math.floor(-n); k <= Math.floor(n); k++) {
-					if (Math.random() < rand) {
-						let I = center.x + i;
-						let J = center.y + j;
-						let K = center.z + k;
-						if (I >= 0 && J >= 0 && K >= 0) {
-							if (I < root.size && J < root.size && K < root.size) {
-								root.set(42, I, J, K);
-							}
-						}
-					}
-				}
-			}
-		}
-	}
-
 	public makeBall(root: OctreeNode<number>, center: BABYLON.Vector3, radius: number): void {
 		let n = Math.ceil(radius);
 		let rr = radius * radius;
@@ -150,19 +129,31 @@ class OctreeTest extends Main {
 			let x = Math.floor(0.5 * S);
 			let y = Math.floor(0.5 * S);
 			let z = Math.floor(0.5 * S);
-			for (let n = 0; n < 16; n++) {
-				this.makeCube(
-					meshMaker.root,
+			for (let n = 0; n < 0; n++) {
+				meshMaker.addCube(
+					42,
 					new BABYLON.Vector3(x, y, z),
 					1.9
 				);
 				y += 1;
 			}
 
-			this.makeCube(
-				meshMaker.root,
+			meshMaker.addCube(
+				42,
 				new BABYLON.Vector3(Math.floor(0.5 * S), Math.floor(0.5 * S), Math.floor(0.5 * S)),
-				1.9
+				3
+			);
+
+			meshMaker.addCube(
+				42,
+				new BABYLON.Vector3(Math.floor(0.5 * S), Math.floor(0.5 * S), Math.floor(0.5 * S + 6)),
+				2
+			);
+
+			meshMaker.addCube(
+				42,
+				new BABYLON.Vector3(Math.floor(0.5 * S), Math.floor(0.5 * S), Math.floor(0.5 * S + 12)),
+				1
 			);
 
 			let prev = new BABYLON.Vector3(Math.floor(0.5 * S), Math.floor(0.5 * S), Math.floor(0.5 * S));

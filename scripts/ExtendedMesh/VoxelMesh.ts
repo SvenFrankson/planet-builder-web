@@ -13,7 +13,7 @@ class VoxelMeshMaker {
         this.size = Math.pow(2, degree);
     }
 
-	public getBlock(i: number, j: number, k: number): number {
+	private _getBlock(i: number, j: number, k: number): number {
 		if (this._blocks[i]) {
 			if (this._blocks[i][j]) {
 				return this._blocks[i][j][k];
@@ -21,7 +21,7 @@ class VoxelMeshMaker {
 		}
 	}
 
-	public addBlock(v: number, i: number, j: number, k: number): void {
+	private _addBlock(v: number, i: number, j: number, k: number): void {
 		if (!this._blocks[i]) {
 			this._blocks[i] = [];
 		}
@@ -34,7 +34,7 @@ class VoxelMeshMaker {
 		this._blocks[i][j][k] |= v;
 	}
 
-	public setBlock(v: number, i: number, j: number, k: number): void {
+	private _setBlock(v: number, i: number, j: number, k: number): void {
 		if (!this._blocks[i]) {
 			this._blocks[i] = [];
 		}
@@ -44,7 +44,7 @@ class VoxelMeshMaker {
 		this._blocks[i][j][k] = v;
 	}
 
-	public getVertex(i: number, j: number, k: number): number {
+	private _getVertex(i: number, j: number, k: number): number {
 		if (this._vertices[i]) {
 			if (this._vertices[i][j]) {
 				return this._vertices[i][j][k];
@@ -52,7 +52,7 @@ class VoxelMeshMaker {
 		}
 	}
 
-	public setVertex(v: number, i: number, j: number, k: number): void {
+	private _setVertex(v: number, i: number, j: number, k: number): void {
 		if (!this._vertices[i]) {
 			this._vertices[i] = [];
 		}
@@ -60,6 +60,28 @@ class VoxelMeshMaker {
 			this._vertices[i][j] = [];
 		}
 		this._vertices[i][j][k] = v;
+	}
+	
+
+	public addCube(value: number, center: BABYLON.Vector3, size: number, rand: number = 1): void {
+		let n = Math.floor(size * 0.5);
+
+		for (let i = 0; i < size; i++) {
+			for (let j = 0; j < size; j++) {
+				for (let k = 0; k < size; k++) {
+					if (Math.random() < rand) {
+						let I = Math.floor(center.x + i - n);
+						let J = Math.floor(center.y + j - n);
+						let K = Math.floor(center.z + k - n);
+						if (I >= 0 && J >= 0 && K >= 0) {
+							if (I < this.root.size && J < this.root.size && K < this.root.size) {
+								this.root.set(value, I, J, K);
+							}
+						}
+					}
+				}
+			}
+		}
 	}
 
     private _syncOctreeAndGrid(): void {
@@ -73,14 +95,14 @@ class VoxelMeshMaker {
                 cube.position.y = j - this.size * 0.5 + 0.5;
                 cube.position.z = k - this.size * 0.5 + 0.5;
 
-                this.addBlock(0b1 << 6, i - 1, j - 1, k - 1);
-                this.addBlock(0b1 << 7, i, j - 1, k - 1);
-                this.addBlock(0b1 << 4, i, j - 1, k);
-                this.addBlock(0b1 << 5, i - 1, j - 1, k);
-                this.addBlock(0b1 << 2, i - 1, j, k - 1);
-                this.addBlock(0b1 << 3, i, j, k - 1);
-                this.addBlock(0b1 << 0, i, j, k);
-                this.addBlock(0b1 << 1, i - 1, j, k);
+                this._addBlock(0b1 << 6, i - 1, j - 1, k - 1);
+                this._addBlock(0b1 << 7, i, j - 1, k - 1);
+                this._addBlock(0b1 << 4, i, j - 1, k);
+                this._addBlock(0b1 << 5, i - 1, j - 1, k);
+                this._addBlock(0b1 << 2, i - 1, j, k - 1);
+                this._addBlock(0b1 << 3, i, j, k - 1);
+                this._addBlock(0b1 << 0, i, j, k);
+                this._addBlock(0b1 << 1, i - 1, j, k);
             }
         });
     }
@@ -113,7 +135,7 @@ class VoxelMeshMaker {
 										let y = vData.positions[3 * p + 1] + j + 0.5;
 										let z = vData.positions[3 * p + 2] + k + 0.5;
 
-										let existingIndex = this.getVertex(Math.round(10 * x), Math.round(10 * y), Math.round(10 * z));
+										let existingIndex = this._getVertex(Math.round(10 * x), Math.round(10 * y), Math.round(10 * z));
 										if (isFinite(existingIndex)) {
 											partIndexes[p] = existingIndex;
 										}
@@ -121,7 +143,7 @@ class VoxelMeshMaker {
 											let l = positions.length / 3;
 											partIndexes[p] = l;
 											positions.push(x, y, z);
-											this.setVertex(l, Math.round(10 * x), Math.round(10 * y), Math.round(10 * z))
+											this._setVertex(l, Math.round(10 * x), Math.round(10 * y), Math.round(10 * z))
 										}
 	
 									}
