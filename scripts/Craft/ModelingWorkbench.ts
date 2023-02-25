@@ -10,6 +10,8 @@ class ModelingWorkbench extends PickablePlanetObject {
 
     public interactionAnchor: BABYLON.Mesh;
 
+    public using: boolean = false;
+
     constructor(
         main: Main
     ) {
@@ -83,7 +85,7 @@ class ModelingWorkbench extends PickablePlanetObject {
     }
 
     public onPointerUp(): void {
-        if (BABYLON.Vector3.DistanceSquared(this.inputManager.player.position, this.position) < 1.2 * 1.2) {
+        if (this.using) {
             let localP = BABYLON.Vector3.TransformCoordinates(this.inputManager.aimedPosition, this.modelMesh.getWorldMatrix().clone().invert());
             let i = Math.floor(localP.x / this.voxelMesh.cubeSize);
             let j = Math.floor(localP.y / this.voxelMesh.cubeSize);
@@ -94,6 +96,14 @@ class ModelingWorkbench extends PickablePlanetObject {
             let data = this.voxelMesh.buildMesh(0);
             data.applyToMesh(this.modelMesh);
         }
+        else {
+            if (BABYLON.Vector3.DistanceSquared(this.inputManager.player.position, this.position) < 1.2 * 1.2) {
+                this.using = true;
+                document.exitPointerLock();
+                this.inputManager.freeHandMode = true;
+                this.scene.onBeforeRenderObservable.add(this._update);
+            }
+        }
     }
 
     public onHoverStart(): void {
@@ -102,5 +112,13 @@ class ModelingWorkbench extends PickablePlanetObject {
 
     public onHoverEnd(): void {
         
+    }
+
+    private _update = () => {
+        if (BABYLON.Vector3.DistanceSquared(this.inputManager.player.position, this.position) > 1.2 * 1.2) {
+            this.using = false;
+            this.inputManager.freeHandMode = false;
+            this.scene.onBeforeRenderObservable.removeCallback(this._update);
+        }
     }
 }

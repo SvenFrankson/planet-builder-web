@@ -33,6 +33,7 @@ class InputManager {
 
     public player: Player;
     public inventoryOpened: boolean = false;
+    public freeHandMode: boolean = false;
     public aimedElement: IPickable;
     public aimedPosition: BABYLON.Vector3;
     public aimedProxyIndex: number = - 1;
@@ -54,7 +55,7 @@ class InputManager {
             this.updateAimedElement(ev.x, ev.y);
             this.isPointerDown = true;
             if (Config.controlConfiguration.canLockPointer) {
-                if (!this.inventoryOpened) {
+                if (!this.inventoryOpened && !this.freeHandMode) {
                     this.canvas.requestPointerLock();
                     this.isPointerLocked = true;
                 }
