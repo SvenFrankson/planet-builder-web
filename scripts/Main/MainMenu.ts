@@ -173,6 +173,16 @@ class MainMenu extends Main {
 								}, 1000);
 							}, 500);
 						}
+
+						setTimeout(() => {
+							let p = this.player.position.add(this.player.forward.scale(1.2));
+
+							let workbench = new ModelingWorkbench(this);
+							workbench.instantiate();
+							workbench.planet = this.player.planet
+							workbench.setPosition(p, true);
+							workbench.setTarget(this.player.position);
+						}, 1000);
 					});
 						
 					//let debugAltimeter = new Altimeter3D(this.player);
