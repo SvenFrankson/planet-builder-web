@@ -88,6 +88,14 @@ class ExtendedMesh {
 		return positions;
 	}
 
+	public getColors(c: BABYLON.Color3): number[] {
+		let colors = [];
+		for (let i = 0; i < this.vertices.length; i++) {
+			colors.push(c.r, c.g, c.b, 1);
+		}
+		return colors;
+	}
+
 	public getNormals(): number[] {
 		let normals = [];
 		for (let i = 0; i < this.vertices.length; i++) {

@@ -1,8 +1,9 @@
-class VoxelMeshMaker {
+class VoxelMesh {
 
+	public cubeSize: number = 0.1;
     public root: OctreeNode<number>;
-    public size: number;
-	public halfSize: number;
+    private _size: number;
+	private _halfSize: number;
 
 	public exMesh: ExtendedMesh;
 
@@ -11,8 +12,8 @@ class VoxelMeshMaker {
 
     constructor(public degree: number) {
         this.root = new OctreeNode<number>(degree);
-        this.size = Math.pow(2, degree);
-		this.halfSize = this.size * 0.5;
+        this._size = Math.pow(2, degree);
+		this._halfSize = this._size * 0.5;
     }
 
 	private _getBlock(i: number, j: number, k: number): number {
@@ -72,9 +73,9 @@ class VoxelMeshMaker {
 			for (let j = 0; j < size; j++) {
 				for (let k = 0; k < size; k++) {
 					if (Math.random() < rand) {
-						let I = Math.floor(center.x + i - n + this.halfSize);
-						let J = Math.floor(center.y + j - n + this.halfSize);
-						let K = Math.floor(center.z + k - n + this.halfSize);
+						let I = Math.floor(center.x + i - n + this._halfSize);
+						let J = Math.floor(center.y + j - n + this._halfSize);
+						let K = Math.floor(center.z + k - n + this._halfSize);
 						if (I >= 0 && J >= 0 && K >= 0) {
 							if (I < this.root.size && J < this.root.size && K < this.root.size) {
 								this.root.set(value, I, J, K);
@@ -91,12 +92,6 @@ class VoxelMeshMaker {
 
         this.root.forEach((v, i, j, k) => {
             if (v > 0) {
-                let cube = BABYLON.MeshBuilder.CreateBox("cube", { size: 0.99 });
-                cube.visibility = 0.2;
-                cube.position.x = i - this.size * 0.5 + 0.5;
-                cube.position.y = j - this.size * 0.5 + 0.5;
-                cube.position.z = k - this.size * 0.5 + 0.5;
-
                 this._addBlock(0b1 << 6, i - 1, j - 1, k - 1);
                 this._addBlock(0b1 << 7, i, j - 1, k - 1);
                 this._addBlock(0b1 << 4, i, j - 1, k);
@@ -111,8 +106,6 @@ class VoxelMeshMaker {
 
 	public buildMesh(smoothCount: number, maxTriangles: number = Infinity, minCost: number = 0): BABYLON.VertexData {
         this._syncOctreeAndGrid();
-
-		console.log(this._blocks);
 
 		this._vertices = [];
 
@@ -135,9 +128,9 @@ class VoxelMeshMaker {
 									let vData = extendedpartVertexData.vertexData;
 									let partIndexes = [];
 									for (let p = 0; p < vData.positions.length / 3; p++) {
-										let x = vData.positions[3 * p] + i + 0.5 - this.size * 0.5;
-										let y = vData.positions[3 * p + 1] + j + 0.5 - this.size * 0.5;
-										let z = vData.positions[3 * p + 2] + k + 0.5 - this.size * 0.5;
+										let x = vData.positions[3 * p] + i + 0.5 - this._size * 0.5;
+										let y = vData.positions[3 * p + 1] + j + 0.5 - this._size * 0.5;
+										let z = vData.positions[3 * p + 2] + k + 0.5 - this._size * 0.5;
 
 										let existingIndex = this._getVertex(Math.round(10 * x), Math.round(10 * y), Math.round(10 * z));
 										if (isFinite(existingIndex)) {
@@ -146,7 +139,7 @@ class VoxelMeshMaker {
 										else {
 											let l = positions.length / 3;
 											partIndexes[p] = l;
-											positions.push(x, y, z);
+											positions.push(x * this.cubeSize, y * this.cubeSize, z * this.cubeSize);
 											this._setVertex(l, Math.round(10 * x), Math.round(10 * y), Math.round(10 * z))
 										}
 	
@@ -166,11 +159,12 @@ class VoxelMeshMaker {
 		this.exMesh = new ExtendedMesh(positions, indices);
 
 		for (let n = 0; n < smoothCount; n++) {
-			//this.exMesh.smooth(1);
+			this.exMesh.smooth(1);
 		}
 
 
 		vertexData.positions = this.exMesh.getPositions();
+		vertexData.colors = this.exMesh.getColors(BABYLON.Color3.White());
 		vertexData.indices = this.exMesh.getIndices();
 		vertexData.normals = this.exMesh.getNormals();
 

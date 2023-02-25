@@ -4,7 +4,7 @@ class ModelingWorkbench extends PickablePlanetObject {
 
     public frame: BABYLON.Mesh;
 
-    public meshMaker: VoxelMeshMaker;
+    public voxelMesh: VoxelMesh;
 
     public modelMesh: BABYLON.Mesh;
 
@@ -28,14 +28,28 @@ class ModelingWorkbench extends PickablePlanetObject {
             vData.applyToMesh(this.frame);
         });
 
+        this.voxelMesh = new VoxelMesh(6);
+        this.voxelMesh.cubeSize = 0.05;
+        this.voxelMesh.addCube(42, BABYLON.Vector3.Zero(), 2);
+        for (let n = 0; n < 30; n++) {
+            let s = Math.floor(2 + 4 * Math.random());
+            this.voxelMesh.addCube(
+                42,
+                new BABYLON.Vector3(
+                    Math.round(- 12 + 24 * Math.random()),
+                    Math.round(- 12 + 24 * Math.random()),
+                    Math.round(- 12 + 24 * Math.random())
+                ),
+                s
+            );
+        }
+
         this.modelMesh = new BABYLON.Mesh("model-mesh");
         this.modelMesh.position.y = 1;
         this.modelMesh.parent = this;
+        this.modelMesh.material = new ToonMaterial("model-mesh-material", this.scene);
 
-        this.meshMaker = new VoxelMeshMaker(5);
-        this.meshMaker.addCube(42, BABYLON.Vector3.Zero(), 2);
-
-        let data = this.meshMaker.buildMesh(0);
+        let data = this.voxelMesh.buildMesh(0);
         console.log(data);
         data.applyToMesh(this.modelMesh);
 
@@ -45,7 +59,7 @@ class ModelingWorkbench extends PickablePlanetObject {
         this.interactionAnchor.position.z = -1;
         this.interactionAnchor.parent = this;
 
-        this.proxyPickMeshes = [this.frame];
+        this.proxyPickMeshes = [this.modelMesh];
     }
 
     public async open(): Promise<void> {

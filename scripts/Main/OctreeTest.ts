@@ -123,12 +123,11 @@ class OctreeTest extends Main {
 			await PlanetChunckVertexData.InitializeData();
 			await VoxelVertexData.InitializeData();
 
-			let meshMaker = new VoxelMeshMaker(6);
-			let S = meshMaker.size;
+			let meshMaker = new VoxelMesh(6);
 			
-			let x = Math.floor(0.5 * S);
-			let y = Math.floor(0.5 * S);
-			let z = Math.floor(0.5 * S);
+			let x = 0;
+			let y = 0;
+			let z = 0;
 			for (let n = 0; n < 0; n++) {
 				meshMaker.addCube(
 					42,
@@ -140,23 +139,23 @@ class OctreeTest extends Main {
 
 			meshMaker.addCube(
 				42,
-				new BABYLON.Vector3(Math.floor(0.5 * S), Math.floor(0.5 * S), Math.floor(0.5 * S)),
+				BABYLON.Vector3.Zero(),
 				3
 			);
 
 			meshMaker.addCube(
 				42,
-				new BABYLON.Vector3(Math.floor(0.5 * S), Math.floor(0.5 * S), Math.floor(0.5 * S + 6)),
+				BABYLON.Vector3.Zero(),
 				2
 			);
 
 			meshMaker.addCube(
 				42,
-				new BABYLON.Vector3(Math.floor(0.5 * S), Math.floor(0.5 * S), Math.floor(0.5 * S + 12)),
+				BABYLON.Vector3.Zero(),
 				1
 			);
 
-			let prev = new BABYLON.Vector3(Math.floor(0.5 * S), Math.floor(0.5 * S), Math.floor(0.5 * S));
+			let prev = BABYLON.Vector3.Zero();
 			prev.x = Math.round(prev.x);
 			prev.y = Math.round(prev.y);
 			prev.z = Math.round(prev.z);
@@ -193,17 +192,14 @@ class OctreeTest extends Main {
 					let material = new BABYLON.StandardMaterial("cube-material");
 					material.alpha = (1 - node.degree / (meshMaker.degree + 1)) * 0.5;
 					cube.material = material;
-					cube.position.x = node.i * node.size + node.size * 0.5 - S * 0.5;
-					cube.position.y = node.k * node.size + node.size * 0.5 - S * 0.5;
-					cube.position.z = node.j * node.size + node.size * 0.5 - S * 0.5;
+					cube.position.x = node.i * node.size + node.size * 0.5;
+					cube.position.y = node.k * node.size + node.size * 0.5;
+					cube.position.z = node.j * node.size + node.size * 0.5;
 				});
 			}
 
 			let data3 = meshMaker.buildMesh(0, Infinity, 0);
 			let mesh3 = new BABYLON.Mesh("mesh3");
-			mesh3.position.x -= S * 0.5;
-			mesh3.position.y -= S * 0.5;
-			mesh3.position.z -= S * 0.5;
 			data3.applyToMesh(mesh3);
 
 			let decimator = new BABYLON.QuadraticErrorSimplification(mesh3);
@@ -221,9 +217,6 @@ class OctreeTest extends Main {
 			meshMaker.exMesh.vertices.forEach(vertex => {
 				let cube = BABYLON.MeshBuilder.CreateBox("cube", { size: 0.1 });
 				cube.position.copyFrom(vertex.point);
-				cube.position.x -= S * 0.5;
-				cube.position.y -= S * 0.5;
-				cube.position.z -= S * 0.5;
 				cube.rotation.x = Math.random() * Math.PI;
 				cube.rotation.y = Math.random() * Math.PI;
 				cube.rotation.z = Math.random() * Math.PI;
