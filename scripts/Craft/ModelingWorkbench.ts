@@ -31,7 +31,7 @@ class ModelingWorkbench extends PickablePlanetObject {
         this.voxelMesh = new VoxelMesh(6);
         this.voxelMesh.cubeSize = 0.05;
         this.voxelMesh.addCube(42, BABYLON.Vector3.Zero(), 2);
-        for (let n = 0; n < 30; n++) {
+        for (let n = 0; n < 0; n++) {
             let s = Math.floor(2 + 4 * Math.random());
             this.voxelMesh.addCube(
                 42,
@@ -50,7 +50,6 @@ class ModelingWorkbench extends PickablePlanetObject {
         this.modelMesh.material = new ToonMaterial("model-mesh-material", this.scene);
 
         let data = this.voxelMesh.buildMesh(0);
-        console.log(data);
         data.applyToMesh(this.modelMesh);
 
         this.interactionAnchor = new BABYLON.Mesh("interaction-anchor");
@@ -71,25 +70,29 @@ class ModelingWorkbench extends PickablePlanetObject {
     }
 
     public interceptsPointerMove(): boolean {
-        if (BABYLON.Vector3.DistanceSquared(this.inputManager.player.position, this.interactionAnchor.absolutePosition) < 0.2 * 0.2) {
+        if (BABYLON.Vector3.DistanceSquared(this.inputManager.player.position, this.position) < 1.2 * 1.2) {
             return true;
         }
         return false;
     }
 
     public onPointerDown(): void {
-        if (BABYLON.Vector3.DistanceSquared(this.inputManager.player.position, this.interactionAnchor.absolutePosition) < 0.2 * 0.2) {
+        if (BABYLON.Vector3.DistanceSquared(this.inputManager.player.position, this.position) < 1.2 * 1.2) {
             
         }
     }
 
     public onPointerUp(): void {
-        if (BABYLON.Vector3.DistanceSquared(this.inputManager.player.position, this.interactionAnchor.absolutePosition) < 0.2 * 0.2) {
-            
-        }
-        else {
-            this.inputManager.player.targetLook = this.frame.absolutePosition;
-            this.inputManager.player.targetDestination = this.interactionAnchor.absolutePosition.clone();
+        if (BABYLON.Vector3.DistanceSquared(this.inputManager.player.position, this.position) < 1.2 * 1.2) {
+            let localP = BABYLON.Vector3.TransformCoordinates(this.inputManager.aimedPosition, this.modelMesh.getWorldMatrix().clone().invert());
+            let i = Math.floor(localP.x / this.voxelMesh.cubeSize);
+            let j = Math.floor(localP.y / this.voxelMesh.cubeSize);
+            let k = Math.floor(localP.z / this.voxelMesh.cubeSize);
+
+            this.voxelMesh.addCube(42, new BABYLON.Vector3(i, j, k), 3);
+
+            let data = this.voxelMesh.buildMesh(0);
+            data.applyToMesh(this.modelMesh);
         }
     }
 
