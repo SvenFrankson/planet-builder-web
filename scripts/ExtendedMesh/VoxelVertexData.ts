@@ -320,12 +320,11 @@ class VoxelVertexData {
     }
 
     private static async _LoadChunckVertexDatasFromFile(): Promise<void> {
-        let filename = Config.chunckPartConfiguration.dir + "/" + Config.chunckPartConfiguration.filename;
         return new Promise<void>(
             resolve => {
                 BABYLON.SceneLoader.ImportMesh(
                     "",
-                    filename + "-lod-2.babylon",
+                    "datas/meshes/voxel-parts.babylon",
                     "",
                     Game.Scene,
                     (meshes) => {

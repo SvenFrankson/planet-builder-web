@@ -132,6 +132,7 @@ class MainMenu extends Main {
 
 			PlanetChunckVertexData.InitializeData().then(
 				async () => {
+					await VoxelVertexData.InitializeData();
 
 					if (!DebugDefine.ONLY_START_PLANET) {
 						this.generatePlanets();

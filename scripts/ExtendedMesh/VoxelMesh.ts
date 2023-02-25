@@ -2,6 +2,7 @@ class VoxelMeshMaker {
 
     public root: OctreeNode<number>;
     public size: number;
+	public halfSize: number;
 
 	public exMesh: ExtendedMesh;
 
@@ -11,6 +12,7 @@ class VoxelMeshMaker {
     constructor(public degree: number) {
         this.root = new OctreeNode<number>(degree);
         this.size = Math.pow(2, degree);
+		this.halfSize = this.size * 0.5;
     }
 
 	private _getBlock(i: number, j: number, k: number): number {
@@ -70,9 +72,9 @@ class VoxelMeshMaker {
 			for (let j = 0; j < size; j++) {
 				for (let k = 0; k < size; k++) {
 					if (Math.random() < rand) {
-						let I = Math.floor(center.x + i - n);
-						let J = Math.floor(center.y + j - n);
-						let K = Math.floor(center.z + k - n);
+						let I = Math.floor(center.x + i - n + this.halfSize);
+						let J = Math.floor(center.y + j - n + this.halfSize);
+						let K = Math.floor(center.z + k - n + this.halfSize);
 						if (I >= 0 && J >= 0 && K >= 0) {
 							if (I < this.root.size && J < this.root.size && K < this.root.size) {
 								this.root.set(value, I, J, K);
@@ -110,6 +112,8 @@ class VoxelMeshMaker {
 	public buildMesh(smoothCount: number, maxTriangles: number = Infinity, minCost: number = 0): BABYLON.VertexData {
         this._syncOctreeAndGrid();
 
+		console.log(this._blocks);
+
 		this._vertices = [];
 
 		let vertexData = new BABYLON.VertexData();
@@ -131,9 +135,9 @@ class VoxelMeshMaker {
 									let vData = extendedpartVertexData.vertexData;
 									let partIndexes = [];
 									for (let p = 0; p < vData.positions.length / 3; p++) {
-										let x = vData.positions[3 * p] + i + 0.5;
-										let y = vData.positions[3 * p + 1] + j + 0.5;
-										let z = vData.positions[3 * p + 2] + k + 0.5;
+										let x = vData.positions[3 * p] + i + 0.5 - this.size * 0.5;
+										let y = vData.positions[3 * p + 1] + j + 0.5 - this.size * 0.5;
+										let z = vData.positions[3 * p + 2] + k + 0.5 - this.size * 0.5;
 
 										let existingIndex = this._getVertex(Math.round(10 * x), Math.round(10 * y), Math.round(10 * z));
 										if (isFinite(existingIndex)) {
@@ -157,10 +161,12 @@ class VoxelMeshMaker {
 			}
 		}
 
+		console.log(positions);
+
 		this.exMesh = new ExtendedMesh(positions, indices);
 
 		for (let n = 0; n < smoothCount; n++) {
-			this.exMesh.smooth(1);
+			//this.exMesh.smooth(1);
 		}
 
 
