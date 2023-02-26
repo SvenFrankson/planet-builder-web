@@ -16,7 +16,10 @@ class ModelingWorkbench extends PickablePlanetObject {
 
     public using: boolean = false;
 
+    public gridEditionMode: boolean = true;
     public grid: BABYLON.Mesh;
+    public gridPlus: BABYLON.Mesh;
+    public gridMinus: BABYLON.Mesh;
 
     constructor(
         main: Main
@@ -65,9 +68,9 @@ class ModelingWorkbench extends PickablePlanetObject {
         this.previewMesh.material = SharedMaterials.WaterMaterial();
         this.previewMesh.parent = this.modelMesh;
 
-        this.grid = BABYLON.MeshBuilder.CreateGround("grid", { width: 1.5, height: 1.5 });
+        this.grid = BABYLON.MeshBuilder.CreateGround("grid", { width: this.voxelMesh.cubeSize * 2, height: this.voxelMesh.cubeSize * 2 });
         let uvs = this.grid.getVerticesData(BABYLON.VertexBuffer.UVKind);
-        uvs = uvs.map(v => { return v * 1.5 / (this.voxelMesh.cubeSize)});
+        uvs = uvs.map((v: number) => { return v * 2});
         this.grid.setVerticesData(BABYLON.VertexBuffer.UVKind, uvs);
         let gridMaterial = new BABYLON.StandardMaterial("waterMaterial", Game.Scene);
         gridMaterial.diffuseColor = SharedMaterials.MainMaterial().getColor(BlockType.Water);
@@ -76,7 +79,52 @@ class ModelingWorkbench extends PickablePlanetObject {
         gridMaterial.specularColor = BABYLON.Color3.White();
         gridMaterial.alpha = 0.2;
         this.grid.material = gridMaterial;
+        this.grid.layerMask = 0x10000000;
         this.grid.parent = this.modelMesh;
+        this.grid.position.y = this.voxelMesh.cubeSize * 0.5;
+        this._redrawGrid();
+
+        let hudMaterial = new HoloPanelMaterial("hud-material", this.scene);
+
+        let hudTexture = new BABYLON.DynamicTexture("hud-texture", { width: 64, height: 64 }, this.scene, true);
+        hudTexture.hasAlpha = true;
+        hudMaterial.holoTexture = hudTexture;
+        
+        let slika = new Slika(64, 64, hudTexture.getContext(), hudTexture);
+        slika.texture = hudTexture;
+        slika.context = hudTexture.getContext();
+        slika.add(new SlikaPath({
+            points: [
+                8, 56,
+                32, 8,
+                56, 56
+            ],
+            close: false,
+            strokeColor: BABYLON.Color3.White(),
+            strokeAlpha: 1,
+            strokeWidth: 4,
+        }));
+        slika.needRedraw = true;
+
+        this.gridPlus = new BABYLON.Mesh("grid-plus");
+        VertexDataUtils.CreatePlane(0.1, 0.1).applyToMesh(this.gridPlus);
+        this.gridPlus.material = hudMaterial;
+        this.gridPlus.parent = this.grid;
+        this.gridPlus.position.x = 0.5;
+        this.gridPlus.position.y = 0.02;
+        this.gridPlus.position.z = 0.15;
+        this.gridPlus.rotation.x = 0.5 * Math.PI;
+        this.gridPlus.layerMask = 0x10000000;
+        
+        this.gridMinus = new BABYLON.Mesh("grid-minus");
+        VertexDataUtils.CreatePlane(0.1, 0.1).applyToMesh(this.gridMinus);
+        this.gridMinus.material = hudMaterial;
+        this.gridMinus.parent = this.grid;
+        this.gridMinus.position.x = 0.5;
+        this.gridMinus.position.y = 0.02;
+        this.gridMinus.position.z = - 0.15;
+        this.gridMinus.rotation.x = 0.5 * Math.PI;
+        this.gridMinus.layerMask = 0x10000000;
 
         this.updateMesh();
 
@@ -86,7 +134,7 @@ class ModelingWorkbench extends PickablePlanetObject {
         this.interactionAnchor.position.z = -1;
         this.interactionAnchor.parent = this;
 
-        this.proxyPickMeshes = [this.modelMesh, this.grid];
+        this.proxyPickMeshes = [this.modelMesh, this.grid, this.gridPlus, this.gridMinus];
     }
 
     private updateMesh(): void {
@@ -94,10 +142,13 @@ class ModelingWorkbench extends PickablePlanetObject {
         data.applyToMesh(this.hiddenModelMesh);
 
         let decimator = new BABYLON.QuadraticErrorSimplification(this.hiddenModelMesh);
-        decimator.simplify({ quality: 0.5, distance: 0 }, (simplifiedMesh: BABYLON.Mesh) => {
+        decimator.simplify({ quality: 0.8, distance: 0 }, (simplifiedMesh: BABYLON.Mesh) => {
             let data = BABYLON.VertexData.ExtractFromMesh(simplifiedMesh);
             data.applyToMesh(this.modelMesh);
             simplifiedMesh.dispose();
+            requestAnimationFrame(() => {
+                this._redrawGrid();
+            })
         });
     }
 
@@ -124,7 +175,10 @@ class ModelingWorkbench extends PickablePlanetObject {
 
     public onPointerUp(): void {
         if (this.using) {
-            let p = this.inputManager.aimedPosition.add(this.inputManager.aimedNormal.scale(this.voxelMesh.cubeSize * 0.5));
+            let p = this.inputManager.aimedPosition;
+            if (!this.gridEditionMode) {
+                p = p.add(this.inputManager.aimedNormal.scale(this.voxelMesh.cubeSize * 0.5));
+            }
             let localP = BABYLON.Vector3.TransformCoordinates(p, this.modelMesh.getWorldMatrix().clone().invert());
             let i = Math.floor(localP.x / this.voxelMesh.cubeSize);
             let j = Math.floor(localP.y / this.voxelMesh.cubeSize);
@@ -161,7 +215,10 @@ class ModelingWorkbench extends PickablePlanetObject {
         }
         else {
             if (this.inputManager.aimedPosition) {
-                let p = this.inputManager.aimedPosition.add(this.inputManager.aimedNormal.scale(this.voxelMesh.cubeSize * 0.5));
+                let p = this.inputManager.aimedPosition;
+                if (!this.gridEditionMode) {
+                    p = p.add(this.inputManager.aimedNormal.scale(this.voxelMesh.cubeSize * 0.5));
+                }
                 let localP = BABYLON.Vector3.TransformCoordinates(p, this.modelMesh.getWorldMatrix().clone().invert());
                 let i = Math.floor(localP.x / this.voxelMesh.cubeSize);
                 let j = Math.floor(localP.y / this.voxelMesh.cubeSize);
@@ -173,5 +230,17 @@ class ModelingWorkbench extends PickablePlanetObject {
                 this.previewMesh.isVisible = false;
             }
         }
+    }
+
+    private _redrawGrid(): void {
+        let bbox = this.modelMesh.getBoundingInfo().boundingBox;
+        let w = Math.max(Math.abs(bbox.maximum.x), Math.abs(bbox.minimum.x));
+        let l = Math.max(Math.abs(bbox.maximum.z), Math.abs(bbox.minimum.z));
+        let n = Math.max(w, l) * 2 + 0.2;
+        let count = Math.round(n / this.voxelMesh.cubeSize);
+        count = 2 * Math.round(count * 0.5);
+        let data = BABYLON.CreateGroundVertexData({ width: count * this.voxelMesh.cubeSize, height: count * this.voxelMesh.cubeSize });
+        data.uvs = data.uvs.map(v => { return v * count});
+        data.applyToMesh(this.grid);
     }
 }
