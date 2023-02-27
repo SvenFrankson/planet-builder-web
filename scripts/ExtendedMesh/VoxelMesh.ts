@@ -1,3 +1,11 @@
+interface ICubeMeshProperties {
+	baseColor?: BABYLON.Color4;
+	highlightX?: number;
+	highlightY?: number;
+	highlightZ?: number;
+	highlightColor?: BABYLON.Color4;
+}
+
 class VoxelMesh {
 
 	public cubeSize: number = 0.1;
@@ -114,7 +122,7 @@ class VoxelMesh {
         });
     }
 
-	public buildCubeMesh(): BABYLON.VertexData {
+	public buildCubeMesh(prop?: ICubeMeshProperties): BABYLON.VertexData {
 		this._syncOctreeAndGridAsCube();
 
 		this._vertices = [];
@@ -124,6 +132,15 @@ class VoxelMesh {
 		let normals: number[] = [];
 		let colors: number[] = [];
 		let indices: number[] = [];
+
+		let baseColorAsArray = [1, 1, 1, 1];
+		if (prop && prop.baseColor) {
+			baseColorAsArray = prop.baseColor.asArray();
+		}
+		let highlightColorAsArray = [1, 1, 1, 1];
+		if (prop && prop.highlightColor) {
+			highlightColorAsArray = prop.highlightColor.asArray();
+		}
 
 		for (let i = 0; i < this._blocks.length; i++) {
 			let x0 = (i - this._size * 0.5) * this.cubeSize;
@@ -140,6 +157,17 @@ class VoxelMesh {
 							let z1 = (k + 1 - this._size * 0.5) * this.cubeSize;
 							let value = jLine[k];
 							if (value > 0) {
+								let color = baseColorAsArray;
+								if (prop && Math.floor(i - this._size * 0.5) === prop.highlightX) {
+									color = highlightColorAsArray;
+								}
+								if (prop && Math.floor(j - this._size * 0.5) === prop.highlightY) {
+									color = highlightColorAsArray;
+								}
+								if (prop && Math.floor(j - this._size * 0.5) === prop.highlightZ) {
+									color = highlightColorAsArray;
+								}
+
 								if (this._getBlock(i + 1, j, k) != 1) {
 									let l = positions.length / 3;
 
@@ -149,7 +177,7 @@ class VoxelMesh {
 									positions.push(x1, y1, z0);
 
 									normals.push(1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0);
-									colors.push(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1);
+									colors.push(...color, ...color, ...color, ...color);
 
 									indices.push(l, l + 1, l + 2, l, l + 2, l + 3);
 								}
@@ -162,7 +190,7 @@ class VoxelMesh {
 									positions.push(x0, y1, z1);
 
 									normals.push(- 1, 0, 0, - 1, 0, 0, - 1, 0, 0, - 1, 0, 0);
-									colors.push(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1);
+									colors.push(...color, ...color, ...color, ...color);
 
 									indices.push(l, l + 1, l + 2, l, l + 2, l + 3);
 								}
@@ -175,7 +203,7 @@ class VoxelMesh {
 									positions.push(x0, y1, z1);
 
 									normals.push(0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0);
-									colors.push(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1);
+									colors.push(...color, ...color, ...color, ...color);
 
 									indices.push(l, l + 1, l + 2, l, l + 2, l + 3);
 								}
@@ -188,7 +216,7 @@ class VoxelMesh {
 									positions.push(x1, y0, z1);
 
 									normals.push(0, - 1, 0, 0, - 1, 0, 0, - 1, 0, 0, - 1, 0);
-									colors.push(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1);
+									colors.push(...color, ...color, ...color, ...color);
 
 									indices.push(l, l + 1, l + 2, l, l + 2, l + 3);
 								}
@@ -201,7 +229,7 @@ class VoxelMesh {
 									positions.push(x1, y1, z1);
 
 									normals.push(0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1);
-									colors.push(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1);
+									colors.push(...color, ...color, ...color, ...color);
 
 									indices.push(l, l + 1, l + 2, l, l + 2, l + 3);
 								}
@@ -214,7 +242,7 @@ class VoxelMesh {
 									positions.push(x0, y1, z0);
 
 									normals.push(0, 0, - 1, 0, 0, - 1, 0, 0, - 1, 0, 0, - 1);
-									colors.push(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1);
+									colors.push(...color, ...color, ...color, ...color);
 
 									indices.push(l, l + 1, l + 2, l, l + 2, l + 3);
 								}

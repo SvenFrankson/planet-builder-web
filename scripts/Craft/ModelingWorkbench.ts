@@ -19,6 +19,7 @@ class ModelingWorkbench extends PickablePlanetObject {
 
     public gridEditionMode: boolean = true;
     public grid: BABYLON.Mesh;
+    public gridY: number = 0;
     public commandContainer: BABYLON.Mesh;
     public gridPlus: BABYLON.Mesh;
     public gridMinus: BABYLON.Mesh;
@@ -69,7 +70,7 @@ class ModelingWorkbench extends PickablePlanetObject {
         this.cubeModelMesh.position.y = 1;
         this.cubeModelMesh.parent = this;
         let cubeModeMaterial = new BABYLON.StandardMaterial("cube-model-material", Game.Scene);
-        cubeModeMaterial.diffuseColor = SharedMaterials.MainMaterial().getColor(BlockType.Water);
+        cubeModeMaterial.diffuseColor = BABYLON.Color3.White();
         cubeModeMaterial.specularColor = BABYLON.Color3.Black();
         cubeModeMaterial.alpha = 0.2;
         this.cubeModelMesh.material = cubeModeMaterial;
@@ -83,8 +84,8 @@ class ModelingWorkbench extends PickablePlanetObject {
         let uvs = this.grid.getVerticesData(BABYLON.VertexBuffer.UVKind);
         uvs = uvs.map((v: number) => { return v * 2});
         this.grid.setVerticesData(BABYLON.VertexBuffer.UVKind, uvs);
-        let gridMaterial = new BABYLON.StandardMaterial("waterMaterial", Game.Scene);
-        gridMaterial.diffuseColor = SharedMaterials.MainMaterial().getColor(BlockType.Water);
+        let gridMaterial = new BABYLON.StandardMaterial("grid-material", Game.Scene);
+        gridMaterial.diffuseColor = new BABYLON.Color3(0, 1, 1);
         gridMaterial.diffuseTexture = new BABYLON.Texture("datas/images/border-square-64.png");
         gridMaterial.useAlphaFromDiffuseTexture = true;
         gridMaterial.specularColor = BABYLON.Color3.White();
@@ -92,7 +93,7 @@ class ModelingWorkbench extends PickablePlanetObject {
         this.grid.material = gridMaterial;
         this.grid.layerMask = 0x10000000;
         this.grid.parent = this.modelMesh;
-        this.grid.position.y = this.voxelMesh.cubeSize * 0.5;
+        this.grid.position.y = (this.gridY + 0.5) * this.voxelMesh.cubeSize;
         this._redrawGrid();
 
         let hsf = Config.performanceConfiguration.holoScreenFactor;
@@ -161,10 +162,17 @@ class ModelingWorkbench extends PickablePlanetObject {
         this.proxyPickMeshes = [this.modelMesh, this.grid, this.gridPlus, this.gridMinus];
     }
 
-    private updateMesh(): void {
-        let dataCube = this.voxelMesh.buildCubeMesh();
-        dataCube.applyToMesh(this.cubeModelMesh);
+    private updateCubeMesh(): void {
+        let data = this.voxelMesh.buildCubeMesh({
+            baseColor: new BABYLON.Color4(0.25, 0.75, 0.75, 1),
+            highlightY: this.gridY,
+            highlightColor: new BABYLON.Color4(0, 1, 1, 1)
+        });
+        data.applyToMesh(this.cubeModelMesh);
+    }
 
+    private updateMesh(): void {
+        this.updateCubeMesh();
         let data = this.voxelMesh.buildMesh(1);
         data.applyToMesh(this.hiddenModelMesh);
 
@@ -203,10 +211,14 @@ class ModelingWorkbench extends PickablePlanetObject {
     public onPointerUp(): void {
         if (this.using) {
             if (this.inputManager.aimedProxyIndex === 2) {
-                this.grid.position.y += this.voxelMesh.cubeSize;
+                this.gridY++;
+                this.grid.position.y = (this.gridY + 0.5) * this.voxelMesh.cubeSize;
+                this.updateCubeMesh();
             }
             else if (this.inputManager.aimedProxyIndex === 3) {
-                this.grid.position.y -= this.voxelMesh.cubeSize;
+                this.gridY--;
+                this.grid.position.y = (this.gridY + 0.5) * this.voxelMesh.cubeSize;
+                this.updateCubeMesh();
             }
             else {
                 let p = this.inputManager.aimedPosition;
