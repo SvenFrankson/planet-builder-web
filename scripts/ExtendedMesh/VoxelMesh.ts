@@ -104,6 +104,135 @@ class VoxelMesh {
         });
     }
 
+    private _syncOctreeAndGridAsCube(): void {
+        this._blocks = [];
+
+        this.root.forEach((v, i, j, k) => {
+            if (v > 0) {
+                this._setBlock(1, i, j, k);
+            }
+        });
+    }
+
+	public buildCubeMesh(): BABYLON.VertexData {
+		this._syncOctreeAndGridAsCube();
+
+		this._vertices = [];
+
+		let vertexData = new BABYLON.VertexData();
+		let positions: number[] = [];
+		let normals: number[] = [];
+		let colors: number[] = [];
+		let indices: number[] = [];
+
+		for (let i = 0; i < this._blocks.length; i++) {
+			let x0 = (i - this._size * 0.5) * this.cubeSize;
+			let x1 = (i + 1 - this._size * 0.5) * this.cubeSize;
+			let iLine = this._blocks[i];
+			if (iLine) {
+				for (let j = 0; j < iLine.length; j++) {
+					let y0 = (j - this._size * 0.5) * this.cubeSize;
+					let y1 = (j + 1 - this._size * 0.5) * this.cubeSize;
+					let jLine = iLine[j];
+					if (jLine) {
+						for (let k = 0; k < jLine.length; k++) {
+							let z0 = (k - this._size * 0.5) * this.cubeSize;
+							let z1 = (k + 1 - this._size * 0.5) * this.cubeSize;
+							let value = jLine[k];
+							if (value > 0) {
+								if (this._getBlock(i + 1, j, k) != 1) {
+									let l = positions.length / 3;
+
+									positions.push(x1, y0, z0);
+									positions.push(x1, y0, z1);
+									positions.push(x1, y1, z1);
+									positions.push(x1, y1, z0);
+
+									normals.push(1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0);
+									colors.push(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1);
+
+									indices.push(l, l + 1, l + 2, l, l + 2, l + 3);
+								}
+								if (this._getBlock(i - 1, j, k) != 1) {
+									let l = positions.length / 3;
+
+									positions.push(x0, y0, z1);
+									positions.push(x0, y0, z0);
+									positions.push(x0, y1, z0);
+									positions.push(x0, y1, z1);
+
+									normals.push(- 1, 0, 0, - 1, 0, 0, - 1, 0, 0, - 1, 0, 0);
+									colors.push(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1);
+
+									indices.push(l, l + 1, l + 2, l, l + 2, l + 3);
+								}
+								if (this._getBlock(i, j + 1, k) != 1) {
+									let l = positions.length / 3;
+
+									positions.push(x0, y1, z0);
+									positions.push(x1, y1, z0);
+									positions.push(x1, y1, z1);
+									positions.push(x0, y1, z1);
+
+									normals.push(0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0);
+									colors.push(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1);
+
+									indices.push(l, l + 1, l + 2, l, l + 2, l + 3);
+								}
+								if (this._getBlock(i, j - 1, k) != 1) {
+									let l = positions.length / 3;
+
+									positions.push(x1, y0, z0);
+									positions.push(x0, y0, z0);
+									positions.push(x0, y0, z1);
+									positions.push(x1, y0, z1);
+
+									normals.push(0, - 1, 0, 0, - 1, 0, 0, - 1, 0, 0, - 1, 0);
+									colors.push(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1);
+
+									indices.push(l, l + 1, l + 2, l, l + 2, l + 3);
+								}
+								if (this._getBlock(i, j, k + 1) != 1) {
+									let l = positions.length / 3;
+
+									positions.push(x1, y0, z1);
+									positions.push(x0, y0, z1);
+									positions.push(x0, y1, z1);
+									positions.push(x1, y1, z1);
+
+									normals.push(0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1);
+									colors.push(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1);
+
+									indices.push(l, l + 1, l + 2, l, l + 2, l + 3);
+								}
+								if (this._getBlock(i, j, k - 1) != 1) {
+									let l = positions.length / 3;
+
+									positions.push(x0, y0, z0);
+									positions.push(x1, y0, z0);
+									positions.push(x1, y1, z0);
+									positions.push(x0, y1, z0);
+
+									normals.push(0, 0, - 1, 0, 0, - 1, 0, 0, - 1, 0, 0, - 1);
+									colors.push(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1);
+
+									indices.push(l, l + 1, l + 2, l, l + 2, l + 3);
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+
+		vertexData.positions = positions;
+		vertexData.colors = colors;
+		vertexData.indices = indices;
+		vertexData.normals = normals;
+
+		return vertexData;
+	}
+
 	public buildMesh(smoothCount: number, maxTriangles: number = Infinity, minCost: number = 0): BABYLON.VertexData {
         this._syncOctreeAndGrid();
 

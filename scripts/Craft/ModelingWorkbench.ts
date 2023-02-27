@@ -11,6 +11,7 @@ class ModelingWorkbench extends PickablePlanetObject {
 
     public hiddenModelMesh: BABYLON.Mesh;
     public modelMesh: BABYLON.Mesh;
+    public cubeModelMesh: BABYLON.Mesh;
 
     public interactionAnchor: BABYLON.Mesh;
 
@@ -63,6 +64,15 @@ class ModelingWorkbench extends PickablePlanetObject {
         this.modelMesh.position.y = 1;
         this.modelMesh.parent = this;
         this.modelMesh.material = new ToonMaterial("model-mesh-material", this.scene);
+
+        this.cubeModelMesh = new BABYLON.Mesh("cube-model-mesh");
+        this.cubeModelMesh.position.y = 1;
+        this.cubeModelMesh.parent = this;
+        let cubeModeMaterial = new BABYLON.StandardMaterial("cube-model-material", Game.Scene);
+        cubeModeMaterial.diffuseColor = SharedMaterials.MainMaterial().getColor(BlockType.Water);
+        cubeModeMaterial.specularColor = BABYLON.Color3.Black();
+        cubeModeMaterial.alpha = 0.2;
+        this.cubeModelMesh.material = cubeModeMaterial;
 
         this.previewMesh = BABYLON.MeshBuilder.CreateBox("preview-mesh", { size: this.voxelMesh.cubeSize });
         this.previewMesh.scaling.copyFromFloats(1, 1, 1).scaleInPlace(this.brushSize);
@@ -150,6 +160,9 @@ class ModelingWorkbench extends PickablePlanetObject {
     }
 
     private updateMesh(): void {
+        let dataCube = this.voxelMesh.buildCubeMesh();
+        dataCube.applyToMesh(this.cubeModelMesh);
+
         let data = this.voxelMesh.buildMesh(1);
         data.applyToMesh(this.hiddenModelMesh);
 
