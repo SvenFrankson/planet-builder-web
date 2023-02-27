@@ -95,13 +95,15 @@ class ModelingWorkbench extends PickablePlanetObject {
         this.grid.position.y = this.voxelMesh.cubeSize * 0.5;
         this._redrawGrid();
 
+        let hsf = Config.performanceConfiguration.holoScreenFactor;
+
         let hudMaterial = new HoloPanelMaterial("hud-material", this.scene);
 
-        let hudTexture = new BABYLON.DynamicTexture("hud-texture", { width: 64, height: 64 }, this.scene, true);
+        let hudTexture = new BABYLON.DynamicTexture("hud-texture", { width: 64 * hsf, height: 64 * hsf }, this.scene, true);
         hudTexture.hasAlpha = true;
         hudMaterial.holoTexture = hudTexture;
         
-        let slika = new Slika(64, 64, hudTexture.getContext(), hudTexture);
+        let slika = new Slika(64 * hsf, 64 * hsf, hudTexture.getContext(), hudTexture);
         slika.texture = hudTexture;
         slika.context = hudTexture.getContext();
         slika.add(new SlikaPath({
