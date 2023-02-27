@@ -6,12 +6,26 @@ interface ICubeMeshProperties {
 	highlightColor?: BABYLON.Color4;
 }
 
+interface IGridDesc {
+	minX: number;
+	maxX: number;
+	minY: number;
+	maxY: number;
+	blocks: number[][];
+}
+
 class VoxelMesh {
 
 	public cubeSize: number = 0.1;
     public root: OctreeNode<number>;
     private _size: number;
+	public get size(): number {
+		return this._size;
+	}
 	private _halfSize: number;
+	public get halfSize(): number {
+		return this._halfSize;
+	}
 
 	public exMesh: ExtendedMesh;
 
@@ -122,7 +136,7 @@ class VoxelMesh {
         });
     }
 
-	public buildCubeMesh(prop?: ICubeMeshProperties): BABYLON.VertexData {
+	public buildCubeMesh(prop?: ICubeMeshProperties, gridDesc?: IGridDesc): BABYLON.VertexData {
 		this._syncOctreeAndGridAsCube();
 
 		this._vertices = [];
@@ -161,8 +175,22 @@ class VoxelMesh {
 								if (prop && Math.floor(i - this._size * 0.5) === prop.highlightX) {
 									color = highlightColorAsArray;
 								}
-								if (prop && Math.floor(j - this._size * 0.5) === prop.highlightY) {
-									color = highlightColorAsArray;
+								if (prop && isFinite(prop.highlightY)) {
+									if (gridDesc) {
+										gridDesc.minX = Math.min(gridDesc.minX, i);
+										gridDesc.maxX = Math.max(gridDesc.maxX, i);
+										gridDesc.minY = Math.min(gridDesc.minY, k);
+										gridDesc.maxY = Math.max(gridDesc.maxY, k);
+									}
+									if (Math.floor(j - this._size * 0.5) === prop.highlightY) {
+										color = highlightColorAsArray;
+										if (gridDesc) {
+											if (!gridDesc.blocks[i]) {
+												gridDesc.blocks[i] = [];
+											}
+											gridDesc.blocks[i][k] = 1;
+										}
+									}
 								}
 								if (prop && Math.floor(j - this._size * 0.5) === prop.highlightZ) {
 									color = highlightColorAsArray;

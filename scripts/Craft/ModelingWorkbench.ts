@@ -20,6 +20,7 @@ class ModelingWorkbench extends PickablePlanetObject {
     public gridEditionMode: boolean = true;
     public grid: BABYLON.Mesh;
     public gridY: number = 0;
+    public gridDesc: IGridDesc;
     public commandContainer: BABYLON.Mesh;
     public gridPlus: BABYLON.Mesh;
     public gridMinus: BABYLON.Mesh;
@@ -93,8 +94,7 @@ class ModelingWorkbench extends PickablePlanetObject {
         this.grid.material = gridMaterial;
         this.grid.layerMask = 0x10000000;
         this.grid.parent = this.modelMesh;
-        this.grid.position.y = (this.gridY + 0.5) * this.voxelMesh.cubeSize;
-        this._redrawGrid();
+        this.grid.position.y = (this.gridY) * this.voxelMesh.cubeSize;
 
         let hsf = Config.performanceConfiguration.holoScreenFactor;
 
@@ -163,16 +163,30 @@ class ModelingWorkbench extends PickablePlanetObject {
     }
 
     private updateCubeMesh(): void {
-        let data = this.voxelMesh.buildCubeMesh({
-            baseColor: new BABYLON.Color4(0.25, 0.75, 0.75, 1),
-            highlightY: this.gridY,
-            highlightColor: new BABYLON.Color4(0, 1, 1, 1)
-        });
+        this.gridDesc = {
+            minX: this.voxelMesh.halfSize,
+            maxX: this.voxelMesh.halfSize,
+            minY: this.voxelMesh.halfSize,
+            maxY: this.voxelMesh.halfSize,
+            blocks: []
+        };
+
+        let data = this.voxelMesh.buildCubeMesh(
+            {
+                baseColor: new BABYLON.Color4(0.75, 0.75, 0.75, 1),
+                highlightY: this.gridY,
+                highlightColor: new BABYLON.Color4(0, 1, 1, 1)
+            },
+            this.gridDesc
+        );
         data.applyToMesh(this.cubeModelMesh);
+        
+        this._redrawGrid();
     }
 
     private updateMesh(): void {
         this.updateCubeMesh();
+
         let data = this.voxelMesh.buildMesh(1);
         data.applyToMesh(this.hiddenModelMesh);
 
@@ -181,9 +195,6 @@ class ModelingWorkbench extends PickablePlanetObject {
             let data = BABYLON.VertexData.ExtractFromMesh(simplifiedMesh);
             data.applyToMesh(this.modelMesh);
             simplifiedMesh.dispose();
-            requestAnimationFrame(() => {
-                this._redrawGrid();
-            })
         });
     }
 
@@ -212,19 +223,14 @@ class ModelingWorkbench extends PickablePlanetObject {
         if (this.using) {
             if (this.inputManager.aimedProxyIndex === 2) {
                 this.gridY++;
-                this.grid.position.y = (this.gridY + 0.5) * this.voxelMesh.cubeSize;
                 this.updateCubeMesh();
             }
             else if (this.inputManager.aimedProxyIndex === 3) {
                 this.gridY--;
-                this.grid.position.y = (this.gridY + 0.5) * this.voxelMesh.cubeSize;
                 this.updateCubeMesh();
             }
             else {
-                let p = this.inputManager.aimedPosition;
-                if (!this.gridEditionMode) {
-                    p = p.add(this.inputManager.aimedNormal.scale(this.voxelMesh.cubeSize * 0.5));
-                }
+                let p = this.inputManager.aimedPosition.add(this.inputManager.aimedNormal.scale(this.voxelMesh.cubeSize * 0.5));
                 let localP = BABYLON.Vector3.TransformCoordinates(p, this.modelMesh.getWorldMatrix().clone().invert());
                 let i = Math.floor(localP.x / this.voxelMesh.cubeSize);
                 let j = Math.floor(localP.y / this.voxelMesh.cubeSize);
@@ -269,10 +275,7 @@ class ModelingWorkbench extends PickablePlanetObject {
 
                 }
                 else {
-                    let p = this.inputManager.aimedPosition;
-                    if (!this.gridEditionMode) {
-                        p = p.add(this.inputManager.aimedNormal.scale(this.voxelMesh.cubeSize * 0.5));
-                    }
+                    let p = this.inputManager.aimedPosition.add(this.inputManager.aimedNormal.scale(this.voxelMesh.cubeSize * 0.5));
                     let localP = BABYLON.Vector3.TransformCoordinates(p, this.modelMesh.getWorldMatrix().clone().invert());
                     let i = Math.floor(localP.x / this.voxelMesh.cubeSize);
                     let j = Math.floor(localP.y / this.voxelMesh.cubeSize);
@@ -296,14 +299,44 @@ class ModelingWorkbench extends PickablePlanetObject {
 
     private currentSize: number = 0;
     private _redrawGrid(): void {
-        let bbox = this.modelMesh.getBoundingInfo().boundingBox;
-        let w = Math.max(Math.abs(bbox.maximum.x), Math.abs(bbox.minimum.x));
-        let l = Math.max(Math.abs(bbox.maximum.z), Math.abs(bbox.minimum.z));
-        let n = Math.max(w, l) * 2 + 0.2;
-        this.currentSize = Math.round(n / this.voxelMesh.cubeSize);
-        this.currentSize = 2 * Math.round(this.currentSize * 0.5);
-        let data = BABYLON.CreateGroundVertexData({ width: this.currentSize * this.voxelMesh.cubeSize, height: this.currentSize * this.voxelMesh.cubeSize });
-        data.uvs = data.uvs.map(v => { return v * this.currentSize});
+        this.grid.position.y = (this.gridY) * this.voxelMesh.cubeSize;
+
+        console.log(this.gridDesc);
+
+        let data = new BABYLON.VertexData();
+        let positions: number[] = [];
+        let indices: number[] = [];
+        let normals: number[] = [];
+        let uvs: number[] = [];
+
+        let w = (this.gridDesc.maxX + 3) - (this.gridDesc.minX -2) + 1;
+        let h = (this.gridDesc.maxY + 3) - (this.gridDesc.minY -2) + 1;
+
+        for (let j = this.gridDesc.minY - 2; j <= this.gridDesc.maxY + 3; j++) {
+            for (let i = this.gridDesc.minX - 2; i <= this.gridDesc.maxX + 3; i++) {
+                let x = (i - this.voxelMesh.halfSize) * this.voxelMesh.cubeSize;
+                let y = 0;
+                let z = (j - this.voxelMesh.halfSize) * this.voxelMesh.cubeSize;
+
+                let n = positions.length / 3;
+                positions.push(x, y, z);
+                normals.push(0, 1, 0);
+                uvs.push(i, j);
+
+                if (!this.gridDesc.blocks[i] || this.gridDesc.blocks[i][j] != 1) {
+                    if (i < this.gridDesc.maxX + 3 && j < this.gridDesc.maxY + 3) {
+                        indices.push(n, n + 1, n + 1 + w);
+                        indices.push(n, n + 1 + w, n + w);
+                    }
+                }
+            }
+        }
+
+        data.positions = positions;
+        data.indices = indices;
+        data.normals = normals;
+        data.uvs = uvs;
+
         data.applyToMesh(this.grid);
     }
 }
