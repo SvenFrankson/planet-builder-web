@@ -198,7 +198,7 @@ class OctreeTest extends Main {
 				});
 			}
 
-			let data3 = meshMaker.buildMesh(0, Infinity, 0);
+			let data3 = meshMaker.buildMesh(0, undefined, Infinity, 0);
 			let mesh3 = new BABYLON.Mesh("mesh3");
 			data3.applyToMesh(mesh3);
 

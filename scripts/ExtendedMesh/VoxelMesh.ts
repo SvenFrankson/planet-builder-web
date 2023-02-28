@@ -289,7 +289,7 @@ class VoxelMesh {
 		return vertexData;
 	}
 
-	public buildMesh(smoothCount: number, maxTriangles: number = Infinity, minCost: number = 0): BABYLON.VertexData {
+	public buildMesh(smoothCount: number, color?: BABYLON.Color3, maxTriangles: number = Infinity, minCost: number = 0): BABYLON.VertexData {
         this._syncOctreeAndGrid();
 
 		this._vertices = [];
@@ -349,7 +349,7 @@ class VoxelMesh {
 
 
 		vertexData.positions = this.exMesh.getPositions();
-		vertexData.colors = this.exMesh.getColors(BABYLON.Color3.White());
+		vertexData.colors = this.exMesh.getColors(color);
 		vertexData.indices = this.exMesh.getIndices();
 		vertexData.normals = this.exMesh.getNormals();
 

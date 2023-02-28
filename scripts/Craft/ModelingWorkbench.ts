@@ -4,7 +4,8 @@ class ModelingWorkbench extends PickablePlanetObject {
 
     public frame: BABYLON.Mesh;
 
-    public activeVoxelMesh: number;
+    public activeVoxelMesh: number = 0;
+    public colors: BABYLON.Color3[] = [];
     public voxelMeshes: VoxelMesh[] = [];
 
     public degree: number = 6;
@@ -31,6 +32,7 @@ class ModelingWorkbench extends PickablePlanetObject {
     public commandContainer: BABYLON.Mesh;
     public gridPlus: BABYLON.Mesh;
     public gridMinus: BABYLON.Mesh;
+    public activeIndexInput: BABYLON.Mesh[] = [];
 
     constructor(
         main: Main
@@ -39,6 +41,12 @@ class ModelingWorkbench extends PickablePlanetObject {
 
         this.size = Math.pow(2, this.degree);
         this.halfSize = Math.floor(this.size * 0.5);
+
+        this.colors = [
+            BABYLON.Color3.Green(),
+            BABYLON.Color3.Red(),
+            BABYLON.Color3.Yellow()
+        ]
     }
 
     public instantiate(): void {
@@ -170,6 +178,16 @@ class ModelingWorkbench extends PickablePlanetObject {
         this.gridMinus.rotation.y = Math.PI;
         this.gridMinus.layerMask = 0x10000000;
 
+        for (let i = 0; i < 3; i++) {
+            this.activeIndexInput[i] = new BABYLON.Mesh("grid-minus");
+            VertexDataUtils.CreatePlane(0.08, 0.08).applyToMesh(this.activeIndexInput[i]);
+            this.activeIndexInput[i].material = hudMaterial;
+            this.activeIndexInput[i].parent = this.commandContainer;
+            this.activeIndexInput[i].position.y = 0.02;
+            this.activeIndexInput[i].rotation.x = 0.5 * Math.PI;
+            this.activeIndexInput[i].layerMask = 0x10000000;
+        }
+
         this.updateMesh();
 
         this.interactionAnchor = new BABYLON.Mesh("interaction-anchor");
@@ -178,7 +196,7 @@ class ModelingWorkbench extends PickablePlanetObject {
         this.interactionAnchor.position.z = -1;
         this.interactionAnchor.parent = this;
 
-        this.proxyPickMeshes = [this.grid, this.gridPlus, this.gridMinus];
+        this.proxyPickMeshes = [this.grid, this.gridPlus, this.gridMinus, ...this.activeIndexInput];
     }
 
     private updateCubeMesh(): void {
@@ -218,8 +236,9 @@ class ModelingWorkbench extends PickablePlanetObject {
         let modelMesh = this.modelMeshes[this.activeVoxelMesh];
 
         if (voxelMesh) {
-            let data = voxelMesh.buildMesh(1);
+            let data = voxelMesh.buildMesh(1, this.colors[this.activeVoxelMesh]);
             data.applyToMesh(this.hiddenModelMesh);
+            console.log(data);
 
             if (!modelMesh) {
                 modelMesh = new BABYLON.Mesh("model-mesh");
@@ -260,12 +279,16 @@ class ModelingWorkbench extends PickablePlanetObject {
 
     public onPointerUp(): void {
         if (this.using) {
-            if (this.inputManager.aimedProxyIndex === 2) {
+            if (this.inputManager.aimedProxyIndex === 1) {
                 this.gridY++;
                 this.updateCubeMesh();
             }
-            else if (this.inputManager.aimedProxyIndex === 3) {
+            else if (this.inputManager.aimedProxyIndex === 2) {
                 this.gridY--;
+                this.updateCubeMesh();
+            }
+            else if (this.inputManager.aimedProxyIndex > 2) {
+                this.activeVoxelMesh = this.inputManager.aimedProxyIndex - 3;
                 this.updateCubeMesh();
             }
             else {
@@ -313,11 +336,14 @@ class ModelingWorkbench extends PickablePlanetObject {
         }
         else {
             if (this.inputManager.aimedPosition) {
-                if (this.inputManager.aimedProxyIndex === 2) {
+                if (this.inputManager.aimedProxyIndex === 1) {
 
                 }
-                else if (this.inputManager.aimedProxyIndex === 3) {
+                else if (this.inputManager.aimedProxyIndex === 2) {
 
+                }
+                else if (this.inputManager.aimedProxyIndex > 2) {
+                
                 }
                 else {
                     let p = this.inputManager.aimedPosition.add(this.inputManager.aimedNormal.scale(this.cubeSize * 0.5));
@@ -340,6 +366,11 @@ class ModelingWorkbench extends PickablePlanetObject {
                 this.commandContainer.rotation.y = 0;
                 this.gridPlus.position.x = this._gridPosMax.x + 0.05;
                 this.gridMinus.position.x = this._gridPosMax.x + 0.05;
+                for (let i = 0; i < 3; i++) {
+                    this.activeIndexInput[i].position.x = (i - 1) * 0.1;
+                    this.activeIndexInput[i].position.z = this._gridPosMin.z - 0.05;
+
+                }
             }
             else if (Math.abs(alpha) > 3 * Math.PI / 4) {
                 this.commandContainer.rotation.y = Math.PI;

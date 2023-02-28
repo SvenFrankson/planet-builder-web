@@ -88,7 +88,10 @@ class ExtendedMesh {
 		return positions;
 	}
 
-	public getColors(c: BABYLON.Color3): number[] {
+	public getColors(c?: BABYLON.Color3): number[] {
+		if (!c) {
+			c = BABYLON.Color3.White();
+		}
 		let colors = [];
 		for (let i = 0; i < this.vertices.length; i++) {
 			colors.push(c.r, c.g, c.b, 1);
