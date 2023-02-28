@@ -128,7 +128,8 @@ class ModelingWorkbench extends PickablePlanetObject {
         slika.needRedraw = true;
 
         this.commandContainer = new BABYLON.Mesh("command-container");
-        this.commandContainer.rotationQuaternion = BABYLON.Quaternion.Identity();
+        this.commandContainer.parent = this.grid;
+        //this.commandContainer.rotationQuaternion = BABYLON.Quaternion.Identity();
 
         this.gridPlus = new BABYLON.Mesh("grid-plus");
         VertexDataUtils.CreatePlane(0.08, 0.08).applyToMesh(this.gridPlus);
@@ -290,14 +291,33 @@ class ModelingWorkbench extends PickablePlanetObject {
 
             let Y = this.up;
             let Z = this.inputManager.player.forward;
-            this.commandContainer.position = this.grid.absolutePosition;
-            VMath.QuaternionFromYZAxisToRef(Y, Z, this.commandContainer.rotationQuaternion);
-            this.gridPlus.position.x = this.currentSize * 0.5 * this.voxelMesh.cubeSize + 0.1;
-            this.gridMinus.position.x = this.currentSize * 0.5 * this.voxelMesh.cubeSize + 0.1;
+            let alpha = VMath.AngleFromToAround(this.inputManager.player.forward, this.forward, this.up);
+            if (Math.abs(alpha) < Math.PI / 4) {
+                this.commandContainer.rotation.y = 0;
+                this.gridPlus.position.x = this._gridPosMax.x + 0.05;
+                this.gridMinus.position.x = this._gridPosMax.x + 0.05;
+            }
+            else if (Math.abs(alpha) > 3 * Math.PI / 4) {
+                this.commandContainer.rotation.y = Math.PI;
+                this.gridPlus.position.x = - this._gridPosMin.x + 0.05;
+                this.gridMinus.position.x = - this._gridPosMin.x + 0.05;
+            }
+            else if (alpha > Math.PI / 4) {
+                this.commandContainer.rotation.y = - Math.PI / 2;
+                this.gridPlus.position.x = this._gridPosMax.z + 0.05;
+                this.gridMinus.position.x = this._gridPosMax.z + 0.05;
+            }
+            else if (alpha < - Math.PI / 4) {
+                this.commandContainer.rotation.y = Math.PI / 2;
+                this.gridPlus.position.x = - this._gridPosMin.z + 0.05;
+                this.gridMinus.position.x = - this._gridPosMin.z + 0.05;
+            }
+            //VMath.QuaternionFromYZAxisToRef(Y, Z, this.commandContainer.rotationQuaternion);
         }
     }
 
-    private currentSize: number = 0;
+    private _gridPosMin: BABYLON.Vector3 = BABYLON.Vector3.Zero();
+    private _gridPosMax: BABYLON.Vector3 = BABYLON.Vector3.Zero();
     private _redrawGrid(): void {
         this.grid.position.y = (this.gridY) * this.voxelMesh.cubeSize;
 
@@ -338,5 +358,11 @@ class ModelingWorkbench extends PickablePlanetObject {
         data.uvs = uvs;
 
         data.applyToMesh(this.grid);
+
+        this._gridPosMin.x = ((this.gridDesc.minX - 2 - this.voxelMesh.halfSize)) * this.voxelMesh.cubeSize;
+        this._gridPosMin.z = ((this.gridDesc.minY - 2 - this.voxelMesh.halfSize)) * this.voxelMesh.cubeSize;
+
+        this._gridPosMax.x = ((this.gridDesc.maxX + 3 - this.voxelMesh.halfSize)) * this.voxelMesh.cubeSize;
+        this._gridPosMax.z = ((this.gridDesc.maxY + 3 - this.voxelMesh.halfSize)) * this.voxelMesh.cubeSize;
     }
 }
