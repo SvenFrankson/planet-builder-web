@@ -121,3 +121,21 @@ class Pickable extends BABYLON.Mesh implements IPickable {
 
     }
 }
+
+class PickableObject extends Pickable {
+    
+    constructor(name: string, main: Main) {
+        super(name, main);
+    }
+
+    public onPointerDown(): void {
+        this.pointerDownCallback();
+    }
+
+    public onPointerUp(): void {
+        this.pointerUpCallback();
+    }
+
+    public pointerUpCallback = () => {};
+    public pointerDownCallback = () => {};
+}

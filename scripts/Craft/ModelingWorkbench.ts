@@ -30,9 +30,9 @@ class ModelingWorkbench extends PickablePlanetObject {
     public gridY: number = 0;
     public gridDesc: IGridDesc;
     public commandContainer: BABYLON.Mesh;
-    public gridPlus: BABYLON.Mesh;
-    public gridMinus: BABYLON.Mesh;
-    public activeIndexInput: BABYLON.Mesh[] = [];
+    public gridPlus: PickableObject;
+    public gridMinus: PickableObject;
+    public activeIndexInput: PickableObject[] = [];
 
     constructor(
         main: Main
@@ -99,7 +99,7 @@ class ModelingWorkbench extends PickablePlanetObject {
         let cubeModeMaterial = new BABYLON.StandardMaterial("cube-model-material", Game.Scene);
         cubeModeMaterial.diffuseColor = BABYLON.Color3.White();
         cubeModeMaterial.specularColor = BABYLON.Color3.Black();
-        cubeModeMaterial.alpha = 0.2;
+        cubeModeMaterial.alpha = 0.4;
         this.cubeModelMesh.material = cubeModeMaterial;
 
         this.previewMesh = BABYLON.MeshBuilder.CreateBox("preview-mesh", { size: this.cubeSize });
@@ -157,35 +157,58 @@ class ModelingWorkbench extends PickablePlanetObject {
         this.commandContainer.parent = this.grid;
         //this.commandContainer.rotationQuaternion = BABYLON.Quaternion.Identity();
 
-        this.gridPlus = new BABYLON.Mesh("grid-plus");
-        VertexDataUtils.CreatePlane(0.08, 0.08).applyToMesh(this.gridPlus);
-        this.gridPlus.material = hudMaterial;
+        let inputMaterial = new BABYLON.StandardMaterial("input-material", Game.Scene);
+        inputMaterial.diffuseColor = new BABYLON.Color3(0, 1, 1);
+        inputMaterial.alpha = 0.4;
+
+        this.gridPlus = new PickableObject("grid-plus", this.main);
+        BABYLON.CreateBoxVertexData({ width: 0.08, height: 0.04, depth: 0.08 }).applyToMesh(this.gridPlus);
+        this.gridPlus.instantiate();
+        this.gridPlus.material = inputMaterial;
         this.gridPlus.parent = this.commandContainer;
         this.gridPlus.position.x = 0.5;
-        this.gridPlus.position.y = 0.02;
         this.gridPlus.position.z = 0.06;
-        this.gridPlus.rotation.x = 0.5 * Math.PI;
         this.gridPlus.layerMask = 0x10000000;
+        this.gridPlus.pointerUpCallback = () => {
+            this.gridY++;
+            this.updateCubeMesh();
+        }
         
-        this.gridMinus = new BABYLON.Mesh("grid-minus");
-        VertexDataUtils.CreatePlane(0.08, 0.08).applyToMesh(this.gridMinus);
-        this.gridMinus.material = hudMaterial;
+        let gridPlusIcon = new BABYLON.Mesh("grid-plus-icon");
+        VertexDataUtils.CreatePlane(0.08, 0.08).applyToMesh(gridPlusIcon);
+        gridPlusIcon.material = hudMaterial;
+        gridPlusIcon.parent = this.gridPlus;
+        gridPlusIcon.rotation.x = Math.PI * 0.5;
+        gridPlusIcon.layerMask = 0x10000000;
+        
+        this.gridMinus = new PickableObject("grid-minus", this.main);
+        BABYLON.CreateBoxVertexData({ width: 0.08, height: 0.04, depth: 0.08 }).applyToMesh(this.gridMinus);
+        //VertexDataUtils.CreatePlane(0.08, 0.08).applyToMesh(this.gridMinus);
+        this.gridMinus.instantiate();
+        this.gridMinus.material = inputMaterial;
         this.gridMinus.parent = this.commandContainer;
         this.gridMinus.position.x = 0.5;
-        this.gridMinus.position.y = 0.02;
         this.gridMinus.position.z = - 0.06;
-        this.gridMinus.rotation.x = 0.5 * Math.PI;
         this.gridMinus.rotation.y = Math.PI;
         this.gridMinus.layerMask = 0x10000000;
+        this.gridMinus.pointerUpCallback = () => {
+            this.gridY--;
+            this.updateCubeMesh();
+        }
 
         for (let i = 0; i < 3; i++) {
-            this.activeIndexInput[i] = new BABYLON.Mesh("grid-minus");
-            VertexDataUtils.CreatePlane(0.08, 0.08).applyToMesh(this.activeIndexInput[i]);
-            this.activeIndexInput[i].material = hudMaterial;
+            this.activeIndexInput[i] = new PickableObject("grid-minus", this.main);
+            BABYLON.CreateBoxVertexData({ width: 0.08, height: 0.04, depth: 0.08 }).applyToMesh(this.activeIndexInput[i]);
+            //VertexDataUtils.CreatePlane(0.08, 0.08).applyToMesh(this.activeIndexInput[i]);
+            this.activeIndexInput[i].instantiate();
+            this.activeIndexInput[i].material = inputMaterial;
             this.activeIndexInput[i].parent = this.commandContainer;
-            this.activeIndexInput[i].position.y = 0.02;
-            this.activeIndexInput[i].rotation.x = 0.5 * Math.PI;
             this.activeIndexInput[i].layerMask = 0x10000000;
+            let n = i;
+            this.activeIndexInput[i].pointerUpCallback = () => {
+                this.activeVoxelMesh = n;
+                this.updateCubeMesh();
+            }
         }
 
         this.updateMesh();
@@ -196,7 +219,7 @@ class ModelingWorkbench extends PickablePlanetObject {
         this.interactionAnchor.position.z = -1;
         this.interactionAnchor.parent = this;
 
-        this.proxyPickMeshes = [this.grid, this.gridPlus, this.gridMinus, ...this.activeIndexInput];
+        this.proxyPickMeshes = [this.grid];
     }
 
     private updateCubeMesh(): void {
@@ -279,35 +302,21 @@ class ModelingWorkbench extends PickablePlanetObject {
 
     public onPointerUp(): void {
         if (this.using) {
-            if (this.inputManager.aimedProxyIndex === 1) {
-                this.gridY++;
-                this.updateCubeMesh();
+            let p = this.inputManager.aimedPosition.add(this.inputManager.aimedNormal.scale(this.cubeSize * 0.5));
+            let localP = BABYLON.Vector3.TransformCoordinates(p, this.modelContainer.getWorldMatrix().clone().invert());
+            let i = Math.floor(localP.x / this.cubeSize);
+            let j = Math.floor(localP.y / this.cubeSize);
+            let k = Math.floor(localP.z / this.cubeSize);
+
+            let voxelMesh = this.voxelMeshes[this.activeVoxelMesh];
+            if (!voxelMesh) {
+                voxelMesh = new VoxelMesh(6);
+                voxelMesh.cubeSize = 0.05;
+                this.voxelMeshes[this.activeVoxelMesh] = voxelMesh;
             }
-            else if (this.inputManager.aimedProxyIndex === 2) {
-                this.gridY--;
-                this.updateCubeMesh();
-            }
-            else if (this.inputManager.aimedProxyIndex > 2) {
-                this.activeVoxelMesh = this.inputManager.aimedProxyIndex - 3;
-                this.updateCubeMesh();
-            }
-            else {
-                let p = this.inputManager.aimedPosition.add(this.inputManager.aimedNormal.scale(this.cubeSize * 0.5));
-                let localP = BABYLON.Vector3.TransformCoordinates(p, this.modelContainer.getWorldMatrix().clone().invert());
-                let i = Math.floor(localP.x / this.cubeSize);
-                let j = Math.floor(localP.y / this.cubeSize);
-                let k = Math.floor(localP.z / this.cubeSize);
-    
-                let voxelMesh = this.voxelMeshes[this.activeVoxelMesh];
-                if (!voxelMesh) {
-                    voxelMesh = new VoxelMesh(6);
-                    voxelMesh.cubeSize = 0.05;
-                    this.voxelMeshes[this.activeVoxelMesh] = voxelMesh;
-                }
-                voxelMesh.addCube(42, new BABYLON.Vector3(i, j, k), this.brushSize);
-    
-                this.updateMesh();
-            }
+            voxelMesh.addCube(42, new BABYLON.Vector3(i, j, k), this.brushSize);
+
+            this.updateMesh();
         }
         else {
             if (BABYLON.Vector3.DistanceSquared(this.inputManager.player.position, this.position) < 1.2 * 1.2) {
@@ -336,24 +345,13 @@ class ModelingWorkbench extends PickablePlanetObject {
         }
         else {
             if (this.inputManager.aimedPosition) {
-                if (this.inputManager.aimedProxyIndex === 1) {
-
-                }
-                else if (this.inputManager.aimedProxyIndex === 2) {
-
-                }
-                else if (this.inputManager.aimedProxyIndex > 2) {
-                
-                }
-                else {
-                    let p = this.inputManager.aimedPosition.add(this.inputManager.aimedNormal.scale(this.cubeSize * 0.5));
-                    let localP = BABYLON.Vector3.TransformCoordinates(p, this.modelContainer.getWorldMatrix().clone().invert());
-                    let i = Math.floor(localP.x / this.cubeSize);
-                    let j = Math.floor(localP.y / this.cubeSize);
-                    let k = Math.floor(localP.z / this.cubeSize);
-                    this.previewMesh.position.copyFromFloats(i, j, k).scaleInPlace(this.cubeSize).addInPlaceFromFloats(this.cubeSize * 0.5, this.cubeSize * 0.5, this.cubeSize * 0.5);
-                    this.previewMesh.isVisible = true;
-                }
+                let p = this.inputManager.aimedPosition.add(this.inputManager.aimedNormal.scale(this.cubeSize * 0.5));
+                let localP = BABYLON.Vector3.TransformCoordinates(p, this.modelContainer.getWorldMatrix().clone().invert());
+                let i = Math.floor(localP.x / this.cubeSize);
+                let j = Math.floor(localP.y / this.cubeSize);
+                let k = Math.floor(localP.z / this.cubeSize);
+                this.previewMesh.position.copyFromFloats(i, j, k).scaleInPlace(this.cubeSize).addInPlaceFromFloats(this.cubeSize * 0.5, this.cubeSize * 0.5, this.cubeSize * 0.5);
+                this.previewMesh.isVisible = true;
             }
             else {
                 this.previewMesh.isVisible = false;
