@@ -176,13 +176,14 @@ class MainMenu extends Main {
 						}
 
 						setTimeout(() => {
-							let p = this.player.position.add(this.player.forward.scale(1.2));
+							let p = this.player.position.add(this.player.forward.scale(0.5));
 
 							let workbench = new ModelingWorkbench(this);
 							workbench.instantiate();
 							workbench.planet = this.player.planet
 							workbench.setPosition(p, true);
 							workbench.setTarget(this.player.position);
+							workbench.onPointerUp();
 						}, 1000);
 					});
 						
