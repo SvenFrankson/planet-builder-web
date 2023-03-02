@@ -29,9 +29,12 @@ class ModelingWorkbench extends PickablePlanetObject {
     public grid: BABYLON.Mesh;
     public gridY: number = 0;
     public gridDesc: IGridDesc;
+
     public commandContainer: BABYLON.Mesh;
     public gridPlus: PickableObject;
     public gridDown: PickableObject;
+    public brushSize3: PickableObject;
+    public brushSize1: PickableObject;
     public activeIndexInput: PickableObject[] = [];
 
     constructor(
@@ -184,6 +187,50 @@ class ModelingWorkbench extends PickablePlanetObject {
         gridDownIcon.parent = this.gridDown;
         gridDownIcon.rotation.x = Math.PI * 0.5;
         gridDownIcon.layerMask = 0x10000000;
+        
+        this.brushSize3 = new PickableObject("brush-size-3", this.main);
+        BABYLON.CreateBoxVertexData({ width: 0.08, height: 0.02, depth: 0.08 }).applyToMesh(this.brushSize3);
+        //VertexDataUtils.CreatePlane(0.08, 0.08).applyToMesh(this.gridMinus);
+        this.brushSize3.instantiate();
+        this.brushSize3.material = inputMaterial;
+        this.brushSize3.parent = this.commandContainer;
+        this.brushSize3.position.x = 0.5;
+        this.brushSize3.position.z = - 0.18;
+        this.brushSize3.layerMask = 0x10000000;
+        this.brushSize3.pointerUpCallback = () => {
+            this.brushSize = 3;
+            this.previewMesh.scaling.copyFromFloats(1, 1, 1).scaleInPlace(this.brushSize);
+            this.updateCubeMesh();
+        }
+        
+        let brushSize3Icon = new BABYLON.Mesh("grid-down-icon");
+        VertexDataUtils.CreatePlane(0.08, 0.08, undefined, undefined, 2/8, 7/8, 3/8, 1).applyToMesh(brushSize3Icon);
+        brushSize3Icon.material = hudMaterial;
+        brushSize3Icon.parent = this.brushSize3;
+        brushSize3Icon.rotation.x = Math.PI * 0.5;
+        brushSize3Icon.layerMask = 0x10000000;
+        
+        this.brushSize1 = new PickableObject("brush-size-1", this.main);
+        BABYLON.CreateBoxVertexData({ width: 0.08, height: 0.02, depth: 0.08 }).applyToMesh(this.brushSize1);
+        //VertexDataUtils.CreatePlane(0.08, 0.08).applyToMesh(this.gridMinus);
+        this.brushSize1.instantiate();
+        this.brushSize1.material = inputMaterial;
+        this.brushSize1.parent = this.commandContainer;
+        this.brushSize1.position.x = 0.5;
+        this.brushSize1.position.z = - 0.30;
+        this.brushSize1.layerMask = 0x10000000;
+        this.brushSize1.pointerUpCallback = () => {
+            this.brushSize = 1;
+            this.previewMesh.scaling.copyFromFloats(1, 1, 1).scaleInPlace(this.brushSize);
+            this.updateCubeMesh();
+        }
+        
+        let brushSize1Icon = new BABYLON.Mesh("grid-down-icon");
+        VertexDataUtils.CreatePlane(0.08, 0.08, undefined, undefined, 2/8, 6/8, 3/8, 7/8).applyToMesh(brushSize1Icon);
+        brushSize1Icon.material = hudMaterial;
+        brushSize1Icon.parent = this.brushSize1;
+        brushSize1Icon.rotation.x = Math.PI * 0.5;
+        brushSize1Icon.layerMask = 0x10000000;
 
         for (let i = 0; i < 3; i++) {
             this.activeIndexInput[i] = new PickableObject("grid-minus", this.main);
@@ -360,6 +407,8 @@ class ModelingWorkbench extends PickablePlanetObject {
                 this.commandContainer.rotation.y = 0;
                 this.gridPlus.position.x = this._gridPosMax.x + 0.05;
                 this.gridDown.position.x = this._gridPosMax.x + 0.05;
+                this.brushSize3.position.x = this._gridPosMax.x + 0.05;
+                this.brushSize1.position.x = this._gridPosMax.x + 0.05;
                 for (let i = 0; i < 3; i++) {
                     this.activeIndexInput[i].position.x = (i - 1) * 0.1;
                     this.activeIndexInput[i].position.z = this._gridPosMin.z - 0.05;
@@ -370,16 +419,22 @@ class ModelingWorkbench extends PickablePlanetObject {
                 this.commandContainer.rotation.y = Math.PI;
                 this.gridPlus.position.x = - this._gridPosMin.x + 0.05;
                 this.gridDown.position.x = - this._gridPosMin.x + 0.05;
+                this.brushSize3.position.x = - this._gridPosMin.x + 0.05;
+                this.brushSize1.position.x = - this._gridPosMin.x + 0.05;
             }
             else if (alpha > Math.PI / 4) {
                 this.commandContainer.rotation.y = - Math.PI / 2;
                 this.gridPlus.position.x = this._gridPosMax.z + 0.05;
                 this.gridDown.position.x = this._gridPosMax.z + 0.05;
+                this.brushSize3.position.x = this._gridPosMax.z + 0.05;
+                this.brushSize1.position.x = this._gridPosMax.z + 0.05;
             }
             else if (alpha < - Math.PI / 4) {
                 this.commandContainer.rotation.y = Math.PI / 2;
                 this.gridPlus.position.x = - this._gridPosMin.z + 0.05;
                 this.gridDown.position.x = - this._gridPosMin.z + 0.05;
+                this.brushSize3.position.x = - this._gridPosMin.z + 0.05;
+                this.brushSize1.position.x = - this._gridPosMin.z + 0.05;
             }
             //VMath.QuaternionFromYZAxisToRef(Y, Z, this.commandContainer.rotationQuaternion);
         }
@@ -543,5 +598,34 @@ class ModelingWorkbench extends PickablePlanetObject {
             color: BABYLON.Color3.White(),
             width: 2
         }));
+
+        // Brush Size 3
+        let brushSize3Icon = slika.add(new SlikaPath({
+            strokeColor: BABYLON.Color3.White(),
+            strokeWidth: 2,
+            points: [
+                -15, -15,
+                15, -15,
+                15, 15,
+                -15, 15
+            ],
+            close: true
+        }));
+        brushSize3Icon.posX = 128 + 32;
+        brushSize3Icon.posY = 32;
+        
+        let brushSize1Icon = slika.add(new SlikaPath({
+            strokeColor: BABYLON.Color3.White(),
+            strokeWidth: 2,
+            points: [
+                -5, -5,
+                5, -5,
+                5, 5,
+                -5, 5
+            ],
+            close: true
+        }));
+        brushSize1Icon.posX = 128 + 32;
+        brushSize1Icon.posY = 64 + 32;
     }
 }
