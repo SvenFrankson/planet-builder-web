@@ -407,16 +407,18 @@ class ModelingWorkbench extends PickablePlanetObject {
             }
             else if (Math.abs(alpha) > 3 * Math.PI / 4) {
                 this.commandContainer.rotation.y = Math.PI;
-                this.commandContainer.position.x = - this._gridPosMin.x + 0.05;
-                this.commandContainer.position.z = - this._gridPosMin.z + 0.05;
+                this.commandContainer.position.x = this._gridPosMin.x - 0.05;
+                this.commandContainer.position.z = this._gridPosMax.z + 0.05;
             }
             else if (alpha > Math.PI / 4) {
                 this.commandContainer.rotation.y = - Math.PI / 2;
                 this.commandContainer.position.x = this._gridPosMax.z + 0.05;
+                this.commandContainer.position.z = this._gridPosMax.x + 0.05;
             }
             else if (alpha < - Math.PI / 4) {
                 this.commandContainer.rotation.y = Math.PI / 2;
-                this.commandContainer.position.x = - this._gridPosMin.z + 0.05;
+                this.commandContainer.position.x = this._gridPosMin.z - 0.05;
+                this.commandContainer.position.z = this._gridPosMin.x - 0.05;
             }
             //VMath.QuaternionFromYZAxisToRef(Y, Z, this.commandContainer.rotationQuaternion);
         }
