@@ -152,8 +152,7 @@ class ModelingWorkbench extends PickablePlanetObject {
         this.gridPlus.instantiate();
         this.gridPlus.material = inputMaterial;
         this.gridPlus.parent = this.commandContainer;
-        this.gridPlus.position.x = 0.5;
-        this.gridPlus.position.z = 0.06;
+        this.gridPlus.position.z = 0.4;
         this.gridPlus.layerMask = 0x10000000;
         this.gridPlus.pointerUpCallback = () => {
             this.gridY++;
@@ -173,8 +172,7 @@ class ModelingWorkbench extends PickablePlanetObject {
         this.gridDown.instantiate();
         this.gridDown.material = inputMaterial;
         this.gridDown.parent = this.commandContainer;
-        this.gridDown.position.x = 0.5;
-        this.gridDown.position.z = - 0.06;
+        this.gridDown.position.z = 0.3;
         this.gridDown.layerMask = 0x10000000;
         this.gridDown.pointerUpCallback = () => {
             this.gridY--;
@@ -194,8 +192,7 @@ class ModelingWorkbench extends PickablePlanetObject {
         this.brushSize3.instantiate();
         this.brushSize3.material = inputMaterial;
         this.brushSize3.parent = this.commandContainer;
-        this.brushSize3.position.x = 0.5;
-        this.brushSize3.position.z = - 0.18;
+        this.brushSize3.position.z = 0.2;
         this.brushSize3.layerMask = 0x10000000;
         this.brushSize3.pointerUpCallback = () => {
             this.brushSize = 3;
@@ -216,8 +213,7 @@ class ModelingWorkbench extends PickablePlanetObject {
         this.brushSize1.instantiate();
         this.brushSize1.material = inputMaterial;
         this.brushSize1.parent = this.commandContainer;
-        this.brushSize1.position.x = 0.5;
-        this.brushSize1.position.z = - 0.30;
+        this.brushSize1.position.z = 0.1;
         this.brushSize1.layerMask = 0x10000000;
         this.brushSize1.pointerUpCallback = () => {
             this.brushSize = 1;
@@ -239,6 +235,7 @@ class ModelingWorkbench extends PickablePlanetObject {
             this.activeIndexInput[i].instantiate();
             this.activeIndexInput[i].material = inputMaterial;
             this.activeIndexInput[i].parent = this.commandContainer;
+            this.activeIndexInput[i].position.x = -0.1 - i * 0.1;
             this.activeIndexInput[i].layerMask = 0x10000000;
             let n = i;
             this.activeIndexInput[i].pointerUpCallback = () => {
@@ -405,36 +402,21 @@ class ModelingWorkbench extends PickablePlanetObject {
             let alpha = VMath.AngleFromToAround(this.inputManager.player.forward, this.forward, this.up);
             if (Math.abs(alpha) < Math.PI / 4) {
                 this.commandContainer.rotation.y = 0;
-                this.gridPlus.position.x = this._gridPosMax.x + 0.05;
-                this.gridDown.position.x = this._gridPosMax.x + 0.05;
-                this.brushSize3.position.x = this._gridPosMax.x + 0.05;
-                this.brushSize1.position.x = this._gridPosMax.x + 0.05;
-                for (let i = 0; i < 3; i++) {
-                    this.activeIndexInput[i].position.x = (i - 1) * 0.1;
-                    this.activeIndexInput[i].position.z = this._gridPosMin.z - 0.05;
-
-                }
+                this.commandContainer.position.x = this._gridPosMax.x + 0.05;
+                this.commandContainer.position.z = this._gridPosMin.z - 0.05;
             }
             else if (Math.abs(alpha) > 3 * Math.PI / 4) {
                 this.commandContainer.rotation.y = Math.PI;
-                this.gridPlus.position.x = - this._gridPosMin.x + 0.05;
-                this.gridDown.position.x = - this._gridPosMin.x + 0.05;
-                this.brushSize3.position.x = - this._gridPosMin.x + 0.05;
-                this.brushSize1.position.x = - this._gridPosMin.x + 0.05;
+                this.commandContainer.position.x = - this._gridPosMin.x + 0.05;
+                this.commandContainer.position.z = - this._gridPosMin.z + 0.05;
             }
             else if (alpha > Math.PI / 4) {
                 this.commandContainer.rotation.y = - Math.PI / 2;
-                this.gridPlus.position.x = this._gridPosMax.z + 0.05;
-                this.gridDown.position.x = this._gridPosMax.z + 0.05;
-                this.brushSize3.position.x = this._gridPosMax.z + 0.05;
-                this.brushSize1.position.x = this._gridPosMax.z + 0.05;
+                this.commandContainer.position.x = this._gridPosMax.z + 0.05;
             }
             else if (alpha < - Math.PI / 4) {
                 this.commandContainer.rotation.y = Math.PI / 2;
-                this.gridPlus.position.x = - this._gridPosMin.z + 0.05;
-                this.gridDown.position.x = - this._gridPosMin.z + 0.05;
-                this.brushSize3.position.x = - this._gridPosMin.z + 0.05;
-                this.brushSize1.position.x = - this._gridPosMin.z + 0.05;
+                this.commandContainer.position.x = - this._gridPosMin.z + 0.05;
             }
             //VMath.QuaternionFromYZAxisToRef(Y, Z, this.commandContainer.rotationQuaternion);
         }
@@ -442,6 +424,7 @@ class ModelingWorkbench extends PickablePlanetObject {
 
     private _gridPosMin: BABYLON.Vector3 = BABYLON.Vector3.Zero();
     private _gridPosMax: BABYLON.Vector3 = BABYLON.Vector3.Zero();
+    private _gridMargin: number = 3;
     private _redrawGrid(): void {
         this.grid.position.y = (this.gridY) * this.cubeSize;
 
@@ -453,11 +436,11 @@ class ModelingWorkbench extends PickablePlanetObject {
         let normals: number[] = [];
         let uvs: number[] = [];
 
-        let w = (this.gridDesc.maxX + 3) - (this.gridDesc.minX -2) + 1;
-        let h = (this.gridDesc.maxY + 3) - (this.gridDesc.minY -2) + 1;
+        let w = (this.gridDesc.maxX + (this._gridMargin + 1)) - (this.gridDesc.minX -this._gridMargin) + 1;
+        let h = (this.gridDesc.maxY + (this._gridMargin + 1)) - (this.gridDesc.minY -this._gridMargin) + 1;
 
-        for (let j = this.gridDesc.minY - 2; j <= this.gridDesc.maxY + 3; j++) {
-            for (let i = this.gridDesc.minX - 2; i <= this.gridDesc.maxX + 3; i++) {
+        for (let j = this.gridDesc.minY - this._gridMargin; j <= this.gridDesc.maxY + (this._gridMargin + 1); j++) {
+            for (let i = this.gridDesc.minX - this._gridMargin; i <= this.gridDesc.maxX + (this._gridMargin + 1); i++) {
                 let x = (i - this.halfSize) * this.cubeSize;
                 let y = 0;
                 let z = (j - this.halfSize) * this.cubeSize;
@@ -468,7 +451,7 @@ class ModelingWorkbench extends PickablePlanetObject {
                 uvs.push(i, j);
 
                 if (!this.gridDesc.blocks[i] || this.gridDesc.blocks[i][j] != 1) {
-                    if (i < this.gridDesc.maxX + 3 && j < this.gridDesc.maxY + 3) {
+                    if (i < this.gridDesc.maxX + (this._gridMargin + 1) && j < this.gridDesc.maxY + (this._gridMargin + 1)) {
                         indices.push(n, n + 1, n + 1 + w);
                         indices.push(n, n + 1 + w, n + w);
                     }
@@ -483,11 +466,11 @@ class ModelingWorkbench extends PickablePlanetObject {
 
         data.applyToMesh(this.grid);
 
-        this._gridPosMin.x = ((this.gridDesc.minX - 2 - this.halfSize)) * this.cubeSize;
-        this._gridPosMin.z = ((this.gridDesc.minY - 2 - this.halfSize)) * this.cubeSize;
+        this._gridPosMin.x = ((this.gridDesc.minX - this._gridMargin - this.halfSize)) * this.cubeSize;
+        this._gridPosMin.z = ((this.gridDesc.minY - this._gridMargin - this.halfSize)) * this.cubeSize;
 
-        this._gridPosMax.x = ((this.gridDesc.maxX + 3 - this.halfSize)) * this.cubeSize;
-        this._gridPosMax.z = ((this.gridDesc.maxY + 3 - this.halfSize)) * this.cubeSize;
+        this._gridPosMax.x = ((this.gridDesc.maxX + (this._gridMargin + 1) - this.halfSize)) * this.cubeSize;
+        this._gridPosMax.z = ((this.gridDesc.maxY + (this._gridMargin + 1) - this.halfSize)) * this.cubeSize;
     }
 
     private _fillCommandSlika(slika: Slika): void {
