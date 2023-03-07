@@ -165,7 +165,23 @@ class ModelingWorkbench extends PickablePlanetObject {
         this.gridPlus.position.z = 0.5;
         this.gridPlus.layerMask = 0x10000000;
         this.gridPlus.pointerUpCallback = () => {
-            this.gridOffsetY++;
+            if (this.editionMode === EditionMode.HGrid) {
+                this.gridOffsetY++;
+            }
+            else if (this.editionMode === EditionMode.VGrid) {
+                if (this.currentOrientation === 0) {
+                    this.gridOffsetZ++;
+                }
+                else if (this.currentOrientation === 1) {
+                    this.gridOffsetX++;
+                }
+                else if (this.currentOrientation === 2) {
+                    this.gridOffsetZ--;
+                }
+                else if (this.currentOrientation === 3) {
+                    this.gridOffsetX--;
+                }
+            }
             this.updateCubeMesh();
         }
         
@@ -185,7 +201,23 @@ class ModelingWorkbench extends PickablePlanetObject {
         this.gridDown.position.z = 0.4;
         this.gridDown.layerMask = 0x10000000;
         this.gridDown.pointerUpCallback = () => {
-            this.gridOffsetY--;
+            if (this.editionMode === EditionMode.HGrid) {
+                this.gridOffsetY--;
+            }
+            else if (this.editionMode === EditionMode.VGrid) {
+                if (this.currentOrientation === 0) {
+                    this.gridOffsetZ--;
+                }
+                else if (this.currentOrientation === 1) {
+                    this.gridOffsetX--;
+                }
+                else if (this.currentOrientation === 2) {
+                    this.gridOffsetZ++;
+                }
+                else if (this.currentOrientation === 3) {
+                    this.gridOffsetX++;
+                }
+            }
             this.updateCubeMesh();
         }
         
@@ -566,10 +598,16 @@ class ModelingWorkbench extends PickablePlanetObject {
             this.grid.position.x = 0;
             this.grid.position.y = 0;
             this.grid.position.z = 0;
+            if (this.currentOrientation % 2 === 0) {
+                this.grid.position.z = this.gridOffsetZ * this.cubeSize;
+            }
+            if (this.currentOrientation % 2 === 1) {
+                this.grid.position.x = this.gridOffsetX * this.cubeSize;
+            }
             if (this.currentOrientation === 0) {
                 this.grid.position.z += this.cubeSize;
             }
-            if (this.currentOrientation === 1) {
+            else if (this.currentOrientation === 1) {
                 this.grid.position.x += this.cubeSize;
             }
         }
