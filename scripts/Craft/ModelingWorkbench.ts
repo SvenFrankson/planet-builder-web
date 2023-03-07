@@ -291,7 +291,7 @@ class ModelingWorkbench extends PickablePlanetObject {
         this.interactionAnchor.position.z = -1;
         this.interactionAnchor.parent = this;
 
-        this.proxyPickMeshes = [this.grid, this.cubeModelMesh];
+        this.proxyPickMeshes = [this.grid];
     }
 
     private updateCubeMesh(): void {
@@ -345,8 +345,36 @@ class ModelingWorkbench extends PickablePlanetObject {
                 let data = BABYLON.VertexData.ExtractFromMesh(simplifiedMesh);
                 data.applyToMesh(modelMesh);
                 simplifiedMesh.dispose();
+                requestAnimationFrame(() => {
+                    this.updateBoundingBox();
+                })
             });
         }
+    }
+
+    private updateBoundingBox(): void {
+        this._bboxMin.x = 0;
+        this._bboxMin.z = 0;
+        this._bboxMax.x = 0;
+        this._bboxMax.z = 0;
+        
+        for (let i = 0; i < this.modelMeshes.length; i++) {
+            if (this.modelMeshes[i]) {
+                let bbox = this.modelMeshes[i].getBoundingInfo().boundingBox;
+                this._bboxMin.minimizeInPlace(bbox.minimum);
+                this._bboxMax.maximizeInPlace(bbox.maximum);
+            }
+        }
+
+        this._bboxMin.x = Math.floor(this._bboxMin.x / this.cubeSize) * this.cubeSize;
+        this._bboxMin.z = Math.floor(this._bboxMin.z / this.cubeSize) * this.cubeSize;
+        this._bboxMax.x = Math.ceil(this._bboxMax.x / this.cubeSize) * this.cubeSize;
+        this._bboxMax.z = Math.ceil(this._bboxMax.z / this.cubeSize) * this.cubeSize;
+
+        this._bboxMin.x -= this._gridMargin * this.cubeSize;
+        this._bboxMin.z -= this._gridMargin * this.cubeSize;
+        this._bboxMax.x += this._gridMargin * this.cubeSize;
+        this._bboxMax.z += this._gridMargin * this.cubeSize;
     }
 
     private updateEditionMode(): void {
@@ -440,35 +468,33 @@ class ModelingWorkbench extends PickablePlanetObject {
             let alpha = VMath.AngleFromToAround(this.inputManager.player.forward, this.forward, this.up);
             if (Math.abs(alpha) < Math.PI / 4) {
                 this.commandContainer.rotation.y = 0;
-                this.commandContainer.position.x = this._gridPosMax.x + 0.05;
-                this.commandContainer.position.z = this._gridPosMin.z - 0.05;
+                this.commandContainer.position.x = this._bboxMax.x + 0.05;
+                this.commandContainer.position.z = this._bboxMin.z - 0.05;
             }
             else if (Math.abs(alpha) > 3 * Math.PI / 4) {
                 this.commandContainer.rotation.y = Math.PI;
-                this.commandContainer.position.x = this._gridPosMin.x - 0.05;
-                this.commandContainer.position.z = this._gridPosMax.z + 0.05;
+                this.commandContainer.position.x = this._bboxMin.x - 0.05;
+                this.commandContainer.position.z = this._bboxMax.z + 0.05;
             }
             else if (alpha > Math.PI / 4) {
                 this.commandContainer.rotation.y = - Math.PI / 2;
-                this.commandContainer.position.x = this._gridPosMax.x + 0.05;
-                this.commandContainer.position.z = this._gridPosMax.z + 0.05;
+                this.commandContainer.position.x = this._bboxMax.x + 0.05;
+                this.commandContainer.position.z = this._bboxMax.z + 0.05;
             }
             else if (alpha < - Math.PI / 4) {
                 this.commandContainer.rotation.y = Math.PI / 2;
-                this.commandContainer.position.x = this._gridPosMin.x - 0.05;
-                this.commandContainer.position.z = this._gridPosMin.z - 0.05;
+                this.commandContainer.position.x = this._bboxMin.x - 0.05;
+                this.commandContainer.position.z = this._bboxMin.z - 0.05;
             }
             //VMath.QuaternionFromYZAxisToRef(Y, Z, this.commandContainer.rotationQuaternion);
         }
     }
 
-    private _gridPosMin: BABYLON.Vector3 = BABYLON.Vector3.Zero();
-    private _gridPosMax: BABYLON.Vector3 = BABYLON.Vector3.Zero();
+    private _bboxMin: BABYLON.Vector3 = BABYLON.Vector3.Zero();
+    private _bboxMax: BABYLON.Vector3 = BABYLON.Vector3.Zero();
     private _gridMargin: number = 3;
     private _redrawGrid(): void {
         this.grid.position.y = (this.gridOffset) * this.cubeSize;
-
-        console.log(this.gridDesc);
 
         let data = new BABYLON.VertexData();
         let positions: number[] = [];
@@ -505,12 +531,6 @@ class ModelingWorkbench extends PickablePlanetObject {
         data.uvs = uvs;
 
         data.applyToMesh(this.grid);
-
-        this._gridPosMin.x = ((this.gridDesc.minX - this._gridMargin - this.halfSize)) * this.cubeSize;
-        this._gridPosMin.z = ((this.gridDesc.minY - this._gridMargin - this.halfSize)) * this.cubeSize;
-
-        this._gridPosMax.x = ((this.gridDesc.maxX + (this._gridMargin + 1) - this.halfSize)) * this.cubeSize;
-        this._gridPosMax.z = ((this.gridDesc.maxY + (this._gridMargin + 1) - this.halfSize)) * this.cubeSize;
     }
 
     private _fillCommandSlika(slika: Slika): void {
