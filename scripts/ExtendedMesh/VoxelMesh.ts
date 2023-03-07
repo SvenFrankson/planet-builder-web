@@ -172,8 +172,23 @@ class VoxelMesh {
 							let value = jLine[k];
 							if (value > 0) {
 								let color = baseColorAsArray;
-								if (prop && Math.floor(i - this._size * 0.5) === prop.highlightX) {
-									color = highlightColorAsArray;
+								
+								if (prop && isFinite(prop.highlightX)) {
+									if (gridDesc) {
+										gridDesc.minX = Math.min(gridDesc.minX, k);
+										gridDesc.maxX = Math.max(gridDesc.maxX, k);
+										gridDesc.minY = Math.min(gridDesc.minY, j);
+										gridDesc.maxY = Math.max(gridDesc.maxY, j);
+									}
+									if (Math.floor(i - this._size * 0.5) === prop.highlightX) {
+										color = highlightColorAsArray;
+										if (gridDesc) {
+											if (!gridDesc.blocks[k]) {
+												gridDesc.blocks[k] = [];
+											}
+											gridDesc.blocks[k][j] = 1;
+										}
+									}
 								}
 								if (prop && isFinite(prop.highlightY)) {
 									if (gridDesc) {
@@ -192,8 +207,22 @@ class VoxelMesh {
 										}
 									}
 								}
-								if (prop && Math.floor(j - this._size * 0.5) === prop.highlightZ) {
-									color = highlightColorAsArray;
+								if (prop && isFinite(prop.highlightZ)) {
+									if (gridDesc) {
+										gridDesc.minX = Math.min(gridDesc.minX, i);
+										gridDesc.maxX = Math.max(gridDesc.maxX, i);
+										gridDesc.minY = Math.min(gridDesc.minY, j);
+										gridDesc.maxY = Math.max(gridDesc.maxY, j);
+									}
+									if (Math.floor(k - this._size * 0.5) === prop.highlightZ) {
+										color = highlightColorAsArray;
+										if (gridDesc) {
+											if (!gridDesc.blocks[i]) {
+												gridDesc.blocks[i] = [];
+											}
+											gridDesc.blocks[i][j] = 1;
+										}
+									}
 								}
 
 								if (this._getBlock(i + 1, j, k) != 1) {

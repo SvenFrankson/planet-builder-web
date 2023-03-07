@@ -34,8 +34,11 @@ class ModelingWorkbench extends PickablePlanetObject {
     public editionMode: EditionMode = EditionMode.HGrid;
 
     public grid: BABYLON.Mesh;
-    public gridOffset: number = 0;
+    public gridOffsetX: number = 0;
+    public gridOffsetY: number = 0;
+    public gridOffsetZ: number = 0;
     public gridDesc: IGridDesc;
+    public currentOrientation: number = 0;
 
     public commandContainer: BABYLON.Mesh;
     public gridPlus: PickableObject;
@@ -131,7 +134,6 @@ class ModelingWorkbench extends PickablePlanetObject {
         this.grid.material = gridMaterial;
         this.grid.layerMask = 0x10000000;
         this.grid.parent = this.modelContainer;
-        this.grid.position.y = (this.gridOffset) * this.cubeSize;
 
         let hsf = Config.performanceConfiguration.holoScreenFactor;
 
@@ -163,7 +165,7 @@ class ModelingWorkbench extends PickablePlanetObject {
         this.gridPlus.position.z = 0.5;
         this.gridPlus.layerMask = 0x10000000;
         this.gridPlus.pointerUpCallback = () => {
-            this.gridOffset++;
+            this.gridOffsetY++;
             this.updateCubeMesh();
         }
         
@@ -183,7 +185,7 @@ class ModelingWorkbench extends PickablePlanetObject {
         this.gridDown.position.z = 0.4;
         this.gridDown.layerMask = 0x10000000;
         this.gridDown.pointerUpCallback = () => {
-            this.gridOffset--;
+            this.gridOffsetY--;
             this.updateCubeMesh();
         }
         
@@ -309,12 +311,18 @@ class ModelingWorkbench extends PickablePlanetObject {
         if (voxelMesh) {
             let cubeProp: ICubeMeshProperties = { baseColor: new BABYLON.Color4(0.75, 0.75, 0.75, 1) };
             if (this.editionMode === EditionMode.HGrid) {
-                cubeProp.highlightY = this.gridOffset;
+                cubeProp.highlightY = this.gridOffsetY;
                 cubeProp.highlightColor = new BABYLON.Color4(0, 1, 1, 1);
             }
-            if (this.editionMode === EditionMode.VGrid) {
-                cubeProp.highlightY = this.gridOffset;
-                cubeProp.highlightColor = new BABYLON.Color4(0, 1, 1, 1);
+            else if (this.editionMode === EditionMode.VGrid) {
+                if (this.currentOrientation % 2 === 0) {
+                    cubeProp.highlightZ = this.gridOffsetZ;
+                    cubeProp.highlightColor = new BABYLON.Color4(0, 1, 1, 1);
+                }
+                else if (this.currentOrientation % 2 === 1) {
+                    cubeProp.highlightX = this.gridOffsetX;
+                    cubeProp.highlightColor = new BABYLON.Color4(0, 1, 1, 1);
+                }
             }
             let data = voxelMesh.buildCubeMesh(cubeProp, this.gridDesc);
             data.applyToMesh(this.cubeModelMesh);
@@ -485,6 +493,10 @@ class ModelingWorkbench extends PickablePlanetObject {
                 if (this.editionMode === EditionMode.VGrid) {
                     this.grid.rotation.x = - Math.PI * 0.5;
                     this.grid.rotation.y = 0;
+                    if (this.currentOrientation != 0) {
+                        this.currentOrientation = 0;
+                        this.updateCubeMesh();
+                    }
                 }
                 else {
                     this.commandContainer.rotation.y = 0;
@@ -496,6 +508,10 @@ class ModelingWorkbench extends PickablePlanetObject {
                 if (this.editionMode === EditionMode.VGrid) {
                     this.grid.rotation.x = - Math.PI * 0.5;
                     this.grid.rotation.y = Math.PI;
+                    if (this.currentOrientation != 2) {
+                        this.currentOrientation = 2;
+                        this.updateCubeMesh();
+                    }
                 }
                 else {
                     this.commandContainer.rotation.y = Math.PI;
@@ -507,6 +523,10 @@ class ModelingWorkbench extends PickablePlanetObject {
                 if (this.editionMode === EditionMode.VGrid) {
                     this.grid.rotation.x = - Math.PI * 0.5;
                     this.grid.rotation.y = - Math.PI * 0.5;
+                    if (this.currentOrientation != 3) {
+                        this.currentOrientation = 3;
+                        this.updateCubeMesh();
+                    }
                 }
                 else {
                     this.commandContainer.rotation.y = - Math.PI / 2;
@@ -518,6 +538,10 @@ class ModelingWorkbench extends PickablePlanetObject {
                 if (this.editionMode === EditionMode.VGrid) {
                     this.grid.rotation.x = - Math.PI * 0.5;
                     this.grid.rotation.y = Math.PI * 0.5;
+                    if (this.currentOrientation != 1) {
+                        this.currentOrientation = 1;
+                        this.updateCubeMesh();
+                    }
                 }
                 else {
                     this.commandContainer.rotation.y = Math.PI / 2;
@@ -533,7 +557,22 @@ class ModelingWorkbench extends PickablePlanetObject {
     private _bboxMax: BABYLON.Vector3 = BABYLON.Vector3.Zero();
     private _gridMargin: number = 3;
     private _redrawGrid(): void {
-        this.grid.position.y = (this.gridOffset) * this.cubeSize;
+        if (this.editionMode === EditionMode.HGrid) {
+            this.grid.position.x = 0;
+            this.grid.position.y = (this.gridOffsetY) * this.cubeSize;
+            this.grid.position.z = 0;
+        }
+        else if (this.editionMode === EditionMode.VGrid) {
+            this.grid.position.x = 0;
+            this.grid.position.y = 0;
+            this.grid.position.z = 0;
+            if (this.currentOrientation === 0) {
+                this.grid.position.z += this.cubeSize;
+            }
+            if (this.currentOrientation === 1) {
+                this.grid.position.x += this.cubeSize;
+            }
+        }
 
         let data = new BABYLON.VertexData();
         let positions: number[] = [];
