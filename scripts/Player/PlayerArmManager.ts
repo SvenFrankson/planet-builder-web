@@ -314,6 +314,11 @@ class PlayerArmManager {
                 await this._animateAimingDistance(0, 0.1);
             }
         }
+        else {
+            if (actionCallback) {
+                actionCallback();
+            }
+        }
     }
 
     public async startPowerWristWatchAnimation(actionCallback?: () => void): Promise<void> {

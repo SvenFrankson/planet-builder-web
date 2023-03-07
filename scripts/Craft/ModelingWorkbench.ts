@@ -1,5 +1,11 @@
 /// <reference path="../UI/Pickable.ts"/>
 
+enum EditionMode {
+    Sculpt,
+    HGrid,
+    VGrid
+}
+
 class ModelingWorkbench extends PickablePlanetObject {
 
     public frame: BABYLON.Mesh;
@@ -25,14 +31,16 @@ class ModelingWorkbench extends PickablePlanetObject {
 
     public using: boolean = false;
 
-    public gridEditionMode: boolean = true;
+    public editionMode: EditionMode = EditionMode.HGrid;
+
     public grid: BABYLON.Mesh;
-    public gridY: number = 0;
+    public gridOffset: number = 0;
     public gridDesc: IGridDesc;
 
     public commandContainer: BABYLON.Mesh;
     public gridPlus: PickableObject;
     public gridDown: PickableObject;
+    public modeButton: PickableObject;
     public brushSize3: PickableObject;
     public brushSize1: PickableObject;
     public activeIndexInput: PickableObject[] = [];
@@ -102,7 +110,7 @@ class ModelingWorkbench extends PickablePlanetObject {
         let cubeModeMaterial = new BABYLON.StandardMaterial("cube-model-material", Game.Scene);
         cubeModeMaterial.diffuseColor = BABYLON.Color3.White();
         cubeModeMaterial.specularColor = BABYLON.Color3.Black();
-        cubeModeMaterial.alpha = 0.4;
+        cubeModeMaterial.alpha = 0.3;
         this.cubeModelMesh.material = cubeModeMaterial;
 
         this.previewMesh = BABYLON.MeshBuilder.CreateBox("preview-mesh", { size: this.cubeSize });
@@ -123,7 +131,7 @@ class ModelingWorkbench extends PickablePlanetObject {
         this.grid.material = gridMaterial;
         this.grid.layerMask = 0x10000000;
         this.grid.parent = this.modelContainer;
-        this.grid.position.y = (this.gridY) * this.cubeSize;
+        this.grid.position.y = (this.gridOffset) * this.cubeSize;
 
         let hsf = Config.performanceConfiguration.holoScreenFactor;
 
@@ -152,10 +160,10 @@ class ModelingWorkbench extends PickablePlanetObject {
         this.gridPlus.instantiate();
         this.gridPlus.material = inputMaterial;
         this.gridPlus.parent = this.commandContainer;
-        this.gridPlus.position.z = 0.4;
+        this.gridPlus.position.z = 0.5;
         this.gridPlus.layerMask = 0x10000000;
         this.gridPlus.pointerUpCallback = () => {
-            this.gridY++;
+            this.gridOffset++;
             this.updateCubeMesh();
         }
         
@@ -172,10 +180,10 @@ class ModelingWorkbench extends PickablePlanetObject {
         this.gridDown.instantiate();
         this.gridDown.material = inputMaterial;
         this.gridDown.parent = this.commandContainer;
-        this.gridDown.position.z = 0.3;
+        this.gridDown.position.z = 0.4;
         this.gridDown.layerMask = 0x10000000;
         this.gridDown.pointerUpCallback = () => {
-            this.gridY--;
+            this.gridOffset--;
             this.updateCubeMesh();
         }
         
@@ -185,6 +193,29 @@ class ModelingWorkbench extends PickablePlanetObject {
         gridDownIcon.parent = this.gridDown;
         gridDownIcon.rotation.x = Math.PI * 0.5;
         gridDownIcon.layerMask = 0x10000000;
+        
+        this.modeButton = new PickableObject("grid-minus", this.main);
+        BABYLON.CreateBoxVertexData({ width: 0.08, height: 0.02, depth: 0.08 }).applyToMesh(this.modeButton);
+        //VertexDataUtils.CreatePlane(0.08, 0.08).applyToMesh(this.gridMinus);
+        this.modeButton.instantiate();
+        this.modeButton.material = inputMaterial;
+        this.modeButton.parent = this.commandContainer;
+        this.modeButton.position.z = 0.3;
+        this.modeButton.layerMask = 0x10000000;
+        
+        let modeButtonIcon = new BABYLON.Mesh("grid-down-icon");
+        VertexDataUtils.CreatePlane(0.08, 0.08, undefined, undefined, 0, (5 - this.editionMode)/8, 1/8, (6 - this.editionMode)/8).applyToMesh(modeButtonIcon);
+        modeButtonIcon.material = hudMaterial;
+        modeButtonIcon.parent = this.modeButton;
+        modeButtonIcon.rotation.x = Math.PI * 0.5;
+        modeButtonIcon.layerMask = 0x10000000;
+        
+        this.modeButton.pointerUpCallback = () => {
+            this.editionMode = (this.editionMode + 1) % 2;
+            VertexDataUtils.CreatePlane(0.08, 0.08, undefined, undefined, 0, (5 - this.editionMode)/8, 1/8, (6 - this.editionMode)/8).applyToMesh(modeButtonIcon);
+            this.updateCubeMesh();
+            this.updateEditionMode();
+        }
         
         this.brushSize3 = new PickableObject("brush-size-3", this.main);
         BABYLON.CreateBoxVertexData({ width: 0.08, height: 0.02, depth: 0.08 }).applyToMesh(this.brushSize3);
@@ -252,6 +283,7 @@ class ModelingWorkbench extends PickablePlanetObject {
         }
 
         this.updateMesh();
+        this.updateEditionMode();
 
         this.interactionAnchor = new BABYLON.Mesh("interaction-anchor");
         //BABYLON.CreateBoxVertexData({ size: 0.1 }).applyToMesh(this.interactionAnchor);
@@ -274,14 +306,12 @@ class ModelingWorkbench extends PickablePlanetObject {
         };
 
         if (voxelMesh) {
-            let data = voxelMesh.buildCubeMesh(
-                {
-                    baseColor: new BABYLON.Color4(0.75, 0.75, 0.75, 1),
-                    highlightY: this.gridY,
-                    highlightColor: new BABYLON.Color4(0, 1, 1, 1)
-                },
-                this.gridDesc
-            );
+            let cubeProp: ICubeMeshProperties = { baseColor: new BABYLON.Color4(0.75, 0.75, 0.75, 1) };
+            if (this.editionMode === EditionMode.HGrid) {
+                cubeProp.highlightY = this.gridOffset;
+                cubeProp.highlightColor = new BABYLON.Color4(0, 1, 1, 1);
+            }
+            let data = voxelMesh.buildCubeMesh(cubeProp, this.gridDesc);
             data.applyToMesh(this.cubeModelMesh);
             this.cubeModelMesh.isVisible = true;
         }
@@ -319,6 +349,17 @@ class ModelingWorkbench extends PickablePlanetObject {
         }
     }
 
+    private updateEditionMode(): void {
+        if (this.editionMode === EditionMode.Sculpt) {
+            this.grid.isVisible = false;
+            this.proxyPickMeshes = [this.cubeModelMesh];
+        }
+        else {
+            this.grid.isVisible = true;
+            this.proxyPickMeshes = [this.grid];
+        }
+    }
+
     public async open(): Promise<void> {
         
     }
@@ -335,12 +376,6 @@ class ModelingWorkbench extends PickablePlanetObject {
     }
 
     public onPointerDown(): void {
-        if (BABYLON.Vector3.DistanceSquared(this.inputManager.player.position, this.position) < 1.2 * 1.2) {
-            
-        }
-    }
-
-    public onPointerUp(): void {
         if (this.using) {
             let p = this.inputManager.aimedPosition.add(this.inputManager.aimedNormal.scale(this.cubeSize * 0.5));
             let localP = BABYLON.Vector3.TransformCoordinates(p, this.modelContainer.getWorldMatrix().clone().invert());
@@ -358,7 +393,10 @@ class ModelingWorkbench extends PickablePlanetObject {
 
             this.updateMesh();
         }
-        else {
+    }
+
+    public onPointerUp(): void {
+        if (!this.using) {
             if (BABYLON.Vector3.DistanceSquared(this.inputManager.player.position, this.position) < 1.2 * 1.2) {
                 this.using = true;
                 document.exitPointerLock();
@@ -428,7 +466,7 @@ class ModelingWorkbench extends PickablePlanetObject {
     private _gridPosMax: BABYLON.Vector3 = BABYLON.Vector3.Zero();
     private _gridMargin: number = 3;
     private _redrawGrid(): void {
-        this.grid.position.y = (this.gridY) * this.cubeSize;
+        this.grid.position.y = (this.gridOffset) * this.cubeSize;
 
         console.log(this.gridDesc);
 
@@ -525,6 +563,60 @@ class ModelingWorkbench extends PickablePlanetObject {
         slika.add(new SlikaCircle({
             x: 32,
             y: 32 + 64,
+            r: 30,
+            color: BABYLON.Color3.White(),
+            width: 2
+        }));
+        
+        // Sculpt
+        slika.add(new SlikaText({
+            text: "SCULPT",
+            color: BABYLON.Color3.White(),
+            fontSize: 16,
+            x: 32,
+            y: 39 + 128,
+            fontFamily: "XoloniumRegular",
+            textAlign: "center"
+        }));
+        slika.add(new SlikaCircle({
+            x: 32,
+            y: 32 + 128,
+            r: 30,
+            color: BABYLON.Color3.White(),
+            width: 2
+        }));
+        
+        // HGrid
+        slika.add(new SlikaText({
+            text: "HGRID",
+            color: BABYLON.Color3.White(),
+            fontSize: 16,
+            x: 32,
+            y: 39 + 192,
+            fontFamily: "XoloniumRegular",
+            textAlign: "center"
+        }));
+        slika.add(new SlikaCircle({
+            x: 32,
+            y: 32 + 192,
+            r: 30,
+            color: BABYLON.Color3.White(),
+            width: 2
+        }));
+        
+        // VGrid
+        slika.add(new SlikaText({
+            text: "VGRID",
+            color: BABYLON.Color3.White(),
+            fontSize: 16,
+            x: 32,
+            y: 39 + 256,
+            fontFamily: "XoloniumRegular",
+            textAlign: "center"
+        }));
+        slika.add(new SlikaCircle({
+            x: 32,
+            y: 32 + 256,
             r: 30,
             color: BABYLON.Color3.White(),
             width: 2
