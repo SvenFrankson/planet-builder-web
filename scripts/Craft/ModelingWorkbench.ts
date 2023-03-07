@@ -211,7 +211,7 @@ class ModelingWorkbench extends PickablePlanetObject {
         modeButtonIcon.layerMask = 0x10000000;
         
         this.modeButton.pointerUpCallback = () => {
-            this.editionMode = (this.editionMode + 1) % 2;
+            this.editionMode = (this.editionMode + 1) % 3;
             VertexDataUtils.CreatePlane(0.08, 0.08, undefined, undefined, 0, (5 - this.editionMode)/8, 1/8, (6 - this.editionMode)/8).applyToMesh(modeButtonIcon);
             this.updateCubeMesh();
             this.updateEditionMode();
@@ -284,6 +284,7 @@ class ModelingWorkbench extends PickablePlanetObject {
 
         this.updateMesh();
         this.updateEditionMode();
+        this.updateBoundingBox();
 
         this.interactionAnchor = new BABYLON.Mesh("interaction-anchor");
         //BABYLON.CreateBoxVertexData({ size: 0.1 }).applyToMesh(this.interactionAnchor);
@@ -308,6 +309,10 @@ class ModelingWorkbench extends PickablePlanetObject {
         if (voxelMesh) {
             let cubeProp: ICubeMeshProperties = { baseColor: new BABYLON.Color4(0.75, 0.75, 0.75, 1) };
             if (this.editionMode === EditionMode.HGrid) {
+                cubeProp.highlightY = this.gridOffset;
+                cubeProp.highlightColor = new BABYLON.Color4(0, 1, 1, 1);
+            }
+            if (this.editionMode === EditionMode.VGrid) {
                 cubeProp.highlightY = this.gridOffset;
                 cubeProp.highlightColor = new BABYLON.Color4(0, 1, 1, 1);
             }
@@ -355,8 +360,8 @@ class ModelingWorkbench extends PickablePlanetObject {
     private updateBoundingBox(): void {
         this._bboxMin.x = 0;
         this._bboxMin.z = 0;
-        this._bboxMax.x = 0;
-        this._bboxMax.z = 0;
+        this._bboxMax.x = this.cubeSize;
+        this._bboxMax.z = this.cubeSize;
         
         for (let i = 0; i < this.modelMeshes.length; i++) {
             if (this.modelMeshes[i]) {
@@ -466,25 +471,59 @@ class ModelingWorkbench extends PickablePlanetObject {
             let Y = this.up;
             let Z = this.inputManager.player.forward;
             let alpha = VMath.AngleFromToAround(this.inputManager.player.forward, this.forward, this.up);
-            if (Math.abs(alpha) < Math.PI / 4) {
+            if (this.editionMode === EditionMode.VGrid) {
                 this.commandContainer.rotation.y = 0;
                 this.commandContainer.position.x = this._bboxMax.x + 0.05;
                 this.commandContainer.position.z = this._bboxMin.z - 0.05;
             }
+            else {
+                this.grid.rotation.x = 0;
+                this.grid.rotation.y = 0;
+            }
+            
+            if (Math.abs(alpha) < Math.PI / 4) {
+                if (this.editionMode === EditionMode.VGrid) {
+                    this.grid.rotation.x = - Math.PI * 0.5;
+                    this.grid.rotation.y = 0;
+                }
+                else {
+                    this.commandContainer.rotation.y = 0;
+                    this.commandContainer.position.x = this._bboxMax.x + 0.05;
+                    this.commandContainer.position.z = this._bboxMin.z - 0.05;
+                }
+            }
             else if (Math.abs(alpha) > 3 * Math.PI / 4) {
-                this.commandContainer.rotation.y = Math.PI;
-                this.commandContainer.position.x = this._bboxMin.x - 0.05;
-                this.commandContainer.position.z = this._bboxMax.z + 0.05;
+                if (this.editionMode === EditionMode.VGrid) {
+                    this.grid.rotation.x = - Math.PI * 0.5;
+                    this.grid.rotation.y = Math.PI;
+                }
+                else {
+                    this.commandContainer.rotation.y = Math.PI;
+                    this.commandContainer.position.x = this._bboxMin.x - 0.05;
+                    this.commandContainer.position.z = this._bboxMax.z + 0.05;
+                }
             }
             else if (alpha > Math.PI / 4) {
-                this.commandContainer.rotation.y = - Math.PI / 2;
-                this.commandContainer.position.x = this._bboxMax.x + 0.05;
-                this.commandContainer.position.z = this._bboxMax.z + 0.05;
+                if (this.editionMode === EditionMode.VGrid) {
+                    this.grid.rotation.x = - Math.PI * 0.5;
+                    this.grid.rotation.y = - Math.PI * 0.5;
+                }
+                else {
+                    this.commandContainer.rotation.y = - Math.PI / 2;
+                    this.commandContainer.position.x = this._bboxMax.x + 0.05;
+                    this.commandContainer.position.z = this._bboxMax.z + 0.05;
+                }
             }
             else if (alpha < - Math.PI / 4) {
-                this.commandContainer.rotation.y = Math.PI / 2;
-                this.commandContainer.position.x = this._bboxMin.x - 0.05;
-                this.commandContainer.position.z = this._bboxMin.z - 0.05;
+                if (this.editionMode === EditionMode.VGrid) {
+                    this.grid.rotation.x = - Math.PI * 0.5;
+                    this.grid.rotation.y = Math.PI * 0.5;
+                }
+                else {
+                    this.commandContainer.rotation.y = Math.PI / 2;
+                    this.commandContainer.position.x = this._bboxMin.x - 0.05;
+                    this.commandContainer.position.z = this._bboxMin.z - 0.05;
+                }
             }
             //VMath.QuaternionFromYZAxisToRef(Y, Z, this.commandContainer.rotationQuaternion);
         }
