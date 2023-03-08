@@ -37,7 +37,6 @@ class ModelingWorkbench extends PickablePlanetObject {
     public gridOffsetX: number = 0;
     public gridOffsetY: number = 0;
     public gridOffsetZ: number = 0;
-    public gridDesc: IGridDesc;
     public currentOrientation: number = 0;
 
     public commandContainer: BABYLON.Mesh;
@@ -316,9 +315,11 @@ class ModelingWorkbench extends PickablePlanetObject {
             activeIndexIcon.layerMask = 0x10000000;
         }
 
+        this.updateBoundingBox();
         this.updateMesh();
         this.updateEditionMode();
         this.updateBoundingBox();
+        this._redrawGrid();
 
         this.interactionAnchor = new BABYLON.Mesh("interaction-anchor");
         //BABYLON.CreateBoxVertexData({ size: 0.1 }).applyToMesh(this.interactionAnchor);
@@ -331,14 +332,6 @@ class ModelingWorkbench extends PickablePlanetObject {
 
     private updateCubeMesh(): void {
         let voxelMesh = this.voxelMeshes[this.activeVoxelMesh];
-
-        this.gridDesc = {
-            minX: this.halfSize,
-            maxX: this.halfSize,
-            minY: this.halfSize,
-            maxY: this.halfSize,
-            blocks: []
-        };
 
         if (voxelMesh) {
             let cubeProp: ICubeMeshProperties = { baseColor: new BABYLON.Color4(0.75, 0.75, 0.75, 1) };
@@ -356,7 +349,7 @@ class ModelingWorkbench extends PickablePlanetObject {
                     cubeProp.highlightColor = new BABYLON.Color4(0, 1, 1, 1);
                 }
             }
-            let data = voxelMesh.buildCubeMesh(cubeProp, this.gridDesc);
+            let data = voxelMesh.buildCubeMesh(cubeProp);
             data.applyToMesh(this.cubeModelMesh);
             this.cubeModelMesh.isVisible = true;
         }
@@ -392,6 +385,7 @@ class ModelingWorkbench extends PickablePlanetObject {
                 simplifiedMesh.dispose();
                 requestAnimationFrame(() => {
                     this.updateBoundingBox();
+                    this._redrawGrid();
                 })
             });
         }
@@ -399,8 +393,10 @@ class ModelingWorkbench extends PickablePlanetObject {
 
     private updateBoundingBox(): void {
         this._bboxMin.x = 0;
+        this._bboxMin.y = 0;
         this._bboxMin.z = 0;
         this._bboxMax.x = this.cubeSize;
+        this._bboxMax.y = this.cubeSize;
         this._bboxMax.z = this.cubeSize;
         
         for (let i = 0; i < this.modelMeshes.length; i++) {
@@ -412,13 +408,17 @@ class ModelingWorkbench extends PickablePlanetObject {
         }
 
         this._bboxMin.x = Math.floor(this._bboxMin.x / this.cubeSize) * this.cubeSize;
+        this._bboxMin.y = Math.floor(this._bboxMin.y / this.cubeSize) * this.cubeSize;
         this._bboxMin.z = Math.floor(this._bboxMin.z / this.cubeSize) * this.cubeSize;
         this._bboxMax.x = Math.ceil(this._bboxMax.x / this.cubeSize) * this.cubeSize;
+        this._bboxMax.y = Math.ceil(this._bboxMax.y / this.cubeSize) * this.cubeSize;
         this._bboxMax.z = Math.ceil(this._bboxMax.z / this.cubeSize) * this.cubeSize;
 
         this._bboxMin.x -= this._gridMargin * this.cubeSize;
+        this._bboxMin.y -= this._gridMargin * this.cubeSize;
         this._bboxMin.z -= this._gridMargin * this.cubeSize;
         this._bboxMax.x += this._gridMargin * this.cubeSize;
+        this._bboxMax.y += this._gridMargin * this.cubeSize;
         this._bboxMax.z += this._gridMargin * this.cubeSize;
     }
 
@@ -513,8 +513,19 @@ class ModelingWorkbench extends PickablePlanetObject {
             let alpha = VMath.AngleFromToAround(this.inputManager.player.forward, this.forward, this.up);
             if (this.editionMode === EditionMode.VGrid) {
                 this.commandContainer.rotation.y = 0;
-                this.commandContainer.position.x = this._bboxMax.x + 0.05;
-                this.commandContainer.position.z = this._bboxMin.z - 0.05;
+                if (this.currentOrientation === 0) {
+                    this.commandContainer.position.x = this._bboxMax.x + 0.05;
+                }
+                else if (this.currentOrientation === 1) {
+                    this.commandContainer.position.x = - this._bboxMin.z + 0.05;
+                }
+                else if (this.currentOrientation === 2) {
+                    this.commandContainer.position.x = - this._bboxMin.x + 0.05;
+                }
+                else if (this.currentOrientation === 3) {
+                    this.commandContainer.position.x = this._bboxMax.z + 0.05;
+                }
+                this.commandContainer.position.z = this._bboxMin.y - 0.05;
             }
             else {
                 this.grid.rotation.x = 0;
@@ -589,26 +600,53 @@ class ModelingWorkbench extends PickablePlanetObject {
     private _bboxMax: BABYLON.Vector3 = BABYLON.Vector3.Zero();
     private _gridMargin: number = 3;
     private _redrawGrid(): void {
+        let i0 = 0;
+        let j0 = 0;
+        let iN = 0;
+        let jN = 0;
+
         if (this.editionMode === EditionMode.HGrid) {
             this.grid.position.x = 0;
             this.grid.position.y = (this.gridOffsetY) * this.cubeSize;
             this.grid.position.z = 0;
+
+            i0 = Math.round(this._bboxMin.x / this.cubeSize);
+            j0 = Math.round(this._bboxMin.z / this.cubeSize);
+            iN = Math.round(this._bboxMax.x / this.cubeSize);
+            jN = Math.round(this._bboxMax.z / this.cubeSize);
         }
         else if (this.editionMode === EditionMode.VGrid) {
             this.grid.position.x = 0;
             this.grid.position.y = 0;
             this.grid.position.z = 0;
+
+            j0 = Math.round(this._bboxMin.y / this.cubeSize);
+            jN = Math.round(this._bboxMax.y / this.cubeSize);
+
             if (this.currentOrientation % 2 === 0) {
                 this.grid.position.z = this.gridOffsetZ * this.cubeSize;
             }
             if (this.currentOrientation % 2 === 1) {
                 this.grid.position.x = this.gridOffsetX * this.cubeSize;
             }
+
             if (this.currentOrientation === 0) {
                 this.grid.position.z += this.cubeSize;
+                i0 = Math.round(this._bboxMin.x / this.cubeSize);
+                iN = Math.round(this._bboxMax.x / this.cubeSize);
             }
             else if (this.currentOrientation === 1) {
                 this.grid.position.x += this.cubeSize;
+                i0 = Math.round(- this._bboxMax.z / this.cubeSize);
+                iN = Math.round(- this._bboxMin.z / this.cubeSize);
+            }
+            else if (this.currentOrientation === 2) {
+                i0 = Math.round(- this._bboxMax.x / this.cubeSize);
+                iN = Math.round(- this._bboxMin.x / this.cubeSize);
+            }
+            else if (this.currentOrientation === 3) {
+                i0 = Math.round(this._bboxMin.z / this.cubeSize);
+                iN = Math.round(this._bboxMax.z / this.cubeSize);
             }
         }
 
@@ -618,25 +656,25 @@ class ModelingWorkbench extends PickablePlanetObject {
         let normals: number[] = [];
         let uvs: number[] = [];
 
-        let w = (this.gridDesc.maxX + (this._gridMargin + 1)) - (this.gridDesc.minX -this._gridMargin) + 1;
-        let h = (this.gridDesc.maxY + (this._gridMargin + 1)) - (this.gridDesc.minY -this._gridMargin) + 1;
+        let w = iN - i0 + 1;
 
-        for (let j = this.gridDesc.minY - this._gridMargin; j <= this.gridDesc.maxY + (this._gridMargin + 1); j++) {
-            for (let i = this.gridDesc.minX - this._gridMargin; i <= this.gridDesc.maxX + (this._gridMargin + 1); i++) {
-                let x = (i - this.halfSize) * this.cubeSize;
+        console.log(i0 + " " + iN + " " + j0 + " " + jN);
+        console.log(w);
+
+        for (let j = j0; j <= jN; j++) {
+            for (let i = i0; i <= iN; i++) {
+                let x = i * this.cubeSize;
                 let y = 0;
-                let z = (j - this.halfSize) * this.cubeSize;
+                let z = j * this.cubeSize;
 
                 let n = positions.length / 3;
                 positions.push(x, y, z);
                 normals.push(0, 1, 0);
                 uvs.push(i, j);
 
-                if (!this.gridDesc.blocks[i] || this.gridDesc.blocks[i][j] != 1) {
-                    if (i < this.gridDesc.maxX + (this._gridMargin + 1) && j < this.gridDesc.maxY + (this._gridMargin + 1)) {
-                        indices.push(n, n + 1, n + 1 + w);
-                        indices.push(n, n + 1 + w, n + w);
-                    }
+                if (i < iN && j < jN) {
+                    indices.push(n, n + 1, n + 1 + w);
+                    indices.push(n, n + 1 + w, n + w);
                 }
             }
         }

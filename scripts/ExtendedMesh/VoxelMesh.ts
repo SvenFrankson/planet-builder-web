@@ -6,6 +6,7 @@ interface ICubeMeshProperties {
 	highlightColor?: BABYLON.Color4;
 }
 
+/*
 interface IGridDesc {
 	minX: number;
 	maxX: number;
@@ -13,6 +14,7 @@ interface IGridDesc {
 	maxY: number;
 	blocks: number[][];
 }
+*/
 
 class VoxelMesh {
 
@@ -136,7 +138,7 @@ class VoxelMesh {
         });
     }
 
-	public buildCubeMesh(prop?: ICubeMeshProperties, gridDesc?: IGridDesc): BABYLON.VertexData {
+	public buildCubeMesh(prop?: ICubeMeshProperties): BABYLON.VertexData {
 		this._syncOctreeAndGridAsCube();
 
 		this._vertices = [];
@@ -174,54 +176,18 @@ class VoxelMesh {
 								let color = baseColorAsArray;
 								
 								if (prop && isFinite(prop.highlightX)) {
-									if (gridDesc) {
-										gridDesc.minX = Math.min(gridDesc.minX, k);
-										gridDesc.maxX = Math.max(gridDesc.maxX, k);
-										gridDesc.minY = Math.min(gridDesc.minY, j);
-										gridDesc.maxY = Math.max(gridDesc.maxY, j);
-									}
 									if (Math.floor(i - this._size * 0.5) === prop.highlightX) {
 										color = highlightColorAsArray;
-										if (gridDesc) {
-											if (!gridDesc.blocks[k]) {
-												gridDesc.blocks[k] = [];
-											}
-											gridDesc.blocks[k][j] = 1;
-										}
 									}
 								}
 								if (prop && isFinite(prop.highlightY)) {
-									if (gridDesc) {
-										gridDesc.minX = Math.min(gridDesc.minX, i);
-										gridDesc.maxX = Math.max(gridDesc.maxX, i);
-										gridDesc.minY = Math.min(gridDesc.minY, k);
-										gridDesc.maxY = Math.max(gridDesc.maxY, k);
-									}
 									if (Math.floor(j - this._size * 0.5) === prop.highlightY) {
 										color = highlightColorAsArray;
-										if (gridDesc) {
-											if (!gridDesc.blocks[i]) {
-												gridDesc.blocks[i] = [];
-											}
-											gridDesc.blocks[i][k] = 1;
-										}
 									}
 								}
 								if (prop && isFinite(prop.highlightZ)) {
-									if (gridDesc) {
-										gridDesc.minX = Math.min(gridDesc.minX, i);
-										gridDesc.maxX = Math.max(gridDesc.maxX, i);
-										gridDesc.minY = Math.min(gridDesc.minY, j);
-										gridDesc.maxY = Math.max(gridDesc.maxY, j);
-									}
 									if (Math.floor(k - this._size * 0.5) === prop.highlightZ) {
 										color = highlightColorAsArray;
-										if (gridDesc) {
-											if (!gridDesc.blocks[i]) {
-												gridDesc.blocks[i] = [];
-											}
-											gridDesc.blocks[i][j] = 1;
-										}
 									}
 								}
 
