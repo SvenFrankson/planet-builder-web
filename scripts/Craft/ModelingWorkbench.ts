@@ -143,11 +143,11 @@ class ModelingWorkbench extends PickablePlanetObject {
 
         let hsf = Config.performanceConfiguration.holoScreenFactor;
 
-        let hudMaterial = new HoloPanelMaterial("hud-material", this.scene);
+        let iconMaterial = new HoloPanelMaterial("hud-material", this.scene);
 
         let hudTexture = new BABYLON.DynamicTexture("hud-texture", { width: 512 * hsf, height: 512 * hsf }, this.scene, true);
         hudTexture.hasAlpha = true;
-        hudMaterial.holoTexture = hudTexture;
+        iconMaterial.holoTexture = hudTexture;
         
         let slika = new Slika(512 * hsf, 512 * hsf, hudTexture.getContext(), hudTexture);
         slika.texture = hudTexture;
@@ -159,14 +159,14 @@ class ModelingWorkbench extends PickablePlanetObject {
         this.commandContainer.parent = this.grid;
         //this.commandContainer.rotationQuaternion = BABYLON.Quaternion.Identity();
 
-        let inputMaterial = new BABYLON.StandardMaterial("input-material", Game.Scene);
-        inputMaterial.diffuseColor = new BABYLON.Color3(0, 1, 1);
-        inputMaterial.alpha = 0.4;
+        let buttonMaterial = new BABYLON.StandardMaterial("input-material", Game.Scene);
+        buttonMaterial.diffuseColor = new BABYLON.Color3(0, 1, 1);
+        buttonMaterial.alpha = 0.4;
 
         this.gridPlus = new PickableObject("grid-plus", this.main);
         BABYLON.CreateBoxVertexData({ width: 0.08, height: 0.02, depth: 0.08 }).applyToMesh(this.gridPlus);
         this.gridPlus.instantiate();
-        this.gridPlus.material = inputMaterial;
+        this.gridPlus.material = buttonMaterial;
         this.gridPlus.parent = this.commandContainer;
         this.gridPlus.position.z = 0.5;
         this.gridPlus.layerMask = 0x10000000;
@@ -193,7 +193,7 @@ class ModelingWorkbench extends PickablePlanetObject {
         
         let gridPlusIcon = new BABYLON.Mesh("grid-plus-icon");
         VertexDataUtils.CreatePlane(0.08, 0.08, undefined, undefined, 0, 7/8, 1/8, 1).applyToMesh(gridPlusIcon);
-        gridPlusIcon.material = hudMaterial;
+        gridPlusIcon.material = iconMaterial;
         gridPlusIcon.parent = this.gridPlus;
         gridPlusIcon.rotation.x = Math.PI * 0.5;
         gridPlusIcon.layerMask = 0x10000000;
@@ -202,7 +202,7 @@ class ModelingWorkbench extends PickablePlanetObject {
         BABYLON.CreateBoxVertexData({ width: 0.08, height: 0.02, depth: 0.08 }).applyToMesh(this.gridDown);
         //VertexDataUtils.CreatePlane(0.08, 0.08).applyToMesh(this.gridMinus);
         this.gridDown.instantiate();
-        this.gridDown.material = inputMaterial;
+        this.gridDown.material = buttonMaterial;
         this.gridDown.parent = this.commandContainer;
         this.gridDown.position.z = 0.4;
         this.gridDown.layerMask = 0x10000000;
@@ -229,7 +229,7 @@ class ModelingWorkbench extends PickablePlanetObject {
         
         let gridDownIcon = new BABYLON.Mesh("grid-down-icon");
         VertexDataUtils.CreatePlane(0.08, 0.08, undefined, undefined, 0, 6/8, 1/8, 7/8).applyToMesh(gridDownIcon);
-        gridDownIcon.material = hudMaterial;
+        gridDownIcon.material = iconMaterial;
         gridDownIcon.parent = this.gridDown;
         gridDownIcon.rotation.x = Math.PI * 0.5;
         gridDownIcon.layerMask = 0x10000000;
@@ -238,14 +238,14 @@ class ModelingWorkbench extends PickablePlanetObject {
         BABYLON.CreateBoxVertexData({ width: 0.08, height: 0.02, depth: 0.08 }).applyToMesh(this.modeButton);
         //VertexDataUtils.CreatePlane(0.08, 0.08).applyToMesh(this.gridMinus);
         this.modeButton.instantiate();
-        this.modeButton.material = inputMaterial;
+        this.modeButton.material = buttonMaterial;
         this.modeButton.parent = this.commandContainer;
         this.modeButton.position.z = 0.3;
         this.modeButton.layerMask = 0x10000000;
         
         let modeButtonIcon = new BABYLON.Mesh("grid-down-icon");
         VertexDataUtils.CreatePlane(0.08, 0.08, undefined, undefined, 0, (5 - this.editionMode)/8, 1/8, (6 - this.editionMode)/8).applyToMesh(modeButtonIcon);
-        modeButtonIcon.material = hudMaterial;
+        modeButtonIcon.material = iconMaterial;
         modeButtonIcon.parent = this.modeButton;
         modeButtonIcon.rotation.x = Math.PI * 0.5;
         modeButtonIcon.layerMask = 0x10000000;
@@ -257,33 +257,22 @@ class ModelingWorkbench extends PickablePlanetObject {
             this.updateEditionMode();
         }
         
-        this.brushSize3 = new PickableObject("brush-size-3", this.main);
-        BABYLON.CreateBoxVertexData({ width: 0.08, height: 0.02, depth: 0.08 }).applyToMesh(this.brushSize3);
-        //VertexDataUtils.CreatePlane(0.08, 0.08).applyToMesh(this.gridMinus);
+        this.brushSize3 = new ModelingWorkbenchButton("brush-size-3", buttonMaterial, iconMaterial, new BABYLON.Vector2(2, 0), this.main);
         this.brushSize3.instantiate();
-        this.brushSize3.material = inputMaterial;
         this.brushSize3.parent = this.commandContainer;
         this.brushSize3.position.x = 0.1;
         this.brushSize3.position.z = 0.2;
-        this.brushSize3.layerMask = 0x10000000;
         this.brushSize3.pointerUpCallback = () => {
             this.brushSize = 3;
             this.previewMesh.scaling.copyFromFloats(1, 1, 1).scaleInPlace(this.brushSize);
             this.updateCubeMesh();
         }
         
-        let brushSize3Icon = new BABYLON.Mesh("grid-down-icon");
-        VertexDataUtils.CreatePlane(0.08, 0.08, undefined, undefined, 2/8, 7/8, 3/8, 1).applyToMesh(brushSize3Icon);
-        brushSize3Icon.material = hudMaterial;
-        brushSize3Icon.parent = this.brushSize3;
-        brushSize3Icon.rotation.x = Math.PI * 0.5;
-        brushSize3Icon.layerMask = 0x10000000;
-        
         this.brushSize1 = new PickableObject("brush-size-1", this.main);
         BABYLON.CreateBoxVertexData({ width: 0.08, height: 0.02, depth: 0.08 }).applyToMesh(this.brushSize1);
         //VertexDataUtils.CreatePlane(0.08, 0.08).applyToMesh(this.gridMinus);
         this.brushSize1.instantiate();
-        this.brushSize1.material = inputMaterial;
+        this.brushSize1.material = buttonMaterial;
         this.brushSize1.parent = this.commandContainer;
         this.brushSize1.position.z = 0.2;
         this.brushSize1.layerMask = 0x10000000;
@@ -295,7 +284,7 @@ class ModelingWorkbench extends PickablePlanetObject {
         
         let brushSize1Icon = new BABYLON.Mesh("grid-down-icon");
         VertexDataUtils.CreatePlane(0.08, 0.08, undefined, undefined, 2/8, 6/8, 3/8, 7/8).applyToMesh(brushSize1Icon);
-        brushSize1Icon.material = hudMaterial;
+        brushSize1Icon.material = iconMaterial;
         brushSize1Icon.parent = this.brushSize1;
         brushSize1Icon.rotation.x = Math.PI * 0.5;
         brushSize1Icon.layerMask = 0x10000000;
@@ -304,14 +293,14 @@ class ModelingWorkbench extends PickablePlanetObject {
         BABYLON.CreateBoxVertexData({ width: 0.08, height: 0.02, depth: 0.08 }).applyToMesh(this.brushModeButton);
         //VertexDataUtils.CreatePlane(0.08, 0.08).applyToMesh(this.gridMinus);
         this.brushModeButton.instantiate();
-        this.brushModeButton.material = inputMaterial;
+        this.brushModeButton.material = buttonMaterial;
         this.brushModeButton.parent = this.commandContainer;
         this.brushModeButton.position.z = 0.1;
         this.brushModeButton.layerMask = 0x10000000;
         
         let brushModeButtonIcon = new BABYLON.Mesh("grid-down-icon");
         VertexDataUtils.CreatePlane(0.08, 0.08, undefined, undefined, 2/8, (4 - this.brushMode)/8, 3/8, (5 - this.brushMode)/8).applyToMesh(brushModeButtonIcon);
-        brushModeButtonIcon.material = hudMaterial;
+        brushModeButtonIcon.material = iconMaterial;
         brushModeButtonIcon.parent = this.brushModeButton;
         brushModeButtonIcon.rotation.x = Math.PI * 0.5;
         brushModeButtonIcon.layerMask = 0x10000000;
@@ -326,7 +315,7 @@ class ModelingWorkbench extends PickablePlanetObject {
             BABYLON.CreateBoxVertexData({ width: 0.08, height: 0.02, depth: 0.08 }).applyToMesh(this.activeIndexInput[i]);
             //VertexDataUtils.CreatePlane(0.08, 0.08).applyToMesh(this.activeIndexInput[i]);
             this.activeIndexInput[i].instantiate();
-            this.activeIndexInput[i].material = inputMaterial;
+            this.activeIndexInput[i].material = buttonMaterial;
             this.activeIndexInput[i].parent = this.commandContainer;
             this.activeIndexInput[i].position.x = -0.1 - i * 0.1;
             this.activeIndexInput[i].layerMask = 0x10000000;
@@ -338,7 +327,7 @@ class ModelingWorkbench extends PickablePlanetObject {
         
             let activeIndexIcon = new BABYLON.Mesh("active-index-icon");
             VertexDataUtils.CreatePlane(0.08, 0.08, undefined, undefined, 1/8, (7-i)/8, 2/8, (8-i)/8).applyToMesh(activeIndexIcon);
-            activeIndexIcon.material = hudMaterial;
+            activeIndexIcon.material = iconMaterial;
             activeIndexIcon.parent = this.activeIndexInput[i];
             activeIndexIcon.rotation.x = Math.PI * 0.5;
             activeIndexIcon.layerMask = 0x10000000;
