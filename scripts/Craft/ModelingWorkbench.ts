@@ -6,6 +6,11 @@ enum EditionMode {
     VGrid
 }
 
+enum BrushMode {
+    Add,
+    Remove
+}
+
 class ModelingWorkbench extends PickablePlanetObject {
 
     public frame: BABYLON.Mesh;
@@ -32,6 +37,7 @@ class ModelingWorkbench extends PickablePlanetObject {
     public using: boolean = false;
 
     public editionMode: EditionMode = EditionMode.HGrid;
+    public brushMode: BrushMode = BrushMode.Add;
 
     public grid: BABYLON.Mesh;
     public gridOffsetX: number = 0;
@@ -45,6 +51,7 @@ class ModelingWorkbench extends PickablePlanetObject {
     public modeButton: PickableObject;
     public brushSize3: PickableObject;
     public brushSize1: PickableObject;
+    public brushModeButton: PickableObject;
     public activeIndexInput: PickableObject[] = [];
 
     constructor(
@@ -256,6 +263,7 @@ class ModelingWorkbench extends PickablePlanetObject {
         this.brushSize3.instantiate();
         this.brushSize3.material = inputMaterial;
         this.brushSize3.parent = this.commandContainer;
+        this.brushSize3.position.x = 0.1;
         this.brushSize3.position.z = 0.2;
         this.brushSize3.layerMask = 0x10000000;
         this.brushSize3.pointerUpCallback = () => {
@@ -277,7 +285,7 @@ class ModelingWorkbench extends PickablePlanetObject {
         this.brushSize1.instantiate();
         this.brushSize1.material = inputMaterial;
         this.brushSize1.parent = this.commandContainer;
-        this.brushSize1.position.z = 0.1;
+        this.brushSize1.position.z = 0.2;
         this.brushSize1.layerMask = 0x10000000;
         this.brushSize1.pointerUpCallback = () => {
             this.brushSize = 1;
@@ -291,6 +299,27 @@ class ModelingWorkbench extends PickablePlanetObject {
         brushSize1Icon.parent = this.brushSize1;
         brushSize1Icon.rotation.x = Math.PI * 0.5;
         brushSize1Icon.layerMask = 0x10000000;
+        
+        this.brushModeButton = new PickableObject("brush-mode-button", this.main);
+        BABYLON.CreateBoxVertexData({ width: 0.08, height: 0.02, depth: 0.08 }).applyToMesh(this.brushModeButton);
+        //VertexDataUtils.CreatePlane(0.08, 0.08).applyToMesh(this.gridMinus);
+        this.brushModeButton.instantiate();
+        this.brushModeButton.material = inputMaterial;
+        this.brushModeButton.parent = this.commandContainer;
+        this.brushModeButton.position.z = 0.1;
+        this.brushModeButton.layerMask = 0x10000000;
+        
+        let brushModeButtonIcon = new BABYLON.Mesh("grid-down-icon");
+        VertexDataUtils.CreatePlane(0.08, 0.08, undefined, undefined, 2/8, (4 - this.brushMode)/8, 3/8, (5 - this.brushMode)/8).applyToMesh(brushModeButtonIcon);
+        brushModeButtonIcon.material = hudMaterial;
+        brushModeButtonIcon.parent = this.brushModeButton;
+        brushModeButtonIcon.rotation.x = Math.PI * 0.5;
+        brushModeButtonIcon.layerMask = 0x10000000;
+        
+        this.brushModeButton.pointerUpCallback = () => {
+            this.brushMode = (this.brushMode + 1) % 2;
+            VertexDataUtils.CreatePlane(0.08, 0.08, undefined, undefined, 2/8, (4 - this.brushMode)/8, 3/8, (5 - this.brushMode)/8).applyToMesh(brushModeButtonIcon);
+        }
 
         for (let i = 0; i < 3; i++) {
             this.activeIndexInput[i] = new PickableObject("grid-minus", this.main);
@@ -450,7 +479,11 @@ class ModelingWorkbench extends PickablePlanetObject {
 
     public onPointerDown(): void {
         if (this.using) {
-            let p = this.inputManager.aimedPosition.add(this.inputManager.aimedNormal.scale(this.cubeSize * 0.5));
+            let s = 0.5;
+            if (this.brushMode === BrushMode.Remove && this.editionMode === EditionMode.Sculpt) {
+                s = -1;
+            }
+            let p = this.inputManager.aimedPosition.add(this.inputManager.aimedNormal.scale(s * this.cubeSize * 0.5));
             let localP = BABYLON.Vector3.TransformCoordinates(p, this.modelContainer.getWorldMatrix().clone().invert());
             let i = Math.floor(localP.x / this.cubeSize);
             let j = Math.floor(localP.y / this.cubeSize);
@@ -462,7 +495,12 @@ class ModelingWorkbench extends PickablePlanetObject {
                 voxelMesh.cubeSize = 0.05;
                 this.voxelMeshes[this.activeVoxelMesh] = voxelMesh;
             }
-            voxelMesh.addCube(42, new BABYLON.Vector3(i, j, k), this.brushSize);
+            if (this.brushMode === BrushMode.Add) {
+                voxelMesh.addCube(42, new BABYLON.Vector3(i, j, k), this.brushSize);
+            }
+            else if (this.brushMode === BrushMode.Remove) {
+                voxelMesh.addCube(0, new BABYLON.Vector3(i, j, k), this.brushSize);
+            }
 
             this.updateMesh();
         }
@@ -496,7 +534,11 @@ class ModelingWorkbench extends PickablePlanetObject {
         }
         else {
             if (this.inputManager.aimedPosition && this.inputManager.aimedElement === this) {
-                let p = this.inputManager.aimedPosition.add(this.inputManager.aimedNormal.scale(this.cubeSize * 0.5));
+                let s = 0.5;
+                if (this.brushMode === BrushMode.Remove && this.editionMode === EditionMode.Sculpt) {
+                    s = -1;
+                }
+                let p = this.inputManager.aimedPosition.add(this.inputManager.aimedNormal.scale(s * this.cubeSize * 0.5));
                 let localP = BABYLON.Vector3.TransformCoordinates(p, this.modelContainer.getWorldMatrix().clone().invert());
                 let i = Math.floor(localP.x / this.cubeSize);
                 let j = Math.floor(localP.y / this.cubeSize);
@@ -878,5 +920,39 @@ class ModelingWorkbench extends PickablePlanetObject {
         }));
         brushSize1Icon.posX = 128 + 32;
         brushSize1Icon.posY = 64 + 32;
+        
+        slika.add(new SlikaText({
+            text: "ADD",
+            color: BABYLON.Color3.White(),
+            fontSize: 16,
+            x: 32 + 128,
+            y: 39 + 192,
+            fontFamily: "XoloniumRegular",
+            textAlign: "center"
+        }));
+        slika.add(new SlikaCircle({
+            x: 32 + 128,
+            y: 32 + 192,
+            r: 30,
+            color: BABYLON.Color3.White(),
+            width: 2
+        }));
+        
+        slika.add(new SlikaText({
+            text: "SUB",
+            color: BABYLON.Color3.White(),
+            fontSize: 16,
+            x: 32 + 128,
+            y: 39 + 256,
+            fontFamily: "XoloniumRegular",
+            textAlign: "center"
+        }));
+        slika.add(new SlikaCircle({
+            x: 32 + 128,
+            y: 32 + 256,
+            r: 30,
+            color: BABYLON.Color3.White(),
+            width: 2
+        }));
     }
 }
