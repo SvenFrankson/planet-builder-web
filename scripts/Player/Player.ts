@@ -1,3 +1,9 @@
+enum MoveType {
+    Free,
+    Lock,
+    Rotate
+}
+
 class Player extends BABYLON.Mesh {
 
     public static DEBUG_INSTANCE: Player;
@@ -17,10 +23,12 @@ class Player extends BABYLON.Mesh {
     
     public currentAction: PlayerAction;
 
-    public lockInPlace: boolean = false;
+    public moveType: MoveType = MoveType.Free;
     public planet: Planet;
     public sqrDistToPlanet = Infinity;
     public altitudeOnPlanet: number = 0;
+    public rotateMoveCenter: BABYLON.Vector3 = BABYLON.Vector3.Zero();
+    public rotateMoveNorm: BABYLON.Vector3 = BABYLON.Vector3.Up();
 
     public headMove: boolean = false;
     public targetLookStrength: number = 0.5;
@@ -505,7 +513,7 @@ class Player extends BABYLON.Mesh {
         this._leftDirection.copyFrom(this._rightDirection);
         this._leftDirection.scaleInPlace(-1);
 
-        if (this.planet && !this.lockInPlace) {
+        if (this.planet && this.moveType != MoveType.Lock) {
             this.upDirection.copyFrom(this.position).subtractInPlace(this.planet.position);
             this.upDirection.normalize();
         }
@@ -524,7 +532,7 @@ class Player extends BABYLON.Mesh {
 
         this._keepUp();
 
-        if (this.lockInPlace) {
+        if (this.moveType === MoveType.Lock) {
             return;
         }
 
@@ -701,14 +709,34 @@ class Player extends BABYLON.Mesh {
         let downVelocity = this._downDirection.scale(BABYLON.Vector3.Dot(this.velocity, this._downDirection));
         this.velocity.subtractInPlace(downVelocity);
         downVelocity.scaleInPlace(Math.pow(0.5 * fVert, deltaTime));
-        this.velocity.scaleInPlace(Math.pow(0.01 * fLat, deltaTime));
+        this.velocity.scaleInPlace(Math.pow(0.05 * fLat, deltaTime));
         this.velocity.addInPlace(downVelocity);
 
         // Safety check.
         if (!VMath.IsFinite(this.velocity)) {
             this.velocity.copyFromFloats(-0.1 + 0.2 * Math.random(), -0.1 + 0.2 * Math.random(), -0.1 + 0.2 * Math.random());
         }
-        this.position.addInPlace(this.velocity.scale(deltaTime));
+        let dp = this.velocity.scale(deltaTime);
+        if (this.moveType === MoveType.Rotate && this.velocity.lengthSquared() > 0) {
+            let dr = - BABYLON.Vector3.Dot(this.forward, dp);
+
+            let p0 = this.position.subtract(this.rotateMoveCenter);
+            let d = p0.length();
+
+            this.position.addInPlace(dp);
+            let p1 = this.position.subtract(this.rotateMoveCenter);
+            let a = VMath.AngleFromToAround(p0, p1, this.rotateMoveNorm);
+            console.log(this.rotateMoveCenter + " " + this.rotateMoveNorm + " " + a);
+            let quat = BABYLON.Quaternion.RotationAxis(this.rotateMoveNorm, a);
+            this.rotationQuaternion = quat.multiply(this.rotationQuaternion);
+            VMath.RotateVectorByQuaternionToRef(this.velocity, quat, this.velocity);
+
+            VMath.ForceDistanceInPlace(this.position, this.rotateMoveCenter, d + dr);
+
+        }
+        else {
+            this.position.addInPlace(dp);
+        }
 
         // Update action
         if (!this.inputManager.aimedElement && this.currentAction) {

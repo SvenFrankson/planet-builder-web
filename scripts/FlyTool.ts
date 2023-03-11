@@ -120,10 +120,10 @@ class FlyTool {
                 }
             }
             else {
-                player.lockInPlace = false;
+                player.moveType = MoveType.Free;
             }
         }
-        player.lockInPlace = true;
+        player.moveType = MoveType.Lock;
         step();
     }
 }

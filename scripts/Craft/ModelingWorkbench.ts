@@ -461,6 +461,9 @@ class ModelingWorkbench extends PickablePlanetObject {
                 document.exitPointerLock();
                 this.inputManager.freeHandMode = true;
                 this.scene.onBeforeRenderObservable.add(this._update);
+                this.inputManager.player.moveType = MoveType.Rotate;
+                this.inputManager.player.rotateMoveCenter = this.position;
+                this.inputManager.player.rotateMoveNorm = this.up;
             }
         }
     }
@@ -476,6 +479,7 @@ class ModelingWorkbench extends PickablePlanetObject {
     private _update = () => {
         if (BABYLON.Vector3.DistanceSquared(this.inputManager.player.position, this.position) > 1.2 * 1.2) {
             this.using = false;
+            this.inputManager.player.moveType = MoveType.Free;
             this.inputManager.freeHandMode = false;
             this.scene.onBeforeRenderObservable.removeCallback(this._update);
             this.previewMesh.isVisible = false;

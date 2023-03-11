@@ -66,7 +66,7 @@ class Demo extends Main {
 
 			this.player = new Player(new BABYLON.Vector3(0, (kPosMax + 1) * PlanetTools.CHUNCKSIZE * 0.8, 0), this);
 			this.cameraManager.player = this.player;
-			this.player.lockInPlace = true;
+			this.player.moveType = MoveType.Lock;
             
             let debugPlanetPerf = new DebugPlanetPerf(this);
             debugPlanetPerf.show();
