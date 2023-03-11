@@ -42,7 +42,7 @@ class OctreeTest extends Main {
 						let K = center.z + k;
 						if (I >= 0 && J >= 0 && K >= 0) {
 							if (I < root.size && J < root.size && K < root.size) {
-								root.set(42, I, J, K);
+								root.set(1, I, J, K);
 							}
 						}
 					}
@@ -99,7 +99,7 @@ class OctreeTest extends Main {
 						let K = pMin.z + k;
 						if (I >= 0 && J >= 0 && K >= 0) {
 							if (I < root.size && J < root.size && K < root.size) {
-								root.set(42, I, J, K);
+								root.set(1, I, J, K);
 							}
 						}
 					}
@@ -130,7 +130,7 @@ class OctreeTest extends Main {
 			let z = 0;
 			for (let n = 0; n < 0; n++) {
 				meshMaker.addCube(
-					42,
+					1,
 					new BABYLON.Vector3(x, y, z),
 					1.9
 				);
@@ -138,19 +138,19 @@ class OctreeTest extends Main {
 			}
 
 			meshMaker.addCube(
-				42,
+				1,
 				BABYLON.Vector3.Zero(),
 				3
 			);
 
 			meshMaker.addCube(
-				42,
+				1,
 				BABYLON.Vector3.Zero(),
 				2
 			);
 
 			meshMaker.addCube(
-				42,
+				1,
 				BABYLON.Vector3.Zero(),
 				1
 			);
@@ -180,7 +180,7 @@ class OctreeTest extends Main {
 				prev = next;
 			}
 			
-			//meshMaker.root.set(42, Math.floor(S * 0.5), Math.floor(S * 0.5), Math.floor(S * 0.5));
+			//meshMaker.root.set(1, Math.floor(S * 0.5), Math.floor(S * 0.5), Math.floor(S * 0.5));
             
 			let serial = meshMaker.root.serializeToString();
 			let clonedRoot = OctreeNode.DeserializeFromString(serial);

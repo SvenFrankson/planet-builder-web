@@ -85,11 +85,11 @@ class ModelingWorkbench extends PickablePlanetObject {
         /*
         this.voxelMesh = new VoxelMesh(6);
         this.cubeSize = 0.05;
-        this.voxelMesh.addCube(42, BABYLON.Vector3.Zero(), 3);
+        this.voxelMesh.addCube(1, BABYLON.Vector3.Zero(), 3);
         for (let n = 0; n < 0; n++) {
             let s = Math.floor(2 + 4 * Math.random());
             this.voxelMesh.addCube(
-                42,
+                1,
                 new BABYLON.Vector3(
                     Math.round(- 12 + 24 * Math.random()),
                     Math.round(- 12 + 24 * Math.random()),
@@ -468,7 +468,7 @@ class ModelingWorkbench extends PickablePlanetObject {
                 this.voxelMeshes[this.activeVoxelMesh] = voxelMesh;
             }
             if (this.brushMode === BrushMode.Add) {
-                voxelMesh.addCube(42, new BABYLON.Vector3(i, j, k), this.brushSize);
+                voxelMesh.addCube(1, new BABYLON.Vector3(i, j, k), this.brushSize);
             }
             else if (this.brushMode === BrushMode.Remove) {
                 voxelMesh.addCube(0, new BABYLON.Vector3(i, j, k), this.brushSize);
