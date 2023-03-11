@@ -46,14 +46,14 @@ class ModelingWorkbench extends PickablePlanetObject {
     public currentOrientation: number = 0;
 
     public commandContainer: BABYLON.Mesh;
-    public gridPlus: PickableObject;
-    public gridDown: PickableObject;
-    public modeButton: PickableObject;
-    public brushSize3: PickableObject;
-    public brushSize1: PickableObject;
-    public brushModeButton: PickableObject;
-    public activeIndexInput: PickableObject[] = [];
-    public saveButton: PickableObject;
+    public gridPlus: ModelingWorkbenchButton;
+    public gridDown: ModelingWorkbenchButton;
+    public editionModeButton: ModelingWorkbenchButton;
+    public brushSize3: ModelingWorkbenchButton;
+    public brushSize1: ModelingWorkbenchButton;
+    public brushModeButton: ModelingWorkbenchButton;
+    public activeIndexInput: ModelingWorkbenchButton[] = [];
+    public saveButton: ModelingWorkbenchButton;
 
     public get player(): Player {
         return this.inputManager.player;
@@ -170,11 +170,11 @@ class ModelingWorkbench extends PickablePlanetObject {
 
         
         
-        this.gridPlus = new ModelingWorkbenchButton("grid-plus", buttonMaterial, iconMaterial, new BABYLON.Vector2(0, 0), this.main);
+        this.gridPlus = new ModelingWorkbenchButton("grid-plus", buttonMaterial, iconMaterial, [new BABYLON.Vector2(0, 0)], this.main);
         this.gridPlus.instantiate();
         this.gridPlus.parent = this.commandContainer;
         this.gridPlus.position.z = 0.5;
-        this.gridPlus.pointerUpCallback = () => {
+        this.gridPlus.onClick = () => {
             if (this.editionMode === EditionMode.HGrid) {
                 this.gridOffsetY++;
             }
@@ -195,11 +195,11 @@ class ModelingWorkbench extends PickablePlanetObject {
             this.updateCubeMesh();
         }
 
-        this.gridDown = new ModelingWorkbenchButton("grid-down", buttonMaterial, iconMaterial, new BABYLON.Vector2(0, 1), this.main);
+        this.gridDown = new ModelingWorkbenchButton("grid-down", buttonMaterial, iconMaterial, [new BABYLON.Vector2(0, 1)], this.main);
         this.gridDown.instantiate();
         this.gridDown.parent = this.commandContainer;
         this.gridDown.position.z = 0.4;
-        this.gridDown.pointerUpCallback = () => {
+        this.gridDown.onClick = () => {
             if (this.editionMode === EditionMode.HGrid) {
                 this.gridOffsetY--;
             }
@@ -220,88 +220,74 @@ class ModelingWorkbench extends PickablePlanetObject {
             this.updateCubeMesh();
         }
         
-        this.modeButton = new PickableObject("grid-minus", this.main);
-        BABYLON.CreateBoxVertexData({ width: 0.08, height: 0.02, depth: 0.08 }).applyToMesh(this.modeButton);
-        //VertexDataUtils.CreatePlane(0.08, 0.08).applyToMesh(this.gridMinus);
-        this.modeButton.instantiate();
-        this.modeButton.material = buttonMaterial;
-        this.modeButton.parent = this.commandContainer;
-        this.modeButton.position.z = 0.3;
-        this.modeButton.layerMask = 0x10000000;
+        this.editionModeButton = new ModelingWorkbenchButton(
+            "edition-mode-button", buttonMaterial, iconMaterial,
+            [new BABYLON.Vector2(0, 2), new BABYLON.Vector2(0, 3), new BABYLON.Vector2(0, 4)],
+            this.main
+        );
+        this.editionModeButton.instantiate();
+        this.editionModeButton.parent = this.commandContainer;
+        this.editionModeButton.position.z = 0.3;
         
-        let modeButtonIcon = new BABYLON.Mesh("grid-down-icon");
-        VertexDataUtils.CreatePlane(0.08, 0.08, undefined, undefined, 0, (5 - this.editionMode)/8, 1/8, (6 - this.editionMode)/8).applyToMesh(modeButtonIcon);
-        modeButtonIcon.material = iconMaterial;
-        modeButtonIcon.parent = this.modeButton;
-        modeButtonIcon.rotation.x = Math.PI * 0.5;
-        modeButtonIcon.layerMask = 0x10000000;
-        
-        this.modeButton.pointerUpCallback = () => {
-            this.editionMode = (this.editionMode + 1) % 3;
-            VertexDataUtils.CreatePlane(0.08, 0.08, undefined, undefined, 0, (5 - this.editionMode)/8, 1/8, (6 - this.editionMode)/8).applyToMesh(modeButtonIcon);
+        this.editionModeButton.onClick = (index: number) => {
+            this.editionMode = index;
             this.updateCubeMesh();
             this.updateEditionMode();
         }
         
-        this.brushSize3 = new ModelingWorkbenchButton("brush-size-3", buttonMaterial, iconMaterial, new BABYLON.Vector2(2, 0), this.main);
-        this.brushSize3.instantiate();
-        this.brushSize3.parent = this.commandContainer;
-        this.brushSize3.position.x = 0.1;
-        this.brushSize3.position.z = 0.2;
-        this.brushSize3.pointerUpCallback = () => {
-            this.brushSize = 3;
-            this.previewMesh.scaling.copyFromFloats(1, 1, 1).scaleInPlace(this.brushSize);
-            this.updateCubeMesh();
-        }
-        
-        this.brushSize1 = new ModelingWorkbenchButton("brush-size-3", buttonMaterial, iconMaterial, new BABYLON.Vector2(2, 1), this.main);
+        this.brushSize1 = new ModelingWorkbenchButton("brush-size-3", buttonMaterial, iconMaterial, [new BABYLON.Vector2(2, 0)], this.main);
         this.brushSize1.instantiate();
         this.brushSize1.parent = this.commandContainer;
         this.brushSize1.position.z = 0.2;
-        this.brushSize1.pointerUpCallback = () => {
+        this.brushSize1.onClick = () => {
             this.brushSize = 1;
             this.previewMesh.scaling.copyFromFloats(1, 1, 1).scaleInPlace(this.brushSize);
             this.updateCubeMesh();
         }
         
-        this.brushModeButton = new PickableObject("brush-mode-button", this.main);
-        BABYLON.CreateBoxVertexData({ width: 0.08, height: 0.02, depth: 0.08 }).applyToMesh(this.brushModeButton);
-        //VertexDataUtils.CreatePlane(0.08, 0.08).applyToMesh(this.gridMinus);
+        this.brushSize3 = new ModelingWorkbenchButton("brush-size-3", buttonMaterial, iconMaterial, [new BABYLON.Vector2(2, 1)], this.main);
+        this.brushSize3.instantiate();
+        this.brushSize3.parent = this.commandContainer;
+        this.brushSize3.position.x = 0.1;
+        this.brushSize3.position.z = 0.2;
+        this.brushSize3.onClick = () => {
+            this.brushSize = 3;
+            this.previewMesh.scaling.copyFromFloats(1, 1, 1).scaleInPlace(this.brushSize);
+            this.updateCubeMesh();
+        }
+        
+        this.brushModeButton = new ModelingWorkbenchButton(
+            "brush-mode-button", buttonMaterial, iconMaterial,
+            [new BABYLON.Vector2(2, 3), new BABYLON.Vector2(2, 4)],
+            this.main
+        );
         this.brushModeButton.instantiate();
-        this.brushModeButton.material = buttonMaterial;
         this.brushModeButton.parent = this.commandContainer;
         this.brushModeButton.position.z = 0.1;
-        this.brushModeButton.layerMask = 0x10000000;
         
-        let brushModeButtonIcon = new BABYLON.Mesh("grid-down-icon");
-        VertexDataUtils.CreatePlane(0.08, 0.08, undefined, undefined, 2/8, (4 - this.brushMode)/8, 3/8, (5 - this.brushMode)/8).applyToMesh(brushModeButtonIcon);
-        brushModeButtonIcon.material = iconMaterial;
-        brushModeButtonIcon.parent = this.brushModeButton;
-        brushModeButtonIcon.rotation.x = Math.PI * 0.5;
-        brushModeButtonIcon.layerMask = 0x10000000;
-        
-        this.brushModeButton.pointerUpCallback = () => {
-            this.brushMode = (this.brushMode + 1) % 2;
-            VertexDataUtils.CreatePlane(0.08, 0.08, undefined, undefined, 2/8, (4 - this.brushMode)/8, 3/8, (5 - this.brushMode)/8).applyToMesh(brushModeButtonIcon);
+        this.brushModeButton.onClick = (index: number) => {
+            this.brushMode = index;
+            this.updateCubeMesh();
+            this.updateEditionMode();
         }
 
         for (let i = 0; i < 3; i++) {
-            this.activeIndexInput[i] = new ModelingWorkbenchButton("material-input-" + i.toFixed(0), buttonMaterial, iconMaterial, new BABYLON.Vector2(1, i), this.main);
+            this.activeIndexInput[i] = new ModelingWorkbenchButton("material-input-" + i.toFixed(0), buttonMaterial, iconMaterial, [new BABYLON.Vector2(1, i)], this.main);
             this.activeIndexInput[i].instantiate();
             this.activeIndexInput[i].parent = this.commandContainer;
             this.activeIndexInput[i].position.x = -0.1 - i * 0.1;
             let n = i;
-            this.activeIndexInput[i].pointerUpCallback = () => {
+            this.activeIndexInput[i].onClick = () => {
                 this.activeVoxelMesh = n;
                 this.updateCubeMesh();
             }
         }
         
-        this.saveButton = new ModelingWorkbenchButton("save-button", buttonMaterial, iconMaterial, new BABYLON.Vector2(3, 0), this.main);
+        this.saveButton = new ModelingWorkbenchButton("save-button", buttonMaterial, iconMaterial, [new BABYLON.Vector2(3, 0)], this.main);
         this.saveButton.instantiate();
         this.saveButton.parent = this.commandContainer;
         this.saveButton.position.x = -0.5;
-        this.saveButton.pointerUpCallback = async () => {
+        this.saveButton.onClick = async () => {
             let name = "X-" + Math.floor(Math.random() * 1000);
             let mmd = new ModelizedMeshData();
             mmd.degree = this.degree;
@@ -883,21 +869,7 @@ class ModelingWorkbench extends PickablePlanetObject {
             width: 2
         }));
 
-        // Brush Size 3
-        let brushSize3Icon = slika.add(new SlikaPath({
-            strokeColor: BABYLON.Color3.White(),
-            strokeWidth: 2,
-            points: [
-                -15, -15,
-                15, -15,
-                15, 15,
-                -15, 15
-            ],
-            close: true
-        }));
-        brushSize3Icon.posX = 128 + 32;
-        brushSize3Icon.posY = 32;
-        
+        // Brush Sizes        
         let brushSize1Icon = slika.add(new SlikaPath({
             strokeColor: BABYLON.Color3.White(),
             strokeWidth: 2,
@@ -910,7 +882,35 @@ class ModelingWorkbench extends PickablePlanetObject {
             close: true
         }));
         brushSize1Icon.posX = 128 + 32;
-        brushSize1Icon.posY = 64 + 32;
+        brushSize1Icon.posY = 32;
+
+        let brushSize3Icon = slika.add(new SlikaPath({
+            strokeColor: BABYLON.Color3.White(),
+            strokeWidth: 2,
+            points: [
+                -15, -15,
+                15, -15,
+                15, 15,
+                -15, 15
+            ],
+            close: true
+        }));
+        brushSize3Icon.posX = 128 + 32;
+        brushSize3Icon.posY = 64 + 32;
+
+        let brushSize5Icon = slika.add(new SlikaPath({
+            strokeColor: BABYLON.Color3.White(),
+            strokeWidth: 2,
+            points: [
+                -25, -25,
+                25, -25,
+                25, 25,
+                -25, 25
+            ],
+            close: true
+        }));
+        brushSize5Icon.posX = 128 + 32;
+        brushSize5Icon.posY = 128 + 32;
         
         slika.add(new SlikaText({
             text: "ADD",
