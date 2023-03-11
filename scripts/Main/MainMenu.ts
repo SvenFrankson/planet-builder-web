@@ -130,6 +130,11 @@ class MainMenu extends Main {
 			mainPanel.register();
 			mainPanel.planet = mainMenuPlanet;
 
+			let workbench = new ModelingWorkbench(this);
+			workbench.instantiate();
+			workbench.register();
+			workbench.planet = mainMenuPlanet;
+
 			PlanetChunckVertexData.InitializeData().then(
 				async () => {
 					await VoxelVertexData.InitializeData();
@@ -174,17 +179,6 @@ class MainMenu extends Main {
 								}, 1000);
 							}, 500);
 						}
-
-						setTimeout(() => {
-							let p = this.player.position.add(this.player.forward.scale(0.5));
-
-							let workbench = new ModelingWorkbench(this);
-							workbench.instantiate();
-							workbench.planet = this.player.planet
-							workbench.setPosition(p, true);
-							workbench.setTarget(this.player.position);
-							workbench.onPointerUp();
-						}, 1000);
 					});
 						
 					//let debugAltimeter = new Altimeter3D(this.player);

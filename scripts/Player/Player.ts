@@ -709,7 +709,7 @@ class Player extends BABYLON.Mesh {
         let downVelocity = this._downDirection.scale(BABYLON.Vector3.Dot(this.velocity, this._downDirection));
         this.velocity.subtractInPlace(downVelocity);
         downVelocity.scaleInPlace(Math.pow(0.5 * fVert, deltaTime));
-        this.velocity.scaleInPlace(Math.pow(0.05 * fLat, deltaTime));
+        this.velocity.scaleInPlace(Math.pow(0.01 * fLat, deltaTime));
         this.velocity.addInPlace(downVelocity);
 
         // Safety check.
@@ -726,13 +726,12 @@ class Player extends BABYLON.Mesh {
             this.position.addInPlace(dp);
             let p1 = this.position.subtract(this.rotateMoveCenter);
             let a = VMath.AngleFromToAround(p0, p1, this.rotateMoveNorm);
-            console.log(this.rotateMoveCenter + " " + this.rotateMoveNorm + " " + a);
             let quat = BABYLON.Quaternion.RotationAxis(this.rotateMoveNorm, a);
             this.rotationQuaternion = quat.multiply(this.rotationQuaternion);
             VMath.RotateVectorByQuaternionToRef(this.velocity, quat, this.velocity);
 
-            VMath.ForceDistanceInPlace(this.position, this.rotateMoveCenter, d + dr);
-
+            let newRadius = Math.max(d + dr, 0.5);
+            VMath.ForceDistanceInPlace(this.position, this.rotateMoveCenter, newRadius);
         }
         else {
             this.position.addInPlace(dp);

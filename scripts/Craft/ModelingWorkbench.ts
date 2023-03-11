@@ -55,6 +55,10 @@ class ModelingWorkbench extends PickablePlanetObject {
     public activeIndexInput: PickableObject[] = [];
     public saveButton: PickableObject;
 
+    public get player(): Player {
+        return this.inputManager.player;
+    }
+
     constructor(
         main: Main
     ) {
@@ -313,7 +317,7 @@ class ModelingWorkbench extends PickablePlanetObject {
             }
             window.localStorage.setItem(name, mmd.serialize());
 
-            this.inputManager.player.inventory.addItem(await InventoryItem.TmpObject(this.inputManager.player, name));
+            this.player.inventory.addItem(await InventoryItem.TmpObject(this.player, name));
         }
 
         this.updateBoundingBox();
@@ -329,6 +333,17 @@ class ModelingWorkbench extends PickablePlanetObject {
         this.interactionAnchor.parent = this;
 
         this.proxyPickMeshes = [this.grid];
+    }
+
+    public register(): void {
+        this.inputManager.addMappedKeyUpListener(KeyInput.WORKBENCH, async () => {
+            let p = this.player.position.add(this.player.forward.scale(1));
+            this.planet = this.player.planet
+
+            this.setPosition(p, true);
+            this.setTarget(this.player.position);
+            this.onPointerUp();
+        })
     }
 
     private updateCubeMesh(): void {
@@ -443,7 +458,7 @@ class ModelingWorkbench extends PickablePlanetObject {
     }
 
     public interceptsPointerMove(): boolean {
-        if (BABYLON.Vector3.DistanceSquared(this.inputManager.player.position, this.position) < 1.2 * 1.2) {
+        if (BABYLON.Vector3.DistanceSquared(this.player.position, this.position) < 1.2 * 1.2) {
             return true;
         }
         return false;
@@ -480,14 +495,14 @@ class ModelingWorkbench extends PickablePlanetObject {
 
     public onPointerUp(): void {
         if (!this.using) {
-            if (BABYLON.Vector3.DistanceSquared(this.inputManager.player.position, this.position) < 1.2 * 1.2) {
+            if (BABYLON.Vector3.DistanceSquared(this.player.position, this.position) < 1.2 * 1.2) {
                 this.using = true;
                 document.exitPointerLock();
                 this.inputManager.freeHandMode = true;
                 this.scene.onBeforeRenderObservable.add(this._update);
-                this.inputManager.player.moveType = MoveType.Rotate;
-                this.inputManager.player.rotateMoveCenter = this.position;
-                this.inputManager.player.rotateMoveNorm = this.up;
+                this.player.moveType = MoveType.Rotate;
+                this.player.rotateMoveCenter = this.position;
+                this.player.rotateMoveNorm = this.up;
             }
         }
     }
@@ -501,9 +516,9 @@ class ModelingWorkbench extends PickablePlanetObject {
     }
 
     private _update = () => {
-        if (BABYLON.Vector3.DistanceSquared(this.inputManager.player.position, this.position) > 1.2 * 1.2) {
+        if (BABYLON.Vector3.DistanceSquared(this.player.position, this.position) > 1.2 * 1.2) {
             this.using = false;
-            this.inputManager.player.moveType = MoveType.Free;
+            this.player.moveType = MoveType.Free;
             this.inputManager.freeHandMode = false;
             this.scene.onBeforeRenderObservable.removeCallback(this._update);
             this.previewMesh.isVisible = false;
@@ -527,8 +542,8 @@ class ModelingWorkbench extends PickablePlanetObject {
             }
 
             let Y = this.up;
-            let Z = this.inputManager.player.forward;
-            let alpha = VMath.AngleFromToAround(this.inputManager.player.forward, this.forward, this.up);
+            let Z = this.player.forward;
+            let alpha = VMath.AngleFromToAround(this.player.forward, this.forward, this.up);
             if (this.editionMode === EditionMode.VGrid) {
                 this.commandContainer.rotation.y = 0;
                 if (this.currentOrientation === 0) {
