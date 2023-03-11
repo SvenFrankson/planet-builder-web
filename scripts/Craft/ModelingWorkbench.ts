@@ -298,7 +298,22 @@ class ModelingWorkbench extends PickablePlanetObject {
         this.saveButton.parent = this.commandContainer;
         this.saveButton.position.x = -0.5;
         this.saveButton.pointerUpCallback = async () => {
-            this.inputManager.player.inventory.addItem(await InventoryItem.TmpObject(this.inputManager.player, "X-" + Math.floor(Math.random() * 1000)));
+            let name = "X-" + Math.floor(Math.random() * 1000);
+            let mmd = new ModelizedMeshData();
+            mmd.degree = this.degree;
+            mmd.cubeSize = this.cubeSize;
+            mmd.octrees = new Map<string, OctreeNode<number>>();
+            for (let i = 0; i < this.voxelMeshes.length; i++) {
+                let voxelMesh = this.voxelMeshes[i];
+                if (voxelMesh) {
+                    let octree = voxelMesh.root;
+                    let color = this.colors[i].toHexString();
+                    mmd.octrees.set(color, octree);
+                }
+            }
+            window.localStorage.setItem(name, mmd.serialize());
+
+            this.inputManager.player.inventory.addItem(await InventoryItem.TmpObject(this.inputManager.player, name));
         }
 
         this.updateBoundingBox();

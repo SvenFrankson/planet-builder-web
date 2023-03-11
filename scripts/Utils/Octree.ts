@@ -208,7 +208,7 @@ class OctreeNode<T> {
                 child.serialize(output);
             }
             else {
-                output[this.degree] += (child as number).toString().padStart(3, "0");
+                output[this.degree] += (child as number).toString().padStart(1, "0");
             }
         }
 
@@ -264,11 +264,11 @@ class OctreeNode<T> {
                         cursor++;
                     }
                     else {
-                        let v = parseInt(input[d].substring(cursor, cursor + 3));
+                        let v = parseInt(input[d].substring(cursor, cursor + 1));
                         if (isNaN(v)) {
                             return undefined;
                         }
-                        cursor += 3;
+                        cursor += 1;
                         node._setNthChild(v, n);
                     }
                     n++

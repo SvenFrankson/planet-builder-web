@@ -7,19 +7,30 @@ class VertexDataUtils {
         let indices = [];
         let normals = [];
         let uvs = [];
+        let colors = [];
 
         for (let i = 0; i < datas.length; i++) {
             let offset = positions.length / 3;
             positions.push(...datas[i].positions);
             indices.push(...datas[i].indices.map(index => { return index + offset; }));
             normals.push(...datas[i].normals);
-            uvs.push(...datas[i].uvs);
+            if (datas[i].uvs) {
+                uvs.push(...datas[i].uvs);
+            }
+            if (datas[i].colors) {
+                colors.push(...datas[i].colors);
+            }
         }
 
         mergedData.positions = positions;
         mergedData.indices = indices;
         mergedData.normals = normals;
-        mergedData.uvs = uvs;
+        if (uvs.length > 0) {
+            mergedData.uvs = uvs;
+        }
+        if (colors.length > 0) {
+            mergedData.colors = colors;
+        }
 
         return mergedData;
     }

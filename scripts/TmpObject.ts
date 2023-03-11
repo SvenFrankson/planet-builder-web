@@ -5,6 +5,18 @@ class TmpObject extends PlanetObject {
     }
 
     public async instantiate(): Promise<void> {
-        BABYLON.CreateBoxVertexData({ size: 1 }).applyToMesh(this);
+        if (this.name.startsWith("X-")) {
+            let storedMMD = window.localStorage.getItem(this.name);
+            if (storedMMD) {
+                let mmd = ModelizedMeshData.Deserialize(storedMMD);
+                if (mmd) {
+                    mmd.buildVertexData();
+                    mmd.vertexData.applyToMesh(this);
+                }
+            }
+        }
+        else {
+            BABYLON.CreateBoxVertexData({ size: 1 }).applyToMesh(this);
+        }
     }
 }
