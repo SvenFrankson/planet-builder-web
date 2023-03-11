@@ -78,6 +78,7 @@ class ModelingWorkbench extends PickablePlanetObject {
         super.instantiate();
         
         this.frame = BABYLON.MeshBuilder.CreateBox("frame", { size: 0.05 });
+        this.frame.material = new ToonMaterial("frame-material", this.scene);
         this.frame.parent = this;
         this.frame.position.y = 0;
         this.frame.isVisible = true;
