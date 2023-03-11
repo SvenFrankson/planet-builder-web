@@ -147,6 +147,11 @@ class Inventory {
                 item.count = data.c;
                 this.items.push(item);
             }
+            else {
+                let item = await InventoryItem.TmpObject(this.player, data.r);
+                item.count = data.c;
+                this.items.push(item);
+            }
         }
     }
 }

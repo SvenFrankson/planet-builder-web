@@ -8,6 +8,27 @@ class PlayerActionTemplate {
         let action = new PlayerAction(tmpObjectName, player);
         action.iconUrl = "/datas/images/qmark.png";
 
+        let previewTmpObject: TmpObject;
+
+        action.onUpdate = () => {
+            if (!player.inputManager.inventoryOpened) {
+                let hit = player.inputManager.getPickInfo(player.meshes);
+                if (hit && hit.pickedPoint) {
+                    if (!previewTmpObject) {
+                        previewTmpObject = new TmpObject(tmpObjectName, player.main);
+                        previewTmpObject.planet = player.planet;
+                        previewTmpObject.instantiate();
+                    }
+                    previewTmpObject.setPosition(hit.pickedPoint);
+                    return;
+                }
+            }
+            if (previewTmpObject) {
+                previewTmpObject.dispose();
+                previewTmpObject = undefined;
+            }
+        }
+
         action.onClick = () => {
             if (!player.inputManager.inventoryOpened) {
                 let hit = player.inputManager.getPickInfo(player.meshes);
@@ -17,6 +38,13 @@ class PlayerActionTemplate {
                     tmpObject.instantiate();
                     tmpObject.setPosition(hit.pickedPoint);
                 }
+            }
+        }
+
+        action.onUnequip = () => {
+            if (previewTmpObject) {
+                previewTmpObject.dispose();
+                previewTmpObject = undefined;
             }
         }
 

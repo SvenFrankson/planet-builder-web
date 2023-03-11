@@ -298,7 +298,7 @@ class ModelingWorkbench extends PickablePlanetObject {
         this.saveButton.parent = this.commandContainer;
         this.saveButton.position.x = -0.5;
         this.saveButton.pointerUpCallback = async () => {
-            this.inputManager.player.inventory.addItem(await InventoryItem.TmpObject(this.inputManager.player, "test-object-" + Math.floor(Math.random() * 100)));
+            this.inputManager.player.inventory.addItem(await InventoryItem.TmpObject(this.inputManager.player, "X-" + Math.floor(Math.random() * 1000)));
         }
 
         this.updateBoundingBox();
