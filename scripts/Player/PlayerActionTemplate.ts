@@ -20,6 +20,7 @@ class PlayerActionTemplate {
                         previewTmpObject.instantiate();
                     }
                     previewTmpObject.setPosition(hit.pickedPoint);
+                    previewTmpObject.setTarget(player.position);
                     return;
                 }
             }
@@ -37,6 +38,7 @@ class PlayerActionTemplate {
                     tmpObject.planet = player.planet;
                     tmpObject.instantiate();
                     tmpObject.setPosition(hit.pickedPoint);
+                    tmpObject.setTarget(player.position);
                 }
             }
         }

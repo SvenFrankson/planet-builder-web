@@ -18,5 +18,6 @@ class TmpObject extends PlanetObject {
         else {
             BABYLON.CreateBoxVertexData({ size: 1 }).applyToMesh(this);
         }
+        this.material = new ToonMaterial(this.name + "-material", this.main.scene);
     }
 }
