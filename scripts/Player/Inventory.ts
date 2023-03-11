@@ -2,7 +2,8 @@ enum InventorySection {
     Action,
     Cube,
     Block,
-    Brick
+    Brick,
+    TmpObject
 }
 
 class InventoryItem {
@@ -25,6 +26,19 @@ class InventoryItem {
             it.playerAction = await PlayerActionTemplate.CreateBlockAction(player, blockType);
             it.playerAction.item = it;
             it.iconUrl = "datas/images/block-icon-" + BlockTypeNames[blockType] + "-miniature.png";
+            resolve(it);
+        });
+    }
+
+    public static async TmpObject(player: Player, tmpObjectName: string): Promise<InventoryItem> {
+        return new Promise<InventoryItem>(async resolve => {
+            let it = new InventoryItem();
+            it.section = InventorySection.TmpObject;
+            it.name = tmpObjectName;
+            it.size = 1;
+            it.playerAction = await PlayerActionTemplate.AddTmpObjectAction(player, tmpObjectName);
+            it.playerAction.item = it;
+            it.iconUrl = "/datas/images/qmark.png";
             resolve(it);
         });
     }

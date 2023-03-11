@@ -53,6 +53,7 @@ class ModelingWorkbench extends PickablePlanetObject {
     public brushSize1: PickableObject;
     public brushModeButton: PickableObject;
     public activeIndexInput: PickableObject[] = [];
+    public saveButton: PickableObject;
 
     constructor(
         main: Main
@@ -290,6 +291,14 @@ class ModelingWorkbench extends PickablePlanetObject {
                 this.activeVoxelMesh = n;
                 this.updateCubeMesh();
             }
+        }
+        
+        this.saveButton = new ModelingWorkbenchButton("save-button", buttonMaterial, iconMaterial, new BABYLON.Vector2(3, 0), this.main);
+        this.saveButton.instantiate();
+        this.saveButton.parent = this.commandContainer;
+        this.saveButton.position.x = -0.5;
+        this.saveButton.pointerUpCallback = async () => {
+            this.inputManager.player.inventory.addItem(await InventoryItem.TmpObject(this.inputManager.player, "test-object-" + Math.floor(Math.random() * 100)));
         }
 
         this.updateBoundingBox();
@@ -902,6 +911,23 @@ class ModelingWorkbench extends PickablePlanetObject {
         slika.add(new SlikaCircle({
             x: 32 + 128,
             y: 32 + 256,
+            r: 30,
+            color: BABYLON.Color3.White(),
+            width: 2
+        }));
+                
+        slika.add(new SlikaText({
+            text: "SAVE",
+            color: BABYLON.Color3.White(),
+            fontSize: 16,
+            x: 32 + 192,
+            y: 39,
+            fontFamily: "XoloniumRegular",
+            textAlign: "center"
+        }));
+        slika.add(new SlikaCircle({
+            x: 32 + 192,
+            y: 32,
             r: 30,
             color: BABYLON.Color3.White(),
             width: 2

@@ -4,6 +4,25 @@ var ADD_BRICK_ANIMATION_DURATION = 1000;
 
 class PlayerActionTemplate {
 
+    public static async AddTmpObjectAction(player: Player, tmpObjectName: string): Promise<PlayerAction> {
+        let action = new PlayerAction(tmpObjectName, player);
+        action.iconUrl = "/datas/images/qmark.png";
+
+        action.onClick = () => {
+            if (!player.inputManager.inventoryOpened) {
+                let hit = player.inputManager.getPickInfo(player.meshes);
+                if (hit && hit.pickedPoint) {
+                    let tmpObject = new TmpObject(tmpObjectName, player.main);
+                    tmpObject.planet = player.planet;
+                    tmpObject.instantiate();
+                    tmpObject.setPosition(hit.pickedPoint);
+                }
+            }
+        }
+
+        return action;
+    }
+
     public static async CreateBlockAction(player: Player, blockType: BlockType): Promise<PlayerAction> {
         let action = new PlayerAction(BlockTypeNames[blockType], player);
         let previewMesh: BABYLON.Mesh;
