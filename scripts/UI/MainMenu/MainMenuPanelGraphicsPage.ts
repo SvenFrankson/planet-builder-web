@@ -20,7 +20,8 @@ class MainMenuPanelGraphicsPage extends MainMenuPanelPage {
             color: BABYLON.Color3.FromHexString(Config.uiConfiguration.holoScreenBaseColor),
             fontSize: 60,
             fontFamily: "XoloniumRegular",
-            highlightRadius: 0
+            strokeWidth: 3,
+            strokeColor: BABYLON.Color3.BlackReadOnly
         }));
 
         let buttonHigh = new SlikaButton(

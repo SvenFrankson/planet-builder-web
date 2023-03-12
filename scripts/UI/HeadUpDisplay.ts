@@ -148,7 +148,7 @@ class HeadUpDisplay extends Pickable {
                 y: 1000 - 30 - b * 100,
                 fontSize: 60,
                 strokeColor: BABYLON.Color3.Black(),
-                strokeWidth: 12,
+                strokeWidth: 6,
                 fontFamily: "XoloniumRegular"
             }));
 
@@ -160,7 +160,7 @@ class HeadUpDisplay extends Pickable {
                 fontSize: 50,
                 color: new BABYLON.Color3(0.8, 0.8, 0.8),
                 strokeColor: BABYLON.Color3.Black(),
-                strokeWidth: 4,
+                strokeWidth: 2,
                 fontFamily: "XoloniumRegular"
             }));
 
@@ -171,7 +171,7 @@ class HeadUpDisplay extends Pickable {
                 y: 1000 - 25 - b * 100,
                 fontSize: 50,
                 strokeColor: BABYLON.Color3.Black(),
-                strokeWidth: 12,
+                strokeWidth: 6,
                 fontFamily: "XoloniumRegular"
             }));
 

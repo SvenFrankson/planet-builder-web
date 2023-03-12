@@ -56,7 +56,9 @@ class SlikaButton extends SlikaElement {
                 color: this.color,
                 fontSize: this.fontSize,
                 fontFamily: "XoloniumRegular",
-                highlightRadius: 0
+                highlightRadius: 0,
+                strokeWidth: 3,
+                strokeColor: BABYLON.Color3.Black()
             }
         );
 

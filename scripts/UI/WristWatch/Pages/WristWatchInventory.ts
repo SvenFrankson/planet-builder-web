@@ -27,7 +27,7 @@ class WristWatchInventory extends WristWatchPage {
             fontSize: 60,
             fontFamily: "XoloniumRegular",
             strokeColor: BABYLON.Color3.Black(),
-            strokeWidth: 6
+            strokeWidth: 3
         }));
         this.elements.push(title);
 
@@ -75,7 +75,7 @@ class WristWatchInventory extends WristWatchPage {
                 fontSize: 40,
                 fontFamily: "XoloniumRegular",
                 strokeColor: BABYLON.Color3.Black(),
-                strokeWidth: 4
+                strokeWidth: 2
             }));
             this.elements.push(this._itemNames[i]);
 
@@ -88,7 +88,7 @@ class WristWatchInventory extends WristWatchPage {
                 fontSize: 40,
                 fontFamily: "XoloniumRegular",
                 strokeColor: BABYLON.Color3.Black(),
-                strokeWidth: 4
+                strokeWidth: 2
             }));
             this.elements.push(this._itemCounts[i]);
         }

@@ -17,7 +17,7 @@ class WristWatchHome extends WristWatchPage {
             fontSize: 60,
             fontFamily: "XoloniumRegular",
             strokeColor: BABYLON.Color3.Black(),
-            strokeWidth: 6
+            strokeWidth: 3
         }));
         this.elements.push(title);
 

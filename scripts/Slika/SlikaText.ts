@@ -79,7 +79,7 @@ class SlikaText extends SlikaElement {
             offsetX = context.measureText(this.prop.text).width / hsf;
         }
         if (strokeStyle != "") {
-            context.lineWidth = this.prop.strokeWidth * hsf;
+            context.lineWidth = this.prop.strokeWidth * 2 * hsf;
             context.strokeStyle = strokeStyle;
             context.strokeText(this.prop.text, (this.prop.x - offsetX) * hsf, this.prop.y * hsf);
         }

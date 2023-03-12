@@ -17,7 +17,8 @@ class MainMenuPanelIntroPage extends MainMenuPanelPage {
             color: BABYLON.Color3.FromHexString(Config.uiConfiguration.holoScreenBaseColor),
             fontSize: 60,
             fontFamily: "XoloniumRegular",
-            highlightRadius: 0
+            strokeWidth: 3,
+            strokeColor: BABYLON.Color3.BlackReadOnly
         }));
 
         let title2 = this.holoSlika.add(new SlikaText({
@@ -28,7 +29,8 @@ class MainMenuPanelIntroPage extends MainMenuPanelPage {
             color: BABYLON.Color3.FromHexString(Config.uiConfiguration.holoScreenBaseColor),
             fontSize: 60,
             fontFamily: "XoloniumRegular",
-            highlightRadius: 0
+            strokeWidth: 3,
+            strokeColor: BABYLON.Color3.BlackReadOnly
         }));
 
         let text1 = this.holoSlika.add(new SlikaText({
