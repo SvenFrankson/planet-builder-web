@@ -425,7 +425,7 @@ class ModelingWorkbench extends PickablePlanetObject {
 
             let data = voxelMesh.buildMesh(1, this.colors[this.activeVoxelMesh]);
             data.applyToMesh(modelMesh);
-            
+
             requestAnimationFrame(() => {
                 this.updateBoundingBox();
                 this._redrawGrid();
@@ -571,7 +571,7 @@ class ModelingWorkbench extends PickablePlanetObject {
 
     private _update = () => {
         if (BABYLON.Vector3.DistanceSquared(this.player.position, this.position) > this.radius * this.radius) {
-
+            this._exit();
         }
         else {
             if (this._activelyPainting) {
