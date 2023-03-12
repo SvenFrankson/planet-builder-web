@@ -230,8 +230,8 @@ class Player extends BABYLON.Mesh {
             }
 
             if (!this.inputManager.inventoryOpened) {
-                this.startTeleportation();
                 if (!this.inputManager.aimedElement || !this.inputManager.aimedElement.interceptsPointerMove()) {
+                    this.startTeleportation();
                     this._headMoveWithMouse = true;
                 }
             }
