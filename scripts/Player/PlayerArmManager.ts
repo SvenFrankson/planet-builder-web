@@ -171,7 +171,8 @@ class PlayerArmManager {
         if (!this._aimingArm) {
             this._aimingArm = this.rightArm;
         }
-        let dx = BABYLON.Vector3.Dot(this.inputManager.aimedPosition, this.player.right)
+        let dx = BABYLON.Vector3.Dot(this.inputManager.aimedPosition.subtract(this.player.position), this.player.right);
+        console.log("dx = " + dx.toFixed(3));
         if (this._aimingArm === this.leftArm && dx > 0.1) {
             this._aimingArm = this.rightArm;
             if (this.leftArm.handMode != HandMode.Idle) {
@@ -193,6 +194,11 @@ class PlayerArmManager {
                 this._aimingArm.setHandMode(HandMode.Point);
             }
         }
+        else if (this.inputManager.aimedElement.interactionMode === InteractionMode.Touch) {
+            if (this._aimingArm.handMode != HandMode.Touch && this._aimingArm.handMode != HandMode.TouchPress) {
+                this._aimingArm.setHandMode(HandMode.Touch);
+            }
+        }
         else if (this.inputManager.aimedElement.interactionMode === InteractionMode.Grab) {
             if (this._aimingArm.handMode != HandMode.Grab) {
                 this._aimingArm.setHandMode(HandMode.Grab);
@@ -204,6 +210,9 @@ class PlayerArmManager {
 
         if (this._aimingArm.handMode === HandMode.Grab) {
             this._aimingArm.targetUp.copyFrom(this.inputManager.aimedNormal);
+        }
+        else if (this._aimingArm.handMode === HandMode.Touch || this._aimingArm.handMode === HandMode.TouchPress) {
+            this._aimingArm.handUp.copyFrom(this.player.up);
         }
         this._updateRequestedTargetIdle(this.other(this._aimingArm));
     }

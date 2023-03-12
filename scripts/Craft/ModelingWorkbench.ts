@@ -83,6 +83,8 @@ class ModelingWorkbench extends PickablePlanetObject {
             BABYLON.Color3.Red(),
             BABYLON.Color3.Yellow()
         ]
+        
+        this.interactionMode = InteractionMode.Touch;
     }
 
     public instantiate(): void {
