@@ -714,7 +714,7 @@ class Player extends BABYLON.Mesh {
         let downVelocity = this._downDirection.scale(BABYLON.Vector3.Dot(this.velocity, this._downDirection));
         this.velocity.subtractInPlace(downVelocity);
         downVelocity.scaleInPlace(Math.pow(0.5 * fVert, deltaTime));
-        this.velocity.scaleInPlace(Math.pow(0.01 * fLat, deltaTime));
+        this.velocity.scaleInPlace(Math.pow(0.005 * fLat, deltaTime));
         this.velocity.addInPlace(downVelocity);
 
         // Safety check.
