@@ -58,6 +58,7 @@ class ModelingWorkbench extends PickablePlanetObject {
     public brushModeButton: ModelingWorkbenchButton;
     public activeIndexInput: ModelingWorkbenchButton[] = [];
     public saveButton: ModelingWorkbenchButton;
+    public exitButton: ModelingWorkbenchButton;
 
     public get player(): Player {
         return this.inputManager.player;
@@ -311,6 +312,12 @@ class ModelingWorkbench extends PickablePlanetObject {
 
             this.player.inventory.addItem(await InventoryItem.TmpObject(this.player, name));
         }
+        
+        this.exitButton = new ModelingWorkbenchButton("exit-button", buttonMaterial, iconMaterial, [new BABYLON.Vector2(3, 1)], this.main);
+        this.exitButton.instantiate();
+        this.exitButton.parent = this.commandContainer;
+        this.exitButton.position.x = -0.6;
+        this.exitButton.onClick = () => { this._exit(); };
 
         this.updateBoundingBox();
         this.updateMesh();
@@ -518,12 +525,7 @@ class ModelingWorkbench extends PickablePlanetObject {
 
     private _update = () => {
         if (BABYLON.Vector3.DistanceSquared(this.player.position, this.position) > this.radius * this.radius) {
-            this.using = false;
-            this.player.moveType = MoveType.Free;
-            this.inputManager.freeHandMode = false;
-            this.scene.onBeforeRenderObservable.removeCallback(this._update);
-            this.previewMesh.isVisible = false;
-            this.player.isWalking = false;
+
         }
         else {
             if (this.inputManager.aimedPosition && this.inputManager.aimedElement === this) {
@@ -629,6 +631,15 @@ class ModelingWorkbench extends PickablePlanetObject {
             }
             //VMath.QuaternionFromYZAxisToRef(Y, Z, this.commandContainer.rotationQuaternion);
         }
+    }
+
+    private _exit(): void {
+        this.using = false;
+        this.player.moveType = MoveType.Free;
+        this.inputManager.freeHandMode = false;
+        this.scene.onBeforeRenderObservable.removeCallback(this._update);
+        this.previewMesh.isVisible = false;
+        this.player.isWalking = false;
     }
 
     private _redrawGrid(): void {
@@ -971,6 +982,23 @@ class ModelingWorkbench extends PickablePlanetObject {
         slika.add(new SlikaCircle({
             x: 32 + 192,
             y: 32,
+            r: 30,
+            color: BABYLON.Color3.White(),
+            width: 2
+        }));
+                
+        slika.add(new SlikaText({
+            text: "EXIT",
+            color: BABYLON.Color3.White(),
+            fontSize: 16,
+            x: 32 + 192,
+            y: 39 + 64,
+            fontFamily: "XoloniumRegular",
+            textAlign: "center"
+        }));
+        slika.add(new SlikaCircle({
+            x: 32 + 192,
+            y: 32 + 64,
             r: 30,
             color: BABYLON.Color3.White(),
             width: 2
