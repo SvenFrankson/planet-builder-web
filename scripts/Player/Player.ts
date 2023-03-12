@@ -9,8 +9,9 @@ class Player extends BABYLON.Mesh {
     public static DEBUG_INSTANCE: Player;
 
     private mass: number = 1;
-    private speed: number = 5;
+    private speed: number = 20;
     public velocity: BABYLON.Vector3 = BABYLON.Vector3.Zero();
+    public isWalking: boolean = false;
 
     private underWater: boolean = false;
     public camPos: BABYLON.AbstractMesh;
@@ -629,7 +630,11 @@ class Player extends BABYLON.Mesh {
             if (this._controlFactor.lengthSquared() > 0.1) {
                 this._controlFactor.normalize();
             }
-            this._controlFactor.scaleInPlace((20 / this.mass) * deltaTime);
+            let speed = this.speed;
+            if (this.isWalking) {
+                speed *= 0.5;
+            }
+            this._controlFactor.scaleInPlace((speed / this.mass) * deltaTime);
             if (this.godMode) {
                 this._controlFactor.scaleInPlace(5);
             }

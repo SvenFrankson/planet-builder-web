@@ -39,6 +39,10 @@ class ModelingWorkbench extends PickablePlanetObject {
     public editionMode: EditionMode = EditionMode.HGrid;
     public brushMode: BrushMode = BrushMode.Add;
 
+    private _bboxMin: BABYLON.Vector3 = BABYLON.Vector3.Zero();
+    private _bboxMax: BABYLON.Vector3 = BABYLON.Vector3.Zero();
+    private _gridMargin: number = 3;
+    public radius: number = 1;
     public grid: BABYLON.Mesh;
     public gridOffsetX: number = 0;
     public gridOffsetY: number = 0;
@@ -47,7 +51,7 @@ class ModelingWorkbench extends PickablePlanetObject {
 
     public commandContainer: BABYLON.Mesh;
     public gridPlus: ModelingWorkbenchButton;
-    public gridDown: ModelingWorkbenchButton;
+    public gridMinus: ModelingWorkbenchButton;
     public editionModeButton: ModelingWorkbenchButton;
     public brushSize3: ModelingWorkbenchButton;
     public brushSize1: ModelingWorkbenchButton;
@@ -171,7 +175,7 @@ class ModelingWorkbench extends PickablePlanetObject {
 
         
         
-        this.gridPlus = new ModelingWorkbenchButton("grid-plus", buttonMaterial, iconMaterial, [new BABYLON.Vector2(0, 0)], this.main);
+        this.gridPlus = new ModelingWorkbenchButton("grid-plus-button", buttonMaterial, iconMaterial, [new BABYLON.Vector2(0, 0)], this.main);
         this.gridPlus.instantiate();
         this.gridPlus.parent = this.commandContainer;
         this.gridPlus.position.z = 0.5;
@@ -196,11 +200,11 @@ class ModelingWorkbench extends PickablePlanetObject {
             this.updateCubeMesh();
         }
 
-        this.gridDown = new ModelingWorkbenchButton("grid-down", buttonMaterial, iconMaterial, [new BABYLON.Vector2(0, 1)], this.main);
-        this.gridDown.instantiate();
-        this.gridDown.parent = this.commandContainer;
-        this.gridDown.position.z = 0.4;
-        this.gridDown.onClick = () => {
+        this.gridMinus = new ModelingWorkbenchButton("grid-minus-button", buttonMaterial, iconMaterial, [new BABYLON.Vector2(0, 1)], this.main);
+        this.gridMinus.instantiate();
+        this.gridMinus.parent = this.commandContainer;
+        this.gridMinus.position.z = 0.4;
+        this.gridMinus.onClick = () => {
             if (this.editionMode === EditionMode.HGrid) {
                 this.gridOffsetY--;
             }
@@ -224,7 +228,8 @@ class ModelingWorkbench extends PickablePlanetObject {
         this.editionModeButton = new ModelingWorkbenchButton(
             "edition-mode-button", buttonMaterial, iconMaterial,
             [new BABYLON.Vector2(0, 2), new BABYLON.Vector2(0, 3), new BABYLON.Vector2(0, 4)],
-            this.main
+            this.main,
+            this.editionMode
         );
         this.editionModeButton.instantiate();
         this.editionModeButton.parent = this.commandContainer;
@@ -236,7 +241,7 @@ class ModelingWorkbench extends PickablePlanetObject {
             this.updateEditionMode();
         }
         
-        this.brushSize1 = new ModelingWorkbenchButton("brush-size-3", buttonMaterial, iconMaterial, [new BABYLON.Vector2(2, 0)], this.main);
+        this.brushSize1 = new ModelingWorkbenchButton("brush-size-1-button", buttonMaterial, iconMaterial, [new BABYLON.Vector2(2, 0)], this.main);
         this.brushSize1.instantiate();
         this.brushSize1.parent = this.commandContainer;
         this.brushSize1.position.z = 0.2;
@@ -246,7 +251,7 @@ class ModelingWorkbench extends PickablePlanetObject {
             this.updateCubeMesh();
         }
         
-        this.brushSize3 = new ModelingWorkbenchButton("brush-size-3", buttonMaterial, iconMaterial, [new BABYLON.Vector2(2, 1)], this.main);
+        this.brushSize3 = new ModelingWorkbenchButton("brush-size-3-button", buttonMaterial, iconMaterial, [new BABYLON.Vector2(2, 1)], this.main);
         this.brushSize3.instantiate();
         this.brushSize3.parent = this.commandContainer;
         this.brushSize3.position.x = 0.1;
@@ -273,7 +278,7 @@ class ModelingWorkbench extends PickablePlanetObject {
         }
 
         for (let i = 0; i < 3; i++) {
-            this.activeIndexInput[i] = new ModelingWorkbenchButton("material-input-" + i.toFixed(0), buttonMaterial, iconMaterial, [new BABYLON.Vector2(1, i)], this.main);
+            this.activeIndexInput[i] = new ModelingWorkbenchButton("material-" + i.toFixed(0) + "-button", buttonMaterial, iconMaterial, [new BABYLON.Vector2(1, i)], this.main);
             this.activeIndexInput[i].instantiate();
             this.activeIndexInput[i].parent = this.commandContainer;
             this.activeIndexInput[i].position.x = -0.1 - i * 0.1;
@@ -423,6 +428,14 @@ class ModelingWorkbench extends PickablePlanetObject {
         this._bboxMax.x += this._gridMargin * this.cubeSize;
         this._bboxMax.y += this._gridMargin * this.cubeSize;
         this._bboxMax.z += this._gridMargin * this.cubeSize;
+        
+        this.radius = Math.max(  
+            Math.abs(this._bboxMax.x) + 0.8,
+            Math.abs(this._bboxMin.x) + 0.8,
+            Math.abs(this._bboxMax.z) + 0.8,
+            Math.abs(this._bboxMin.z) + 0.8,
+            1
+        );
     }
 
     private updateEditionMode(): void {
@@ -445,7 +458,7 @@ class ModelingWorkbench extends PickablePlanetObject {
     }
 
     public interceptsPointerMove(): boolean {
-        if (BABYLON.Vector3.DistanceSquared(this.player.position, this.position) < 1.2 * 1.2) {
+        if (BABYLON.Vector3.DistanceSquared(this.player.position, this.position) < this.radius * this.radius) {
             return true;
         }
         return false;
@@ -482,7 +495,7 @@ class ModelingWorkbench extends PickablePlanetObject {
 
     public onPointerUp(): void {
         if (!this.using) {
-            if (BABYLON.Vector3.DistanceSquared(this.player.position, this.position) < 1.2 * 1.2) {
+            if (BABYLON.Vector3.DistanceSquared(this.player.position, this.position) < this.radius * this.radius) {
                 this.using = true;
                 document.exitPointerLock();
                 this.inputManager.freeHandMode = true;
@@ -490,6 +503,7 @@ class ModelingWorkbench extends PickablePlanetObject {
                 this.player.moveType = MoveType.Rotate;
                 this.player.rotateMoveCenter = this.position;
                 this.player.rotateMoveNorm = this.up;
+                this.player.isWalking = true;
             }
         }
     }
@@ -503,12 +517,13 @@ class ModelingWorkbench extends PickablePlanetObject {
     }
 
     private _update = () => {
-        if (BABYLON.Vector3.DistanceSquared(this.player.position, this.position) > 1.2 * 1.2) {
+        if (BABYLON.Vector3.DistanceSquared(this.player.position, this.position) > this.radius * this.radius) {
             this.using = false;
             this.player.moveType = MoveType.Free;
             this.inputManager.freeHandMode = false;
             this.scene.onBeforeRenderObservable.removeCallback(this._update);
             this.previewMesh.isVisible = false;
+            this.player.isWalking = false;
         }
         else {
             if (this.inputManager.aimedPosition && this.inputManager.aimedElement === this) {
@@ -616,9 +631,6 @@ class ModelingWorkbench extends PickablePlanetObject {
         }
     }
 
-    private _bboxMin: BABYLON.Vector3 = BABYLON.Vector3.Zero();
-    private _bboxMax: BABYLON.Vector3 = BABYLON.Vector3.Zero();
-    private _gridMargin: number = 3;
     private _redrawGrid(): void {
         let i0 = 0;
         let j0 = 0;
@@ -719,11 +731,11 @@ class ModelingWorkbench extends PickablePlanetObject {
             textAlign: "center"
         }));
         slika.add(new SlikaText({
-            text: "UP",
+            text: "+",
             color: BABYLON.Color3.White(),
-            fontSize: 16,
+            fontSize: 22,
             x: 32,
-            y: 46,
+            y: 49,
             fontFamily: "XoloniumRegular",
             textAlign: "center"
         }));
@@ -746,11 +758,11 @@ class ModelingWorkbench extends PickablePlanetObject {
             textAlign: "center"
         }));
         slika.add(new SlikaText({
-            text: "DOWN",
+            text: "-",
             color: BABYLON.Color3.White(),
-            fontSize: 14,
+            fontSize: 22,
             x: 32,
-            y: 44 + 64,
+            y: 49 + 64,
             fontFamily: "XoloniumRegular",
             textAlign: "center"
         }));
@@ -766,9 +778,9 @@ class ModelingWorkbench extends PickablePlanetObject {
         slika.add(new SlikaText({
             text: "SCULPT",
             color: BABYLON.Color3.White(),
-            fontSize: 16,
+            fontSize: 13,
             x: 32,
-            y: 39 + 128,
+            y: 37 + 128,
             fontFamily: "XoloniumRegular",
             textAlign: "center"
         }));
