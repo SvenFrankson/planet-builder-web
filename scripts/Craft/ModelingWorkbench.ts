@@ -83,7 +83,7 @@ class ModelingWorkbench extends PickablePlanetObject {
             BABYLON.Color3.Red(),
             BABYLON.Color3.Yellow()
         ]
-        
+
         this.interactionMode = InteractionMode.Touch;
     }
 
@@ -178,11 +178,11 @@ class ModelingWorkbench extends PickablePlanetObject {
 
         let iconMaterial = new HoloPanelMaterial("hud-material", this.scene);
 
-        let hudTexture = new BABYLON.DynamicTexture("hud-texture", { width: 512 * hsf, height: 512 * hsf }, this.scene, true);
+        let hudTexture = new BABYLON.DynamicTexture("hud-texture", { width: 1024 * hsf, height: 1024 * hsf }, this.scene, true);
         hudTexture.hasAlpha = true;
         iconMaterial.holoTexture = hudTexture;
         
-        let slika = new Slika(512 * hsf, 512 * hsf, hudTexture.getContext(), hudTexture);
+        let slika = new Slika(1024 * hsf, 1024 * hsf, hudTexture.getContext(), hudTexture);
         slika.texture = hudTexture;
         slika.context = hudTexture.getContext();
         this._fillCommandSlika(slika);
@@ -352,7 +352,7 @@ class ModelingWorkbench extends PickablePlanetObject {
 
     public register(): void {
         this.inputManager.addMappedKeyUpListener(KeyInput.WORKBENCH, async () => {
-            let p = this.player.position.add(this.player.forward.scale(1));
+            let p = this.player.position.add(this.player.forward.scale(0.8));
             this.planet = this.player.planet
 
             this.setPosition(p, true);
@@ -472,6 +472,7 @@ class ModelingWorkbench extends PickablePlanetObject {
             Math.abs(this._bboxMin.z) + 0.8,
             1
         );
+        this.radius *= Math.SQRT2;
     }
 
     private updateEditionMode(): void {
@@ -732,6 +733,7 @@ class ModelingWorkbench extends PickablePlanetObject {
         this.scene.onBeforeRenderObservable.removeCallback(this._update);
         this.previewMesh.isVisible = false;
         this.player.isWalking = false;
+        this.radius = 1;
         this.powerOff();
     }
 
@@ -828,273 +830,273 @@ class ModelingWorkbench extends PickablePlanetObject {
         slika.add(new SlikaText({
             text: "GRID",
             color: BABYLON.Color3.White(),
-            fontSize: 16,
-            x: 32,
-            y: 28,
+            fontSize: 32,
+            x: 64,
+            y: 56,
             fontFamily: "XoloniumRegular",
             textAlign: "center"
         }));
         slika.add(new SlikaText({
             text: "+",
             color: BABYLON.Color3.White(),
-            fontSize: 22,
-            x: 32,
-            y: 49,
+            fontSize: 44,
+            x: 64,
+            y: 98,
             fontFamily: "XoloniumRegular",
             textAlign: "center"
         }));
         slika.add(new SlikaCircle({
-            x: 32,
-            y: 32,
-            r: 30,
+            x: 64,
+            y: 64,
+            r: 60,
             color: BABYLON.Color3.White(),
-            width: 2
+            width: 4
         }));
         
         // Grid DOWN
         slika.add(new SlikaText({
             text: "GRID",
             color: BABYLON.Color3.White(),
-            fontSize: 16,
-            x: 32,
-            y: 28 + 64,
+            fontSize: 32,
+            x: 64,
+            y: 56 + 128,
             fontFamily: "XoloniumRegular",
             textAlign: "center"
         }));
         slika.add(new SlikaText({
             text: "-",
             color: BABYLON.Color3.White(),
-            fontSize: 22,
-            x: 32,
-            y: 49 + 64,
+            fontSize: 44,
+            x: 64,
+            y: 98 + 128,
             fontFamily: "XoloniumRegular",
             textAlign: "center"
         }));
         slika.add(new SlikaCircle({
-            x: 32,
-            y: 32 + 64,
-            r: 30,
+            x: 64,
+            y: 64 + 128,
+            r: 60,
             color: BABYLON.Color3.White(),
-            width: 2
+            width: 4
         }));
         
         // Sculpt
         slika.add(new SlikaText({
             text: "SCULPT",
             color: BABYLON.Color3.White(),
-            fontSize: 13,
-            x: 32,
-            y: 37 + 128,
+            fontSize: 26,
+            x: 64,
+            y: 74 + 256,
             fontFamily: "XoloniumRegular",
             textAlign: "center"
         }));
         slika.add(new SlikaCircle({
-            x: 32,
-            y: 32 + 128,
-            r: 30,
+            x: 64,
+            y: 64 + 256,
+            r: 60,
             color: BABYLON.Color3.White(),
-            width: 2
+            width: 4
         }));
         
         // HGrid
         slika.add(new SlikaText({
             text: "HGRID",
             color: BABYLON.Color3.White(),
-            fontSize: 16,
-            x: 32,
-            y: 39 + 192,
+            fontSize: 32,
+            x: 64,
+            y: 78 + 384,
             fontFamily: "XoloniumRegular",
             textAlign: "center"
         }));
         slika.add(new SlikaCircle({
-            x: 32,
-            y: 32 + 192,
-            r: 30,
+            x: 64,
+            y: 64 + 384,
+            r: 60,
             color: BABYLON.Color3.White(),
-            width: 2
+            width: 4
         }));
         
         // VGrid
         slika.add(new SlikaText({
             text: "VGRID",
             color: BABYLON.Color3.White(),
-            fontSize: 16,
-            x: 32,
-            y: 39 + 256,
+            fontSize: 32,
+            x: 64,
+            y: 78 + 512,
             fontFamily: "XoloniumRegular",
             textAlign: "center"
         }));
         slika.add(new SlikaCircle({
-            x: 32,
-            y: 32 + 256,
-            r: 30,
+            x: 64,
+            y: 64 + 512,
+            r: 60,
             color: BABYLON.Color3.White(),
-            width: 2
+            width: 4
         }));
 
         // Material 0 - Grass
         slika.add(new SlikaText({
             text: "GRASS",
             color: BABYLON.Color3.White(),
-            fontSize: 14,
-            x: 32 + 64,
-            y: 38,
+            fontSize: 28,
+            x: 64 + 128,
+            y: 76,
             fontFamily: "XoloniumRegular",
             textAlign: "center"
         }));
         slika.add(new SlikaCircle({
-            x: 32 + 64,
-            y: 32,
-            r: 30,
+            x: 64 + 128,
+            y: 64,
+            r: 60,
             color: BABYLON.Color3.White(),
-            width: 2
+            width: 4
         }));
 
         // Material 1 - Blood
         slika.add(new SlikaText({
             text: "BLOOD",
             color: BABYLON.Color3.White(),
-            fontSize: 14,
-            x: 32 + 64,
-            y: 38 + 64,
+            fontSize: 28,
+            x: 64 + 128,
+            y: 76 + 128,
             fontFamily: "XoloniumRegular",
             textAlign: "center"
         }));
         slika.add(new SlikaCircle({
-            x: 32 + 64,
-            y: 32 + 64,
-            r: 30,
+            x: 64 + 128,
+            y: 64 + 128,
+            r: 60,
             color: BABYLON.Color3.White(),
-            width: 2
+            width: 4
         }));
 
         // Material 2 - Gold
         slika.add(new SlikaText({
             text: "GOLD",
             color: BABYLON.Color3.White(),
-            fontSize: 16,
-            x: 32 + 64,
-            y: 39 + 128,
+            fontSize: 28,
+            x: 64 + 128,
+            y: 76 + 256,
             fontFamily: "XoloniumRegular",
             textAlign: "center"
         }));
         slika.add(new SlikaCircle({
-            x: 32 + 64,
-            y: 32 + 128,
-            r: 30,
+            x: 64 + 128,
+            y: 64 + 256,
+            r: 60,
             color: BABYLON.Color3.White(),
-            width: 2
+            width: 4
         }));
 
         // Brush Sizes        
         let brushSize1Icon = slika.add(new SlikaPath({
             strokeColor: BABYLON.Color3.White(),
-            strokeWidth: 2,
+            strokeWidth: 4,
             points: [
-                -5, -5,
-                5, -5,
-                5, 5,
-                -5, 5
+                -10, -10,
+                10, -10,
+                10, 10,
+                -10, 10
             ],
             close: true
         }));
-        brushSize1Icon.posX = 128 + 32;
-        brushSize1Icon.posY = 32;
+        brushSize1Icon.posX = 256 + 64;
+        brushSize1Icon.posY = 64;
 
         let brushSize3Icon = slika.add(new SlikaPath({
             strokeColor: BABYLON.Color3.White(),
-            strokeWidth: 2,
+            strokeWidth: 4,
             points: [
-                -15, -15,
-                15, -15,
-                15, 15,
-                -15, 15
+                -30, -30,
+                30, -30,
+                30, 30,
+                -30, 30
             ],
             close: true
         }));
-        brushSize3Icon.posX = 128 + 32;
-        brushSize3Icon.posY = 64 + 32;
+        brushSize3Icon.posX = 256 + 64;
+        brushSize3Icon.posY = 128 + 64;
 
         let brushSize5Icon = slika.add(new SlikaPath({
             strokeColor: BABYLON.Color3.White(),
-            strokeWidth: 2,
+            strokeWidth: 4,
             points: [
-                -25, -25,
-                25, -25,
-                25, 25,
-                -25, 25
+                -50, -50,
+                50, -50,
+                50, 50,
+                -50, 50
             ],
             close: true
         }));
-        brushSize5Icon.posX = 128 + 32;
-        brushSize5Icon.posY = 128 + 32;
+        brushSize5Icon.posX = 256 + 64;
+        brushSize5Icon.posY = 256 + 64;
         
         slika.add(new SlikaText({
             text: "ADD",
             color: BABYLON.Color3.White(),
-            fontSize: 16,
-            x: 32 + 128,
-            y: 39 + 192,
+            fontSize: 32,
+            x: 64 + 256,
+            y: 78 + 384,
             fontFamily: "XoloniumRegular",
             textAlign: "center"
         }));
         slika.add(new SlikaCircle({
-            x: 32 + 128,
-            y: 32 + 192,
-            r: 30,
+            x: 64 + 256,
+            y: 64 + 384,
+            r: 60,
             color: BABYLON.Color3.White(),
-            width: 2
+            width: 4
         }));
         
         slika.add(new SlikaText({
             text: "SUB",
             color: BABYLON.Color3.White(),
-            fontSize: 16,
-            x: 32 + 128,
-            y: 39 + 256,
+            fontSize: 32,
+            x: 64 + 256,
+            y: 78 + 512,
             fontFamily: "XoloniumRegular",
             textAlign: "center"
         }));
         slika.add(new SlikaCircle({
-            x: 32 + 128,
-            y: 32 + 256,
-            r: 30,
+            x: 64 + 256,
+            y: 64 + 512,
+            r: 60,
             color: BABYLON.Color3.White(),
-            width: 2
+            width: 4
         }));
                 
         slika.add(new SlikaText({
             text: "SAVE",
             color: BABYLON.Color3.White(),
-            fontSize: 16,
-            x: 32 + 192,
-            y: 39,
+            fontSize: 32,
+            x: 64 + 384,
+            y: 78,
             fontFamily: "XoloniumRegular",
             textAlign: "center"
         }));
         slika.add(new SlikaCircle({
-            x: 32 + 192,
-            y: 32,
-            r: 30,
+            x: 64 + 384,
+            y: 64,
+            r: 60,
             color: BABYLON.Color3.White(),
-            width: 2
+            width: 4
         }));
                 
         slika.add(new SlikaText({
             text: "EXIT",
             color: BABYLON.Color3.White(),
-            fontSize: 16,
-            x: 32 + 192,
-            y: 39 + 64,
+            fontSize: 32,
+            x: 64 + 384,
+            y: 78 + 128,
             fontFamily: "XoloniumRegular",
             textAlign: "center"
         }));
         slika.add(new SlikaCircle({
-            x: 32 + 192,
-            y: 32 + 64,
-            r: 30,
+            x: 64 + 384,
+            y: 64 + 128,
+            r: 60,
             color: BABYLON.Color3.White(),
-            width: 2
+            width: 4
         }));
     }
 }
