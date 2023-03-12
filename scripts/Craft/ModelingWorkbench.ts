@@ -14,6 +14,14 @@ enum BrushMode {
 class ModelingWorkbench extends PickablePlanetObject {
 
     public frame: BABYLON.Mesh;
+    public idleMesh: BABYLON.Mesh;
+    public get idleMeshSize(): number {
+        return this.idleMesh.scaling.x;
+    }
+    public set idleMeshSize(v: number) {
+        this.idleMesh.scaling.copyFromFloats(v, v, v);
+    }
+    public animateIdleMeshSize = AnimationFactory.CreateNumber(this, this, "idleMeshSize");
 
     public activeVoxelMesh: number = 0;
     public colors: BABYLON.Color3[] = [];
@@ -31,8 +39,6 @@ class ModelingWorkbench extends PickablePlanetObject {
     public hiddenModelMesh: BABYLON.Mesh;
     public modelMeshes: BABYLON.Mesh[] = [];
     public cubeModelMesh: BABYLON.Mesh;
-
-    public interactionAnchor: BABYLON.Mesh;
 
     public using: boolean = false;
 
@@ -82,6 +88,13 @@ class ModelingWorkbench extends PickablePlanetObject {
     public instantiate(): void {
         super.instantiate();
         
+        let gridMaterial = new BABYLON.StandardMaterial("grid-material", Game.Scene);
+        gridMaterial.diffuseColor = new BABYLON.Color3(0, 1, 1);
+        gridMaterial.diffuseTexture = new BABYLON.Texture("datas/images/border-square-64.png");
+        gridMaterial.useAlphaFromDiffuseTexture = true;
+        gridMaterial.specularColor = BABYLON.Color3.Black();
+        gridMaterial.alpha = 0.4;
+
         this.frame = BABYLON.MeshBuilder.CreateBox("frame", { size: 0.05 });
         this.frame.material = new ToonMaterial("frame-material", this.scene);
         this.frame.parent = this;
@@ -91,6 +104,19 @@ class ModelingWorkbench extends PickablePlanetObject {
             let vData = vertexDatas[0];
             vData.applyToMesh(this.frame);
         });
+        
+        let idleMeshSize: number = 0.4;
+        this.idleMesh = BABYLON.MeshBuilder.CreateBox("idleMesh", { size: idleMeshSize });
+        let idleMeshUVs = this.idleMesh.getVerticesData(BABYLON.VertexBuffer.UVKind);
+        idleMeshUVs = idleMeshUVs.map((uv: number) => { return uv * (idleMeshSize / this.cubeSize) });
+        this.idleMesh.setVerticesData(BABYLON.VertexBuffer.UVKind, idleMeshUVs);
+        this.idleMesh.material = gridMaterial;
+        this.idleMesh.parent = this;
+        this.idleMesh.layerMask = 0x10000000;
+        this.idleMesh.position.y = 1;
+        this.idleMesh.rotation.x = Math.PI / 4;
+        this.idleMesh.rotation.z = Math.PI / 4;
+        this.idleMesh.isVisible = true;
 
         /*
         this.voxelMesh = new VoxelMesh(6);
@@ -142,12 +168,6 @@ class ModelingWorkbench extends PickablePlanetObject {
         let uvs = this.grid.getVerticesData(BABYLON.VertexBuffer.UVKind);
         uvs = uvs.map((v: number) => { return v * 2});
         this.grid.setVerticesData(BABYLON.VertexBuffer.UVKind, uvs);
-        let gridMaterial = new BABYLON.StandardMaterial("grid-material", Game.Scene);
-        gridMaterial.diffuseColor = new BABYLON.Color3(0, 1, 1);
-        gridMaterial.diffuseTexture = new BABYLON.Texture("datas/images/border-square-64.png");
-        gridMaterial.useAlphaFromDiffuseTexture = true;
-        gridMaterial.specularColor = BABYLON.Color3.White();
-        gridMaterial.alpha = 0.2;
         this.grid.material = gridMaterial;
         this.grid.layerMask = 0x10000000;
         this.grid.parent = this.modelContainer;
@@ -325,13 +345,7 @@ class ModelingWorkbench extends PickablePlanetObject {
         this.updateBoundingBox();
         this._redrawGrid();
 
-        this.interactionAnchor = new BABYLON.Mesh("interaction-anchor");
-        //BABYLON.CreateBoxVertexData({ size: 0.1 }).applyToMesh(this.interactionAnchor);
-        //this.interactionAnchor.material = SharedMaterials.RedMaterial();
-        this.interactionAnchor.position.z = -1;
-        this.interactionAnchor.parent = this;
-
-        this.proxyPickMeshes = [this.grid];
+        this.powerOff();
     }
 
     public register(): void {
@@ -341,7 +355,6 @@ class ModelingWorkbench extends PickablePlanetObject {
 
             this.setPosition(p, true);
             this.setTarget(this.player.position);
-            this.onPointerUp();
         })
     }
 
@@ -511,6 +524,7 @@ class ModelingWorkbench extends PickablePlanetObject {
                 this.player.rotateMoveCenter = this.position;
                 this.player.rotateMoveNorm = this.up;
                 this.player.isWalking = true;
+                this.powerOn();
             }
         }
     }
@@ -633,6 +647,47 @@ class ModelingWorkbench extends PickablePlanetObject {
         }
     }
 
+    public async powerOn(): Promise<void> {
+        await this.animateIdleMeshSize(0, 0.5);
+        let buttons = this.commandContainer.getChildren();
+        for (let i = 0; i < buttons.length; i++) {
+            let button = buttons[i];
+            if (button instanceof ModelingWorkbenchButton) {
+                button.animateSize(1, 0.2);
+            }
+        }
+        for (let i = 0; i < this.modelMeshes.length; i++) {
+            let modelMesh = this.modelMeshes[i];
+            if (modelMesh) {
+                modelMesh.isVisible = true;
+            }
+        }
+        this.cubeModelMesh.isVisible = true;
+        this.updateEditionMode();
+    }
+
+    public async powerOff(): Promise<void> {
+        this.animateIdleMeshSize(1, 0.5);
+        let buttons = this.commandContainer.getChildren();
+        for (let i = 0; i < buttons.length; i++) {
+            let button = buttons[i];
+            if (button instanceof ModelingWorkbenchButton) {
+                button.animateSize(0, 0.2);
+            }
+        }
+        this.grid.isVisible = false;
+        this.previewMesh.isVisible = false;
+        this.idleMesh.isVisible = true;
+        for (let i = 0; i < this.modelMeshes.length; i++) {
+            let modelMesh = this.modelMeshes[i];
+            if (modelMesh) {
+                modelMesh.isVisible = false;
+            }
+        }
+        this.cubeModelMesh.isVisible = false;
+        this.proxyPickMeshes = [this.idleMesh];
+    }
+
     private _exit(): void {
         this.using = false;
         this.player.moveType = MoveType.Free;
@@ -640,6 +695,7 @@ class ModelingWorkbench extends PickablePlanetObject {
         this.scene.onBeforeRenderObservable.removeCallback(this._update);
         this.previewMesh.isVisible = false;
         this.player.isWalking = false;
+        this.powerOff();
     }
 
     private _redrawGrid(): void {
