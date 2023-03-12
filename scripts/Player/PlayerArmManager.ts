@@ -7,7 +7,7 @@ enum ArmManagerMode {
 
 class PlayerArmManager {
 
-    public static POS: BABYLON.Vector3 = new BABYLON.Vector3(0.14, 1.3, 0.4);
+    public static POS: BABYLON.Vector3 = new BABYLON.Vector3(0.12, 1.33, 0.4);
 
     public leftArm: PlayerArm;
     public rightArm: PlayerArm;
