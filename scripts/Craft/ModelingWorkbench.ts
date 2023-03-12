@@ -389,15 +389,13 @@ class ModelingWorkbench extends PickablePlanetObject {
     }
 
     private updateMesh(): void {
-        this.updateCubeMesh();
-
         let voxelMesh = this.voxelMeshes[this.activeVoxelMesh];
         let modelMesh = this.modelMeshes[this.activeVoxelMesh];
 
         if (voxelMesh) {
+            /*
             let data = voxelMesh.buildMesh(1, this.colors[this.activeVoxelMesh]);
             data.applyToMesh(this.hiddenModelMesh);
-            console.log(data);
 
             if (!modelMesh) {
                 modelMesh = new BABYLON.Mesh("model-mesh");
@@ -416,6 +414,22 @@ class ModelingWorkbench extends PickablePlanetObject {
                     this._redrawGrid();
                 })
             });
+            */
+
+            if (!modelMesh) {
+                modelMesh = new BABYLON.Mesh("model-mesh");
+                modelMesh.parent = this.modelContainer;
+                modelMesh.material = new ToonMaterial("model-mesh-material", this.scene);
+                this.modelMeshes[this.activeVoxelMesh] = modelMesh;
+            }
+
+            let data = voxelMesh.buildMesh(1, this.colors[this.activeVoxelMesh]);
+            data.applyToMesh(modelMesh);
+            
+            requestAnimationFrame(() => {
+                this.updateBoundingBox();
+                this._redrawGrid();
+            })
         }
     }
 
@@ -486,31 +500,45 @@ class ModelingWorkbench extends PickablePlanetObject {
 
     public onPointerDown(): void {
         if (this.using) {
-            let s = 0.5;
-            if (this.brushMode === BrushMode.Remove && this.editionMode === EditionMode.Sculpt) {
-                s = -1;
-            }
-            let p = this.inputManager.aimedPosition.add(this.inputManager.aimedNormal.scale(s * this.cubeSize * 0.5));
-            let localP = BABYLON.Vector3.TransformCoordinates(p, this.modelContainer.getWorldMatrix().clone().invert());
-            let i = Math.floor(localP.x / this.cubeSize);
-            let j = Math.floor(localP.y / this.cubeSize);
-            let k = Math.floor(localP.z / this.cubeSize);
+            this._activelyPainting = true;
+        }
+    }
 
-            let voxelMesh = this.voxelMeshes[this.activeVoxelMesh];
-            if (!voxelMesh) {
-                voxelMesh = new VoxelMesh(6);
-                voxelMesh.cubeSize = 0.05;
-                this.voxelMeshes[this.activeVoxelMesh] = voxelMesh;
+    private _activelyPainting: boolean = false;
+    private _doPaint(): void {
+        if (!this.inputManager.aimedPosition) {
+            this._activelyPainting = false;
+            return;
+        }
+        let s = 0.5;
+        if (this.brushMode === BrushMode.Remove && this.editionMode === EditionMode.Sculpt) {
+            s = -1;
+        }
+        let p = this.inputManager.aimedPosition.add(this.inputManager.aimedNormal.scale(s * this.cubeSize * 0.5));
+        let localP = BABYLON.Vector3.TransformCoordinates(p, this.modelContainer.getWorldMatrix().clone().invert());
+        let i = Math.floor(localP.x / this.cubeSize);
+        let j = Math.floor(localP.y / this.cubeSize);
+        let k = Math.floor(localP.z / this.cubeSize);
+
+        let voxelMesh = this.voxelMeshes[this.activeVoxelMesh];
+        if (!voxelMesh) {
+            voxelMesh = new VoxelMesh(6);
+            voxelMesh.cubeSize = 0.05;
+            this.voxelMeshes[this.activeVoxelMesh] = voxelMesh;
+        }
+        let coordinates = new BABYLON.Vector3(i, j, k);
+        if (this.brushMode === BrushMode.Add) {
+            if (voxelMesh.getCube(coordinates) != 1) {
+                voxelMesh.addCube(1, coordinates, this.brushSize);
             }
-            if (this.brushMode === BrushMode.Add) {
-                voxelMesh.addCube(1, new BABYLON.Vector3(i, j, k), this.brushSize);
-            }
-            else if (this.brushMode === BrushMode.Remove) {
+        }
+        else if (this.brushMode === BrushMode.Remove) {
+            if (voxelMesh.getCube(coordinates) === 1) {
                 voxelMesh.addCube(0, new BABYLON.Vector3(i, j, k), this.brushSize);
             }
-
-            this.updateMesh();
         }
+
+        this.updateMesh();
     }
 
     public onPointerUp(): void {
@@ -527,6 +555,10 @@ class ModelingWorkbench extends PickablePlanetObject {
                 this.powerOn();
             }
         }
+        else {
+            this._activelyPainting = false;
+            this.updateCubeMesh();
+        }
     }
 
     public onHoverStart(): void {
@@ -542,6 +574,9 @@ class ModelingWorkbench extends PickablePlanetObject {
 
         }
         else {
+            if (this._activelyPainting) {
+                this._doPaint();
+            }
             if (this.inputManager.aimedPosition && this.inputManager.aimedElement === this) {
                 let s = 0.5;
                 if (this.brushMode === BrushMode.Remove && this.editionMode === EditionMode.Sculpt) {

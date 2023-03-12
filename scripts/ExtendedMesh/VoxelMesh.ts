@@ -111,6 +111,18 @@ class VoxelMesh {
 		}
 	}
 
+	public getCube(center: BABYLON.Vector3): number {
+		let I = Math.floor(center.x + this._halfSize);
+		let J = Math.floor(center.y + this._halfSize);
+		let K = Math.floor(center.z + this._halfSize);
+		if (I >= 0 && J >= 0 && K >= 0) {
+			if (I < this.root.size && J < this.root.size && K < this.root.size) {
+				return this.root.get(I, J, K);
+			}
+		}
+		return undefined;
+	}
+
     private _syncOctreeAndGrid(): void {
         this._blocks = [];
 
