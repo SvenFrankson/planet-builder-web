@@ -348,7 +348,6 @@ class PlanetChunck extends AbstractPlanetChunck {
             if (modData) {
                 this.modDataOctree = OctreeNode.DeserializeFromString(modData);
                 if (this.modDataOctree) {
-                    console.log(this.modDataOctree);
                     this.modDataOctree.forEach((v, i, j, k) => {
                         this.data[i - this.firstI][j - this.firstJ][k - this.firstK] = v;
                     });

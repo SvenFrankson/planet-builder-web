@@ -314,7 +314,6 @@ class VoxelMesh {
 						for (let k = 0; k < jLine.length; k++) {
 							let value = jLine[k];
 							if (isFinite(value) && value != 0 && value != 0b11111111) {
-								//console.log(value.toString(2));
 								let extendedpartVertexData = VoxelVertexData.Get(value);
 								if (extendedpartVertexData) {
 									let vData = extendedpartVertexData.vertexData;
@@ -336,7 +335,6 @@ class VoxelMesh {
 										}
 	
 									}
-									//console.log(partIndexes);
 									indices.push(...vData.indices.map(index => { return partIndexes[index]; }));
 								}
 							}
@@ -345,8 +343,6 @@ class VoxelMesh {
 				}
 			}
 		}
-
-		console.log(positions);
 
 		this.exMesh = new ExtendedMesh(positions, indices);
 

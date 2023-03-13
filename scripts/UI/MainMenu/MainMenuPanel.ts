@@ -204,6 +204,8 @@ class MainMenuPanel extends HoloPanel {
                 this.inputManager.player.targetDestination = this.interactionAnchor.absolutePosition.clone();
             })
             this.showPage(this.currentPage);
+            this.inputManager.freeHandMode = true;
+            document.exitPointerLock();
             await this.open();
         }
     }

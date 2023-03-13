@@ -44,6 +44,10 @@ class TutorialManager {
         ["Lesson 1.d / 87 - Open Menu. Press ", "<span class='keyboard'>²</span>", " or ", "<span class='keyboard'>M</span>" ," to open Planet Selection Menu."],
         ["Lesson 1.d / 87 - Open Menu. Press ", "<span class='pad'>start</span>", " to open Planet Selection Menu."],
     ]
+    public workbenchText: string[][] = [
+        ["Press ", "<span class='keyboard'>C</span>", " to open Modeling Workbench."],
+        ["Sadly, Modeling Workbench is not currently available on touch device."],
+    ]
 
     public get textIndex(): number {
         return this.main.isTouch ? 1 : 0;
@@ -123,5 +127,6 @@ class TutorialManager {
     private onMainMenu = () => {
         this.main.inputManager.removeMappedKeyUpListener(KeyInput.MAIN_MENU, this.onMainMenu);
         this.main.subtitleManager.display(Subtitle.Create(["Good, now pick a planet and explore !"], 3));
+        this.main.subtitleManager.display(Subtitle.Create(this.workbenchText[this.textIndex], 6));
     }
 }

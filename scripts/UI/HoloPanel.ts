@@ -155,6 +155,9 @@ class HoloPanel extends PickablePlanetObject {
 
         data.applyToMesh(this.holoMesh);
 
+        //let test = BABYLON.MeshBuilder.CreateBox("test", {size: 0.05});
+        //test.parent = this.holoMesh;
+
         data.applyToMesh(this.pointerMesh, true);
 
         this.holoMaterial = new HoloPanelMaterial("text-page-material", this.main.scene);
@@ -281,10 +284,14 @@ class HoloPanel extends PickablePlanetObject {
             this.pointerElement.animateRadius(60, 0.2).then(() => {
                 this.pointerElement.animateRadius(20, 0.2);
             });
+            this.inputManager.freeHandMode = true;
+            document.exitPointerLock();
         }
         else {
             this.inputManager.player.targetLook = this.holoMesh.absolutePosition;
             this.inputManager.player.targetDestination = this.interactionAnchor.absolutePosition.clone();
+            this.inputManager.freeHandMode = true;
+            document.exitPointerLock();
         }
     }
 
@@ -305,6 +312,7 @@ class HoloPanel extends PickablePlanetObject {
         this._animatePointerAlpha(0, 0.5);
         this.holoSlika.onPointerExit();
         this.scene.onBeforeRenderObservable.removeCallback(this._updatePointerMesh);
+        this.inputManager.freeHandMode = false;
     }
 
     private _updatePointerMesh = () => {

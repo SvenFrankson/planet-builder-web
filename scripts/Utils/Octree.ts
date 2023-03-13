@@ -184,7 +184,7 @@ class OctreeNode<T> {
 
         let l2 = compressedOutput.length;
 
-        console.log("Compression rate " + ((l2 / l1) * 100).toFixed(0) + "%");
+        //console.log("Compression rate " + ((l2 / l1) * 100).toFixed(0) + "%");
 
         return compressedOutput;
     }
