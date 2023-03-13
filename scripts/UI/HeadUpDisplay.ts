@@ -260,7 +260,7 @@ class HeadUpDisplay extends Pickable {
         if (slotIndex >= 0 && slotIndex <= 9) {
             this.itemKeyHintTexts[slotIndex].prop.fontSize = 60;
             this.itemKeyHintTexts[slotIndex].prop.color = BABYLON.Color3.White();
-            this.itemKeyHintTexts[slotIndex].prop.strokeWidth = 8;
+            this.itemKeyHintTexts[slotIndex].prop.strokeWidth = 4;
             this.slika.needRedraw = true;
         }
     }
@@ -269,7 +269,7 @@ class HeadUpDisplay extends Pickable {
         if (slotIndex >= 0 && slotIndex <= 9) {
             this.itemKeyHintTexts[slotIndex].prop.fontSize = 50;
             this.itemKeyHintTexts[slotIndex].prop.color = new BABYLON.Color3(0.8, 0.8, 0.8);
-            this.itemKeyHintTexts[slotIndex].prop.strokeWidth = 4;
+            this.itemKeyHintTexts[slotIndex].prop.strokeWidth = 2;
             this.slika.needRedraw = true;
         }
     }
