@@ -10,6 +10,8 @@ class WristWatch extends Pickable {
     public holoMesh: BABYLON.Mesh;
     public powerButton: BABYLON.Mesh;
 
+    public holoScreenMaterial: HoloPanelMaterial;
+    public holoScreenTexture: BABYLON.DynamicTexture;
     public slika: Slika;
 
     public pages: WristWatchPage[] = [];
@@ -55,18 +57,18 @@ class WristWatch extends Pickable {
 
         let hsf = Config.performanceConfiguration.holoScreenFactor;
 
-        let holoScreenMaterial = new HoloPanelMaterial("hud-material", this.scene);
+        this.holoScreenMaterial = new HoloPanelMaterial("hud-material", this.scene);
 
-        let holoScreenTexture = new BABYLON.DynamicTexture("hud-texture", { width: 1000 * hsf, height: 1000 * hsf }, this.scene, true);
-        holoScreenTexture.hasAlpha = true;
-        holoScreenMaterial.holoTexture = holoScreenTexture;
+        this.holoScreenTexture = new BABYLON.DynamicTexture("hud-texture", { width: 1000 * hsf, height: 1000 * hsf }, this.scene, true);
+        this.holoScreenTexture.hasAlpha = true;
+        this.holoScreenMaterial.holoTexture = this.holoScreenTexture;
         
-        this.slika = new Slika(1000 * hsf, 1000 * hsf, holoScreenTexture.getContext(), holoScreenTexture);
-        this.slika.texture = holoScreenTexture;
-        this.slika.context = holoScreenTexture.getContext();
+        this.slika = new Slika(1000, 1000, this.holoScreenTexture.getContext(), this.holoScreenTexture);
+        this.slika.texture = this.holoScreenTexture;
+        this.slika.context = this.holoScreenTexture.getContext();
         this.slika.needRedraw = true;
 
-        this.holoMesh.material = holoScreenMaterial;
+        this.holoMesh.material = this.holoScreenMaterial;
 
         let M = 15;
         let L = 40;
@@ -122,6 +124,23 @@ class WristWatch extends Pickable {
         this.slika.needRedraw = true;
         this.scene.onBeforeRenderObservable.add(this._update);
         this.powerOff();
+
+        Config.performanceConfiguration.onHoloScreenFactorChangedCallbacks.push(() => {
+            this.refreshHSF();
+        });
+    }
+
+    public refreshHSF(): void {
+        let hsf = Config.performanceConfiguration.holoScreenFactor;
+
+        this.holoScreenTexture = new BABYLON.DynamicTexture("hud-texture", { width: 1000 * hsf, height: 1000 * hsf }, this.scene, true);
+        this.holoScreenTexture.hasAlpha = true;
+        this.holoScreenMaterial.holoTexture = this.holoScreenTexture;
+        if (this.slika) {
+            this.slika.texture = this.holoScreenTexture;
+            this.slika.context = this.holoScreenTexture.getContext();
+            this.slika.needRedraw = true;
+        }
     }
 
     public dispose(doNotRecurse?: boolean, disposeMaterialAndTextures?: boolean): void {

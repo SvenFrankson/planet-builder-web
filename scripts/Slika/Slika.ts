@@ -166,7 +166,13 @@ class Slika {
 
     private elements: UniqueList<SlikaElement> = new UniqueList<SlikaElement>();
     private pickableElements: UniqueList<SlikaElement> = new UniqueList<SlikaElement>();
-    public needRedraw: boolean = true;
+    private _needRedraw: boolean = true;
+    public get needRedraw(): boolean {
+        return this._needRedraw;
+    }
+    public set needRedraw(v: boolean) {
+        this._needRedraw = v;
+    }
     public aimedElement: SlikaElement;
 
     constructor(
@@ -182,7 +188,7 @@ class Slika {
 
     private _update = () => {
         if (this.needRedraw) {
-            this.redraw();
+            this._redraw();
             if (this.texture) {
                 this.texture.update();
             }
@@ -207,7 +213,7 @@ class Slika {
         this.pickableElements.remove(e);
     }
 
-    public redraw(): void {
+    private _redraw(): void {
         this.context.clearRect(0, 0, this.width, this.height);
         for (let i = 0; i < this.elements.length; i++) {
             let e = this.elements.get(i);

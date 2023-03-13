@@ -53,6 +53,10 @@ class ModelingWorkbench extends PickablePlanetObject {
     public gridOffset: BABYLON.Vector3 = BABYLON.Vector3.Zero();
     public currentOrientation: number = 0;
 
+    public buttonIconMaterial: HoloPanelMaterial
+    public buttonIconTexture: BABYLON.DynamicTexture;
+    public buttonIconSlika: Slika;
+
     public commandContainer: BABYLON.Mesh;
     public gridPlus: ModelingWorkbenchButton;
     public gridMinus: ModelingWorkbenchButton;
@@ -174,17 +178,17 @@ class ModelingWorkbench extends PickablePlanetObject {
 
         let hsf = Config.performanceConfiguration.holoScreenFactor;
 
-        let iconMaterial = new HoloPanelMaterial("hud-material", this.scene);
+        this.buttonIconMaterial = new HoloPanelMaterial("hud-material", this.scene);
 
-        let hudTexture = new BABYLON.DynamicTexture("hud-texture", { width: 1024 * hsf, height: 1024 * hsf }, this.scene, true);
-        hudTexture.hasAlpha = true;
-        iconMaterial.holoTexture = hudTexture;
+        this.buttonIconTexture = new BABYLON.DynamicTexture("hud-texture", { width: 1024 * hsf, height: 1024 * hsf }, this.scene, true);
+        this.buttonIconTexture.hasAlpha = true;
+        this.buttonIconMaterial.holoTexture = this.buttonIconTexture;
         
-        let slika = new Slika(1024 * hsf, 1024 * hsf, hudTexture.getContext(), hudTexture);
-        slika.texture = hudTexture;
-        slika.context = hudTexture.getContext();
-        this._fillCommandSlika(slika);
-        slika.needRedraw = true;
+        this.buttonIconSlika = new Slika(1024, 1024, this.buttonIconTexture.getContext(), this.buttonIconTexture);
+        this.buttonIconSlika.texture = this.buttonIconTexture;
+        this.buttonIconSlika.context = this.buttonIconTexture.getContext();
+        this._fillCommandSlika(this.buttonIconSlika);
+        this.buttonIconSlika.needRedraw = true;
 
         this.commandContainer = new BABYLON.Mesh("command-container");
         this.commandContainer.parent = this.grid;
@@ -196,7 +200,7 @@ class ModelingWorkbench extends PickablePlanetObject {
 
         
         
-        this.gridPlus = new ModelingWorkbenchButton("grid-plus-button", buttonMaterial, iconMaterial, [new BABYLON.Vector2(0, 0)], this.main);
+        this.gridPlus = new ModelingWorkbenchButton("grid-plus-button", buttonMaterial, this.buttonIconMaterial, [new BABYLON.Vector2(0, 0)], this.main);
         this.gridPlus.instantiate();
         this.gridPlus.parent = this.commandContainer;
         this.gridPlus.position.z = 0.5;
@@ -221,7 +225,7 @@ class ModelingWorkbench extends PickablePlanetObject {
             this.updateCubeMesh();
         }
 
-        this.gridMinus = new ModelingWorkbenchButton("grid-minus-button", buttonMaterial, iconMaterial, [new BABYLON.Vector2(0, 1)], this.main);
+        this.gridMinus = new ModelingWorkbenchButton("grid-minus-button", buttonMaterial, this.buttonIconMaterial, [new BABYLON.Vector2(0, 1)], this.main);
         this.gridMinus.instantiate();
         this.gridMinus.parent = this.commandContainer;
         this.gridMinus.position.z = 0.4;
@@ -247,7 +251,7 @@ class ModelingWorkbench extends PickablePlanetObject {
         }
         
         this.editionModeButton = new ModelingWorkbenchButton(
-            "edition-mode-button", buttonMaterial, iconMaterial,
+            "edition-mode-button", buttonMaterial, this.buttonIconMaterial,
             [new BABYLON.Vector2(0, 2), new BABYLON.Vector2(0, 3), new BABYLON.Vector2(0, 4)],
             this.main,
             this.editionMode
@@ -262,7 +266,7 @@ class ModelingWorkbench extends PickablePlanetObject {
             this.updateEditionMode();
         }
         
-        this.brushSize1 = new ModelingWorkbenchButton("brush-size-1-button", buttonMaterial, iconMaterial, [new BABYLON.Vector2(2, 0)], this.main);
+        this.brushSize1 = new ModelingWorkbenchButton("brush-size-1-button", buttonMaterial, this.buttonIconMaterial, [new BABYLON.Vector2(2, 0)], this.main);
         this.brushSize1.instantiate();
         this.brushSize1.parent = this.commandContainer;
         this.brushSize1.position.z = 0.2;
@@ -272,7 +276,7 @@ class ModelingWorkbench extends PickablePlanetObject {
             this.updateCubeMesh();
         }
         
-        this.brushSize3 = new ModelingWorkbenchButton("brush-size-3-button", buttonMaterial, iconMaterial, [new BABYLON.Vector2(2, 1)], this.main);
+        this.brushSize3 = new ModelingWorkbenchButton("brush-size-3-button", buttonMaterial, this.buttonIconMaterial, [new BABYLON.Vector2(2, 1)], this.main);
         this.brushSize3.instantiate();
         this.brushSize3.parent = this.commandContainer;
         this.brushSize3.position.x = 0.1;
@@ -284,7 +288,7 @@ class ModelingWorkbench extends PickablePlanetObject {
         }
         
         this.brushModeButton = new ModelingWorkbenchButton(
-            "brush-mode-button", buttonMaterial, iconMaterial,
+            "brush-mode-button", buttonMaterial, this.buttonIconMaterial,
             [new BABYLON.Vector2(2, 3), new BABYLON.Vector2(2, 4)],
             this.main
         );
@@ -299,7 +303,7 @@ class ModelingWorkbench extends PickablePlanetObject {
         }
 
         for (let i = 0; i < 3; i++) {
-            this.activeIndexInput[i] = new ModelingWorkbenchButton("material-" + i.toFixed(0) + "-button", buttonMaterial, iconMaterial, [new BABYLON.Vector2(1, i)], this.main);
+            this.activeIndexInput[i] = new ModelingWorkbenchButton("material-" + i.toFixed(0) + "-button", buttonMaterial, this.buttonIconMaterial, [new BABYLON.Vector2(1, i)], this.main);
             this.activeIndexInput[i].instantiate();
             this.activeIndexInput[i].parent = this.commandContainer;
             this.activeIndexInput[i].position.x = -0.1 - i * 0.1;
@@ -310,7 +314,7 @@ class ModelingWorkbench extends PickablePlanetObject {
             }
         }
         
-        this.saveButton = new ModelingWorkbenchButton("save-button", buttonMaterial, iconMaterial, [new BABYLON.Vector2(3, 0)], this.main);
+        this.saveButton = new ModelingWorkbenchButton("save-button", buttonMaterial, this.buttonIconMaterial, [new BABYLON.Vector2(3, 0)], this.main);
         this.saveButton.instantiate();
         this.saveButton.parent = this.commandContainer;
         this.saveButton.position.x = -0.5;
@@ -337,7 +341,7 @@ class ModelingWorkbench extends PickablePlanetObject {
             })
         }
         
-        this.exitButton = new ModelingWorkbenchButton("exit-button", buttonMaterial, iconMaterial, [new BABYLON.Vector2(3, 1)], this.main);
+        this.exitButton = new ModelingWorkbenchButton("exit-button", buttonMaterial, this.buttonIconMaterial, [new BABYLON.Vector2(3, 1)], this.main);
         this.exitButton.instantiate();
         this.exitButton.parent = this.commandContainer;
         this.exitButton.position.x = -0.6;
@@ -350,6 +354,23 @@ class ModelingWorkbench extends PickablePlanetObject {
         this._redrawGrid();
 
         this.powerOff();
+
+        Config.performanceConfiguration.onHoloScreenFactorChangedCallbacks.push(() => {
+            this.refreshHSF();
+        });
+    }
+
+    public refreshHSF(): void {
+        let hsf = Config.performanceConfiguration.holoScreenFactor;
+
+        this.buttonIconTexture = new BABYLON.DynamicTexture("hud-texture", { width: 1024 * hsf, height: 1024 * hsf }, this.scene, true);
+        this.buttonIconTexture.hasAlpha = true;
+        this.buttonIconMaterial.holoTexture = this.buttonIconTexture;
+        if (this.buttonIconSlika) {
+            this.buttonIconSlika.texture = this.buttonIconTexture;
+            this.buttonIconSlika.context = this.buttonIconTexture.getContext();
+            this.buttonIconSlika.needRedraw = true;
+        }
     }
 
     public register(): void {

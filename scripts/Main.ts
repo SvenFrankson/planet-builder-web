@@ -1,4 +1,9 @@
 class Main {
+
+    public static ClearSave(): void {
+        window.localStorage.clear();
+    }
+    
     public static Instance: Main;
 
 	public canvas: HTMLCanvasElement;
