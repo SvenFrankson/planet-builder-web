@@ -8,11 +8,30 @@ interface IModelizedMeshData {
 
 class ModelizedMeshData {
 
-    public cubeSize: number = 0.05;
-    public degree: number = 6;
-    public octrees: Map<string, OctreeNode<number>> = new Map<string, OctreeNode<number>>();
-
+    public static datas: Map<string, ModelizedMeshData> = new Map<string, ModelizedMeshData>();
     public vertexData: BABYLON.VertexData;
+
+    constructor(
+        public name: string,
+        public cubeSize: number = 0.05,
+        public degree: number = 6,
+        public octrees: Map<string, OctreeNode<number>> = new Map<string, OctreeNode<number>>()
+    ){
+        this.buildVertexData();
+    }
+
+    public static Get(name: string): ModelizedMeshData {
+        if (ModelizedMeshData.datas.get(name)) {
+            return ModelizedMeshData.datas.get(name);
+        }
+
+        let storedMMD = window.localStorage.getItem(name);
+        if (storedMMD) {
+            let mmd = ModelizedMeshData.Deserialize(name, storedMMD);
+            ModelizedMeshData.datas.set(name, mmd);
+            return mmd;
+        }
+    }
 
     public buildVertexData(): void {
         let vertexDatas: BABYLON.VertexData[] = [];
@@ -42,19 +61,17 @@ class ModelizedMeshData {
         return JSON.stringify(data);
     }
 
-    public static Deserialize(input: string): ModelizedMeshData {
-        let modelizedMeshData = new ModelizedMeshData();
-
+    public static Deserialize(name: string, input: string): ModelizedMeshData {
         let data: IModelizedMeshData = JSON.parse(input);
-        modelizedMeshData.cubeSize = data.cubeSize;
-        modelizedMeshData.degree = data.degree;
-        modelizedMeshData.octrees = new Map<string, OctreeNode<number>>();
+        let cubeSize = data.cubeSize;
+        let degree = data.degree;
+        let octrees = new Map<string, OctreeNode<number>>();
         for (let i = 0; i < data.colors.length && i < data.octrees.length; i++) {
             let color = data.colors[i];
             let octree = OctreeNode.DeserializeFromString(data.octrees[i]);
-            modelizedMeshData.octrees.set(color, octree);
+            octrees.set(color, octree);
         }
 
-        return modelizedMeshData;
+        return new ModelizedMeshData(name, cubeSize, degree, octrees);
     }
 }

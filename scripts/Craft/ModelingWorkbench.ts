@@ -316,18 +316,18 @@ class ModelingWorkbench extends PickablePlanetObject {
         this.saveButton.position.x = -0.5;
         this.saveButton.onClick = () => {
             let name = "X-" + Math.floor(Math.random() * 1000);
-            let mmd = new ModelizedMeshData();
-            mmd.degree = this.degree;
-            mmd.cubeSize = this.cubeSize;
-            mmd.octrees = new Map<string, OctreeNode<number>>();
+            let degree = this.degree;
+            let cubeSize = this.cubeSize;
+            let octrees = new Map<string, OctreeNode<number>>();
             for (let i = 0; i < this.voxelMeshes.length; i++) {
                 let voxelMesh = this.voxelMeshes[i];
                 if (voxelMesh) {
                     let octree = voxelMesh.root;
                     let color = this.colors[i].toHexString();
-                    mmd.octrees.set(color, octree);
+                    octrees.set(color, octree);
                 }
             }
+            let mmd = new ModelizedMeshData(name, cubeSize, degree, octrees);
             window.localStorage.setItem(name, mmd.serialize());
 
             requestAnimationFrame(async () => {
@@ -749,8 +749,14 @@ class ModelingWorkbench extends PickablePlanetObject {
         let jN = 0;
 
         if (this.editionMode === EditionMode.HGrid || this.editionMode === EditionMode.Sculpt) {
+
             this.grid.position.x = 0;
-            this.grid.position.y = (this.gridOffset.y) * this.cubeSize;
+            if (this.editionMode === EditionMode.HGrid) {
+                this.grid.position.y = (this.gridOffset.y) * this.cubeSize;
+            }
+            else {
+                this.grid.position.y = 0;
+            }
             this.grid.position.z = 0;
 
             i0 = Math.round(this._bboxMin.x / this.cubeSize);
