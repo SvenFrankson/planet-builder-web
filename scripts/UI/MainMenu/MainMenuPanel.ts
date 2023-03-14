@@ -200,7 +200,10 @@ class MainMenuPanel extends HoloPanel {
             this.setPosition(p, true);
             this.setTarget(player.position);
             requestAnimationFrame(() => {
-                this.inputManager.player.targetLook = this.holoMesh.absolutePosition;
+                let p = new BABYLON.Vector3(0, this.height, 0);
+                BABYLON.Vector3.TransformCoordinatesToRef(p, this.getWorldMatrix(), p);
+                BABYLON.MeshBuilder.CreateBox("test", {size: 0.05}).position.copyFrom(p);
+                this.inputManager.player.targetLook = p;
                 this.inputManager.player.targetDestination = this.interactionAnchor.absolutePosition.clone();
             })
             this.showPage(this.currentPage);

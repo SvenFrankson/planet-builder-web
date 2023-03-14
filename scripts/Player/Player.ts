@@ -445,16 +445,17 @@ class Player extends BABYLON.Mesh {
         if (this.targetLook) {
             let forward = this.camPos.forward;
             let targetForward = this.targetLook.subtract(this.camPos.absolutePosition).normalize();
-            let a = VMath.AngleFromToAround(forward, targetForward, this.upDirection) / Math.PI;
-            if (isFinite(a)) {
-                this.inputHeadRight += a * this.targetLookStrength;
+            let aY = VMath.AngleFromToAround(forward, targetForward, this.upDirection);
+            if (isFinite(aY)) {
+                this.inputHeadRight += aY / Math.PI * this.targetLookStrength;
             }
-            a = VMath.AngleFromToAround(forward, targetForward, this._rightDirection) / (2 * Math.PI);
-            if (isFinite(a)) {
-                this.inputHeadUp += a * this.targetLookStrength;
+            let aX = VMath.AngleFromToAround(forward, targetForward, this._rightDirection);
+            if (isFinite(aX)) {
+                this.inputHeadUp += aX / (2 * Math.PI) * this.targetLookStrength;
             }
             if (!this.targetDestination && this.velocity.lengthSquared() < 0.001) {
-                if (BABYLON.Vector3.Dot(forward, targetForward) > 0.99) {
+                if (Math.abs(aY) < Math.PI / 180 && Math.abs(aX) < Math.PI / 180) {
+                    console.log(aX + " " + aY);
                     this.targetLook = undefined;
                     this.targetLookStrength = 0.5;
                 }
@@ -605,9 +606,6 @@ class Player extends BABYLON.Mesh {
             }
         }
 
-        this.velocity.addInPlace(this._gravityFactor);
-        this.velocity.addInPlace(this._groundFactor);
-
         // Add input force.
         let fLat = 1;
         this._controlFactor.copyFromFloats(0, 0, 0);
@@ -627,6 +625,8 @@ class Player extends BABYLON.Mesh {
             }
         }
         else {
+            this.velocity.addInPlace(this._gravityFactor);
+            this.velocity.addInPlace(this._groundFactor);
             this._controlFactor.addInPlace(this._rightDirection.scale(this.inputRight));
             this._controlFactor.addInPlace(this._forwardDirection.scale(this.inputForward));
             if (this._controlFactor.lengthSquared() > 0.1) {
@@ -680,7 +680,7 @@ class Player extends BABYLON.Mesh {
             }
         }
 
-        if (!this.godMode) {
+        if (!this.godMode && !this.targetDestination) {
             for (let i = 0; i < this._collisionPositions.length; i++) {
                 let pos = this._collisionPositions[i];
                 for (let j = 0; j < this._collisionAxis.length; j++) {
