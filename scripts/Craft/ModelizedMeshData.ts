@@ -18,6 +18,7 @@ class ModelizedMeshData {
         public octrees: Map<string, OctreeNode<number>> = new Map<string, OctreeNode<number>>()
     ){
         this.buildVertexData();
+        ModelizedMeshData.datas.set(name, this);
     }
 
     public static Get(name: string): ModelizedMeshData {
