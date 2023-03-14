@@ -73,7 +73,9 @@ class PlayerActionManager {
         if (slotIndex >= 0 && slotIndex <= 9) {
             this.linkedActions[slotIndex] = action;
             this.hud.onActionLinked(action, slotIndex);
-            window.localStorage.setItem("player-action-manager", JSON.stringify(this.serialize()));
+            if (Config.saveConfiguration.useLocalStorage) {
+                window.localStorage.setItem("player-action-manager", JSON.stringify(this.serialize()));
+            }
         }
     }
 
@@ -81,7 +83,9 @@ class PlayerActionManager {
         if (slotIndex >= 0 && slotIndex <= 9) {
             this.linkedActions[slotIndex] = undefined;
             this.hud.onActionUnlinked(slotIndex);
-            window.localStorage.setItem("player-action-manager", JSON.stringify(this.serialize()));
+            if (Config.saveConfiguration.useLocalStorage) {
+                window.localStorage.setItem("player-action-manager", JSON.stringify(this.serialize()));
+            }
         }
     }
 

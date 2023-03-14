@@ -112,6 +112,11 @@ class ConfigurationControl {
     public canLockPointer: boolean = false;
 }
 
+class ConfigurationSave {
+
+    public useLocalStorage: boolean = true;
+}
+
 class ConfigurationUI {
 
     public holoScreenBaseColor: string = "#35b4d4";
@@ -135,26 +140,33 @@ class Configuration {
     public performanceConfiguration: ConfigurationPerformance = new ConfigurationPerformance();
     public controlConfiguration: ConfigurationControl = new ConfigurationControl();
     public uiConfiguration: ConfigurationUI = new ConfigurationUI();
+    public saveConfiguration: ConfigurationSave = new ConfigurationSave();
 
     public setConfHighPreset(): void {
         this.performanceConfiguration.setLodRanges([80, 160, 320, 640, 1280, 2560]);
         this.performanceConfiguration.setHoloScreenFactor(1);
         this.confPreset = ConfigurationPreset.High;
-        window.localStorage.setItem("graphic-setting-preset", this.confPreset);
+        if (Config.saveConfiguration.useLocalStorage) {
+            window.localStorage.setItem("graphic-setting-preset", this.confPreset);
+        }
     }
     
     public setConfMediumPreset(): void {
         this.performanceConfiguration.setLodRanges([60, 120, 240, 480, 960, 1920]);
         this.performanceConfiguration.setHoloScreenFactor(0.75);
         this.confPreset = ConfigurationPreset.Medium;
-        window.localStorage.setItem("graphic-setting-preset", this.confPreset);
+        if (Config.saveConfiguration.useLocalStorage) {
+            window.localStorage.setItem("graphic-setting-preset", this.confPreset);
+        }
     }
     
     public setConfLowPreset(): void {
         this.performanceConfiguration.setLodRanges([40, 80, 160, 320, 640, 1280]);
         this.performanceConfiguration.setHoloScreenFactor(0.5);
         this.confPreset = ConfigurationPreset.Low;
-        window.localStorage.setItem("graphic-setting-preset", this.confPreset);
+        if (Config.saveConfiguration.useLocalStorage) {
+            window.localStorage.setItem("graphic-setting-preset", this.confPreset);
+        }
     }
 }
 

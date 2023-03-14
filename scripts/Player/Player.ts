@@ -387,7 +387,9 @@ class Player extends BABYLON.Mesh {
         this.updatePlanet();
 
         let deltaTime: number = this.main.engine.getDeltaTime() / 1000;
-        this._savePositionTimer += deltaTime;
+        if (Config.saveConfiguration.useLocalStorage) {
+            this._savePositionTimer += deltaTime;
+        }
 
         if (isFinite(this._moveTimer)) {
             let p = this.inputManager.getPickInfo(this._meshes);
@@ -749,19 +751,21 @@ class Player extends BABYLON.Mesh {
             }
         }
 
-        if (this._savePositionTimer > 0.5) {
-            this._savePositionTimer = 0;
-            let savedPlayerPos = {
-                x: this.position.x,
-                y: this.position.y,
-                z: this.position.z,                
-                rx: this.camPos.rotation.x,
-                qx: this.rotationQuaternion.x,
-                qy: this.rotationQuaternion.y,
-                qz: this.rotationQuaternion.z,
-                qw: this.rotationQuaternion.w
-            };
-            window.localStorage.setItem("player-position", JSON.stringify(savedPlayerPos));
+        if (Config.saveConfiguration.useLocalStorage) {
+            if (this._savePositionTimer > 0.5) {
+                this._savePositionTimer = 0;
+                let savedPlayerPos = {
+                    x: this.position.x,
+                    y: this.position.y,
+                    z: this.position.z,                
+                    rx: this.camPos.rotation.x,
+                    qx: this.rotationQuaternion.x,
+                    qy: this.rotationQuaternion.y,
+                    qz: this.rotationQuaternion.z,
+                    qw: this.rotationQuaternion.w
+                };
+                window.localStorage.setItem("player-position", JSON.stringify(savedPlayerPos));
+            }
         }
 
         //document.querySelector("#camera-altitude").textContent = this.camPos.absolutePosition.length().toFixed(1);

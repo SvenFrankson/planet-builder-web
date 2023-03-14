@@ -56,7 +56,9 @@ class MainMenu extends Main {
 			Config.setConfHighPreset();
 		}
 		else {
-			window.localStorage.setItem("graphic-setting-preset", ConfigurationPreset.None);
+			if (Config.saveConfiguration.useLocalStorage) {
+				window.localStorage.setItem("graphic-setting-preset", ConfigurationPreset.None);
+			}
 		}
 
 		return new Promise<void>(resolve => {

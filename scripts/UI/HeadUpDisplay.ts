@@ -46,7 +46,7 @@ class HeadUpDisplay extends Pickable {
         this.hudTexture.hasAlpha = true;
         this.hudMaterial.holoTexture = this.hudTexture;
         
-        this.slika = new Slika(1000 * hsf, 1000 * hsf, this.hudTexture.getContext(), this.hudTexture);
+        this.slika = new Slika(1000, 1000, this.hudTexture.getContext(), this.hudTexture);
         this.slika.texture = this.hudTexture;
         this.slika.context = this.hudTexture.getContext();
         this.slika.needRedraw = true;
@@ -56,6 +56,23 @@ class HeadUpDisplay extends Pickable {
         })
 
         this.resize();
+
+        Config.performanceConfiguration.onHoloScreenFactorChangedCallbacks.push(() => {
+            this.refreshHSF();
+        });
+    }
+
+    public refreshHSF(): void {
+        let hsf = Config.performanceConfiguration.holoScreenFactor;
+
+        this.hudTexture = new BABYLON.DynamicTexture("hud-texture", { width: 1000 * hsf, height: 1000 * hsf }, this.scene, true);
+        this.hudTexture.hasAlpha = true;
+        this.hudMaterial.holoTexture = this.hudTexture;
+        if (this.slika) {
+            this.slika.texture = this.hudTexture;
+            this.slika.context = this.hudTexture.getContext();
+            this.slika.needRedraw = true;
+        }
     }
 
     public resize(): void {

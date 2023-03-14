@@ -130,9 +130,11 @@ class PlanetChunck extends AbstractPlanetChunck {
             this.modDataOctree = new OctreeNode<BlockType>(3);
         }
         this.modDataOctree.set(value, i, j, k);
-        let serial = this.modDataOctree.serializeToString();
-        console.log(serial);
-        window.localStorage.setItem(this.getUniqueName(), serial);
+        
+        if (Config.saveConfiguration.useLocalStorage) {
+            let serial = this.modDataOctree.serializeToString();
+            window.localStorage.setItem(this.getUniqueName(), serial);
+        }
         if (noDataSafety) {
             return;
         }
@@ -656,10 +658,6 @@ class PlanetChunck extends AbstractPlanetChunck {
                 }
             }
         }
-    }
-
-    public saveToLocalStorage(): void {
-        localStorage.setItem(this.name, this.serialize());
     }
 
     public debugTextInfo(): string[] {

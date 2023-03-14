@@ -1,6 +1,7 @@
 class Main {
 
     public static ClearSave(): void {
+        Config.saveConfiguration.useLocalStorage = false;
         window.localStorage.clear();
     }
     

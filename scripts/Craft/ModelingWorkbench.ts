@@ -332,7 +332,9 @@ class ModelingWorkbench extends PickablePlanetObject {
                 }
             }
             let mmd = new ModelizedMeshData(name, cubeSize, degree, octrees);
-            window.localStorage.setItem(name, mmd.serialize());
+            if (Config.saveConfiguration.useLocalStorage) {
+                window.localStorage.setItem(name, mmd.serialize());
+            }
 
             requestAnimationFrame(async () => {
                 let item = await InventoryItem.TmpObject(this.player, name);
