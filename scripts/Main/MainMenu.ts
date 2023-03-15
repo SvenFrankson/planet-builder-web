@@ -166,6 +166,16 @@ class MainMenu extends Main {
 						this.player.playerActionManager = new PlayerActionManager(this.player, hud, this);
 						this.player.playerActionManager.initialize();
 
+						setTimeout(() => {
+							let human = new Human(false, this.scene);
+							let p = this.player.position.add(this.player.forward.scale(1.2));
+							human.position = p;
+							human.planet = this.player.planet;
+							human.initialize();
+							human.instantiate();
+
+						}, 1000);
+
 						if (DebugDefine.SKIP_MAINMENU_PANEL) {
 							this.player.registerControl();
 							hideLoading();
