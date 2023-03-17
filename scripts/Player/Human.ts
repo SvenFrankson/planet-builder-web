@@ -2,6 +2,8 @@ class Human extends BABYLON.Mesh {
 
     public planet: Planet;
 
+    public camPos: BABYLON.AbstractMesh;
+
     public torsoLow: BABYLON.Mesh;
     public upperLegL: BABYLON.Mesh;
     public lowerLegL: BABYLON.Mesh;
@@ -10,20 +12,35 @@ class Human extends BABYLON.Mesh {
     public torsoHigh: BABYLON.Mesh;
 
     public armManager: HumanArmManager;
+    
+    public targetLookStrength: number = 0.5;
+    public targetLook: BABYLON.Vector3;
 
     public get scene(): BABYLON.Scene {
         return this._scene;
     }
+
+    public animateCamPosRotX = AnimationFactory.EmptyNumberCallback;
+    public animateCamPosRotY = AnimationFactory.EmptyNumberCallback;
 
     constructor(
         public isLeftArm: boolean = true,
         scene: BABYLON.Scene
     ) {
         super("human", scene);
+
+        this.rotationQuaternion = BABYLON.Quaternion.Identity();
+        
+        this.camPos = new BABYLON.Mesh("Dummy", Game.Scene);
+        this.camPos.parent = this;
+        this.camPos.position = new BABYLON.Vector3(0, 1.77, 0);
+        this.camPos.rotation.x = Math.PI / 8;
+
+        this.animateCamPosRotX = AnimationFactory.CreateNumber(this, this.camPos.rotation, "x");
+        this.animateCamPosRotY = AnimationFactory.CreateNumber(this, this.camPos.rotation, "y");
     }
 
     public initialize(): void {
-        this.rotationQuaternion = BABYLON.Quaternion.Identity();
         
         let mat = new ToonMaterial("player-arm-material", this.scene);
 

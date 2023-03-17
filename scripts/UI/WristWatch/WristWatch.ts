@@ -36,14 +36,14 @@ class WristWatch extends Pickable {
         this.holoMesh.position.y = 0.146;
         this.holoMesh.position.z = 0.148;
         this.holoMesh.rotation.y = - Math.PI * 0.5;
-        this.holoMesh.parent = this.player.armManager.leftArm.foreArmMesh;
+        this.holoMesh.parent = this.player.manager.armManager.leftArm.foreArmMesh;
         this.proxyPickMeshes = [this.holoMesh];
 
         this.powerButton = new BABYLON.Mesh("wrist-watch-power-button");
         this.powerButton.position.x = 0.014;
         this.powerButton.position.y = 0.031;
         this.powerButton.position.z = 0.258;
-        this.powerButton.parent = this.player.armManager.leftArm.foreArmMesh;
+        this.powerButton.parent = this.player.manager.armManager.leftArm.foreArmMesh;
         
         this.wait = AnimationFactory.CreateWait(this);
         this.animateExtension = AnimationFactory.CreateNumber(this, this, "screenExtension");

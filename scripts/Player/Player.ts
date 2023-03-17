@@ -20,7 +20,7 @@ class Player extends BABYLON.Mesh {
     public inputHeadUp: number = 0;
     public inputHeadRight: number = 0;
     public godMode: boolean;
-    public armManager: PlayerArmManager;
+    public manager: PlayerManager;
     
     public currentAction: PlayerAction;
 
@@ -73,7 +73,7 @@ class Player extends BABYLON.Mesh {
         this.camPos.parent = this;
         this.camPos.position = new BABYLON.Vector3(0, 1.77, 0);
         this.camPos.rotation.x = Math.PI / 8;
-        this.armManager = new PlayerArmManager(this);
+        this.manager = new PlayerManager(this);
         /*
         BABYLON.CreateSphereVertexData({ diameter: 0.2 }).applyToMesh(this);
         let material = new BABYLON.StandardMaterial("material", this.getScene());
@@ -113,7 +113,7 @@ class Player extends BABYLON.Mesh {
     public async initialize(): Promise<void> {
         if (!this._initialized) {
             Game.Scene.onBeforeRenderObservable.add(this._update);
-            this.armManager.initialize();
+            this.manager.initialize();
             this._initialized = true;
             this.groundCollisionVData = (await this.main.vertexDataLoader.get("chunck-part"))[2];
             this.wallCollisionVData = (await this.main.vertexDataLoader.get("chunck-part"))[3];
@@ -138,8 +138,8 @@ class Player extends BABYLON.Mesh {
     }
 
     private _onPointerUpUIOnly = (pickableElement: Pickable) => {
-        if (this.armManager) {
-            this.armManager.pointerUpAnimation(pickableElement, () => {
+        if (this.manager) {
+            this.manager.armManager.pointerUpAnimation(pickableElement, () => {
                 if (pickableElement) {
                     pickableElement.onPointerUp();
                 }
@@ -211,8 +211,8 @@ class Player extends BABYLON.Mesh {
                 }
             }
             
-            if (this.armManager) {
-                this.armManager.pointerUpAnimation(pickable, () => {
+            if (this.manager) {
+                this.manager.armManager.pointerUpAnimation(pickable, () => {
                     if (pickable) {
                         pickable.onPointerUp();
                     }
@@ -222,8 +222,8 @@ class Player extends BABYLON.Mesh {
 
         this.inputManager.pointerDownObservable.add((pickable: IPickable) => {
             
-            if (this.armManager) {
-                this.armManager.pointerDownAnimation(pickable, () => {
+            if (this.manager) {
+                this.manager.armManager.pointerDownAnimation(pickable, () => {
                     if (pickable) {
                         pickable.onPointerDown();
                     }
