@@ -174,6 +174,8 @@ class MainMenu extends Main {
 							human.initialize();
 							human.instantiate();
 
+							let aiManager = new AIHumanManager(human);
+							aiManager.initialize();
 						}, 1000);
 
 						if (DebugDefine.SKIP_MAINMENU_PANEL) {

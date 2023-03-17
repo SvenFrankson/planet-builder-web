@@ -10,8 +10,6 @@ class Human extends BABYLON.Mesh {
     public upperLegR: BABYLON.Mesh;
     public lowerLegR: BABYLON.Mesh;
     public torsoHigh: BABYLON.Mesh;
-
-    public armManager: HumanArmManager;
     
     public targetLookStrength: number = 0.5;
     public targetLook: BABYLON.Vector3;
@@ -68,8 +66,6 @@ class Human extends BABYLON.Mesh {
         this.torsoHigh.material = mat;
         this.torsoHigh.rotationQuaternion = BABYLON.Quaternion.Identity();
 
-        this.armManager = new HumanArmManager(this);
-
         this.scene.onBeforeRenderObservable.add(this._update);
     }
     
@@ -81,8 +77,6 @@ class Human extends BABYLON.Mesh {
         VertexDataUtils.MirrorX(data[1]).applyToMesh(this.upperLegR);
         VertexDataUtils.MirrorX(data[2]).applyToMesh(this.lowerLegR);
         data[3].applyToMesh(this.torsoHigh);
-
-        this.armManager.initialize();
     }
 
     private _update = () => {
