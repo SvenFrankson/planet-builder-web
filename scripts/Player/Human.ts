@@ -5,11 +5,10 @@ class Human extends BABYLON.Mesh {
     public camPos: BABYLON.AbstractMesh;
 
     public torsoLow: BABYLON.Mesh;
-    public upperLegL: BABYLON.Mesh;
-    public lowerLegL: BABYLON.Mesh;
-    public upperLegR: BABYLON.Mesh;
-    public lowerLegR: BABYLON.Mesh;
     public torsoHigh: BABYLON.Mesh;
+
+    public footTargetL: BABYLON.Mesh;
+    public footTargetR: BABYLON.Mesh;
     
     public targetLookStrength: number = 0.5;
     public targetLook: BABYLON.Vector3;
@@ -46,25 +45,17 @@ class Human extends BABYLON.Mesh {
         this.torsoLow.material = mat;
         this.torsoLow.rotationQuaternion = BABYLON.Quaternion.Identity();
 
-        this.upperLegL = new BABYLON.Mesh("upper-leg-L");
-        this.upperLegL.material = mat;
-        this.upperLegL.rotationQuaternion = BABYLON.Quaternion.Identity();
-
-        this.lowerLegL = new BABYLON.Mesh("lower-leg-L");
-        this.lowerLegL.material = mat;
-        this.lowerLegL.rotationQuaternion = BABYLON.Quaternion.Identity();
-
-        this.upperLegR = new BABYLON.Mesh("upper-leg-R");
-        this.upperLegR.material = mat;
-        this.upperLegR.rotationQuaternion = BABYLON.Quaternion.Identity();
-
-        this.lowerLegR = new BABYLON.Mesh("lower-leg-R");
-        this.lowerLegR.material = mat;
-        this.lowerLegR.rotationQuaternion = BABYLON.Quaternion.Identity();
-
         this.torsoHigh = new BABYLON.Mesh("torso-high");
         this.torsoHigh.material = mat;
         this.torsoHigh.rotationQuaternion = BABYLON.Quaternion.Identity();
+        
+        this.footTargetL = new BABYLON.Mesh("foot-target-L");
+        this.footTargetL.position.x = -0.2;
+        this.footTargetL.parent = this;
+
+        this.footTargetR = new BABYLON.Mesh("foot-target-R");
+        this.footTargetR.position.y = -0.2;
+        this.footTargetR.parent = this;
 
         this.scene.onBeforeRenderObservable.add(this._update);
     }
@@ -72,30 +63,12 @@ class Human extends BABYLON.Mesh {
     public async instantiate(): Promise<void> {
         let data = await VertexDataLoader.instance.get("human");
         data[0].applyToMesh(this.torsoLow);
-        data[1].applyToMesh(this.upperLegL);
-        data[2].applyToMesh(this.lowerLegL);
-        VertexDataUtils.MirrorX(data[1]).applyToMesh(this.upperLegR);
-        VertexDataUtils.MirrorX(data[2]).applyToMesh(this.lowerLegR);
         data[3].applyToMesh(this.torsoHigh);
     }
 
     private _update = () => {
         this.torsoLow.position.copyFromFloats(0, 1, 0);
         this.torsoLow.parent = this;
-
-        this.upperLegL.position.copyFromFloats(-0.11, 0, 0);
-        this.upperLegL.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2);
-        this.upperLegL.parent = this.torsoLow;
-        
-        this.lowerLegL.position.copyFromFloats(0, 0, 0.46);
-        this.lowerLegL.parent = this.upperLegL;
-
-        this.upperLegR.position.copyFromFloats(0.11, 0, 0);
-        this.upperLegR.rotationQuaternion = BABYLON.Quaternion.RotationAxis(BABYLON.Axis.X, Math.PI / 2);
-        this.upperLegR.parent = this.torsoLow;
-        
-        this.lowerLegR.position.copyFromFloats(0, 0, 0.46);
-        this.lowerLegR.parent = this.upperLegR;
 
         this.torsoHigh.position.copyFromFloats(0, 0.26, 0);
         this.torsoHigh.parent = this.torsoLow;

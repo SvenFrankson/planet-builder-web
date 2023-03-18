@@ -25,7 +25,7 @@ enum ElbowHeight {
     High
 }
 
-class PlayerArm extends BABYLON.Mesh {
+class HumanArm extends BABYLON.Mesh {
 
     public targetPosition: BABYLON.Vector3 = BABYLON.Vector3.Zero();
     //public targetOffset: BABYLON.Vector3 = BABYLON.Vector3.Zero();

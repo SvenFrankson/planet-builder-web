@@ -9,9 +9,9 @@ class HumanArmManager {
 
     public static POS: BABYLON.Vector3 = new BABYLON.Vector3(0.12, 1.33, 0.4);
 
-    public leftArm: PlayerArm;
-    public rightArm: PlayerArm;
-    public other(arm: PlayerArm): PlayerArm {
+    public leftArm: HumanArm;
+    public rightArm: HumanArm;
+    public other(arm: HumanArm): HumanArm {
         if (arm === this.leftArm) {
             return this.rightArm;
         }
@@ -47,11 +47,11 @@ class HumanArmManager {
     }
 
     public initialize(): void {
-        this.leftArm = new PlayerArm(true, this.human.scene);
+        this.leftArm = new HumanArm(true, this.human.scene);
         this.leftArm.initialize();
         this.leftArm.instantiate();
 
-        this.rightArm = new PlayerArm(false, this.human.scene);
+        this.rightArm = new HumanArm(false, this.human.scene);
         this.rightArm.initialize();
         this.rightArm.instantiate();
 
@@ -137,7 +137,7 @@ class HumanArmManager {
         this._updateRequestedTargetIdle(this.rightArm);
     }
 
-    private _updateRequestedTargetIdle(arm: PlayerArm): void {
+    private _updateRequestedTargetIdle(arm: HumanArm): void {
         let dP = 2 * this.human.scene.getEngine().getDeltaTime() / 1000;
         if (arm === this.leftArm) {
             let target = new BABYLON.Vector3(- 0.1, - this.leftArm.wristLength, 0);
@@ -153,7 +153,7 @@ class HumanArmManager {
         }
     }
 
-    private _aimingArm: PlayerArm;
+    private _aimingArm: HumanArm;
     private _updateAim(): void {
 
         if (!this.aimedPosition || this.aimedInteractionMode === InteractionMode.None) {

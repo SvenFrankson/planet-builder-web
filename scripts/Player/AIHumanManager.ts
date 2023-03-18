@@ -1,6 +1,7 @@
 class AIHumanManager {
 
     public armManager: HumanArmManager;
+    public legManager: HumanLegManager;
 
     public get scene(): BABYLON.Scene {
         return this.human.scene;
@@ -13,15 +14,18 @@ class AIHumanManager {
     ) {
         this.wait = AnimationFactory.CreateWait(this);
         this.armManager = new HumanArmManager(human);
+        this.legManager = new HumanLegManager(human);
     }
 
     public initialize(): void {
         this.armManager.initialize();
+        this.legManager.initialize();
         this.human.scene.onBeforeRenderObservable.add(this._update);
     }
 
     public dispose(): void {
         this.armManager.dispose();
+        this.legManager.dispose();
         this.human.scene.onBeforeRenderObservable.removeCallback(this._update);
     }
 
