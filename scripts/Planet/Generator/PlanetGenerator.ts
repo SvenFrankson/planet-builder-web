@@ -16,7 +16,7 @@ class PlanetGeneratorFactory {
         PlanetGeneratorFactory.Counter++;
         let seaLevelRatio = 0.6;
         if (type === PlanetGeneratorType.Minimal) {
-            seaLevelRatio = 0;
+            seaLevelRatio = 0.5;
         }
         let planet = new Planet(
             galaxy,

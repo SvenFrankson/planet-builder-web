@@ -40,5 +40,6 @@ class AIHumanManager {
             this.armManager.aimedInteractionMode = InteractionMode.Point;
             this._timer = 0;
         }
+        this.human.position.addInPlace(this.human.forward.scale(1/60 * 0.3));
     }
 }

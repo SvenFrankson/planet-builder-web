@@ -52,10 +52,12 @@ class Human extends BABYLON.Mesh {
         this.footTargetL = new BABYLON.Mesh("foot-target-L");
         this.footTargetL.position.x = -0.2;
         this.footTargetL.parent = this;
+        BABYLON.CreateBoxVertexData({ size: 0.1 }).applyToMesh(this.footTargetL);
 
         this.footTargetR = new BABYLON.Mesh("foot-target-R");
-        this.footTargetR.position.y = -0.2;
+        this.footTargetR.position.x = 0.2;
         this.footTargetR.parent = this;
+        BABYLON.CreateBoxVertexData({ size: 0.1 }).applyToMesh(this.footTargetR);
 
         this.scene.onBeforeRenderObservable.add(this._update);
     }

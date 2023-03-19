@@ -39,6 +39,7 @@ class HumanLeg extends BABYLON.Mesh {
         this.foot = new BABYLON.Mesh("foot");
         this.foot.parent = this._lowerLeg;
         this.foot.position.z = this._lowerLegLength;
+        BABYLON.CreateBoxVertexData({ size: 0.1 }).applyToMesh(this.foot);
 
         this.scene.onBeforeRenderObservable.add(this._update);
     }
@@ -80,7 +81,7 @@ class HumanLeg extends BABYLON.Mesh {
         VMath.RotateVectorByQuaternionToRef(this._kneePosition, this.rotationQuaternion, this._kneePosition);
         this._kneePosition.addInPlace(this._upperLeg.absolutePosition);
         
-        let currentTarget = this.targetPosition;
+        let currentTarget = this.targetPosition.clone();
 
         let upperLegZ = this._v0;
         let lowerLegZ = this._v1;

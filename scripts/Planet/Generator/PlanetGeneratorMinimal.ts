@@ -14,7 +14,7 @@ class PlanetGeneratorMinimal extends PlanetGenerator {
         if (useLog) {
             timers = [];
             timers.push(performance.now());
-            logOutput = "PlanetGeneratorMoon getTexture for " + this.planet.name;
+            logOutput = "PlanetGeneratorMinimal getTexture for " + this.planet.name;
         }
         let texture = new BABYLON.DynamicTexture("texture-" + side, size);
         let context = texture.getContext();
@@ -67,11 +67,8 @@ class PlanetGeneratorMinimal extends PlanetGenerator {
                     let globalJ = j + chunck.jPos * PlanetTools.CHUNCKSIZE;
                     let globalK = k + chunck.kPos * PlanetTools.CHUNCKSIZE;
 
-                    if ((globalI === 1 && globalJ === 1) || globalK <= 0) {
-                        refData[i - chunck.firstI][j - chunck.firstJ][k - chunck.firstK] = BlockType.Rock;
-                    }
-                    if (globalI > 0 && globalI <= 5 && globalJ > 0 && globalJ <= 5 && globalK % PlanetTools.CHUNCKSIZE === (PlanetTools.CHUNCKSIZE - 1)) {
-                        refData[i - chunck.firstI][j - chunck.firstJ][k - chunck.firstK] = BlockType.Rock;
+                    if (globalK <= this.planet.seaLevel) {
+                        refData[i - chunck.firstI][j - chunck.firstJ][k - chunck.firstK] = BlockType.Grass;
                     }
                 }
             }

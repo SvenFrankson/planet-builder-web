@@ -86,9 +86,9 @@ class MainMenu extends Main {
 			this.universe = new Universe();
 			this.currentGalaxy = new Galaxy(this.universe);
 			
-			let mainMenuPlanet: Planet = PlanetGeneratorFactory.Create(this.currentGalaxy, BABYLON.Vector3.Zero(), PlanetGeneratorType.Moon, 2, this);
+			let mainMenuPlanet: Planet = PlanetGeneratorFactory.Create(this.currentGalaxy, BABYLON.Vector3.Zero(), PlanetGeneratorType.Minimal, 6, this);
 			mainMenuPlanet.instantiate();
-			mainMenuPlanet.generator.showDebug();
+			//mainMenuPlanet.generator.showDebug();
 			
 			let dir = new BABYLON.Vector3(
 				Math.random() - 0.5,
