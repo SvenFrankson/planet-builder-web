@@ -65,12 +65,10 @@ class Human extends BABYLON.Mesh {
     public async instantiate(): Promise<void> {
         let data = await VertexDataLoader.instance.get("human");
         data[0].applyToMesh(this.torsoLow);
-        data[3].applyToMesh(this.torsoHigh);
+        data[5].applyToMesh(this.torsoHigh);
     }
 
     private _update = () => {
-        this.torsoLow.position.copyFromFloats(0, 1, 0);
-        this.torsoLow.parent = this;
 
         this.torsoHigh.position.copyFromFloats(0, 0.26, 0);
         this.torsoHigh.parent = this.torsoLow;

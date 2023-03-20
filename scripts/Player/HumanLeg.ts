@@ -4,6 +4,8 @@ class HumanLeg extends BABYLON.Mesh {
 
     private _upperLeg: BABYLON.Mesh;
     private _lowerLeg: BABYLON.Mesh;
+    private _heel: BABYLON.Mesh;
+    private _toes: BABYLON.Mesh;
     public foot: BABYLON.Mesh;
 
     private _upperLegLength: number = 0.46;
@@ -36,6 +38,18 @@ class HumanLeg extends BABYLON.Mesh {
         this._lowerLeg.material = mat;
         this._lowerLeg.rotationQuaternion = BABYLON.Quaternion.Identity();
 
+        this._heel = new BABYLON.Mesh("heel");
+        this._heel.material = mat;
+        this._heel.parent = this._lowerLeg;
+        this._heel.rotation.x = - Math.PI * 0.5;
+        this._heel.position.z = this._lowerLegLength - 0.1;
+
+        this._toes = new BABYLON.Mesh("toes");
+        this._toes.material = mat;
+        this._toes.parent = this._heel;
+        this._toes.position.y = -0.05;
+        this._toes.position.z = 0.10;
+
         this.foot = new BABYLON.Mesh("foot");
         this.foot.parent = this._lowerLeg;
         this.foot.position.z = this._lowerLegLength;
@@ -51,6 +65,8 @@ class HumanLeg extends BABYLON.Mesh {
         }
         data[1].applyToMesh(this._upperLeg);
         data[2].applyToMesh(this._lowerLeg);
+        data[3].applyToMesh(this._heel);
+        data[4].applyToMesh(this._toes);
     }
 
     public setTarget(newTarget: BABYLON.Vector3): void {

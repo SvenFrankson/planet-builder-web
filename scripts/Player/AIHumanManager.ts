@@ -41,5 +41,13 @@ class AIHumanManager {
             this._timer = 0;
         }
         this.human.position.addInPlace(this.human.forward.scale(1/60 * 0.3));
+
+        let lFoot = this.legManager.leftLeg.foot.position;
+        let rFoot = this.legManager.rightLeg.foot.position;
+        let p = lFoot.add(rFoot).scaleInPlace(0.5).subtract(this.human.position);
+        let d = this.human.up.scale(BABYLON.Vector3.Dot(p, this.human.up));
+        p.addInPlace(this.human.position).subtractInPlace(d).addInPlace(this.human.up);
+        this.human.torsoLow.position.copyFrom(p);
+        this.human.torsoLow.rotationQuaternion.copyFrom(this.human.rotationQuaternion);
     }
 }
