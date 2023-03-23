@@ -18,6 +18,11 @@ class HumanArmManager {
         return this.leftArm;
     }
     
+    public leftParent: BABYLON.Mesh;
+    public leftPos: BABYLON.Vector3;
+    public rightParent: BABYLON.Mesh;
+    public rightPos: BABYLON.Vector3;
+    
     public aimedPosition: BABYLON.Vector3 = BABYLON.Vector3.Zero();
     public aimedNormal: BABYLON.Vector3 = BABYLON.Vector3.Zero();
     public aimedInteractionMode: InteractionMode = InteractionMode.None;
@@ -41,7 +46,7 @@ class HumanArmManager {
     public wait = AnimationFactory.EmptyVoidCallback;
 
     constructor(
-        public human: Player | Human
+        public human: Player | Human | Drider
     ) {
         this.wait = AnimationFactory.CreateWait(this);
     }
@@ -55,6 +60,19 @@ class HumanArmManager {
         this.rightArm.initialize();
         this.rightArm.instantiate();
 
+        if (!this.leftParent) {
+            this.leftParent = this.human;
+        }
+        if (!this.leftPos) {
+            this.leftPos = new BABYLON.Vector3(- 0.2, 1.55, 0);
+        }
+        if (!this.rightParent) {
+            this.rightParent = this.human;
+        }
+        if (!this.rightPos) {
+            this.rightPos = new BABYLON.Vector3(0.2, 1.55, 0);
+        }
+
         this.human.scene.onBeforeRenderObservable.add(this._update);
     }
 
@@ -67,24 +85,18 @@ class HumanArmManager {
     private mode: ArmManagerMode = ArmManagerMode.Idle;
 
     private _timer: number = 0;
-    private _breathAmplitude: number = 0.02;
-    private _breathPeriod: number = 6;
     private _update = () => {
         this._timer += this.scene.getEngine().getDeltaTime() / 1000;
 
-        let breathY = Math.cos(this._timer / this._breathPeriod * 2 * Math.PI) * 0.5 * this._breathAmplitude;
-        let breathYL = this.leftArm.handMode === HandMode.WristWatch ? breathY * 0.1 : breathY;
-        let breathYR = this.rightArm.handMode === HandMode.WristWatch ? breathY * 0.1 : breathY;
-
         this._dpLeftArm.copyFrom(this.leftArm.position);
-        BABYLON.Vector3.TransformCoordinatesToRef(new BABYLON.Vector3(- 0.2, 1.55 + breathYL, 0), this.human.getWorldMatrix(), this._tmpDP);
+        BABYLON.Vector3.TransformCoordinatesToRef(this.leftPos, this.leftParent.getWorldMatrix(), this._tmpDP);
         this.leftArm.position.copyFrom(this._tmpDP);
         this._dpLeftArm.subtractInPlace(this.leftArm.position).scaleInPlace(-1);
         this.leftArm.rotationQuaternion.copyFrom(this.human.rotationQuaternion);
         this.leftArm.targetPosition.addInPlace(this._dpLeftArm);
 
         this._dpRightArm.copyFrom(this.rightArm.position);
-        BABYLON.Vector3.TransformCoordinatesToRef(new BABYLON.Vector3(0.2, 1.55 + breathYR, 0), this.human.getWorldMatrix(), this._tmpDP);
+        BABYLON.Vector3.TransformCoordinatesToRef(this.rightPos, this.rightParent.getWorldMatrix(), this._tmpDP);
         this.rightArm.position.copyFrom(this._tmpDP);
         this._dpRightArm.subtractInPlace(this.rightArm.position).scaleInPlace(-1);
         this.rightArm.rotationQuaternion.copyFrom(this.human.rotationQuaternion);

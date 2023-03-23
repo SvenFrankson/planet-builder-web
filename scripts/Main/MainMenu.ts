@@ -167,15 +167,19 @@ class MainMenu extends Main {
 						this.player.playerActionManager.initialize();
 
 						setTimeout(() => {
-							let human = new Human(false, this.scene);
+							let drider = new Drider(false, this.scene);
 							let p = this.player.position.add(this.player.forward.scale(1.2));
-							human.position = p;
-							human.planet = this.player.planet;
-							human.initialize();
-							human.instantiate();
+							drider.position = p;
+							drider.planet = this.player.planet;
+							drider.initialize();
+							drider.instantiate();
 
-							let aiManager = new AIHumanManager(human);
+							let aiManager = new AIDriderManager(drider);
 							aiManager.initialize();
+
+							setInterval(() => {
+								aiManager.debugWalking = !aiManager.debugWalking
+							}, 5000);
 						}, 1000);
 
 						if (DebugDefine.SKIP_MAINMENU_PANEL) {
