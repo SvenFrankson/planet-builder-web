@@ -44,7 +44,8 @@ class DriderLegManager {
     }
 
     private _timer: number = 0;
-    private _steping: boolean = false;
+    private _steping: number = 0;
+    private _step: number = 0;
     private _update = () => {
         this._timer += this.scene.getEngine().getDeltaTime() / 1000;
 
@@ -53,19 +54,17 @@ class DriderLegManager {
             this.legs[i].rotationQuaternion.copyFrom(this.drider.rotationQuaternion);
         }
 
-        if (!this._steping) {
-            let maxD = 0;
-            let maxIndex = - 1;
-            for (let i = 0; i < 6; i++) {
-                let d = BABYLON.Vector3.Distance(this.legs[i].targetPosition, this.drider.footTargets[i].absolutePosition);
-                if (d > maxD) {
-                    maxD = d;
-                    maxIndex = i;
-                }
+        if (this._steping === 0) {
+            this._step = (this._step + 1) % 2;
+            let dist = 0;
+            for (let i = 0; i < 3; i++) {
+                dist += BABYLON.Vector3.DistanceSquared(this.legs[2 * i + this._step].targetPosition, this.drider.footTargets[2 * i + this._step].absolutePosition);
             }
-            if (maxD > 0.02 && maxIndex != -1) {
-                this._steping = true;
-                this.step(this.legs[maxIndex], this.drider.footTargets[maxIndex].absolutePosition).then(() => { this._steping = false; });
+            if (dist > 0.03) {
+                this._steping = 3;
+                for (let i = 0; i < 3; i++) {
+                    this.step(this.legs[2 * i + this._step], this.drider.footTargets[2 * i + this._step].absolutePosition).then(() => { this._steping--; });
+                }
             }
         }
     }
@@ -74,15 +73,17 @@ class DriderLegManager {
         return new Promise<void>(resolve => {
             let origin = leg.targetPosition.clone();
             let destination = target.clone();
+            let dist = BABYLON.Vector3.Distance(origin, destination);
             let up = this.drider.up;
-            let duration = 0.15;
+            let duration = Math.min(dist, 0.5);
             let t = 0;
             let animationCB = () => {
                 t += this.scene.getEngine().getDeltaTime() / 1000;
                 let f = t / duration;
+                f = f * f;
                 if (f < 1) {
                     let p = origin.scale(1 - f).addInPlace(destination.scale(f));
-                    p.addInPlace(up.scale(0.3 * Math.sin(f * Math.PI)));
+                    p.addInPlace(up.scale(0.2 * dist * Math.sin(f * Math.PI)));
                     leg.targetPosition.copyFrom(p);
                 }
                 else {

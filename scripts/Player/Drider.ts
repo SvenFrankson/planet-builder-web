@@ -48,7 +48,7 @@ class Drider extends BABYLON.Mesh {
         this.torsoHigh.material = mat;
         this.torsoHigh.rotationQuaternion = BABYLON.Quaternion.Identity();
         
-        let a = Math.PI / 5;
+        let a = Math.PI / 4;
         let r = 1;
         let x = r * Math.cos(a);
         let z = r * Math.sin(a);

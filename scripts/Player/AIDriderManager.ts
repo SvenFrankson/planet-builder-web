@@ -46,8 +46,9 @@ class AIDriderManager {
             this._timer = 0;
         }
         if (this.debugWalking) {
-            this.drider.position.addInPlace(this.drider.forward.scale(1/60 * 0.3));
+            this.drider.position.addInPlace(this.drider.forward.scale(1/60 * 1));
         }
+        this.drider.rotate(BABYLON.Axis.Y, Math.PI / 60 * 0.05, BABYLON.Space.LOCAL);
 
         let footCenter = BABYLON.Vector3.Zero();
         for (let i = 0; i < 6; i++) {
