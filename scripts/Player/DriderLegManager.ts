@@ -30,7 +30,8 @@ class DriderLegManager {
             this.legs[i] = new DriderLeg(true, this.drider.scene);
             this.legs[i].initialize();
             this.legs[i].instantiate();
-            this.legs[i].targetPosition.copyFrom(this.drider.position);
+            this.legs[i].targetPosition.copyFrom(this.drider.evaluatedFootTargets[i]);
+            BABYLON.Vector3.TransformCoordinatesToRef(this.positions[i], this.drider.torsoLow.getWorldMatrix(), this.legs[i].position);
         }
 
         this.drider.scene.onBeforeRenderObservable.add(this._update);
@@ -58,12 +59,15 @@ class DriderLegManager {
             this._step = (this._step + 1) % 2;
             let dist = 0;
             for (let i = 0; i < 3; i++) {
-                dist += BABYLON.Vector3.DistanceSquared(this.legs[2 * i + this._step].targetPosition, this.drider.footTargets[2 * i + this._step].absolutePosition);
+                this.drider.evaluateTarget(2 * i + this._step);
+            }
+            for (let i = 0; i < 3; i++) {
+                dist += BABYLON.Vector3.DistanceSquared(this.legs[2 * i + this._step].targetPosition, this.drider.evaluatedFootTargets[2 * i + this._step]);
             }
             if (dist > 0.03) {
                 this._steping = 3;
                 for (let i = 0; i < 3; i++) {
-                    this.step(this.legs[2 * i + this._step], this.drider.footTargets[2 * i + this._step].absolutePosition).then(() => { this._steping--; });
+                    this.step(this.legs[2 * i + this._step], this.drider.evaluatedFootTargets[2 * i + this._step]).then(() => { this._steping--; });
                 }
             }
         }

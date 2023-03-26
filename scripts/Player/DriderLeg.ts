@@ -23,6 +23,11 @@ class DriderLeg extends BABYLON.Mesh {
         super("player-arm", scene);
     }
 
+    public setPosition(p: BABYLON.Vector3): void {
+        this._upperLeg.position.copyFrom(p);
+        this._lowerLeg.position.copyFrom(p);
+    }
+
     public initialize(): void {
         this.rotationQuaternion = BABYLON.Quaternion.Identity();
         
@@ -39,7 +44,7 @@ class DriderLeg extends BABYLON.Mesh {
         this.foot = new BABYLON.Mesh("foot");
         this.foot.parent = this._lowerLeg;
         this.foot.position.z = this._lowerLegLength;
-        BABYLON.CreateBoxVertexData({ size: 0.1 }).applyToMesh(this.foot);
+        //BABYLON.CreateBoxVertexData({ size: 0.1 }).applyToMesh(this.foot);
 
         this.scene.onBeforeRenderObservable.add(this._update);
     }

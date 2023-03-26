@@ -23,6 +23,7 @@ class AIDriderManager {
     }
 
     public initialize(): void {
+        this.drider.torsoLow.position.copyFrom(this.drider.position);
         this.armManager.initialize();
         this.legManager.initialize();
         this.drider.scene.onBeforeRenderObservable.add(this._update);
