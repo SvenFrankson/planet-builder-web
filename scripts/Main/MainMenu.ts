@@ -172,7 +172,7 @@ class MainMenu extends Main {
 							drider.planet = this.player.planet;
 							drider.initialize();
 							drider.instantiate();
-							drider.forcePositionRotation(p.scale(1.1), BABYLON.Quaternion.Identity());
+							drider.forcePositionRotation(p.scale(1.05), BABYLON.Quaternion.Identity());
 
 							let aiManager = new AIDriderManager(drider);
 							aiManager.initialize();

@@ -14,22 +14,22 @@ Exporter version: 6.4.5, Blender version: 2.90.1
 	WARNING: No active camera has been assigned, or is not in a currently selected Blender layer
 	processing begun of mesh:  1-torso-high
 		processing begun of material:  Material.001
-		num positions      :  156
-		num normals        :  156
+		num positions      :  168
+		num normals        :  168
 		num tangents       :  0
 		num uvs            :  0
 		num uvs2           :  0
 		num colors         :  0
-		num triangles      :  308
+		num triangles      :  332
 	processing begun of mesh:  0-torso-low
 		processing begun of material:  Material.002
-		num positions      :  76
-		num normals        :  76
+		num positions      :  112
+		num normals        :  112
 		num tangents       :  0
-		num uvs            :  0
+		num uvs            :  224
 		num uvs2           :  0
 		num colors         :  0
-		num triangles      :  148
+		num triangles      :  176
 	processing begun of mesh:  2-upper-leg
 		WARNING: No materials have been assigned: 
 		num positions      :  29
@@ -55,4 +55,4 @@ Exporter version: 6.4.5, Blender version: 2.90.1
 	writing mesh:  3-lower-leg
 ========= Writing of JSON file completed =========
 ========= end of processing =========
-elapsed time:  0 min, 0.0956 secs
+elapsed time:  0 min, 0.1131 secs

@@ -1,23 +1,21 @@
 class DriderLeg extends BABYLON.Mesh {
 
     public targetPosition: BABYLON.Vector3 = BABYLON.Vector3.Zero();
+    public tmpDistance: number = 0;
 
     private _upperLeg: BABYLON.Mesh;
     private _lowerLeg: BABYLON.Mesh;
     public foot: BABYLON.Mesh;
 
-    private _upperLegLength: number = 0.50;
+    private _upperLegLength: number = 0.7;
     private _lowerLegLength: number = 1;
-    public get signLeft(): number {
-        return this.isLeftLeg ? 1 : - 1;
-    }
-
+    
     public get scene(): BABYLON.Scene {
         return this._scene;
     }
 
     constructor(
-        public isLeftLeg: boolean = true,
+        public index: number = 0,
         scene: BABYLON.Scene
     ) {
         super("player-arm", scene);

@@ -6,6 +6,8 @@ class Drider extends BABYLON.Mesh {
 
     public torsoLow: BABYLON.Mesh;
     public torsoHigh: BABYLON.Mesh;
+    public armManager: HumanArmManager;
+    public legManager: DriderLegManager;
 
     public footTargets: BABYLON.Mesh[] = [];
     public evaluatedFootTargets: BABYLON.Vector3[] = [];
@@ -39,18 +41,7 @@ class Drider extends BABYLON.Mesh {
         super("drider", scene);
 
         this.rotationQuaternion = BABYLON.Quaternion.Identity();
-        
-        this.camPos = new BABYLON.Mesh("Dummy", Game.Scene);
-        this.camPos.parent = this;
-        this.camPos.position = new BABYLON.Vector3(0, 1.77, 0);
-        this.camPos.rotation.x = Math.PI / 8;
 
-        this.animateCamPosRotX = AnimationFactory.CreateNumber(this, this.camPos.rotation, "x");
-        this.animateCamPosRotY = AnimationFactory.CreateNumber(this, this.camPos.rotation, "y");
-    }
-
-    public initialize(): void {
-        
         let mat = new ToonMaterial("player-arm-material", this.scene);
 
         this.torsoLow = new BABYLON.Mesh("torso-low");
@@ -60,6 +51,24 @@ class Drider extends BABYLON.Mesh {
         this.torsoHigh = new BABYLON.Mesh("torso-high");
         this.torsoHigh.material = mat;
         this.torsoHigh.rotationQuaternion = BABYLON.Quaternion.Identity();
+        
+        this.camPos = new BABYLON.Mesh("Dummy", Game.Scene);
+        this.camPos.parent = this;
+        this.camPos.position = new BABYLON.Vector3(0, 1.77, 0);
+        this.camPos.rotation.x = Math.PI / 8;
+
+        this.armManager = new HumanArmManager(this);
+        this.armManager.leftParent = this.torsoHigh;
+        this.armManager.leftPos = new BABYLON.Vector3(- 0.18, 0.419, -0.117);
+        this.armManager.rightParent = this.torsoHigh;
+        this.armManager.rightPos = new BABYLON.Vector3(0.18, 0.419, -0.117);
+        this.legManager = new DriderLegManager(this);
+
+        this.animateCamPosRotX = AnimationFactory.CreateNumber(this, this.camPos.rotation, "x");
+        this.animateCamPosRotY = AnimationFactory.CreateNumber(this, this.camPos.rotation, "y");
+    }
+
+    public initialize(): void {        
         
         let a = Math.PI / 4;
         let r = 1;
@@ -128,12 +137,21 @@ class Drider extends BABYLON.Mesh {
         ];
 
         this.scene.onBeforeRenderObservable.add(this._update);
+        
+        this.armManager.initialize();
+        this.legManager.initialize();
     }
     
     public async instantiate(): Promise<void> {
         let data = await VertexDataLoader.instance.get("drider");
         data[0].applyToMesh(this.torsoLow);
         data[1].applyToMesh(this.torsoHigh);
+    }
+
+    public dispose(doNotRecurse?: boolean, disposeMaterialAndTextures?: boolean): void {
+        super.dispose(doNotRecurse, disposeMaterialAndTextures);
+        this.armManager.dispose();
+        this.legManager.dispose();
     }
 
     public isGrounded(): boolean {
@@ -159,7 +177,6 @@ class Drider extends BABYLON.Mesh {
             this.footTargets[i].computeWorldMatrix(true);
             this.evaluatedFootTargets[i] = this.footTargets[i].absolutePosition;
         }
-        BABYLON.Vector3.TransformCoordinatesToRef(new BABYLON.Vector3(0, 1, 0), this.getWorldMatrix(), this.torsoLow.position);
         this.torsoLow.computeWorldMatrix(true);
     } 
 
@@ -189,8 +206,20 @@ class Drider extends BABYLON.Mesh {
             }
         }
 
-        this.torsoHigh.position.copyFromFloats(0, 0.26, 0.16);
-        this.torsoHigh.parent = this.torsoLow;
+        let upQ = BABYLON.Quaternion.Identity();
+        VMath.QuaternionFromYZAxisToRef(this.position, this.forward, upQ);
+        BABYLON.Vector3.TransformCoordinatesToRef(new BABYLON.Vector3(0, 0.053, 0.277), this.torsoLow.getWorldMatrix(), this.torsoHigh.position);
+        
+        this.torsoHigh.rotationQuaternion = BABYLON.Quaternion.Slerp(this.rotationQuaternion, upQ, 0.8);
+
+        let footCenter = BABYLON.Vector3.Zero();
+        for (let i = 0; i < 6; i++) {
+            footCenter.addInPlace(this.legManager.legs[i].foot.absolutePosition);
+        }
+        footCenter.scaleInPlace(1 / 6);
+        footCenter.addInPlace(this.up.scale(0.7));
+        this.torsoLow.position.scaleInPlace(0.9).addInPlace(footCenter.scale(0.1));
+        this.torsoLow.rotationQuaternion.copyFrom(this.rotationQuaternion);
 
         this._keepUp();
     }
@@ -224,8 +253,14 @@ class Drider extends BABYLON.Mesh {
     }
 
     private _keepUp(): void {
+        let center = BABYLON.Vector3.Zero();
+        
+        for (let i = 0; i < 6; i++) {
+            center.addInPlace(this.evaluatedFootTargets[i]);
+        }
+        center.scaleInPlace(1/6);
+
         if (!this.isGrounded()) {
-            console.log("not grounded");
             let upDirection = this.position.subtract(this.planet.position).normalize();
             let currentUp: BABYLON.Vector3 = BABYLON.Vector3.Normalize(BABYLON.Vector3.TransformNormal(BABYLON.Axis.Y, this.getWorldMatrix()));
             let correctionAxis: BABYLON.Vector3 = BABYLON.Vector3.Cross(currentUp, upDirection);
@@ -238,13 +273,6 @@ class Drider extends BABYLON.Mesh {
             this.position.subtractInPlace(this.up.scale(0.3 * 1 / 60));
         }
         else {
-            console.log("grounded");
-            let center = BABYLON.Vector3.Zero();
-            
-            for (let i = 0; i < 6; i++) {
-                center.addInPlace(this.evaluatedFootTargets[i]);
-            }
-            center.scaleInPlace(1/6);
             let radiuses = [];
             for (let i = 0; i < 6; i++) {
                 radiuses.push(this.evaluatedFootTargets[i].subtract(center));
