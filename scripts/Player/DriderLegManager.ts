@@ -104,17 +104,17 @@ class DriderLegManager {
             let destination = target.clone();
             let destinationNorm = target.clone();
             let dist = BABYLON.Vector3.Distance(origin, destination);
-            let up = this.drider.up;
+            let hMax = Math.min(Math.max(0.3, dist * 0.5), 0.1)
             let duration = 0.5;
             let t = 0;
             let animationCB = () => {
                 t += this.scene.getEngine().getDeltaTime() / 1000;
                 let f = t / duration;
-                f = f * f;
+                let h = Math.sqrt(Math.sin(f * Math.PI)) * hMax;
                 if (f < 1) {
                     let p = origin.scale(1 - f).addInPlace(destination.scale(f));
                     let n = originNorm.scale(1 - f).addInPlace(destinationNorm.scale(f)).normalize();
-                    p.addInPlace(n.scale(0.2 * dist * Math.sin(f * Math.PI)));
+                    p.addInPlace(n.scale(h * dist * Math.sin(f * Math.PI)));
                     leg.targetPosition.copyFrom(p);
                     leg.targetNormal.copyFrom(n);
                 }
