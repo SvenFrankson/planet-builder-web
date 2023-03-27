@@ -70,7 +70,7 @@ class DriderLegManager {
                 if (dist > 0.6) {
                     this._steping = 3;
                     for (let i = 0; i < 3; i++) {
-                        this.step(this.legs[2 * i + this._step], this.drider.evaluatedFootTargets[2 * i + this._step]).then(() => { this._steping--; });
+                        this.step(this.legs[2 * i + this._step], this.drider.evaluatedFootTargets[2 * i + this._step], this.drider.evaluatedFootNormals[2 * i + this._step]).then(() => { this._steping--; });
                     }
                 }
             }
@@ -90,20 +90,22 @@ class DriderLegManager {
                     while (this._walking.length < 1) {
                         let leg = legs.pop();
                         this._walking.push(leg.index);
-                        this.step(leg, this.drider.evaluatedFootTargets[leg.index]).then(() => { this._walking.remove(leg.index) });
+                        this.step(leg, this.drider.evaluatedFootTargets[leg.index], this.drider.evaluatedFootNormals[leg.index]).then(() => { this._walking.remove(leg.index) });
                     }
                 }
             }
         }
     }
 
-    private async step(leg: DriderLeg, target: BABYLON.Vector3): Promise<void> {
+    private async step(leg: DriderLeg, target: BABYLON.Vector3, targetNorm: BABYLON.Vector3): Promise<void> {
         return new Promise<void>(resolve => {
             let origin = leg.targetPosition.clone();
+            let originNorm = leg.targetNormal.clone();
             let destination = target.clone();
+            let destinationNorm = target.clone();
             let dist = BABYLON.Vector3.Distance(origin, destination);
             let up = this.drider.up;
-            let duration = Math.min(dist, 0.4);
+            let duration = 0.5;
             let t = 0;
             let animationCB = () => {
                 t += this.scene.getEngine().getDeltaTime() / 1000;
@@ -111,11 +113,14 @@ class DriderLegManager {
                 f = f * f;
                 if (f < 1) {
                     let p = origin.scale(1 - f).addInPlace(destination.scale(f));
-                    p.addInPlace(up.scale(0.2 * dist * Math.sin(f * Math.PI)));
+                    let n = originNorm.scale(1 - f).addInPlace(destinationNorm.scale(f)).normalize();
+                    p.addInPlace(n.scale(0.2 * dist * Math.sin(f * Math.PI)));
                     leg.targetPosition.copyFrom(p);
+                    leg.targetNormal.copyFrom(n);
                 }
                 else {
                     leg.targetPosition.copyFrom(destination);
+                    leg.targetNormal.copyFrom(destinationNorm);
                     this.scene.onBeforeRenderObservable.removeCallback(animationCB);
                     resolve();
                 }

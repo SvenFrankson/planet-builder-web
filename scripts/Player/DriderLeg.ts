@@ -1,6 +1,7 @@
 class DriderLeg extends BABYLON.Mesh {
 
     public targetPosition: BABYLON.Vector3 = BABYLON.Vector3.Zero();
+    public targetNormal: BABYLON.Vector3 = BABYLON.Vector3.Up();
     public tmpDistance: number = 0;
 
     private _upperLeg: BABYLON.Mesh;
@@ -91,9 +92,8 @@ class DriderLeg extends BABYLON.Mesh {
         }
         
         this._upperLeg.position.copyFrom(this.absolutePosition);
-        this._kneePosition.copyFromFloats(0, this._upperLegLength * 0.5, 0);
-        VMath.RotateVectorByQuaternionToRef(this._kneePosition, this.rotationQuaternion, this._kneePosition);
-        this._kneePosition.addInPlace(this._upperLeg.absolutePosition);
+        this._kneePosition.copyFrom(this.targetPosition);
+        this._kneePosition.addInPlace(this.targetNormal);
         
         let currentTarget = this.targetPosition.clone();
 

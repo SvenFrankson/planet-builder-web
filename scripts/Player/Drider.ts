@@ -11,6 +11,7 @@ class Drider extends BABYLON.Mesh {
 
     public footTargets: BABYLON.Mesh[] = [];
     public evaluatedFootTargets: BABYLON.Vector3[] = [];
+    public evaluatedFootNormals: BABYLON.Vector3[] = [];
     public evaluatedFootTargetsDebugs: BABYLON.Mesh[] = [];
     public evaluatedFootTargetGrounded: boolean[] = [];
     
@@ -117,15 +118,28 @@ class Drider extends BABYLON.Mesh {
             BABYLON.Vector3.Zero(),
             BABYLON.Vector3.Zero()
         ];
+        
+        this.evaluatedFootNormals = [
+            BABYLON.Vector3.Up(),
+            BABYLON.Vector3.Up(),
+            BABYLON.Vector3.Up(),
+            BABYLON.Vector3.Up(),
+            BABYLON.Vector3.Up(),
+            BABYLON.Vector3.Up()
+        ];
 
         this.evaluatedFootTargetsDebugs = [
-            BABYLON.MeshBuilder.CreateSphere("debug", { diameter: 0.1 }),
-            BABYLON.MeshBuilder.CreateSphere("debug", { diameter: 0.1 }),
-            BABYLON.MeshBuilder.CreateSphere("debug", { diameter: 0.1 }),
-            BABYLON.MeshBuilder.CreateSphere("debug", { diameter: 0.1 }),
-            BABYLON.MeshBuilder.CreateSphere("debug", { diameter: 0.1 }),
-            BABYLON.MeshBuilder.CreateSphere("debug", { diameter: 0.1 })
+            BABYLON.MeshBuilder.CreateBox("debug", { width: 0.03, height: 0.5, depth: 0.03 }),
+            BABYLON.MeshBuilder.CreateBox("debug", { width: 0.03, height: 0.5, depth: 0.03 }),
+            BABYLON.MeshBuilder.CreateBox("debug", { width: 0.03, height: 0.5, depth: 0.03 }),
+            BABYLON.MeshBuilder.CreateBox("debug", { width: 0.03, height: 0.5, depth: 0.03 }),
+            BABYLON.MeshBuilder.CreateBox("debug", { width: 0.03, height: 0.5, depth: 0.03 }),
+            BABYLON.MeshBuilder.CreateBox("debug", { width: 0.03, height: 0.5, depth: 0.03 })
         ];
+
+        for (let i = 0; i < 6; i++) {
+            this.evaluatedFootTargetsDebugs[i].rotationQuaternion = BABYLON.Quaternion.Identity();
+        }
 
         this.evaluatedFootTargetGrounded = [
             false,
@@ -243,13 +257,17 @@ class Drider extends BABYLON.Mesh {
         }
         if (bestPick) {
             this.evaluatedFootTargets[i] = bestPick.pickedPoint;
+            this.evaluatedFootNormals[i] = bestPick.getNormal(true);
             this.evaluatedFootTargetGrounded[i] = true;
         }
         else {
             this.evaluatedFootTargets[i] = this.footTargets[i].absolutePosition;
+            this.evaluatedFootNormals[i] = this.up;
             this.evaluatedFootTargetGrounded[i] = false;
         }
         this.evaluatedFootTargetsDebugs[i].position = this.evaluatedFootTargets[i];
+        VMath.QuaternionFromYZAxisToRef(this.evaluatedFootNormals[i], BABYLON.Vector3.Forward(), this.evaluatedFootTargetsDebugs[i].rotationQuaternion);
+        
     }
 
     private _keepUp(): void {
