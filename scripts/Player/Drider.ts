@@ -238,16 +238,16 @@ class Drider extends BABYLON.Mesh {
         this._keepUp();
     }
     
-    public evaluateTarget(i: number): void {
+    public evaluateTarget(footIndex: number): void {
         let dir = this.up.scale(-1);
-        let ray = new BABYLON.Ray(this.footTargets[i].absolutePosition.subtract(dir.scale(1.5)), dir, 3);
+        let ray = new BABYLON.Ray(this.footTargets[footIndex].absolutePosition.subtract(dir.scale(1.5)), dir, 3);
         let bestDist: number = Infinity;
-        let bestPick: BABYLON.PickingInfo;
+        let bestPick: VPickInfo;
         for (let i = 0; i < this.meshes.length; i++) {
             let mesh = this.meshes[i];
             if (mesh) {
-                let pick = ray.intersectsMesh(mesh);
-                if (pick && pick.hit && pick.pickedMesh) {
+                let pick = VCollision.closestPointOnMesh(this.footTargets[footIndex].absolutePosition, mesh);
+                if (pick && pick.hit) {
                     if (pick.distance < bestDist) {
                         bestDist = pick.distance;
                         bestPick = pick;
@@ -256,17 +256,17 @@ class Drider extends BABYLON.Mesh {
             }
         }
         if (bestPick) {
-            this.evaluatedFootTargets[i] = bestPick.pickedPoint;
-            this.evaluatedFootNormals[i] = bestPick.getNormal(true);
-            this.evaluatedFootTargetGrounded[i] = true;
+            this.evaluatedFootTargets[footIndex] = bestPick.worldPoint;
+            this.evaluatedFootNormals[footIndex] = bestPick.worldNormal.scale(-1);
+            this.evaluatedFootTargetGrounded[footIndex] = true;
         }
         else {
-            this.evaluatedFootTargets[i] = this.footTargets[i].absolutePosition;
-            this.evaluatedFootNormals[i] = this.up;
-            this.evaluatedFootTargetGrounded[i] = false;
+            this.evaluatedFootTargets[footIndex] = this.footTargets[footIndex].absolutePosition;
+            this.evaluatedFootNormals[footIndex] = this.up;
+            this.evaluatedFootTargetGrounded[footIndex] = false;
         }
-        this.evaluatedFootTargetsDebugs[i].position = this.evaluatedFootTargets[i];
-        VMath.QuaternionFromYZAxisToRef(this.evaluatedFootNormals[i], BABYLON.Vector3.Forward(), this.evaluatedFootTargetsDebugs[i].rotationQuaternion);
+        this.evaluatedFootTargetsDebugs[footIndex].position = this.evaluatedFootTargets[footIndex];
+        VMath.QuaternionFromYZAxisToRef(this.evaluatedFootNormals[footIndex], BABYLON.Vector3.Forward(), this.evaluatedFootTargetsDebugs[footIndex].rotationQuaternion);
         
     }
 
