@@ -64,6 +64,10 @@ class Player extends BABYLON.Mesh {
     public animateCamPosRotX = AnimationFactory.EmptyNumberCallback;
     public animateCamPosRotY = AnimationFactory.EmptyNumberCallback;
 
+
+    private _testCollision: BABYLON.Mesh;
+    private _testCollisionHit: BABYLON.Mesh;
+
     constructor(position: BABYLON.Vector3, public main: Main) {
         super("Player", main.scene);
         Player.DEBUG_INSTANCE = this;
@@ -81,6 +85,12 @@ class Player extends BABYLON.Mesh {
         this.material = material;
         this.layerMask = 0x10000000;
         */
+
+        this._testCollision = BABYLON.MeshBuilder.CreateSphere("test-col", { diameter: 0.05 });
+        this._testCollision.parent = this;
+        this._testCollision.position.copyFromFloats(0, 1.5, 1);
+
+        this._testCollisionHit = BABYLON.MeshBuilder.CreateSphere("test-col", { diameter: 0.05 });
 
         let mat = new ToonMaterial("move-indicator-material", this.scene);
         this.moveIndicatorDisc = new PlanetObject("player-move-indicator-disc", this.main);
@@ -766,6 +776,24 @@ class Player extends BABYLON.Mesh {
                 };
                 window.localStorage.setItem("player-position", JSON.stringify(savedPlayerPos));
             }
+        }
+
+        let bestDist: number = Infinity;
+        let bestPick: VPickInfo;
+        for (let i = 0; i < this.meshes.length; i++) {
+            let mesh = this.meshes[i];
+            if (mesh) {
+                let pick = VCollision.closestPointOnMesh(this._testCollision.absolutePosition, mesh);
+                if (pick && pick.hit) {
+                    if (pick.distance < bestDist) {
+                        bestDist = pick.distance;
+                        bestPick = pick;
+                    }
+                }
+            }
+        }
+        if (bestPick) {
+            this._testCollisionHit.position.copyFrom(bestPick.worldPoint);
         }
 
         //document.querySelector("#camera-altitude").textContent = this.camPos.absolutePosition.length().toFixed(1);

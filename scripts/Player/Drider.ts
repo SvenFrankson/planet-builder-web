@@ -190,7 +190,9 @@ class Drider extends BABYLON.Mesh {
         for (let i = 0; i < 6; i++) {
             this.footTargets[i].computeWorldMatrix(true);
             this.evaluatedFootTargets[i] = this.footTargets[i].absolutePosition;
+            this.legManager.legs[i].setPosition(this.footTargets[i].absolutePosition);
         }
+        BABYLON.Vector3.TransformCoordinatesToRef(new BABYLON.Vector3(0, 1, 0), this.getWorldMatrix(), this.torsoLow.position);
         this.torsoLow.computeWorldMatrix(true);
     } 
 
@@ -257,7 +259,7 @@ class Drider extends BABYLON.Mesh {
         }
         if (bestPick) {
             this.evaluatedFootTargets[footIndex] = bestPick.worldPoint;
-            this.evaluatedFootNormals[footIndex] = bestPick.worldNormal.scale(-1);
+            this.evaluatedFootNormals[footIndex] = bestPick.worldNormal;
             this.evaluatedFootTargetGrounded[footIndex] = true;
         }
         else {
@@ -266,6 +268,7 @@ class Drider extends BABYLON.Mesh {
             this.evaluatedFootTargetGrounded[footIndex] = false;
         }
         this.evaluatedFootTargetsDebugs[footIndex].position = this.evaluatedFootTargets[footIndex];
+        this.evaluatedFootTargetsDebugs[footIndex].position.addInPlace(this.evaluatedFootNormals[footIndex].scale(0.25));
         VMath.QuaternionFromYZAxisToRef(this.evaluatedFootNormals[footIndex], BABYLON.Vector3.Forward(), this.evaluatedFootTargetsDebugs[footIndex].rotationQuaternion);
         
     }

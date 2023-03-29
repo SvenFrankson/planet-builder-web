@@ -168,11 +168,11 @@ class MainMenu extends Main {
 
 						setTimeout(() => {
 							let drider = new Drider(false, this.scene);
-							let p = this.player.position.add(this.player.forward.scale(1.2));
+							let p = this.player.position.add(this.player.forward.scale(3));
 							drider.planet = this.player.planet;
 							drider.initialize();
 							drider.instantiate();
-							drider.forcePositionRotation(p.scale(1.05), BABYLON.Quaternion.Identity());
+							drider.forcePositionRotation(p.scale(1.1), BABYLON.Quaternion.Identity());
 
 							let aiManager = new AIDriderManager(drider);
 							aiManager.initialize();

@@ -62,6 +62,7 @@ class VCollision {
             let projectedPoint = localPoint.subtract(n.scale(dot));
 
             // check
+            /*
             let v1 = projectedPoint.subtract(p1);
             let sign = Math.sign(BABYLON.Vector3.Dot(n, BABYLON.Vector3.Cross(v1, v12)));
             if (sign < 0) {
@@ -85,6 +86,14 @@ class VCollision {
                 let dist = BABYLON.Vector3.Dot(v3, dir);
                 projectedPoint.copyFrom(dir).scaleInPlace(dist).addInPlace(p3);
             }
+            */
+
+            let bCoords = VMath.Barycentric(projectedPoint, p1, p2, p3);
+            //bCoords.x = Math.max(Math.min(1, bCoords.x), 0);
+            //bCoords.y = Math.max(Math.min(1, bCoords.y), 0);
+            //bCoords.z = Math.max(Math.min(1, bCoords.z), 0);
+            
+            projectedPoint = p1.scale(bCoords.x).add(p2.scale(bCoords.y)).add(p3.scale(bCoords.z));
 
             let dist = BABYLON.Vector3.Distance(projectedPoint, localPoint);
             if (dist < minDist) {

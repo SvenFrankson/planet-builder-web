@@ -142,4 +142,22 @@ class VMath {
 
         return ref;
     }
+    
+    // from https://gamedev.stackexchange.com/questions/23743/whats-the-most-efficient-way-to-find-barycentric-coordinates
+    public static Barycentric(p: BABYLON.Vector3, a: BABYLON.Vector3, b: BABYLON.Vector3, c: BABYLON.Vector3): BABYLON.Vector3 {
+        let v0 = b.subtract(a);
+        let v1 = c.subtract(a);
+        let v2 = p.subtract(a);
+        let d00 = BABYLON.Vector3.Dot(v0, v0);
+        let d01 = BABYLON.Vector3.Dot(v0, v1);
+        let d11 = BABYLON.Vector3.Dot(v1, v1);
+        let d20 = BABYLON.Vector3.Dot(v2, v0);
+        let d21 = BABYLON.Vector3.Dot(v2, v1);
+        let denom = d00 * d11 - d01 * d01;
+        let v = (d11 * d20 - d01 * d21) / denom;
+        let w = (d00 * d21 - d01 * d20) / denom;
+        let u = 1.0 - v - w;
+
+        return new BABYLON.Vector3(u, v, w);
+    }
 }

@@ -25,6 +25,8 @@ class DriderLeg extends BABYLON.Mesh {
     public setPosition(p: BABYLON.Vector3): void {
         this._upperLeg.position.copyFrom(p);
         this._lowerLeg.position.copyFrom(p);
+        this._lowerLeg.computeWorldMatrix(true);
+        this.foot.computeWorldMatrix(true);
     }
 
     public initialize(): void {
