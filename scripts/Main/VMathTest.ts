@@ -28,6 +28,31 @@ class VMathTest extends Main {
 
     public async initialize(): Promise<void> {
 		return new Promise<void>(resolve => {
+            let mesh = BABYLON.MeshBuilder.CreateIcoSphere("mesh", { radius: 3, subdivisions: 2, flat: false });
+            mesh.enableEdgesRendering(1);
+
+            let projection = BABYLON.MeshBuilder.CreateIcoSphere("projection", { radius: 0.1, subdivisions: 2, flat: false });
+            projection.material = SharedMaterials.BlueMaterial();
+            projection.rotationQuaternion = BABYLON.Quaternion.Identity();
+            let axis = BABYLON.MeshBuilder.CreateBox("axis", { width: 0.01, height: 0.4, depth: 0.01 });
+            axis.material = SharedMaterials.GreenMaterial();
+            axis.parent = projection;
+            axis.position.y = 0.2;
+
+            setInterval(() => {
+                let pickInfo = VCollision.closestPointOnMesh(this.camera.globalPosition, mesh);
+                if (pickInfo.hit) {
+                    projection.position.copyFrom(pickInfo.worldPoint);
+                    VMath.QuaternionFromYZAxisToRef(pickInfo.worldNormal, projection.forward, projection.rotationQuaternion);
+                }
+            })
+
+            resolve();
+        })
+    }
+
+    public async initialize2(): Promise<void> {
+		return new Promise<void>(resolve => {
 
             let meshA = BABYLON.MeshBuilder.CreateLines(
                 "object-A",
@@ -74,6 +99,7 @@ class VMathTest extends Main {
                 valueDisplay.value = Math.round(angle);
                 valueDisplay.redraw();
             }, 15);
+
 
 			resolve();
 		})

@@ -42,6 +42,18 @@ class VCollision {
 
         let minDist = Infinity;
 
+        let p1Display = BABYLON.MeshBuilder.CreateIcoSphere("projection", { radius: 0.05, subdivisions: 2, flat: false });
+        p1Display.material = SharedMaterials.RedMaterial();
+        let p2Display = BABYLON.MeshBuilder.CreateIcoSphere("projection", { radius: 0.05, subdivisions: 2, flat: false });
+        p2Display.material = SharedMaterials.GreenMaterial();
+        let p3Display = BABYLON.MeshBuilder.CreateIcoSphere("projection", { radius: 0.05, subdivisions: 2, flat: false });
+        p3Display.material = SharedMaterials.BlueMaterial();
+        requestAnimationFrame(() => {
+            p1Display.dispose();
+            p2Display.dispose();
+            p3Display.dispose();
+        })
+
         for (let i = 0; i < triangles.length / 3; i++) {
             let i1 = triangles[3 * i];
             let i2 = triangles[3 * i + 1];
@@ -62,38 +74,52 @@ class VCollision {
             let projectedPoint = localPoint.subtract(n.scale(dot));
 
             // check
-            /*
+
             let v1 = projectedPoint.subtract(p1);
             let sign = Math.sign(BABYLON.Vector3.Dot(n, BABYLON.Vector3.Cross(v1, v12)));
-            if (sign < 0) {
+            let out12 = sign < 0;
+            
+            let v2 = projectedPoint.subtract(p2);
+            sign = Math.sign(BABYLON.Vector3.Dot(n, BABYLON.Vector3.Cross(v2, v23)));
+            let out23 = sign < 0;
+            
+            let v3 = projectedPoint.subtract(p3);
+            sign = Math.sign(BABYLON.Vector3.Dot(n, BABYLON.Vector3.Cross(v3, v31)));
+            let out31 = sign < 0;
+
+            if (out12 && out23) {
+                projectedPoint.copyFrom(p2);
+            }
+            else if (out23 && out31) {
+                projectedPoint.copyFrom(p3);
+            }
+            else if (out31 && out12) {
+                projectedPoint.copyFrom(p1);
+            }
+            else if (out12) {
                 let dir = v12.clone().normalize();
                 let dist = BABYLON.Vector3.Dot(v1, dir);
                 projectedPoint.copyFrom(dir).scaleInPlace(dist).addInPlace(p1);
             }
-            
-            let v2 = projectedPoint.subtract(p2);
-            sign = Math.sign(BABYLON.Vector3.Dot(n, BABYLON.Vector3.Cross(v2, v23)));
-            if (sign < 0) {
+            else if (out23) {
                 let dir = v23.clone().normalize();
                 let dist = BABYLON.Vector3.Dot(v2, dir);
                 projectedPoint.copyFrom(dir).scaleInPlace(dist).addInPlace(p2);
             }
-            
-            let v3 = projectedPoint.subtract(p3);
-            sign = Math.sign(BABYLON.Vector3.Dot(n, BABYLON.Vector3.Cross(v3, v31)));
-            if (sign < 0) {
+            else if (out31) {
                 let dir = v31.clone().normalize();
                 let dist = BABYLON.Vector3.Dot(v3, dir);
                 projectedPoint.copyFrom(dir).scaleInPlace(dist).addInPlace(p3);
             }
-            */
 
+            /*
             let bCoords = VMath.Barycentric(projectedPoint, p1, p2, p3);
             //bCoords.x = Math.max(Math.min(1, bCoords.x), 0);
             //bCoords.y = Math.max(Math.min(1, bCoords.y), 0);
             //bCoords.z = Math.max(Math.min(1, bCoords.z), 0);
             
             projectedPoint = p1.scale(bCoords.x).add(p2.scale(bCoords.y)).add(p3.scale(bCoords.z));
+            */
 
             let dist = BABYLON.Vector3.Distance(projectedPoint, localPoint);
             if (dist < minDist) {
@@ -104,6 +130,10 @@ class VCollision {
                 pickInfo.worldNormal = worldN;
                 pickInfo.distance = dist;
                 pickInfo.hit = true;
+
+                p1Display.position.copyFrom(p1);
+                p2Display.position.copyFrom(p2);
+                p3Display.position.copyFrom(p3);
             }
         }
 
