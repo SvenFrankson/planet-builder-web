@@ -783,7 +783,7 @@ class Player extends BABYLON.Mesh {
         for (let i = 0; i < this.meshes.length; i++) {
             let mesh = this.meshes[i];
             if (mesh) {
-                let pick = VCollision.closestPointOnMesh(this._testCollision.absolutePosition, mesh);
+                let pick = VCollision.closestPointOnMeshNoOptim(this._testCollision.absolutePosition, mesh);
                 if (pick && pick.hit) {
                     if (pick.distance < bestDist) {
                         bestDist = pick.distance;

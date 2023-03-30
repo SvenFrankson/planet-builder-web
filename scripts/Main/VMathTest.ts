@@ -39,13 +39,13 @@ class VMathTest extends Main {
             axis.parent = projection;
             axis.position.y = 0.2;
 
-            setInterval(() => {
+            this.scene.onBeforeRenderObservable.add(() => {
                 let pickInfo = VCollision.closestPointOnMesh(this.camera.globalPosition, mesh);
                 if (pickInfo.hit) {
                     projection.position.copyFrom(pickInfo.worldPoint);
                     VMath.QuaternionFromYZAxisToRef(pickInfo.worldNormal, projection.forward, projection.rotationQuaternion);
                 }
-            })
+            });
 
             resolve();
         })

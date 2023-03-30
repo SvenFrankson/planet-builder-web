@@ -95,7 +95,7 @@ class DriderLeg extends BABYLON.Mesh {
         
         this._upperLeg.position.copyFrom(this.absolutePosition);
         this._kneePosition.copyFrom(this.targetPosition);
-        this._kneePosition.addInPlace(this.targetNormal);
+        this._kneePosition.addInPlace(this.targetNormal.scale(this._lowerLegLength));
         
         let currentTarget = this.targetPosition.clone();
 

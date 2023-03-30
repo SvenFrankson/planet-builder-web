@@ -74,38 +74,45 @@ class Drider extends BABYLON.Mesh {
         let a = Math.PI / 4;
         let r = 1;
         let x = r * Math.cos(a);
+        let y = 0.7;
         let z = r * Math.sin(a);
 
         this.footTargets[0] = new BABYLON.Mesh("foot-target-0");
         this.footTargets[0].position.x = - x;
+        this.footTargets[0].position.y = y;
         this.footTargets[0].position.z = - z;
         this.footTargets[0].parent = this;
         BABYLON.CreateBoxVertexData({ size: 0.1 }).applyToMesh(this.footTargets[0]);
 
         this.footTargets[1] = new BABYLON.Mesh("foot-target-0");
         this.footTargets[1].position.x = - r;
+        this.footTargets[1].position.y = y;
         this.footTargets[1].parent = this;
         BABYLON.CreateBoxVertexData({ size: 0.1 }).applyToMesh(this.footTargets[1]);
         
         this.footTargets[2] = new BABYLON.Mesh("foot-target-0");
         this.footTargets[2].position.x = - x;
+        this.footTargets[2].position.y = y;
         this.footTargets[2].position.z = z;
         this.footTargets[2].parent = this;
         BABYLON.CreateBoxVertexData({ size: 0.1 }).applyToMesh(this.footTargets[2]);
         
         this.footTargets[3] = new BABYLON.Mesh("foot-target-0");
         this.footTargets[3].position.x = x;
+        this.footTargets[3].position.y = y;
         this.footTargets[3].position.z = z;
         this.footTargets[3].parent = this;
         BABYLON.CreateBoxVertexData({ size: 0.1 }).applyToMesh(this.footTargets[3]);
 
         this.footTargets[4] = new BABYLON.Mesh("foot-target-0");
         this.footTargets[4].position.x = r;
+        this.footTargets[4].position.y = y;
         this.footTargets[4].parent = this;
         BABYLON.CreateBoxVertexData({ size: 0.1 }).applyToMesh(this.footTargets[4]);
         
         this.footTargets[5] = new BABYLON.Mesh("foot-target-0");
         this.footTargets[5].position.x = x;
+        this.footTargets[5].position.y = y;
         this.footTargets[5].position.z = - z;
         this.footTargets[5].parent = this;
         BABYLON.CreateBoxVertexData({ size: 0.1 }).applyToMesh(this.footTargets[5]);
@@ -243,7 +250,7 @@ class Drider extends BABYLON.Mesh {
     public evaluateTarget(footIndex: number): void {
         let dir = this.up.scale(-1);
         let ray = new BABYLON.Ray(this.footTargets[footIndex].absolutePosition.subtract(dir.scale(1.5)), dir, 3);
-        let bestDist: number = Infinity;
+        let bestDist: number = 2;
         let bestPick: VPickInfo;
         for (let i = 0; i < this.meshes.length; i++) {
             let mesh = this.meshes[i];
