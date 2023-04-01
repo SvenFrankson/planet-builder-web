@@ -22,7 +22,7 @@ class DriderLegManager {
             new BABYLON.Vector3(-0.17, 0.02, 0.11),
             new BABYLON.Vector3(0.17, 0.02, 0.11),
             new BABYLON.Vector3(0.17, 0, 0),
-            new BABYLON.Vector3(0.15 -0.02, -0.11)
+            new BABYLON.Vector3(0.15, -0.02, -0.11)
         ];
 
         this.legs = [];

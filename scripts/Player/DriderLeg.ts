@@ -8,8 +8,8 @@ class DriderLeg extends BABYLON.Mesh {
     private _lowerLeg: BABYLON.Mesh;
     public foot: BABYLON.Mesh;
 
-    private _upperLegLength: number = 0.7;
-    private _lowerLegLength: number = 1;
+    private _upperLegLength: number = 0.6;
+    private _lowerLegLength: number = 0.9;
     
     public get scene(): BABYLON.Scene {
         return this._scene;
@@ -51,6 +51,10 @@ class DriderLeg extends BABYLON.Mesh {
     }
     
     public async instantiate(): Promise<void> {
+        let data = await VertexDataLoader.instance.get("drider");
+        data[2].applyToMesh(this._upperLeg);
+        data[3].applyToMesh(this._lowerLeg);
+        /*
         let upperLegMeshData = BABYLON.CreateBoxVertexData({ width: 0.05, height: 0.05, depth: this._upperLegLength });
         upperLegMeshData.positions = upperLegMeshData.positions.map((v: number, i: number) => { 
             if (i % 3 === 2) {
@@ -68,6 +72,7 @@ class DriderLeg extends BABYLON.Mesh {
             return v;
         });
         lowerLegMeshData.applyToMesh(this._lowerLeg);
+        */
     }
 
     public setTarget(newTarget: BABYLON.Vector3): void {
@@ -95,7 +100,7 @@ class DriderLeg extends BABYLON.Mesh {
         
         this._upperLeg.position.copyFrom(this.absolutePosition);
         this._kneePosition.copyFrom(this.targetPosition);
-        this._kneePosition.addInPlace(this.targetNormal.scale(this._lowerLegLength));
+        this._kneePosition.addInPlace(this.up.scale(this._lowerLegLength));
         
         let currentTarget = this.targetPosition.clone();
 
@@ -111,7 +116,7 @@ class DriderLeg extends BABYLON.Mesh {
 
         let magicNumber2 = 1 - Easing.smooth025Sec(this.scene.getEngine().getFps());
         
-        let upperLegY = this.forward;
+        let upperLegY = this.up;
         VMath.QuaternionFromZYAxisToRef(upperLegZ, upperLegY, this._q0);
         BABYLON.Quaternion.SlerpToRef(this._upperLeg.rotationQuaternion, this._q0, magicNumber2, this._upperLeg.rotationQuaternion);
         
@@ -119,7 +124,7 @@ class DriderLeg extends BABYLON.Mesh {
         VMath.RotateVectorByQuaternionToRef(this._lowerLeg.position, this._upperLeg.rotationQuaternion, this._lowerLeg.position);
         this._lowerLeg.position.addInPlace(this._upperLeg.position);
 
-        VMath.QuaternionFromZYAxisToRef(lowerLegZ, this.forward, this._q0);
+        VMath.QuaternionFromZYAxisToRef(lowerLegZ, upperLegZ, this._q0);
         BABYLON.Quaternion.SlerpToRef(this._lowerLeg.rotationQuaternion, this._q0, magicNumber2, this._lowerLeg.rotationQuaternion);
     }
 }

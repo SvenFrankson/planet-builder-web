@@ -274,7 +274,7 @@ class Drider extends BABYLON.Mesh {
             this.evaluatedFootNormals[footIndex] = this.up;
             this.evaluatedFootTargetGrounded[footIndex] = false;
         }
-        this.evaluatedFootTargetsDebugs[footIndex].position = this.evaluatedFootTargets[footIndex];
+        this.evaluatedFootTargetsDebugs[footIndex].position = this.evaluatedFootTargets[footIndex].clone();
         this.evaluatedFootTargetsDebugs[footIndex].position.addInPlace(this.evaluatedFootNormals[footIndex].scale(0.25));
         VMath.QuaternionFromYZAxisToRef(this.evaluatedFootNormals[footIndex], BABYLON.Vector3.Forward(), this.evaluatedFootTargetsDebugs[footIndex].rotationQuaternion);
         

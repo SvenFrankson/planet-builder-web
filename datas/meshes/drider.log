@@ -32,22 +32,22 @@ Exporter version: 6.4.5, Blender version: 2.90.1
 		num triangles      :  176
 	processing begun of mesh:  2-upper-leg
 		WARNING: No materials have been assigned: 
-		num positions      :  29
-		num normals        :  29
+		num positions      :  208
+		num normals        :  208
 		num tangents       :  0
-		num uvs            :  58
+		num uvs            :  416
 		num uvs2           :  0
 		num colors         :  0
-		num triangles      :  12
+		num triangles      :  80
 	processing begun of mesh:  3-lower-leg
 		WARNING: No materials have been assigned: 
-		num positions      :  29
-		num normals        :  29
+		num positions      :  161
+		num normals        :  161
 		num tangents       :  0
-		num uvs            :  58
+		num uvs            :  322
 		num uvs2           :  0
 		num colors         :  0
-		num triangles      :  12
+		num triangles      :  64
 ========= Writing of JSON file started =========
 	writing mesh:  1-torso-high
 	writing mesh:  0-torso-low
@@ -55,4 +55,4 @@ Exporter version: 6.4.5, Blender version: 2.90.1
 	writing mesh:  3-lower-leg
 ========= Writing of JSON file completed =========
 ========= end of processing =========
-elapsed time:  0 min, 0.1131 secs
+elapsed time:  0 min, 0.1117 secs
