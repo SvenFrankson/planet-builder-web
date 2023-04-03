@@ -298,7 +298,7 @@ class Drider extends BABYLON.Mesh {
                 let rotation: BABYLON.Quaternion = BABYLON.Quaternion.RotationAxis(correctionAxis, correctionAngle / 10);
                 this.rotationQuaternion = rotation.multiply(this.rotationQuaternion);
             }
-            this.position.subtractInPlace(this.up.scale(0.3 * 1 / 60));
+            this.position.subtractInPlace(this.up.scale(1 * 1 / 60));
         }
         else {
             let radiuses = [];
