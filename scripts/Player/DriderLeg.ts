@@ -9,7 +9,7 @@ class DriderLeg extends BABYLON.Mesh {
     public foot: BABYLON.Mesh;
 
     private _upperLegLength: number = 0.6;
-    private _lowerLegLength: number = 0.9;
+    private _lowerLegLength: number = 0.8;
     
     public get scene(): BABYLON.Scene {
         return this._scene;
