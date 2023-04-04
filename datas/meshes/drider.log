@@ -54,10 +54,10 @@ Exporter version: 6.4.5, Blender version: 2.90.1
 		registered as also a user of material:  Steel
 		registered as also a user of material:  Material.002
 		processing begun of multimaterial:  drider.Multimaterial#2
-		num positions      :  241
-		num normals        :  241
+		num positions      :  240
+		num normals        :  240
 		num tangents       :  0
-		num uvs            :  482
+		num uvs            :  480
 		num uvs2           :  0
 		num colors         :  0
 		num triangles      :  92
@@ -84,4 +84,4 @@ Exporter version: 6.4.5, Blender version: 2.90.1
 	writing mesh:  1-torso-high
 ========= Writing of JSON file completed =========
 ========= end of processing =========
-elapsed time:  0 min, 0.0858 secs
+elapsed time:  0 min, 0.0895 secs

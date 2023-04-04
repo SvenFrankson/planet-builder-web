@@ -70,7 +70,7 @@ class Drider extends BABYLON.Mesh {
 
     public initialize(): void {        
         
-        let a = Math.PI / 4;
+        let a = Math.PI / 3.5;
         let r = 1;
         let x = r * Math.cos(a);
         let y = 0.4;
@@ -247,17 +247,19 @@ class Drider extends BABYLON.Mesh {
             footCenter.addInPlace(this.legManager.legs[i].foot.absolutePosition);
         }
         footCenter.scaleInPlace(1 / 6);
-        footCenter.addInPlace(this.up.scale(0.7));
+        footCenter.addInPlace(this.up.scale(0.8));
         this.torsoLow.position.scaleInPlace(0.8).addInPlace(footCenter.scale(0.2));
         this.torsoLow.rotationQuaternion.copyFrom(this.rotationQuaternion);
+
+        let correction = BABYLON.Quaternion.RotationAxis(this.right, - Math.PI / 8);
+        correction.multiplyToRef(this.torsoLow.rotationQuaternion, this.torsoLow.rotationQuaternion);
 
         this._keepUp();
     }
     
     public evaluateTarget(footIndex: number): void {
         let dir = this.up.scale(-1);
-        let ray = new BABYLON.Ray(this.footTargets[footIndex].absolutePosition.subtract(dir.scale(1.5)), dir, 3);
-        let bestDist: number = 2;
+        let bestDist: number = 1.5;
         let bestPick: VPickInfo;
         for (let i = 0; i < this.meshes.length; i++) {
             let mesh = this.meshes[i];
@@ -277,7 +279,8 @@ class Drider extends BABYLON.Mesh {
             this.evaluatedFootTargetGrounded[footIndex] = true;
         }
         else {
-            this.evaluatedFootTargets[footIndex] = this.footTargets[footIndex].absolutePosition;
+            let idlePos = this.footTargets[footIndex].position.scale(0.5);
+            BABYLON.Vector3.TransformCoordinatesToRef(idlePos, this.getWorldMatrix(), idlePos);
             this.evaluatedFootNormals[footIndex] = this.up;
             this.evaluatedFootTargetGrounded[footIndex] = false;
         }
