@@ -9,7 +9,8 @@ class AIDriderManager {
     public wait = AnimationFactory.EmptyVoidCallback;
 
     constructor(
-        public drider: Drider
+        public drider: Drider,
+        public player: Player
     ) {
         this.wait = AnimationFactory.CreateWait(this);
     }
@@ -23,19 +24,38 @@ class AIDriderManager {
     }
 
     private _timer: number = 0;
+    private targetDir: BABYLON.Vector3;
     private _update = () => {
-        this._timer += this.scene.getEngine().getDeltaTime() / 1000;
+        let dt = this.scene.getEngine().getDeltaTime() / 1000;
+        this._timer += dt;
+
         if (this._timer > 3) {
             let p = new BABYLON.Vector3(Math.random() - 0.5, Math.random() + 1, Math.random() * 0.6 + 0.6);
-            BABYLON.Vector3.TransformCoordinatesToRef(p, this.drider.getWorldMatrix(), p);
+            p.copyFromFloats(0, 0.3, 0.5)
+            BABYLON.Vector3.TransformCoordinatesToRef(p, this.drider.torsoHigh.getWorldMatrix(), p);
             this.drider.armManager.aimedPosition = p;
             this.drider.armManager.aimedNormal = this.drider.up;
             this.drider.armManager.aimedInteractionMode = InteractionMode.Point;
             this._timer = 0;
         }
-        if (this.debugWalking) {
-            this.drider.position.addInPlace(this.drider.forward.scale(1/60 * 1));
+
+        this.drider.targetLook = this.player.head.absolutePosition.clone();
+
+        let dir = this.player.position.subtract(this.drider.position)
+        let alpha = VMath.AngleFromToAround(this.drider.forward, dir, this.drider.up);
+        if (Math.abs(alpha) > Math.PI / 6) {
+            this.targetDir = dir;
         }
-        this.drider.rotate(BABYLON.Axis.Y, Math.PI / 60 * 0.05, BABYLON.Space.LOCAL);
+
+        if (this.targetDir) {
+            let beta = VMath.AngleFromToAround(this.drider.forward, dir, this.drider.up);
+            let db = Math.sign(beta) * dt * Math.PI / 8;
+            if (Math.abs(db) > Math.abs(beta)) {
+                db = beta;
+                this.targetDir = undefined;
+            }
+            this.drider.rotate(BABYLON.Axis.Y, db, BABYLON.Space.LOCAL);
+        }
+
     }
 }

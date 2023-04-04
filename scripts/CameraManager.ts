@@ -125,7 +125,7 @@ class CameraManager {
             this.cameraMode = newCameraMode;
 
             if (this.cameraMode === CameraMode.Player) {
-                this.freeCamera.parent = this.player.camPos;
+                this.freeCamera.parent = this.player.head;
                 this.freeCamera.position.copyFromFloats(0, 0, 0.04);
                 this.freeCamera.rotationQuaternion.copyFrom(BABYLON.Quaternion.Identity());
                 this.freeCamera.computeWorldMatrix();

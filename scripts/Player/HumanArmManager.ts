@@ -130,7 +130,7 @@ class HumanArmManager {
                 this._aimingDistance = 0.05;
                 this._currentAimingDistance = 0.05;
                 this._aimingArm = this.rightArm;
-                this._tmpPreviousCamPosRotationX = this.human.camPos.rotation.x;
+                this._tmpPreviousCamPosRotationX = this.human.head.rotation.x;
                 this.startPowerWristWatchAnimation();
                 
             }
@@ -192,7 +192,7 @@ class HumanArmManager {
         }
 
         let aimedPointClose = BABYLON.Vector3.Zero();
-        VMath.StepToRef(this.human.camPos.absolutePosition.add(this._aimingArm.absolutePosition).scale(0.5), this.aimedPosition, 0.9, aimedPointClose);
+        VMath.StepToRef(this.human.head.absolutePosition.add(this._aimingArm.absolutePosition).scale(0.5), this.aimedPosition, 0.9, aimedPointClose);
         // 2 - Update the way the hand should interact depending on aimed object.
         if (this.aimedInteractionMode === InteractionMode.Point) {
             if (this._aimingArm.handMode != HandMode.Point && this._aimingArm.handMode != HandMode.PointPress) {
@@ -243,7 +243,7 @@ class HumanArmManager {
         // 3 - Update arm target position.
         let pos = BABYLON.Vector3.TransformCoordinates(HumanArmManager.POS, this.human.getWorldMatrix());
         let right = this.human.right;
-        let up = BABYLON.Vector3.Cross(right, this.human.camPos.absolutePosition.subtract(pos)).normalize();
+        let up = BABYLON.Vector3.Cross(right, this.human.head.absolutePosition.subtract(pos)).normalize();
         this.leftArm.setTarget(pos);
         this.leftArm.handUp = up;
         this.rightArm.handUp = this.human.up;

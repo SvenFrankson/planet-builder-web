@@ -59,7 +59,7 @@ class DriderLegManager {
             this.legs[i].rotationQuaternion.copyFrom(this.drider.rotationQuaternion);
         }
 
-        if (true) {
+        if (this.drider.velocity.lengthSquared() > 1) {
             // Walking alternating 024 and 135
             if (this._steping === 0) {
                 this._step = (this._step + 1) % 2;
@@ -70,7 +70,7 @@ class DriderLegManager {
                 for (let i = 0; i < 3; i++) {
                     dist += BABYLON.Vector3.Distance(this.legs[2 * i + this._step].targetPosition, this.drider.evaluatedFootTargets[2 * i + this._step]);
                 }
-                if (dist > 0.6) {
+                if (dist > 0.3) {
                     this._steping = 3;
                     for (let i = 0; i < 3; i++) {
                         this.step(this.legs[2 * i + this._step], this.drider.evaluatedFootTargets[2 * i + this._step], this.drider.evaluatedFootNormals[2 * i + this._step]).then(() => { this._steping--; });

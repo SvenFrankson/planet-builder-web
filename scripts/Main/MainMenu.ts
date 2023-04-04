@@ -86,7 +86,7 @@ class MainMenu extends Main {
 			this.universe = new Universe();
 			this.currentGalaxy = new Galaxy(this.universe);
 			
-			let mainMenuPlanet: Planet = PlanetGeneratorFactory.Create(this.currentGalaxy, BABYLON.Vector3.Zero(), PlanetGeneratorType.Mars, 6, this);
+			let mainMenuPlanet: Planet = PlanetGeneratorFactory.Create(this.currentGalaxy, BABYLON.Vector3.Zero(), PlanetGeneratorType.Earth, 6, this);
 			mainMenuPlanet.instantiate();
 			//mainMenuPlanet.generator.showDebug();
 			
@@ -168,13 +168,13 @@ class MainMenu extends Main {
 
 						setTimeout(() => {
 							let drider = new Drider(false, this.scene);
-							let p = this.player.position.add(this.player.forward.scale(2));
+							let p = this.player.position.add(this.player.forward.scale(3));
 							drider.planet = this.player.planet;
 							drider.initialize();
 							drider.instantiate();
 							drider.forcePositionRotation(p);
 
-							let aiManager = new AIDriderManager(drider);
+							let aiManager = new AIDriderManager(drider, this.player);
 							aiManager.initialize();
 
 							setInterval(() => {

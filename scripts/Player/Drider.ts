@@ -4,7 +4,7 @@ class Drider extends BABYLON.Mesh {
 
     public torsoLow: BABYLON.Mesh;
     public torsoHigh: BABYLON.Mesh;
-    public camPos: BABYLON.Mesh;
+    public head: BABYLON.Mesh;
     public armManager: HumanArmManager;
     public legManager: DriderLegManager;
 
@@ -14,6 +14,10 @@ class Drider extends BABYLON.Mesh {
     public evaluatedFootTargetsDebugs: BABYLON.Mesh[] = [];
     public evaluatedFootTargetGrounded: boolean[] = [];
     
+    public velocity: BABYLON.Vector3 = BABYLON.Vector3.Zero();
+    public inputHeadUp: number = 0;
+    public inputHeadRight: number = 0;
+
     public targetLookStrength: number = 0.5;
     public targetLook: BABYLON.Vector3;
     
@@ -52,10 +56,10 @@ class Drider extends BABYLON.Mesh {
         this.torsoHigh.material = mat;
         this.torsoHigh.rotationQuaternion = BABYLON.Quaternion.Identity();
         
-        this.camPos = new BABYLON.Mesh("head");
-        this.camPos.material = mat;
-        this.camPos.parent = this.torsoHigh;
-        this.camPos.position = new BABYLON.Vector3(0, 0.539, -0.112);
+        this.head = new BABYLON.Mesh("head");
+        this.head.material = mat;
+        this.head.parent = this.torsoHigh;
+        this.head.position = new BABYLON.Vector3(0, 0.539, -0.112);
 
         this.armManager = new HumanArmManager(this);
         this.armManager.leftParent = this.torsoHigh;
@@ -64,8 +68,8 @@ class Drider extends BABYLON.Mesh {
         this.armManager.rightPos = new BABYLON.Vector3(0.18, 0.419, -0.117);
         this.legManager = new DriderLegManager(this);
 
-        this.animateCamPosRotX = AnimationFactory.CreateNumber(this, this.camPos.rotation, "x");
-        this.animateCamPosRotY = AnimationFactory.CreateNumber(this, this.camPos.rotation, "y");
+        this.animateCamPosRotX = AnimationFactory.CreateNumber(this, this.head.rotation, "x");
+        this.animateCamPosRotY = AnimationFactory.CreateNumber(this, this.head.rotation, "y");
     }
 
     public initialize(): void {        
@@ -173,7 +177,7 @@ class Drider extends BABYLON.Mesh {
         let data = await VertexDataLoader.instance.get("drider");
         data[0].applyToMesh(this.torsoLow);
         data[1].applyToMesh(this.torsoHigh);
-        data[4].applyToMesh(this.camPos);
+        data[4].applyToMesh(this.head);
     }
 
     public dispose(doNotRecurse?: boolean, disposeMaterialAndTextures?: boolean): void {
@@ -236,17 +240,55 @@ class Drider extends BABYLON.Mesh {
     } 
 
     private _update = () => {
+        let deltaTime: number = this.scene.getEngine().getDeltaTime() / 1000;
 
+        // Head update
+        if (this.targetLook) {
+            let forward = this.head.forward;
+            let targetForward = this.targetLook.subtract(this.head.absolutePosition).normalize();
+            let aY = VMath.AngleFromToAround(forward, targetForward, this.up);
+            if (isFinite(aY)) {
+                this.inputHeadRight += aY / Math.PI * this.targetLookStrength;
+            }
+            let aX = VMath.AngleFromToAround(forward, targetForward, this.right);
+            if (isFinite(aX)) {
+                this.inputHeadUp += aX / (2 * Math.PI) * this.targetLookStrength;
+            }
+            if (this.velocity.lengthSquared() < 0.001) {
+                if (Math.abs(aY) < Math.PI / 180 && Math.abs(aX) < Math.PI / 180) {
+                    console.log(aX + " " + aY);
+                    this.targetLook = undefined;
+                    this.targetLookStrength = 0.5;
+                }
+            }
+        }
+
+        let rotationPower: number = this.inputHeadRight * Math.PI * deltaTime;
+        let rotationCamPower: number = this.inputHeadUp * Math.PI * deltaTime;
+        
+        this.head.rotation.y += rotationPower;
+        this.head.rotation.y = Math.max(this.head.rotation.y, -Math.PI / 2);
+        this.head.rotation.y = Math.min(this.head.rotation.y, Math.PI / 2);
+
+        this.head.rotation.x += rotationCamPower;
+        this.head.rotation.x = Math.max(this.head.rotation.x, -Math.PI / 2);
+        this.head.rotation.x = Math.min(this.head.rotation.x, Math.PI / 2);
+        
+        let inputFactor = Easing.smooth010Sec(this.getEngine().getFps());
+        this.inputHeadRight *= inputFactor;
+        this.inputHeadUp *= inputFactor;
+
+        // Find current chuncks.
         let chunck = PlanetTools.WorldPositionToChunck(this.planet, this.position);
         if (chunck != this._currentChunck) {
             if (this._currentChunck) {
-                this._currentChunck.unlit();
+                //this._currentChunck.unlit();
             }
             
             this._currentChunck = chunck;
 
             if (this._currentChunck) {
-                this._currentChunck.highlight();
+                //this._currentChunck.highlight();
                 if (this._currentChunck.adjacentsAsArray) {
                     this._chuncks = [...this._currentChunck.adjacentsAsArray, this._currentChunck];
                 }
