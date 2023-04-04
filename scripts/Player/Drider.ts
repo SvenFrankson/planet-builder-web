@@ -200,14 +200,39 @@ class Drider extends BABYLON.Mesh {
         else {
             VMath.QuaternionFromYZAxisToRef(this.position, BABYLON.Vector3.Forward(), this.rotationQuaternion);
         }
+
         this.computeWorldMatrix(true);
+
+        //let driderRoot = BABYLON.MeshBuilder.CreateBox("drider root", { size: 0.2 });
+        //driderRoot.material = SharedMaterials.RedMaterial();
+        //driderRoot.position.copyFrom(this.absolutePosition);
+
         for (let i = 0; i < 6; i++) {
             this.footTargets[i].computeWorldMatrix(true);
-            this.evaluatedFootTargets[i] = this.footTargets[i].absolutePosition;
-            this.legManager.legs[i].setPosition(this.footTargets[i].absolutePosition);
+            this.evaluatedFootTargets[i].copyFrom(this.footTargets[i].absolutePosition);
+            this.evaluatedFootTargets[i].subtractInPlace(this.up.scale(0.4));
+            
+            //let evaluatedRoot = BABYLON.MeshBuilder.CreateBox("evaluated root", { size: 0.1 });
+            //evaluatedRoot.material = SharedMaterials.CyanMaterial();
+            //evaluatedRoot.position.copyFrom(this.evaluatedFootTargets[i]);
         }
-        BABYLON.Vector3.TransformCoordinatesToRef(new BABYLON.Vector3(0, 1, 0), this.getWorldMatrix(), this.torsoLow.position);
+        BABYLON.Vector3.TransformCoordinatesToRef(new BABYLON.Vector3(0, 0.7, 0), this.getWorldMatrix(), this.torsoLow.position);
         this.torsoLow.computeWorldMatrix(true);
+
+        //let torsoRoot = BABYLON.MeshBuilder.CreateBox("torso root", { size: 0.2 });
+        //torsoRoot.material = SharedMaterials.GreenMaterial();
+        //torsoRoot.position.copyFrom(this.torsoLow.absolutePosition);
+
+        this.legManager.doUpdate();
+        for (let i = 0; i < 6; i++) {
+            this.legManager.legs[i].targetPosition = this.evaluatedFootTargets[i];
+            this.legManager.legs[i].doUpdate();
+            this.legManager.legs[i].computeWorldMatrixes();
+            
+            //let footRoot = BABYLON.MeshBuilder.CreateBox("foot root", { size: 0.1 });
+            //footRoot.material = SharedMaterials.BlueMaterial();
+            //footRoot.position.copyFrom(this.legManager.legs[i].foot.absolutePosition);
+        }
     } 
 
     private _update = () => {
@@ -248,7 +273,7 @@ class Drider extends BABYLON.Mesh {
         }
         footCenter.scaleInPlace(1 / 6);
         footCenter.addInPlace(this.up.scale(0.8));
-        this.torsoLow.position.scaleInPlace(0.8).addInPlace(footCenter.scale(0.2));
+        this.torsoLow.position.scaleInPlace(0.9).addInPlace(footCenter.scale(0.1));
         this.torsoLow.rotationQuaternion.copyFrom(this.rotationQuaternion);
 
         let correction = BABYLON.Quaternion.RotationAxis(this.right, - Math.PI / 8);

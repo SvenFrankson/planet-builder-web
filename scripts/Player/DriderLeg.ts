@@ -22,13 +22,6 @@ class DriderLeg extends BABYLON.Mesh {
         super("player-arm", scene);
     }
 
-    public setPosition(p: BABYLON.Vector3): void {
-        this._upperLeg.position.copyFrom(p);
-        this._lowerLeg.position.copyFrom(p);
-        this._lowerLeg.computeWorldMatrix(true);
-        this.foot.computeWorldMatrix(true);
-    }
-
     public initialize(): void {
         this.rotationQuaternion = BABYLON.Quaternion.Identity();
         
@@ -79,6 +72,12 @@ class DriderLeg extends BABYLON.Mesh {
         this.targetPosition.copyFrom(newTarget);
     }
 
+    public computeWorldMatrixes(): void {
+        this._upperLeg.computeWorldMatrix(true);
+        this._lowerLeg.computeWorldMatrix(true);
+        this.foot.computeWorldMatrix(true);
+    }
+
     private _debugCurrentTarget: BABYLON.Mesh;
     private _kneePosition: BABYLON.Vector3 = BABYLON.Vector3.Zero();
     private _v0: BABYLON.Vector3 = BABYLON.Vector3.Zero();
@@ -86,7 +85,10 @@ class DriderLeg extends BABYLON.Mesh {
     private _v2: BABYLON.Vector3 = BABYLON.Vector3.Zero();
     private _q0: BABYLON.Quaternion = BABYLON.Quaternion.Identity();
 
-    private _update = () => {
+    public doUpdate(): void {
+        this._update(undefined, undefined, true);
+    }
+    private _update = (eventData: BABYLON.Scene, eventState: BABYLON.EventState, ignorePreviousState?: boolean) => {
         
         if (DebugDefine.SHOW_PLAYER_ARM_CURRENT_TARGET) {
             if (!this._debugCurrentTarget) {
@@ -115,6 +117,9 @@ class DriderLeg extends BABYLON.Mesh {
         }
 
         let magicNumber2 = 1 - Easing.smooth025Sec(this.scene.getEngine().getFps());
+        if (ignorePreviousState) {
+            magicNumber2 = 1;
+        }
         
         let upperLegY = this.up;
         VMath.QuaternionFromZYAxisToRef(upperLegZ, upperLegY, this._q0);

@@ -48,6 +48,9 @@ class DriderLegManager {
     private _steping: number = 0;
     private _step: number = 0;
     private _walking: UniqueList<number> = new UniqueList<number>();
+    public doUpdate(): void {
+        this._update();
+    }
     private _update = () => {
         this._timer += this.scene.getEngine().getDeltaTime() / 1000;
 
