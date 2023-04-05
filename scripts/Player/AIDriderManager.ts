@@ -41,7 +41,8 @@ class AIDriderManager {
 
         this.drider.targetLook = this.player.head.absolutePosition.clone();
 
-        let dir = this.player.position.subtract(this.drider.position)
+        let dir = this.player.position.subtract(this.drider.position);
+        let dist = dir.length();
         let alpha = VMath.AngleFromToAround(this.drider.forward, dir, this.drider.up);
         if (Math.abs(alpha) > Math.PI / 6) {
             this.targetDir = dir;
@@ -56,6 +57,13 @@ class AIDriderManager {
             }
             this.drider.rotate(BABYLON.Axis.Y, db, BABYLON.Space.LOCAL);
         }
+
+        if (dist > 5) {
+            this.drider.position.addInPlace(this.drider.forward.scale(1 * dt));
+        }
+        else if (dist < 3) {
+            this.drider.position.subtractInPlace(this.drider.forward.scale(1 * dt));
+        } 
 
     }
 }

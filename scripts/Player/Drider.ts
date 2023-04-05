@@ -148,7 +148,7 @@ class Drider extends BABYLON.Mesh {
         ];
         
         this.footTargets.forEach(mesh => {
-            mesh.isVisible = false;
+            //mesh.isVisible = false;
         })
         this.evaluatedFootTargetsDebugs.forEach(mesh => {
             mesh.isVisible = false;
@@ -316,6 +316,23 @@ class Drider extends BABYLON.Mesh {
         footCenter.scaleInPlace(1 / 6);
         footCenter.addInPlace(this.up.scale(0.8));
         this.torsoLow.position.scaleInPlace(0.9).addInPlace(footCenter.scale(0.1));
+
+        let radiuses: BABYLON.Vector3[] = [];
+        for (let i = 0; i < 6; i++) {
+            radiuses.push(this.legManager.legs[i].foot.absolutePosition.subtract(footCenter));
+        }
+        let footNorm = BABYLON.Vector3.Zero();
+        for (let i = 0; i < 6; i++) {
+            let n = BABYLON.Vector3.Cross(radiuses[i], radiuses[(i + 1) % 6]).normalize();
+            footNorm.addInPlace(n);
+        }
+        footNorm.normalize();
+
+        let frontDir = radiuses[2].add(radiuses[3]);
+        let frontBack = radiuses[0].add(radiuses[5]);
+        let forward = frontDir.subtract(frontBack).normalize();
+
+        VMath.QuaternionFromZYAxisToRef(forward, footNorm, this.torsoLow.rotationQuaternion);
         this.torsoLow.rotationQuaternion.copyFrom(this.rotationQuaternion);
 
         let correction = BABYLON.Quaternion.RotationAxis(this.right, - Math.PI / 8);
@@ -326,7 +343,7 @@ class Drider extends BABYLON.Mesh {
     
     public evaluateTarget(footIndex: number): void {
         let dir = this.up.scale(-1);
-        let bestDist: number = 1.5;
+        let bestDist: number = 1;
         let bestPick: VPickInfo;
         for (let i = 0; i < this.meshes.length; i++) {
             let mesh = this.meshes[i];
