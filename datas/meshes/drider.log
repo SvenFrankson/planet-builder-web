@@ -12,7 +12,7 @@ Exporter version: 6.4.5, Blender version: 2.90.1
 		Texture directory   :  C:\Users\svent\Documents\Sven Frankson\planet-builder-web\datas\meshes\
 	Python World class constructor completed
 	WARNING: No active camera has been assigned, or is not in a currently selected Blender layer
-	processing begun of mesh:  4-head
+	processing begun of mesh:  5-head
 		processing begun of material:  Plastic
 		processing begun of material:  Steel
 		processing begun of material:  Eyes
@@ -39,14 +39,14 @@ Exporter version: 6.4.5, Blender version: 2.90.1
 		registered as also a user of material:  Steel
 		registered as also a user of material:  Plastic
 		processing begun of multimaterial:  drider.Multimaterial#1
-		num positions      :  209
-		num normals        :  209
+		num positions      :  208
+		num normals        :  208
 		num tangents       :  0
-		num uvs            :  418
+		num uvs            :  416
 		num uvs2           :  0
 		num colors         :  0
 		num triangles      :  80
-	processing begun of mesh:  3-lower-leg
+	processing begun of mesh:  3-middle-leg
 		processing begun of material:  Plastic
 		processing begun of material:  Steel
 		processing begun of material:  Material.002
@@ -54,13 +54,13 @@ Exporter version: 6.4.5, Blender version: 2.90.1
 		registered as also a user of material:  Steel
 		registered as also a user of material:  Material.002
 		processing begun of multimaterial:  drider.Multimaterial#2
-		num positions      :  240
-		num normals        :  240
+		num positions      :  155
+		num normals        :  155
 		num tangents       :  0
-		num uvs            :  480
+		num uvs            :  310
 		num uvs2           :  0
 		num colors         :  0
-		num triangles      :  92
+		num triangles      :  60
 	processing begun of mesh:  1-torso-high
 		processing begun of material:  Plastic
 		processing begun of material:  Steel
@@ -76,12 +76,28 @@ Exporter version: 6.4.5, Blender version: 2.90.1
 		num uvs2           :  492
 		num colors         :  0
 		num triangles      :  264
+	processing begun of mesh:  4-lower-leg
+		processing begun of material:  Plastic
+		processing begun of material:  Steel
+		processing begun of material:  Material.002
+		registered as also a user of material:  Plastic
+		registered as also a user of material:  Steel
+		registered as also a user of material:  Material.002
+		processing begun of multimaterial:  drider.Multimaterial#4
+		num positions      :  105
+		num normals        :  105
+		num tangents       :  0
+		num uvs            :  210
+		num uvs2           :  0
+		num colors         :  0
+		num triangles      :  40
 ========= Writing of JSON file started =========
-	writing mesh:  4-head
+	writing mesh:  5-head
 	writing mesh:  0-torso-low
 	writing mesh:  2-upper-leg
-	writing mesh:  3-lower-leg
+	writing mesh:  3-middle-leg
 	writing mesh:  1-torso-high
+	writing mesh:  4-lower-leg
 ========= Writing of JSON file completed =========
 ========= end of processing =========
-elapsed time:  0 min, 0.0895 secs
+elapsed time:  0 min, 0.0861 secs

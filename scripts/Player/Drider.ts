@@ -177,7 +177,7 @@ class Drider extends BABYLON.Mesh {
         let data = await VertexDataLoader.instance.get("drider");
         data[0].applyToMesh(this.torsoLow);
         data[1].applyToMesh(this.torsoHigh);
-        data[4].applyToMesh(this.head);
+        data[5].applyToMesh(this.head);
     }
 
     public dispose(doNotRecurse?: boolean, disposeMaterialAndTextures?: boolean): void {
@@ -214,7 +214,7 @@ class Drider extends BABYLON.Mesh {
         for (let i = 0; i < 6; i++) {
             this.footTargets[i].computeWorldMatrix(true);
             this.evaluatedFootTargets[i].copyFrom(this.footTargets[i].absolutePosition);
-            this.evaluatedFootTargets[i].subtractInPlace(this.up.scale(0.4));
+            //this.evaluatedFootTargets[i].subtractInPlace(this.up.scale(0.4));
             
             //let evaluatedRoot = BABYLON.MeshBuilder.CreateBox("evaluated root", { size: 0.1 });
             //evaluatedRoot.material = SharedMaterials.CyanMaterial();
@@ -256,7 +256,6 @@ class Drider extends BABYLON.Mesh {
             }
             if (this.velocity.lengthSquared() < 0.001) {
                 if (Math.abs(aY) < Math.PI / 180 && Math.abs(aX) < Math.PI / 180) {
-                    console.log(aX + " " + aY);
                     this.targetLook = undefined;
                     this.targetLookStrength = 0.5;
                 }
@@ -343,7 +342,7 @@ class Drider extends BABYLON.Mesh {
     
     public evaluateTarget(footIndex: number): void {
         let dir = this.up.scale(-1);
-        let bestDist: number = 1;
+        let bestDist: number = 1.5;
         let bestPick: VPickInfo;
         for (let i = 0; i < this.meshes.length; i++) {
             let mesh = this.meshes[i];

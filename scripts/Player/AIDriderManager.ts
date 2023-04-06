@@ -58,11 +58,14 @@ class AIDriderManager {
             this.drider.rotate(BABYLON.Axis.Y, db, BABYLON.Space.LOCAL);
         }
 
+        this.drider.velocity = BABYLON.Vector3.Zero();
         if (dist > 5) {
             this.drider.position.addInPlace(this.drider.forward.scale(1 * dt));
+            this.drider.velocity = this.drider.forward.clone();
         }
         else if (dist < 3) {
             this.drider.position.subtractInPlace(this.drider.forward.scale(1 * dt));
+            this.drider.velocity = this.drider.forward.clone();
         } 
 
     }
