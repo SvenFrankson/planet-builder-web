@@ -74,7 +74,7 @@ class Drider extends BABYLON.Mesh {
         let a = Math.PI / 4;
         let r = 1;
         let x = r * Math.cos(a);
-        let y = 0.7;
+        let y = 0.4;
         let z = r * Math.sin(a);
 
         this.footTargets[0] = new BABYLON.Mesh("foot-target-0");
@@ -182,7 +182,7 @@ class Drider extends BABYLON.Mesh {
                 c++;
             }
         }
-        return c > 1;
+        return c > 2;
     }
 
     public async forcePositionRotation(pos: BABYLON.Vector3, rot?: BABYLON.Quaternion): Promise<void> {
@@ -249,8 +249,8 @@ class Drider extends BABYLON.Mesh {
     
     public evaluateTarget(footIndex: number): void {
         let dir = this.up.scale(-1);
-        let ray = new BABYLON.Ray(this.footTargets[footIndex].absolutePosition.subtract(dir.scale(1.5)), dir, 3);
-        let bestDist: number = 2;
+        let ray = new BABYLON.Ray(this.footTargets[footIndex].absolutePosition.subtract(dir.scale(1.2)), dir, 3);
+        let bestDist: number = 1.5;
         let bestPick: VPickInfo;
         for (let i = 0; i < this.meshes.length; i++) {
             let mesh = this.meshes[i];
@@ -265,8 +265,8 @@ class Drider extends BABYLON.Mesh {
             }
         }
         if (bestPick) {
-            this.evaluatedFootTargets[footIndex] = bestPick.worldPoint;
-            this.evaluatedFootNormals[footIndex] = bestPick.worldNormal;
+            this.evaluatedFootTargets[footIndex] = bestPick.worldPoint.clone();
+            this.evaluatedFootNormals[footIndex] = bestPick.worldNormal.clone();
             this.evaluatedFootTargetGrounded[footIndex] = true;
         }
         else {
@@ -274,7 +274,7 @@ class Drider extends BABYLON.Mesh {
             this.evaluatedFootNormals[footIndex] = this.up;
             this.evaluatedFootTargetGrounded[footIndex] = false;
         }
-        this.evaluatedFootTargetsDebugs[footIndex].position = this.evaluatedFootTargets[footIndex];
+        this.evaluatedFootTargetsDebugs[footIndex].position.copyFrom(this.evaluatedFootTargets[footIndex]);
         this.evaluatedFootTargetsDebugs[footIndex].position.addInPlace(this.evaluatedFootNormals[footIndex].scale(0.25));
         VMath.QuaternionFromYZAxisToRef(this.evaluatedFootNormals[footIndex], BABYLON.Vector3.Forward(), this.evaluatedFootTargetsDebugs[footIndex].rotationQuaternion);
         
@@ -298,7 +298,7 @@ class Drider extends BABYLON.Mesh {
                 let rotation: BABYLON.Quaternion = BABYLON.Quaternion.RotationAxis(correctionAxis, correctionAngle / 10);
                 this.rotationQuaternion = rotation.multiply(this.rotationQuaternion);
             }
-            this.position.subtractInPlace(this.up.scale(0.3 * 1 / 60));
+            this.position.subtractInPlace(this.up.scale(0.8 * 1 / 60));
         }
         else {
             let radiuses = [];

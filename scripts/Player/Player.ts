@@ -778,6 +778,7 @@ class Player extends BABYLON.Mesh {
             }
         }
 
+        /*
         let bestDist: number = Infinity;
         let bestPick: VPickInfo;
         for (let i = 0; i < this.meshes.length; i++) {
@@ -795,6 +796,7 @@ class Player extends BABYLON.Mesh {
         if (bestPick) {
             this._testCollisionHit.position.copyFrom(bestPick.worldPoint);
         }
+        */
 
         //document.querySelector("#camera-altitude").textContent = this.camPos.absolutePosition.length().toFixed(1);
     };
