@@ -112,11 +112,15 @@ class DriderLeg extends BABYLON.Mesh {
             this._debugCurrentTarget.position.copyFrom(this.targetPosition);
         }
         
+        let planetUp = this.drider.position.clone().normalize();
+
         this._upperLeg.position.copyFrom(this.absolutePosition);
-        this._kneeHighPosition.copyFrom(this.absolutePosition);
-        this._kneeHighPosition.addInPlace(this.forward.scale(this._upperLegLength));
+
         this._kneeLowPosition.copyFrom(this.targetPosition);
-        this._kneeLowPosition.addInPlace(this.drider.up.scale(this._lowerLegLength));
+        this._kneeLowPosition.addInPlace(planetUp.scale(this._lowerLegLength));
+
+        this._kneeHighPosition.copyFrom(this._kneeLowPosition).addInPlace(this.position).scaleInPlace(0.5);
+        //this._kneeHighPosition.addInPlace(planetUp.scale(this._upperLegLength));
         
         let currentTarget = this.targetPosition.clone();
         if (!this.grounded) {
