@@ -2,7 +2,7 @@ class Human extends BABYLON.Mesh {
 
     public planet: Planet;
 
-    public camPos: BABYLON.AbstractMesh;
+    public head: BABYLON.AbstractMesh;
 
     public torsoLow: BABYLON.Mesh;
     public torsoHigh: BABYLON.Mesh;
@@ -28,13 +28,13 @@ class Human extends BABYLON.Mesh {
 
         this.rotationQuaternion = BABYLON.Quaternion.Identity();
         
-        this.camPos = new BABYLON.Mesh("Dummy", Game.Scene);
-        this.camPos.parent = this;
-        this.camPos.position = new BABYLON.Vector3(0, 1.77, 0);
-        this.camPos.rotation.x = Math.PI / 8;
+        this.head = new BABYLON.Mesh("Dummy", Game.Scene);
+        this.head.parent = this;
+        this.head.position = new BABYLON.Vector3(0, 1.77, 0);
+        this.head.rotation.x = Math.PI / 8;
 
-        this.animateCamPosRotX = AnimationFactory.CreateNumber(this, this.camPos.rotation, "x");
-        this.animateCamPosRotY = AnimationFactory.CreateNumber(this, this.camPos.rotation, "y");
+        this.animateCamPosRotX = AnimationFactory.CreateNumber(this, this.head.rotation, "x");
+        this.animateCamPosRotY = AnimationFactory.CreateNumber(this, this.head.rotation, "y");
     }
 
     public initialize(): void {

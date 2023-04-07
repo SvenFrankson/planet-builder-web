@@ -22,12 +22,12 @@ class DriderLegManager {
             new BABYLON.Vector3(-0.17, 0.02, 0.11),
             new BABYLON.Vector3(0.17, 0.02, 0.11),
             new BABYLON.Vector3(0.17, 0, 0),
-            new BABYLON.Vector3(0.15 -0.02, -0.11)
+            new BABYLON.Vector3(0.15, -0.02, -0.11)
         ];
 
         this.legs = [];
         for (let i = 0; i < 6; i++) {
-            this.legs[i] = new DriderLeg(i, this.drider.scene);
+            this.legs[i] = new DriderLeg(i, this.drider, this.drider.scene);
             this.legs[i].initialize();
             this.legs[i].instantiate();
             this.legs[i].targetPosition.copyFrom(this.drider.evaluatedFootTargets[i]);
@@ -48,6 +48,9 @@ class DriderLegManager {
     private _steping: number = 0;
     private _step: number = 0;
     private _walking: UniqueList<number> = new UniqueList<number>();
+    public doUpdate(): void {
+        this._update();
+    }
     private _update = () => {
         this._timer += this.scene.getEngine().getDeltaTime() / 1000;
 
@@ -56,7 +59,7 @@ class DriderLegManager {
             this.legs[i].rotationQuaternion.copyFrom(this.drider.rotationQuaternion);
         }
 
-        if (true) {
+        if (this.drider.velocity.lengthSquared() > 1) {
             // Walking alternating 024 and 135
             if (this._steping === 0) {
                 this._step = (this._step + 1) % 2;
@@ -67,7 +70,7 @@ class DriderLegManager {
                 for (let i = 0; i < 3; i++) {
                     dist += BABYLON.Vector3.Distance(this.legs[2 * i + this._step].targetPosition, this.drider.evaluatedFootTargets[2 * i + this._step]);
                 }
-                if (dist > 0.6) {
+                if (dist > 0.3) {
                     this._steping = 3;
                     for (let i = 0; i < 3; i++) {
                         this.step(this.legs[2 * i + this._step], this.drider.evaluatedFootTargets[2 * i + this._step], this.drider.evaluatedFootNormals[2 * i + this._step]).then(() => { this._steping--; });
@@ -82,6 +85,7 @@ class DriderLegManager {
                     if (!this._walking.contains(i)) {
                         this.drider.evaluateTarget(i);
                         this.legs[i].tmpDistance = BABYLON.Vector3.Distance(this.legs[i].targetPosition, this.drider.evaluatedFootTargets[i]);
+                        this.legs[i].grounded = this.drider.evaluatedFootTargetGrounded[i];
                         legs.push(this.legs[i]);
                     }
                 }
@@ -105,7 +109,7 @@ class DriderLegManager {
             let destinationNorm = targetNorm.clone();
             let dist = BABYLON.Vector3.Distance(origin, destination);
             let hMax = Math.min(Math.max(0.3, dist * 0.5), 0.1)
-            let duration = 0.5;
+            let duration = Math.min(0.5, dist);
             let t = 0;
             let animationCB = () => {
                 t += this.scene.getEngine().getDeltaTime() / 1000;

@@ -14,7 +14,7 @@ class Player extends BABYLON.Mesh {
     public isWalking: boolean = false;
 
     private underWater: boolean = false;
-    public camPos: BABYLON.AbstractMesh;
+    public head: BABYLON.AbstractMesh;
     public inputForward: number = 0;
     public inputRight: number = 0;
     public inputHeadUp: number = 0;
@@ -64,19 +64,15 @@ class Player extends BABYLON.Mesh {
     public animateCamPosRotX = AnimationFactory.EmptyNumberCallback;
     public animateCamPosRotY = AnimationFactory.EmptyNumberCallback;
 
-
-    private _testCollision: BABYLON.Mesh;
-    private _testCollisionHit: BABYLON.Mesh;
-
     constructor(position: BABYLON.Vector3, public main: Main) {
         super("Player", main.scene);
         Player.DEBUG_INSTANCE = this;
         this.position = position;
         this.rotationQuaternion = BABYLON.Quaternion.Identity();
-        this.camPos = new BABYLON.Mesh("Dummy", Game.Scene);
-        this.camPos.parent = this;
-        this.camPos.position = new BABYLON.Vector3(0, 1.77, 0);
-        this.camPos.rotation.x = Math.PI / 8;
+        this.head = new BABYLON.Mesh("Dummy", Game.Scene);
+        this.head.parent = this;
+        this.head.position = new BABYLON.Vector3(0, 1.77, 0);
+        this.head.rotation.x = Math.PI / 8;
         this.manager = new PlayerManager(this);
         /*
         BABYLON.CreateSphereVertexData({ diameter: 0.2 }).applyToMesh(this);
@@ -85,12 +81,6 @@ class Player extends BABYLON.Mesh {
         this.material = material;
         this.layerMask = 0x10000000;
         */
-
-        this._testCollision = BABYLON.MeshBuilder.CreateSphere("test-col", { diameter: 0.05 });
-        this._testCollision.parent = this;
-        this._testCollision.position.copyFromFloats(0, 1.5, 1);
-
-        this._testCollisionHit = BABYLON.MeshBuilder.CreateSphere("test-col", { diameter: 0.05 });
 
         let mat = new ToonMaterial("move-indicator-material", this.scene);
         this.moveIndicatorDisc = new PlanetObject("player-move-indicator-disc", this.main);
@@ -103,8 +93,8 @@ class Player extends BABYLON.Mesh {
         this.moveIndicatorLandmark.rotationQuaternion = BABYLON.Quaternion.Identity();
         this.moveIndicatorLandmark.isVisible = false;
         
-        this.animateCamPosRotX = AnimationFactory.CreateNumber(this, this.camPos.rotation, "x");
-        this.animateCamPosRotY = AnimationFactory.CreateNumber(this, this.camPos.rotation, "y");
+        this.animateCamPosRotX = AnimationFactory.CreateNumber(this, this.head.rotation, "x");
+        this.animateCamPosRotY = AnimationFactory.CreateNumber(this, this.head.rotation, "y");
         
         let savedPlayerPosString = window.localStorage.getItem("player-position");
         if (savedPlayerPosString) {
@@ -112,7 +102,7 @@ class Player extends BABYLON.Mesh {
             this.position.x = savedPlayerPos.x;
             this.position.y = savedPlayerPos.y;
             this.position.z = savedPlayerPos.z;
-            this.camPos.rotation.x = savedPlayerPos.rx;
+            this.head.rotation.x = savedPlayerPos.rx;
             this.rotationQuaternion.x = savedPlayerPos.qx;
             this.rotationQuaternion.y = savedPlayerPos.qy;
             this.rotationQuaternion.z = savedPlayerPos.qz;
@@ -453,8 +443,8 @@ class Player extends BABYLON.Mesh {
         this._jumpTimer = Math.max(this._jumpTimer - deltaTime, 0);
 
         if (this.targetLook) {
-            let forward = this.camPos.forward;
-            let targetForward = this.targetLook.subtract(this.camPos.absolutePosition).normalize();
+            let forward = this.head.forward;
+            let targetForward = this.targetLook.subtract(this.head.absolutePosition).normalize();
             let aY = VMath.AngleFromToAround(forward, targetForward, this.upDirection);
             if (isFinite(aY)) {
                 this.inputHeadRight += aY / Math.PI * this.targetLookStrength;
@@ -480,13 +470,13 @@ class Player extends BABYLON.Mesh {
             this.rotationQuaternion = rotation.multiply(this.rotationQuaternion);
         }
         else {
-            this.camPos.rotation.y += rotationPower;
-            this.camPos.rotation.y = Math.max(this.camPos.rotation.y, -Math.PI / 2);
-            this.camPos.rotation.y = Math.min(this.camPos.rotation.y, Math.PI / 2);
+            this.head.rotation.y += rotationPower;
+            this.head.rotation.y = Math.max(this.head.rotation.y, -Math.PI / 2);
+            this.head.rotation.y = Math.min(this.head.rotation.y, Math.PI / 2);
         }
-        this.camPos.rotation.x += rotationCamPower;
-        this.camPos.rotation.x = Math.max(this.camPos.rotation.x, -Math.PI / 2);
-        this.camPos.rotation.x = Math.min(this.camPos.rotation.x, Math.PI / 2);
+        this.head.rotation.x += rotationCamPower;
+        this.head.rotation.x = Math.max(this.head.rotation.x, -Math.PI / 2);
+        this.head.rotation.x = Math.min(this.head.rotation.x, Math.PI / 2);
         
         let chunck = PlanetTools.WorldPositionToChunck(this.planet, this.position);
         if (chunck != this._currentChunck) {
@@ -588,7 +578,7 @@ class Player extends BABYLON.Mesh {
             }
 
             if (checkGroundCollision) {
-                let ray: BABYLON.Ray = new BABYLON.Ray(this.camPos.absolutePosition, this._downDirection);
+                let ray: BABYLON.Ray = new BABYLON.Ray(this.head.absolutePosition, this._downDirection);
                 let hit: BABYLON.PickingInfo = ray.intersectsMesh(this.groundCollisionMesh);
                 if (hit && hit.pickedPoint) {
                     if (DebugDefine.SHOW_PLAYER_COLLISION_MESHES) {
@@ -768,7 +758,7 @@ class Player extends BABYLON.Mesh {
                     x: this.position.x,
                     y: this.position.y,
                     z: this.position.z,                
-                    rx: this.camPos.rotation.x,
+                    rx: this.head.rotation.x,
                     qx: this.rotationQuaternion.x,
                     qy: this.rotationQuaternion.y,
                     qz: this.rotationQuaternion.z,
@@ -777,26 +767,6 @@ class Player extends BABYLON.Mesh {
                 window.localStorage.setItem("player-position", JSON.stringify(savedPlayerPos));
             }
         }
-
-        /*
-        let bestDist: number = Infinity;
-        let bestPick: VPickInfo;
-        for (let i = 0; i < this.meshes.length; i++) {
-            let mesh = this.meshes[i];
-            if (mesh) {
-                let pick = VCollision.closestPointOnMeshNoOptim(this._testCollision.absolutePosition, mesh);
-                if (pick && pick.hit) {
-                    if (pick.distance < bestDist) {
-                        bestDist = pick.distance;
-                        bestPick = pick;
-                    }
-                }
-            }
-        }
-        if (bestPick) {
-            this._testCollisionHit.position.copyFrom(bestPick.worldPoint);
-        }
-        */
 
         //document.querySelector("#camera-altitude").textContent = this.camPos.absolutePosition.length().toFixed(1);
     };
