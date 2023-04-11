@@ -120,7 +120,7 @@ class DriderLeg extends BABYLON.Mesh {
         this._kneeLowPosition.addInPlace(planetUp.scale(this._lowerLegLength));
 
         this._kneeHighPosition.copyFrom(this._kneeLowPosition).addInPlace(this.position).scaleInPlace(0.5);
-        //this._kneeHighPosition.addInPlace(planetUp.scale(this._upperLegLength));
+        this._kneeHighPosition.addInPlace(planetUp.scale(this._upperLegLength));
         
         let currentTarget = this.targetPosition.clone();
         if (!this.grounded) {
@@ -131,18 +131,16 @@ class DriderLeg extends BABYLON.Mesh {
         let middleLegZ = this._v1;
         let lowerLegZ = this._v1;
         for (let i = 0; i < 3; i++) {
-            lowerLegZ.copyFrom(currentTarget).subtractInPlace(this._kneeLowPosition).normalize().scaleInPlace(this._lowerLegLength);
-            this._kneeLowPosition.copyFrom(currentTarget).subtractInPlace(lowerLegZ);
 
-            middleLegZ.copyFrom(this._kneeLowPosition).subtractInPlace(this._kneeHighPosition).normalize().scaleInPlace(this._middleLegLength);
-            this._kneeHighPosition.copyFrom(this._kneeLowPosition).subtractInPlace(middleLegZ);
-
-            upperLegZ.copyFrom(this._kneeHighPosition).subtractInPlace(this._upperLeg.absolutePosition).normalize().scaleInPlace(this._upperLegLength);
-            this._kneeHighPosition.copyFrom(this._upperLeg.absolutePosition).addInPlace(upperLegZ);
-
-            middleLegZ.copyFrom(this._kneeLowPosition).subtractInPlace(this._kneeHighPosition).normalize().scaleInPlace(this._middleLegLength);
-            this._kneeLowPosition.copyFrom(this._kneeHighPosition).subtractInPlace(middleLegZ);
+            VMath.ForceDistanceInPlace(this._kneeHighPosition, this._upperLeg.position, this._upperLegLength);
+            VMath.ForceDistanceInPlace(this._kneeLowPosition, this._kneeHighPosition, this._middleLegLength);
+            VMath.ForceDistanceInPlace(this._kneeLowPosition, currentTarget, this._lowerLegLength);
+            VMath.ForceDistanceInPlace(this._kneeHighPosition, this._kneeLowPosition, this._middleLegLength);
         }
+
+        upperLegZ.copyFrom(this._kneeHighPosition).subtractInPlace(this._upperLeg.position);
+        middleLegZ.copyFrom(this._kneeLowPosition).subtractInPlace(this._kneeHighPosition);
+        lowerLegZ.copyFrom(currentTarget).subtractInPlace(this._kneeLowPosition);
 
         let magicNumber2 = 1 - Easing.smooth025Sec(this.scene.getEngine().getFps());
         if (ignorePreviousState) {

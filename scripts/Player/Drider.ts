@@ -151,7 +151,7 @@ class Drider extends BABYLON.Mesh {
             //mesh.isVisible = false;
         })
         this.evaluatedFootTargetsDebugs.forEach(mesh => {
-            mesh.isVisible = false;
+            //mesh.isVisible = false;
         })
 
         for (let i = 0; i < 6; i++) {
@@ -302,8 +302,9 @@ class Drider extends BABYLON.Mesh {
             }
         }
 
+        let localUp = this.position.clone().normalize();
         let upQ = BABYLON.Quaternion.Identity();
-        VMath.QuaternionFromYZAxisToRef(this.position, this.forward, upQ);
+        VMath.QuaternionFromYZAxisToRef(localUp, this.forward, upQ);
         BABYLON.Vector3.TransformCoordinatesToRef(new BABYLON.Vector3(0, 0.053, 0.277), this.torsoLow.getWorldMatrix(), this.torsoHigh.position);
         
         this.torsoHigh.rotationQuaternion = BABYLON.Quaternion.Slerp(this.rotationQuaternion, upQ, 0.8);
@@ -313,7 +314,7 @@ class Drider extends BABYLON.Mesh {
             footCenter.addInPlace(this.legManager.legs[i].foot.absolutePosition);
         }
         footCenter.scaleInPlace(1 / 6);
-        footCenter.addInPlace(this.up.scale(0.8));
+        footCenter.addInPlace(localUp.scale(0.8));
         this.torsoLow.position.scaleInPlace(0.9).addInPlace(footCenter.scale(0.1));
 
         let radiuses: BABYLON.Vector3[] = [];
