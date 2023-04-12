@@ -9,7 +9,46 @@ class VPickInfo {
 
 class VCollision {
 
-    public static closestPointOnMesh(worldPoint: BABYLON.Vector3, mesh: BABYLON.Mesh): VPickInfo {
+    private static _Tmp0: BABYLON.Vector3 = BABYLON.Vector3.One();
+    public static MedianNormalOnMeshes(worldPoint: BABYLON.Vector3, meshes: BABYLON.Mesh[], searchDist: number): BABYLON.Vector3 {
+        let worldNormal = BABYLON.Vector3.Zero();
+
+        let sqrSearchDist = searchDist * searchDist;
+
+        for (let j = 0; j < meshes.length; j++) {
+            let mesh = meshes[j];
+
+            let localPoint = BABYLON.Vector3.TransformCoordinates(worldPoint, mesh.getWorldMatrix().clone().invert());
+            
+            let positions = mesh.getVerticesData(BABYLON.VertexBuffer.PositionKind);
+            let normals = mesh.getVerticesData(BABYLON.VertexBuffer.NormalKind);
+
+            for (let i = 0; i < positions.length / 3; i++) {
+                let dx = localPoint.x - positions[3 * i];
+                let dy = localPoint.y - positions[3 * i + 1];
+                let dz = localPoint.z - positions[3 * i + 2];
+    
+                let sqrDist = dx * dx + dy * dy + dz * dz;
+                if (sqrDist < sqrSearchDist) {
+                    let dist = Math.sqrt(sqrDist);
+
+                    VCollision._Tmp0.copyFromFloats(normals[3 * i], normals[3 * i + 1], normals[3 * i + 2]);
+                    BABYLON.Vector3.TransformNormalToRef(VCollision._Tmp0, mesh.getWorldMatrix(), VCollision._Tmp0);
+                    VCollision._Tmp0.scaleInPlace(dist);
+
+                    worldNormal.x += VCollision._Tmp0.x;
+                    worldNormal.y += VCollision._Tmp0.y;
+                    worldNormal.z += VCollision._Tmp0.z;
+                }
+            }
+        }
+
+        worldNormal.normalize();
+
+        return worldNormal;
+    }
+
+    public static ClosestPointOnMesh(worldPoint: BABYLON.Vector3, mesh: BABYLON.Mesh): VPickInfo {
         let pickInfo = new VPickInfo();
 
         let localPoint = BABYLON.Vector3.TransformCoordinates(worldPoint, mesh.getWorldMatrix().clone().invert());

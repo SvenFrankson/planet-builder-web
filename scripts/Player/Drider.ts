@@ -348,7 +348,7 @@ class Drider extends BABYLON.Mesh {
         for (let i = 0; i < this.meshes.length; i++) {
             let mesh = this.meshes[i];
             if (mesh) {
-                let pick = VCollision.closestPointOnMesh(this.footTargets[footIndex].absolutePosition, mesh);
+                let pick = VCollision.ClosestPointOnMesh(this.footTargets[footIndex].absolutePosition, mesh);
                 if (pick && pick.hit) {
                     if (pick.distance < bestDist) {
                         bestDist = pick.distance;
