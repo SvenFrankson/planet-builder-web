@@ -342,7 +342,6 @@ class Drider extends BABYLON.Mesh {
     }
     
     public evaluateTarget(footIndex: number): void {
-        let dir = this.up.scale(-1);
         let bestDist: number = 1.5;
         let bestPick: VPickInfo;
         for (let i = 0; i < this.meshes.length; i++) {
@@ -382,35 +381,50 @@ class Drider extends BABYLON.Mesh {
         }
         center.scaleInPlace(1/6);
 
+        let upDirection: BABYLON.Vector3 = BABYLON.Vector3.Zero();
+        
+        if (this.isGrounded()) {
+            upDirection = VCollision.MedianNormalOnMeshes(this.position, this.meshes, 1);
+        }
+        if (upDirection.lengthSquared() < 0.1) {
+            upDirection = this.position.subtract(this.planet.position).normalize();
+        }
+
+        let currentUp: BABYLON.Vector3 = BABYLON.Vector3.Normalize(BABYLON.Vector3.TransformNormal(BABYLON.Axis.Y, this.getWorldMatrix()));
+        let correctionAxis: BABYLON.Vector3 = BABYLON.Vector3.Cross(currentUp, upDirection);
+        let correctionAngle: number = Math.abs(Math.asin(correctionAxis.length()));
+        
+        if (correctionAngle > 0.001) {
+            let rotation: BABYLON.Quaternion = BABYLON.Quaternion.RotationAxis(correctionAxis, correctionAngle / 10);
+            this.rotationQuaternion = rotation.multiply(this.rotationQuaternion);
+        }
+
         if (!this.isGrounded()) {
-            let upDirection = this.position.subtract(this.planet.position).normalize();
-            let currentUp: BABYLON.Vector3 = BABYLON.Vector3.Normalize(BABYLON.Vector3.TransformNormal(BABYLON.Axis.Y, this.getWorldMatrix()));
-            let correctionAxis: BABYLON.Vector3 = BABYLON.Vector3.Cross(currentUp, upDirection);
-            let correctionAngle: number = Math.abs(Math.asin(correctionAxis.length()));
-            
-            if (correctionAngle > 0.001) {
-                let rotation: BABYLON.Quaternion = BABYLON.Quaternion.RotationAxis(correctionAxis, correctionAngle / 10);
-                this.rotationQuaternion = rotation.multiply(this.rotationQuaternion);
-            }
             this.position.subtractInPlace(this.up.scale(2 * 1 / 60));
         }
         else {
-            let radiuses = [];
-            for (let i = 0; i < 6; i++) {
-                radiuses.push(this.evaluatedFootTargets[i].subtract(center));
+            let bestDist: number = 1;
+            let bestPick: VPickInfo;
+            for (let i = 0; i < this.meshes.length; i++) {
+                let mesh = this.meshes[i];
+                if (mesh) {
+                    let pick = VCollision.ClosestPointOnMesh(this.position, mesh);
+                    if (pick && pick.hit) {
+                        if (pick.distance < bestDist) {
+                            bestDist = pick.distance;
+                            bestPick = pick;
+                        }
+                    }
+                }
             }
-            let norm = BABYLON.Vector3.Zero();
-            for (let i = 0; i < 6; i++) {
-                let n = BABYLON.Vector3.Cross(radiuses[i], radiuses[(i + 1) % 6]).normalize();
-                norm.addInPlace(n);
+            if (bestPick) {
+                let d = this.position.subtract(bestPick.worldPoint);
+                let dot = BABYLON.Vector3.Dot(d, upDirection);
+                this.position.subtractInPlace(upDirection.scale(dot));
             }
-            norm.normalize();
-    
-            let dp = BABYLON.Vector3.Dot(this.position.subtract(center), norm);
-            this.position.subtractInPlace(norm.scale(dp * 0.1));
-            let q = BABYLON.Quaternion.Identity();
-            VMath.QuaternionFromYZAxisToRef(norm, this.forward, q);
-            BABYLON.Quaternion.SlerpToRef(this.rotationQuaternion, q, 0.01, this.rotationQuaternion);
+            else {
+                
+            }
         }
     }
 }
