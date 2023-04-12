@@ -113,56 +113,59 @@ class DriderLeg extends BABYLON.Mesh {
         }
         
         let planetUp = this.drider.position.clone().normalize();
+        
+        let ptO = this.absolutePosition;
+        let ptT = this.targetPosition.clone();
+        if (!this.grounded) {
+            ptT = this.position.subtract(this.up);
+        }
+        let distOT = BABYLON.Vector3.Distance(ptO, ptT);
+        let dirOT = ptT.subtract(ptO).scaleInPlace(1 / distOT);
+
+        let tmpX = BABYLON.Vector3.Cross(planetUp, dirOT);
+        let normOT = BABYLON.Vector3.Cross(dirOT, tmpX).normalize();
 
         this._upperLeg.position.copyFrom(this.absolutePosition);
 
-        this._kneeLowPosition.copyFrom(this.targetPosition);
-        this._kneeLowPosition.addInPlace(planetUp.scale(this._lowerLegLength));
+        this._kneeHighPosition.copyFrom(dirOT).scaleInPlace(distOT / 3).addInPlace(ptO);
+        this._kneeHighPosition.addInPlace(normOT.scale(0.5));
 
-        this._kneeHighPosition.copyFrom(this._kneeLowPosition).addInPlace(this.position).scaleInPlace(0.5);
-        this._kneeHighPosition.addInPlace(planetUp.scale(this._upperLegLength));
-        
-        let currentTarget = this.targetPosition.clone();
-        if (!this.grounded) {
-            currentTarget = this.position.subtract(this.up);
-        }
+        this._kneeLowPosition.copyFrom(dirOT).scaleInPlace(2 * distOT / 3).addInPlace(ptO);
+        this._kneeLowPosition.addInPlace(normOT.scale(0.5));
 
         let upperLegZ = this._v0;
         let middleLegZ = this._v1;
-        let lowerLegZ = this._v1;
+        let lowerLegZ = this._v2;
         for (let i = 0; i < 3; i++) {
-
-            VMath.ForceDistanceInPlace(this._kneeHighPosition, this._upperLeg.position, this._upperLegLength);
-            VMath.ForceDistanceInPlace(this._kneeLowPosition, this._kneeHighPosition, this._middleLegLength);
-            VMath.ForceDistanceInPlace(this._kneeLowPosition, currentTarget, this._lowerLegLength);
             VMath.ForceDistanceInPlace(this._kneeHighPosition, this._kneeLowPosition, this._middleLegLength);
+            VMath.ForceDistanceFromOriginInPlace(this._kneeLowPosition, ptT, this._lowerLegLength);
+            VMath.ForceDistanceFromOriginInPlace(this._kneeHighPosition, ptO, this._upperLegLength);
         }
 
-        upperLegZ.copyFrom(this._kneeHighPosition).subtractInPlace(this._upperLeg.position);
+        upperLegZ.copyFrom(this._kneeHighPosition).subtractInPlace(ptO);
         middleLegZ.copyFrom(this._kneeLowPosition).subtractInPlace(this._kneeHighPosition);
-        lowerLegZ.copyFrom(currentTarget).subtractInPlace(this._kneeLowPosition);
+        lowerLegZ.copyFrom(ptT).subtractInPlace(this._kneeLowPosition);
 
         let magicNumber2 = 1 - Easing.smooth025Sec(this.scene.getEngine().getFps());
         if (ignorePreviousState) {
             magicNumber2 = 1;
         }
         
-        let upperLegY = this.drider.up;
-        VMath.QuaternionFromZYAxisToRef(upperLegZ, upperLegY, this._q0);
+        VMath.QuaternionFromZYAxisToRef(upperLegZ, normOT, this._q0);
         BABYLON.Quaternion.SlerpToRef(this._upperLeg.rotationQuaternion, this._q0, magicNumber2, this._upperLeg.rotationQuaternion);
         
         this._middleLeg.position.copyFromFloats(0, 0, this._upperLegLength);
         VMath.RotateVectorByQuaternionToRef(this._middleLeg.position, this._upperLeg.rotationQuaternion, this._middleLeg.position);
         this._middleLeg.position.addInPlace(this._upperLeg.position);
 
-        VMath.QuaternionFromZYAxisToRef(middleLegZ, upperLegZ, this._q0);
+        VMath.QuaternionFromZYAxisToRef(middleLegZ, normOT, this._q0);
         BABYLON.Quaternion.SlerpToRef(this._middleLeg.rotationQuaternion, this._q0, magicNumber2, this._middleLeg.rotationQuaternion);
         
         this._lowerLeg.position.copyFromFloats(0, 0, this._middleLegLength);
         VMath.RotateVectorByQuaternionToRef(this._lowerLeg.position, this._middleLeg.rotationQuaternion, this._lowerLeg.position);
         this._lowerLeg.position.addInPlace(this._middleLeg.position);
 
-        VMath.QuaternionFromZYAxisToRef(lowerLegZ, middleLegZ, this._q0);
+        VMath.QuaternionFromZYAxisToRef(lowerLegZ, normOT, this._q0);
         BABYLON.Quaternion.SlerpToRef(this._lowerLeg.rotationQuaternion, this._q0, magicNumber2, this._lowerLeg.rotationQuaternion);
     }
 }

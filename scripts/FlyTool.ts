@@ -40,10 +40,10 @@ class FlyTool {
             waypoints = FlyTool.SmoothFlightPlan(waypoints);
             for (let i = 1; i < waypoints.length - 1; i++) {
                 if (BABYLON.Vector3.DistanceSquared(waypoints[i], fromPlanet.position) < takeOffAltitude * takeOffAltitude) {
-                    VMath.ForceDistanceInPlace(waypoints[i], fromPlanet.position, takeOffAltitude);
+                    VMath.ForceDistanceFromOriginInPlace(waypoints[i], fromPlanet.position, takeOffAltitude);
                 }
                 if (BABYLON.Vector3.DistanceSquared(waypoints[i], toPlanet.position) < landingAltitude * landingAltitude) {
-                    VMath.ForceDistanceInPlace(waypoints[i], toPlanet.position, landingAltitude);
+                    VMath.ForceDistanceFromOriginInPlace(waypoints[i], toPlanet.position, landingAltitude);
                 }
             }
         }

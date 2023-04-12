@@ -54,10 +54,26 @@ class VMath {
     }
 
     private static _Tmp5: BABYLON.Vector3 = BABYLON.Vector3.One();
-    public static ForceDistanceInPlace(point: BABYLON.Vector3, origin: BABYLON.Vector3, distance: number): BABYLON.Vector3 {
+    public static ForceDistanceFromOriginInPlace(point: BABYLON.Vector3, origin: BABYLON.Vector3, distance: number): BABYLON.Vector3 {
         VMath._Tmp5.copyFrom(point).subtractInPlace(origin).normalize().scaleInPlace(distance);
         point.copyFrom(origin).addInPlace(VMath._Tmp5);
         return point;
+    }
+    
+    private static _Tmp6: BABYLON.Vector3 = BABYLON.Vector3.One();
+    public static ForceDistanceInPlace(pointA: BABYLON.Vector3, pointB: BABYLON.Vector3, distance: number): BABYLON.Vector3 {
+        let dir = VMath._Tmp6;
+        dir.copyFrom(pointB).subtractInPlace(pointA);
+        let dist = dir.length();
+        dir.scaleInPlace(1 / dist);
+
+        let delta = dist - distance;
+        dir.scaleInPlace(delta * 0.5);
+
+        pointA.addInPlace(dir);
+        pointB.subtractInPlace(dir);
+        
+        return pointA;
     }
 
     private static _Tmp4: BABYLON.Vector3 = BABYLON.Vector3.Zero();
@@ -76,10 +92,10 @@ class VMath {
         return 2 * Math.acos(Math.min(Math.abs(q.w), 1));
     }
 
-    private static _Tmp6: BABYLON.Quaternion = BABYLON.Quaternion.Identity();
+    private static _Tmp7: BABYLON.Quaternion = BABYLON.Quaternion.Identity();
     public static GetAngleBetweenQuaternions(q1: BABYLON.Quaternion, q2: BABYLON.Quaternion): number {
-        VMath._Tmp6.copyFrom(q1).conjugateInPlace().multiplyInPlace(q2);
-        return VMath.GetQuaternionAngle(VMath._Tmp6);
+        VMath._Tmp7.copyFrom(q1).conjugateInPlace().multiplyInPlace(q2);
+        return VMath.GetQuaternionAngle(VMath._Tmp7);
     }
 
     public static StepQuaternionToRef(q1: BABYLON.Quaternion, q2: BABYLON.Quaternion, step: number, ref: BABYLON.Quaternion): BABYLON.Quaternion {

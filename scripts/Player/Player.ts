@@ -738,7 +738,7 @@ class Player extends BABYLON.Mesh {
             VMath.RotateVectorByQuaternionToRef(this.velocity, quat, this.velocity);
 
             let newRadius = Math.max(d + dr, 0.5);
-            VMath.ForceDistanceInPlace(this.position, this.rotateMoveCenter, newRadius);
+            VMath.ForceDistanceFromOriginInPlace(this.position, this.rotateMoveCenter, newRadius);
         }
         else {
             this.position.addInPlace(dp);
