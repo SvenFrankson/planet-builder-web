@@ -8,6 +8,10 @@ class Drider extends BABYLON.Mesh {
     public armManager: HumanArmManager;
     public legManager: DriderLegManager;
 
+    public surfaceUp: BABYLON.Vector3 = BABYLON.Vector3.Up();
+    public footCenter: BABYLON.Vector3 = BABYLON.Vector3.Zero();
+    public footTargetCenter: BABYLON.Vector3 = BABYLON.Vector3.Zero();
+    public bodyRadius: number = 0.5;
     public footTargets: BABYLON.Mesh[] = [];
     public evaluatedFootTargets: BABYLON.Vector3[] = [];
     public evaluatedFootNormals: BABYLON.Vector3[] = [];
@@ -46,6 +50,8 @@ class Drider extends BABYLON.Mesh {
 
         this.rotationQuaternion = BABYLON.Quaternion.Identity();
 
+        BABYLON.CreateSphereVertexData({ diameter: 2 * this.bodyRadius }).applyToMesh(this);
+
         let mat = new ToonMaterial("player-arm-material", this.scene);
 
         this.torsoLow = new BABYLON.Mesh("torso-low");
@@ -77,7 +83,7 @@ class Drider extends BABYLON.Mesh {
         let a = Math.PI / 3.5;
         let r = 1;
         let x = r * Math.cos(a);
-        let y = 0.4;
+        let y = 0;
         let z = r * Math.sin(a);
 
         this.footTargets[0] = new BABYLON.Mesh("foot-target-0");
@@ -186,7 +192,9 @@ class Drider extends BABYLON.Mesh {
         this.legManager.dispose();
     }
 
+    private _isGrounded: boolean = false;
     public isGrounded(): boolean {
+        return this._isGrounded;
         let c = 0;
         for (let i = 0; i < this.evaluatedFootTargetGrounded.length; i++) {
             if (this.evaluatedFootTargetGrounded[i]) {
@@ -309,17 +317,9 @@ class Drider extends BABYLON.Mesh {
         
         this.torsoHigh.rotationQuaternion = BABYLON.Quaternion.Slerp(this.rotationQuaternion, upQ, 0.8);
 
-        let footCenter = BABYLON.Vector3.Zero();
-        for (let i = 0; i < 6; i++) {
-            footCenter.addInPlace(this.legManager.legs[i].foot.absolutePosition);
-        }
-        footCenter.scaleInPlace(1 / 6);
-        footCenter.addInPlace(localUp.scale(0.8));
-        this.torsoLow.position.scaleInPlace(0.9).addInPlace(footCenter.scale(0.1));
-
         let radiuses: BABYLON.Vector3[] = [];
         for (let i = 0; i < 6; i++) {
-            radiuses.push(this.legManager.legs[i].foot.absolutePosition.subtract(footCenter));
+            radiuses.push(this.legManager.legs[i].foot.absolutePosition.subtract(this.footCenter));
         }
         let footNorm = BABYLON.Vector3.Zero();
         for (let i = 0; i < 6; i++) {
@@ -328,21 +328,30 @@ class Drider extends BABYLON.Mesh {
         }
         footNorm.normalize();
 
+        this.footCenter.copyFromFloats(0, 0, 0);
+        for (let i = 0; i < 6; i++) {
+            this.footCenter.addInPlace(this.legManager.legs[i].foot.absolutePosition);
+        }
+        this.footCenter.scaleInPlace(1 / 6);
+        let up = localUp.add(footNorm).normalize();
+        this.footCenter.addInPlace(up.scale(0.8));
+        this.torsoLow.position.scaleInPlace(0.95).addInPlace(this.footCenter.scale(0.05));
+
         let frontDir = radiuses[2].add(radiuses[3]);
         let frontBack = radiuses[0].add(radiuses[5]);
         let forward = frontDir.subtract(frontBack).normalize();
 
         VMath.QuaternionFromZYAxisToRef(forward, footNorm, this.torsoLow.rotationQuaternion);
-        this.torsoLow.rotationQuaternion.copyFrom(this.rotationQuaternion);
+        BABYLON.Quaternion.SlerpToRef(this.torsoLow.rotationQuaternion, this.rotationQuaternion, 0.05, this.torsoLow.rotationQuaternion);
 
-        let correction = BABYLON.Quaternion.RotationAxis(this.right, - Math.PI / 8);
-        correction.multiplyToRef(this.torsoLow.rotationQuaternion, this.torsoLow.rotationQuaternion);
+        //let correction = BABYLON.Quaternion.RotationAxis(this.right, - Math.PI / 8);
+        //correction.multiplyToRef(this.torsoLow.rotationQuaternion, this.torsoLow.rotationQuaternion);
 
         this._keepUp();
     }
     
     public evaluateTarget(footIndex: number): void {
-        let bestDist: number = 1.5;
+        let bestDist: number = 1;
         let bestPick: VPickInfo;
         for (let i = 0; i < this.meshes.length; i++) {
             let mesh = this.meshes[i];
@@ -374,24 +383,23 @@ class Drider extends BABYLON.Mesh {
     }
 
     private _keepUp(): void {
-        let center = BABYLON.Vector3.Zero();
+        this.footTargetCenter.copyFromFloats(0, 0, 0);
         
         for (let i = 0; i < 6; i++) {
-            center.addInPlace(this.evaluatedFootTargets[i]);
+            this.footTargetCenter.addInPlace(this.evaluatedFootTargets[i]);
         }
-        center.scaleInPlace(1/6);
+        this.footTargetCenter.scaleInPlace(1/6);
 
-        let upDirection: BABYLON.Vector3 = BABYLON.Vector3.Zero();
-        
+        this.surfaceUp.copyFromFloats(0, 0, 0);
         if (this.isGrounded()) {
-            upDirection = VCollision.MedianNormalOnMeshes(this.position, this.meshes, 1);
+            this.surfaceUp = VCollision.MedianNormalOnMeshes(this.position, this.meshes, 2 * this.bodyRadius);
         }
-        if (upDirection.lengthSquared() < 0.1) {
-            upDirection = this.position.subtract(this.planet.position).normalize();
+        if (this.surfaceUp.lengthSquared() < 0.1) {
+            this.surfaceUp = this.position.subtract(this.planet.position).normalize();
         }
 
         let currentUp: BABYLON.Vector3 = BABYLON.Vector3.Normalize(BABYLON.Vector3.TransformNormal(BABYLON.Axis.Y, this.getWorldMatrix()));
-        let correctionAxis: BABYLON.Vector3 = BABYLON.Vector3.Cross(currentUp, upDirection);
+        let correctionAxis: BABYLON.Vector3 = BABYLON.Vector3.Cross(currentUp, this.surfaceUp);
         let correctionAngle: number = Math.abs(Math.asin(correctionAxis.length()));
         
         if (correctionAngle > 0.001) {
@@ -399,32 +407,29 @@ class Drider extends BABYLON.Mesh {
             this.rotationQuaternion = rotation.multiply(this.rotationQuaternion);
         }
 
-        if (!this.isGrounded()) {
-            this.position.subtractInPlace(this.up.scale(2 * 1 / 60));
-        }
-        else {
-            let bestDist: number = 1;
-            let bestPick: VPickInfo;
-            for (let i = 0; i < this.meshes.length; i++) {
-                let mesh = this.meshes[i];
-                if (mesh) {
-                    let pick = VCollision.ClosestPointOnMesh(this.position, mesh);
-                    if (pick && pick.hit) {
-                        if (pick.distance < bestDist) {
-                            bestDist = pick.distance;
-                            bestPick = pick;
-                        }
+        let bestDist: number = this.bodyRadius;
+        let bestPick: VPickInfo;
+        for (let i = 0; i < this.meshes.length; i++) {
+            let mesh = this.meshes[i];
+            if (mesh) {
+                let pick = VCollision.ClosestPointOnMesh(this.position, mesh);
+                if (pick && pick.hit) {
+                    if (pick.distance < bestDist) {
+                        bestDist = pick.distance;
+                        bestPick = pick;
                     }
                 }
             }
-            if (bestPick) {
-                let d = this.position.subtract(bestPick.worldPoint);
-                let dot = BABYLON.Vector3.Dot(d, upDirection);
-                this.position.subtractInPlace(upDirection.scale(dot));
-            }
-            else {
-                
-            }
+        }
+        if (bestPick) {
+            let d = this.position.subtract(bestPick.worldPoint);
+            let dot = BABYLON.Vector3.Dot(d, this.surfaceUp);
+            this.position.subtractInPlace(this.surfaceUp.scale(dot));
+            this._isGrounded = true;
+        }
+        else {
+            this.position.subtractInPlace(this.up.scale(2 * 1 / 60));
+            this._isGrounded = false;
         }
     }
 }

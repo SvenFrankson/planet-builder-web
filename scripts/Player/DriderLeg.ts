@@ -112,8 +112,8 @@ class DriderLeg extends BABYLON.Mesh {
             this._debugCurrentTarget.position.copyFrom(this.targetPosition);
         }
         
-        let planetUp = this.drider.position.clone().normalize();
-        
+        let surfaceUp = this.absolutePosition.subtract(this.drider.footTargetCenter).normalize();
+        surfaceUp.addInPlace(this.targetNormal).normalize();
         let ptO = this.absolutePosition;
         let ptT = this.targetPosition.clone();
         if (!this.grounded) {
@@ -122,8 +122,11 @@ class DriderLeg extends BABYLON.Mesh {
         let distOT = BABYLON.Vector3.Distance(ptO, ptT);
         let dirOT = ptT.subtract(ptO).scaleInPlace(1 / distOT);
 
-        let tmpX = BABYLON.Vector3.Cross(planetUp, dirOT);
+        let tmpX = BABYLON.Vector3.Cross(surfaceUp, dirOT);
         let normOT = BABYLON.Vector3.Cross(dirOT, tmpX).normalize();
+        if (BABYLON.Vector3.Dot(normOT, surfaceUp) < 0) {
+            normOT.scaleInPlace(- 1);
+        }
 
         this._upperLeg.position.copyFrom(this.absolutePosition);
 
@@ -132,6 +135,9 @@ class DriderLeg extends BABYLON.Mesh {
 
         this._kneeLowPosition.copyFrom(dirOT).scaleInPlace(2 * distOT / 3).addInPlace(ptO);
         this._kneeLowPosition.addInPlace(normOT.scale(0.5));
+
+        //this._kneeLowPosition.copyFrom(this.targetPosition);
+        //this._kneeLowPosition.addInPlace(this.targetNormal.scale(this._lowerLegLength));
 
         let upperLegZ = this._v0;
         let middleLegZ = this._v1;

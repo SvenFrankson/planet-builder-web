@@ -109,7 +109,7 @@ class DriderLegManager {
             let destinationNorm = targetNorm.clone();
             let dist = BABYLON.Vector3.Distance(origin, destination);
             let hMax = Math.min(Math.max(0.3, dist * 0.5), 0.1)
-            let duration = Math.min(0.5, dist);
+            let duration = Math.min(0.3, dist);
             let t = 0;
             let animationCB = () => {
                 t += this.scene.getEngine().getDeltaTime() / 1000;
