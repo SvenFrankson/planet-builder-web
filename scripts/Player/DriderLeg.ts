@@ -54,9 +54,9 @@ class DriderLeg extends BABYLON.Mesh {
     
     public async instantiate(): Promise<void> {
         let data = await VertexDataLoader.instance.get("drider");
-        data[2].applyToMesh(this._upperLeg);
-        data[3].applyToMesh(this._middleLeg);
-        data[4].applyToMesh(this._lowerLeg);
+        data[3].applyToMesh(this._upperLeg);
+        data[4].applyToMesh(this._middleLeg);
+        data[5].applyToMesh(this._lowerLeg);
         /*
         let upperLegMeshData = BABYLON.CreateBoxVertexData({ width: 0.05, height: 0.05, depth: this._upperLegLength });
         upperLegMeshData.positions = upperLegMeshData.positions.map((v: number, i: number) => { 
@@ -152,7 +152,7 @@ class DriderLeg extends BABYLON.Mesh {
         middleLegZ.copyFrom(this._kneeLowPosition).subtractInPlace(this._kneeHighPosition);
         lowerLegZ.copyFrom(ptT).subtractInPlace(this._kneeLowPosition);
 
-        let magicNumber2 = 1 - Easing.smooth025Sec(this.scene.getEngine().getFps());
+        let magicNumber2 = 1 - Easing.smooth010Sec(this.scene.getEngine().getFps());
         if (ignorePreviousState) {
             magicNumber2 = 1;
         }
