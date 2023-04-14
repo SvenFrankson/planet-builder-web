@@ -53,6 +53,56 @@ class PlayerActionTemplate {
         return action;
     }
 
+    public static async AddDriderBaitAction(player: Player): Promise<PlayerAction> {
+        let action = new PlayerAction("drider-bait", player);
+        action.iconUrl = "/datas/images/qmark.png";
+
+        let previewTmpObject: DriderBait;
+
+        action.onUpdate = () => {
+            if (!player.inputManager.inventoryOpened) {
+                let hit = player.inputManager.getPickInfo(player.meshes);
+                if (hit && hit.pickedPoint) {
+                    if (!previewTmpObject) {
+                        previewTmpObject = new DriderBait(player.main);
+                        previewTmpObject.planet = player.planet;
+                        previewTmpObject.instantiate();
+                    }
+                    previewTmpObject.setPosition(hit.pickedPoint);
+                    previewTmpObject.setTarget(player.position);
+                    return;
+                }
+            }
+            if (previewTmpObject) {
+                previewTmpObject.dispose();
+                previewTmpObject = undefined;
+            }
+        }
+
+        action.onClick = () => {
+            if (!player.inputManager.inventoryOpened) {
+                let hit = player.inputManager.getPickInfo(player.meshes);
+                if (hit && hit.pickedPoint) {
+                    let tmpObject = new DriderBait(player.main);
+                    tmpObject.planet = player.planet;
+                    tmpObject.instantiate();
+                    tmpObject.setPosition(hit.pickedPoint);
+                    tmpObject.setTarget(player.position);
+                    tmpObject.activated = true;
+                }
+            }
+        }
+
+        action.onUnequip = () => {
+            if (previewTmpObject) {
+                previewTmpObject.dispose();
+                previewTmpObject = undefined;
+            }
+        }
+
+        return action;
+    }
+
     public static async CreateBlockAction(player: Player, blockType: BlockType): Promise<PlayerAction> {
         let action = new PlayerAction(BlockTypeNames[blockType], player);
         let previewMesh: BABYLON.Mesh;

@@ -455,7 +455,6 @@ class Player extends BABYLON.Mesh {
             }
             if (!this.targetDestination && this.velocity.lengthSquared() < 0.001) {
                 if (Math.abs(aY) < Math.PI / 180 && Math.abs(aX) < Math.PI / 180) {
-                    console.log(aX + " " + aY);
                     this.targetLook = undefined;
                     this.targetLookStrength = 0.5;
                 }

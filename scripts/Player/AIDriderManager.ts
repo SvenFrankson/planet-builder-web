@@ -25,9 +25,20 @@ class AIDriderManager {
 
     private _timer: number = 0;
     private targetDir: BABYLON.Vector3;
+    private currentBait: DriderBait;
+
     private _update = () => {
         let dt = this.scene.getEngine().getDeltaTime() / 1000;
         this._timer += dt;
+
+        if (!this.currentBait) {
+            let bait = DriderBait.Instances.get(0);
+            if (bait && bait.activated) {
+                DriderBait.Instances.remove(bait);
+                this.currentBait = bait;
+                console.log("find !");
+            }
+        }
 
         if (this._timer > 3) {
             let p = new BABYLON.Vector3(Math.random() - 0.5, Math.random() + 1, Math.random() * 0.6 + 0.6);
@@ -39,9 +50,16 @@ class AIDriderManager {
             this._timer = 0;
         }
 
-        this.drider.targetLook = this.player.head.absolutePosition.clone();
 
-        let dir = this.player.position.subtract(this.drider.position);
+        let dir: BABYLON.Vector3;
+        if (this.currentBait) {
+            dir = this.currentBait.position.subtract(this.drider.position);
+            this.drider.targetLook = this.currentBait.position.clone();
+        }
+        else {
+            dir = this.player.position.subtract(this.drider.position);
+            this.drider.targetLook = this.player.head.absolutePosition.clone();
+        }
         let dist = dir.length();
         let alpha = VMath.AngleFromToAround(this.drider.forward, dir, this.drider.up);
         if (Math.abs(alpha) > Math.PI / 6) {
@@ -50,7 +68,7 @@ class AIDriderManager {
 
         if (this.targetDir) {
             let beta = VMath.AngleFromToAround(this.drider.forward, dir, this.drider.up);
-            let db = Math.sign(beta) * dt * Math.PI / 8;
+            let db = Math.sign(beta) * dt * Math.PI / 4;
             if (Math.abs(db) > Math.abs(beta)) {
                 db = beta;
                 this.targetDir = undefined;
@@ -59,14 +77,25 @@ class AIDriderManager {
         }
 
         this.drider.velocity = BABYLON.Vector3.Zero();
-        if (dist > 5) {
-            this.drider.position.addInPlace(this.drider.forward.scale(1 * dt));
-            this.drider.velocity = this.drider.forward.clone();
+        if (this.currentBait) {
+            if (dist > 1) {
+                this.drider.position.addInPlace(this.drider.forward.scale(1 * dt));
+                this.drider.velocity = this.drider.forward.clone();
+            }
+            if (dist < 2) {
+                this.currentBait.dispose();
+                this.currentBait = undefined;
+            } 
         }
-        else if (dist < 3) {
-            this.drider.position.subtractInPlace(this.drider.forward.scale(1 * dt));
-            this.drider.velocity = this.drider.forward.clone();
-        } 
-
+        else {
+            if (dist > 5) {
+                this.drider.position.addInPlace(this.drider.forward.scale(1 * dt));
+                this.drider.velocity = this.drider.forward.clone();
+            }
+            else if (dist < 3) {
+                this.drider.position.subtractInPlace(this.drider.forward.scale(1 * dt));
+                this.drider.velocity = this.drider.forward.clone();
+            } 
+        }
     }
 }

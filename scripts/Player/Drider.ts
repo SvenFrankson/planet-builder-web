@@ -51,7 +51,7 @@ class Drider extends BABYLON.Mesh {
 
         this.rotationQuaternion = BABYLON.Quaternion.Identity();
 
-        BABYLON.CreateSphereVertexData({ diameter: 2 * this.bodyRadius }).applyToMesh(this);
+        //BABYLON.CreateSphereVertexData({ diameter: 2 * this.bodyRadius }).applyToMesh(this);
 
         let mat = new ToonMaterial("player-arm-material", this.scene);
 
@@ -159,10 +159,10 @@ class Drider extends BABYLON.Mesh {
         ];
         
         this.footTargets.forEach(mesh => {
-            //mesh.isVisible = false;
+            mesh.isVisible = false;
         })
         this.evaluatedFootTargetsDebugs.forEach(mesh => {
-            //mesh.isVisible = false;
+            mesh.isVisible = false;
         })
 
         for (let i = 0; i < 6; i++) {
@@ -334,9 +334,12 @@ class Drider extends BABYLON.Mesh {
             this.footCenter.addInPlace(this.legManager.legs[i].foot.absolutePosition);
         }
         this.footCenter.scaleInPlace(1 / 6);
+        if (BABYLON.Vector3.Distance(this.position, this.footCenter) > 1) {
+            VMath.ForceDistanceFromOriginInPlace(this.position, this.footCenter, 1);
+        }
         let up = localUp.add(footNorm).normalize();
-        this.footCenter.addInPlace(up.scale(0.8));
-        this.torsoLow.position.scaleInPlace(0.95).addInPlace(this.footCenter.scale(0.05));
+        this.footCenter.addInPlace(up.scale(0.9));
+        this.torsoLow.position.scaleInPlace(0.9).addInPlace(this.footCenter.scale(0.1));
 
         let frontDir = radiuses[2].add(radiuses[3]);
         let frontBack = radiuses[0].add(radiuses[5]);
@@ -347,8 +350,8 @@ class Drider extends BABYLON.Mesh {
         this.torsoLow.computeWorldMatrix(true);
 
         let upQ = BABYLON.Quaternion.Identity();
-        VMath.QuaternionFromYZAxisToRef(localUp, this.forward, upQ);        
-        this.torsoHigh.rotationQuaternion = BABYLON.Quaternion.Slerp(this.rotationQuaternion, upQ, 0.8);
+        VMath.QuaternionFromYZAxisToRef(localUp, this.forward.subtract(this.up), upQ);        
+        this.torsoHigh.rotationQuaternion = BABYLON.Quaternion.Slerp(this.rotationQuaternion, upQ, 0.75);
         BABYLON.Vector3.TransformCoordinatesToRef(new BABYLON.Vector3(0, 0.053, 0.277), this.torsoLow.getWorldMatrix(), this.torsoHigh.position);
         this.torsoHigh.computeWorldMatrix(true);
 

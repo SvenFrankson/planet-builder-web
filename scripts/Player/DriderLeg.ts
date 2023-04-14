@@ -112,8 +112,8 @@ class DriderLeg extends BABYLON.Mesh {
             this._debugCurrentTarget.position.copyFrom(this.targetPosition);
         }
         
-        let surfaceUp = this.absolutePosition.subtract(this.drider.footTargetCenter).normalize();
-        surfaceUp.addInPlace(this.targetNormal).normalize();
+        let neutralDir = this.absolutePosition.subtract(this.drider.torsoLow.absolutePosition).normalize();
+        let surfaceUp = this.drider.up;
         let ptO = this.absolutePosition;
         let ptT = this.targetPosition.clone();
         if (!this.grounded) {
@@ -122,19 +122,19 @@ class DriderLeg extends BABYLON.Mesh {
         let distOT = BABYLON.Vector3.Distance(ptO, ptT);
         let dirOT = ptT.subtract(ptO).scaleInPlace(1 / distOT);
 
-        let tmpX = BABYLON.Vector3.Cross(surfaceUp, dirOT);
+        let tmpX = BABYLON.Vector3.Cross(neutralDir, dirOT);
         let normOT = BABYLON.Vector3.Cross(dirOT, tmpX).normalize();
         if (BABYLON.Vector3.Dot(normOT, surfaceUp) < 0) {
-            normOT.scaleInPlace(- 1);
+            //normOT.scaleInPlace(- 1);
         }
 
         this._upperLeg.position.copyFrom(this.absolutePosition);
 
         this._kneeHighPosition.copyFrom(dirOT).scaleInPlace(distOT / 3).addInPlace(ptO);
-        this._kneeHighPosition.addInPlace(normOT.scale(0.5));
+        this._kneeHighPosition.addInPlace(normOT.scale(0.2));
 
         this._kneeLowPosition.copyFrom(dirOT).scaleInPlace(2 * distOT / 3).addInPlace(ptO);
-        this._kneeLowPosition.addInPlace(normOT.scale(0.5));
+        this._kneeLowPosition.addInPlace(normOT.scale(0.2));
 
         //this._kneeLowPosition.copyFrom(this.targetPosition);
         //this._kneeLowPosition.addInPlace(this.targetNormal.scale(this._lowerLegLength));
@@ -142,7 +142,7 @@ class DriderLeg extends BABYLON.Mesh {
         let upperLegZ = this._v0;
         let middleLegZ = this._v1;
         let lowerLegZ = this._v2;
-        for (let i = 0; i < 3; i++) {
+        for (let i = 0; i < 5; i++) {
             VMath.ForceDistanceInPlace(this._kneeHighPosition, this._kneeLowPosition, this._middleLegLength);
             VMath.ForceDistanceFromOriginInPlace(this._kneeLowPosition, ptT, this._lowerLegLength);
             VMath.ForceDistanceFromOriginInPlace(this._kneeHighPosition, ptO, this._upperLegLength);

@@ -59,13 +59,13 @@ Exporter version: 6.4.5, Blender version: 2.90.1
 		registered as also a user of material:  Steel
 		registered as also a user of material:  Eyes
 		processing begun of multimaterial:  drider.Multimaterial#3
-		num positions      :  293
-		num normals        :  293
+		num positions      :  251
+		num normals        :  251
 		num tangents       :  0
-		num uvs            :  586
-		num uvs2           :  586
+		num uvs            :  502
+		num uvs2           :  502
 		num colors         :  0
-		num triangles      :  310
+		num triangles      :  306
 	processing begun of mesh:  5-lower-leg
 		processing begun of material:  Plastic
 		processing begun of material:  Steel
@@ -91,11 +91,11 @@ Exporter version: 6.4.5, Blender version: 2.90.1
 		registered as also a user of material:  Steel
 		registered as also a user of material:  Eyes
 		processing begun of multimaterial:  drider.Multimaterial#5
-		num positions      :  64
-		num normals        :  64
+		num positions      :  29
+		num normals        :  29
 		num tangents       :  0
-		num uvs            :  128
-		num uvs2           :  128
+		num uvs            :  58
+		num uvs2           :  58
 		num colors         :  0
 		num triangles      :  46
 	processing begun of mesh:  0-torso-low
@@ -106,11 +106,11 @@ Exporter version: 6.4.5, Blender version: 2.90.1
 		registered as also a user of material:  Steel
 		registered as also a user of material:  Eyes
 		processing begun of multimaterial:  drider.Multimaterial#6
-		num positions      :  724
-		num normals        :  724
+		num positions      :  154
+		num normals        :  154
 		num tangents       :  0
-		num uvs            :  1448
-		num uvs2           :  1448
+		num uvs            :  308
+		num uvs2           :  308
 		num colors         :  0
 		num triangles      :  276
 ========= Writing of JSON file started =========
@@ -123,4 +123,4 @@ Exporter version: 6.4.5, Blender version: 2.90.1
 	writing mesh:  0-torso-low
 ========= Writing of JSON file completed =========
 ========= end of processing =========
-elapsed time:  0 min, 0.119 secs
+elapsed time:  0 min, 0.1027 secs

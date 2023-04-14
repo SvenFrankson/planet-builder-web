@@ -3,7 +3,8 @@ enum InventorySection {
     Cube,
     Block,
     Brick,
-    TmpObject
+    TmpObject,
+    DriderBait
 }
 
 class InventoryItem {
@@ -37,6 +38,19 @@ class InventoryItem {
             it.name = tmpObjectName;
             it.size = 1;
             it.playerAction = await PlayerActionTemplate.AddTmpObjectAction(player, tmpObjectName);
+            it.playerAction.item = it;
+            it.iconUrl = "/datas/images/qmark.png";
+            resolve(it);
+        });
+    }
+
+    public static async DriderBait(player: Player): Promise<InventoryItem> {
+        return new Promise<InventoryItem>(async resolve => {
+            let it = new InventoryItem();
+            it.section = InventorySection.DriderBait;
+            it.name = "Bait";
+            it.size = 1;
+            it.playerAction = await PlayerActionTemplate.AddDriderBaitAction(player);
             it.playerAction.item = it;
             it.iconUrl = "/datas/images/qmark.png";
             resolve(it);
@@ -144,6 +158,11 @@ class Inventory {
             let blockType = BlockTypeNames.indexOf(data.r);
             if (blockType != -1) {
                 let item = await InventoryItem.Block(this.player, blockType);
+                item.count = data.c;
+                this.items.push(item);
+            }
+            else if (data.r === "Bait") {
+                let item = await InventoryItem.DriderBait(this.player);
                 item.count = data.c;
                 this.items.push(item);
             }
