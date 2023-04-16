@@ -39,11 +39,14 @@ class MainMenu extends Main {
             logOutput += "\n  super.initialize executed in " + (timers[timers.length - 1] - timers[timers.length - 2]).toFixed(0) + " ms";
         }
 
-		Config.chunckPartConfiguration.setFilename("round-smooth-chunck-parts", false);
-		Config.chunckPartConfiguration.useXZAxisRotation = false;
-		Config.chunckPartConfiguration.setLodMin(0);
-		Config.chunckPartConfiguration.setLodMax(1);
+		//Config.chunckPartConfiguration.setFilename("round-smooth-chunck-parts", false);
 		//Config.chunckPartConfiguration.useXZAxisRotation = false;
+		//Config.chunckPartConfiguration.setLodMin(0);
+		//Config.chunckPartConfiguration.setLodMax(1);
+		Config.chunckPartConfiguration.setFilename("chunck-parts", false);
+		Config.chunckPartConfiguration.useXZAxisRotation = true;
+		Config.chunckPartConfiguration.setLodMin(0);
+		Config.chunckPartConfiguration.setLodMax(2);
 
 		let confPreset = window.localStorage.getItem("graphic-setting-preset");
 		if (confPreset === ConfigurationPreset.Low) {
@@ -180,7 +183,7 @@ class MainMenu extends Main {
 							setInterval(() => {
 								aiManager.debugWalking = !aiManager.debugWalking
 							}, 5000);
-						}, 2000);
+						}, 200000);
 
 						if (DebugDefine.SKIP_MAINMENU_PANEL) {
 							this.player.registerControl();
