@@ -180,7 +180,7 @@ class MainMenu extends Main {
 							setInterval(() => {
 								aiManager.debugWalking = !aiManager.debugWalking
 							}, 5000);
-						}, 1000);
+						}, 2000);
 
 						if (DebugDefine.SKIP_MAINMENU_PANEL) {
 							this.player.registerControl();
@@ -222,7 +222,7 @@ class MainMenu extends Main {
 		let orbitRadius = 500;
 		let alpha = Math.PI / 2;
 		for (let i = 0; i < orbitCount; i++) {
-			let planet: Planet = PlanetGeneratorFactory.Create(this.currentGalaxy, new BABYLON.Vector3(Math.cos(alpha) * orbitRadius * (i + 1), 0, Math.sin(alpha) * orbitRadius * (i + 1)), i + 1, 8, this);
+			let planet: Planet = PlanetGeneratorFactory.Create(this.currentGalaxy, new BABYLON.Vector3(Math.cos(alpha) * orbitRadius * (i + 1), 0, Math.sin(alpha) * orbitRadius * (i + 1)), i + 1, 6, this);
 			//let planet: Planet = PlanetGeneratorFactory.Create(new BABYLON.Vector3(Math.cos(alpha) * orbitRadius * (i + 1), 0, Math.sin(alpha) * orbitRadius * (i + 1)), PlanetGeneratorType.Earth, kPosMax, this.scene);
 			planet.instantiate();
 			alpha += Math.PI * 0.5 + Math.PI * 0.8;

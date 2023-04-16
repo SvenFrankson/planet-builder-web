@@ -396,6 +396,9 @@ class PlanetHeightMap {
     }
 
     public getValue(i: number, j: number, k: number): number {
+        i = Math.floor(i);
+        j = Math.floor(j);
+        k = Math.floor(k);
         if (i === 0) {
             return this.i0s[j][k];
         }

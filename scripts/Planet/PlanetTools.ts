@@ -613,6 +613,7 @@ class PlanetTools {
                 degree++;
             }
         }
+        console.log(PlanetTools._BSizes);
     }
 
     private static _KPosToDegree: Map<number, number> = new Map<number, number>();
@@ -711,7 +712,15 @@ class PlanetTools {
     }
 
     public static DegreeToKOffset(degree: number): number {
-        return PlanetTools._SummedBSizesLength[degree] / PlanetTools.CHUNCKSIZE;
+        return PlanetTools.SummedBSizesLength[degree] / PlanetTools.CHUNCKSIZE;
+    }
+
+    public static DegreeToKPosMax(degree: number): number {
+        console.log("degree " + degree);
+        if (degree < PlanetTools.DEGREEMIN) {
+            return 0;
+        }
+        return (PlanetTools.SummedBSizesLength[degree] + PlanetTools.BSizes[degree].length) / PlanetTools.CHUNCKSIZE;
     }
 
     /*

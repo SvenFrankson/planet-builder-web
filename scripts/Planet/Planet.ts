@@ -7,9 +7,10 @@ class Planet extends BABYLON.Mesh {
         return this.planetSides[side];
     }
 
-    public degree: number;
+    public kPosMax: number;
     public seaLevel: number;
     public seaAltitude: number;
+    public seaLevelRatio: number;
 	
     public GetPlanetName(): string {
         return this.name;
@@ -29,25 +30,25 @@ class Planet extends BABYLON.Mesh {
         public galaxy: Galaxy,
         name: string,
         position: BABYLON.Vector3,
-        public kPosMax: number,
-        public seaLevelRatio: number,
+        public degree: number,
         public main: Main,
         createGenerator: (planet: Planet) => PlanetGenerator
     ) {
         super(name, main.scene);
-        console.log(this.getFullName());
         this.randSeed = new RandSeed(this.getFullName());
-        console.log(this.randSeed);
         this.galaxy.planets.push(this);
         this.position.copyFrom(position);
         this.freezeWorldMatrix();
         Planet.DEBUG_INSTANCE = this;
         
-        this.kPosMax = kPosMax;
-        this.degree = PlanetTools.KPosToDegree(this.kPosMax);
+        this.kPosMax = PlanetTools.DegreeToKPosMax(degree);
+        let kPosMaxPrev = PlanetTools.DegreeToKPosMax(this.degree - 1);
 
-        this.seaLevel = Math.floor(this.kPosMax * this.seaLevelRatio * PlanetTools.CHUNCKSIZE);
+        this.seaLevel = Math.floor((this.kPosMax + kPosMaxPrev) * 0.5 * PlanetTools.CHUNCKSIZE);
+        this.seaLevelRatio = this.seaLevel / (this.kPosMax * PlanetTools.CHUNCKSIZE);
         this.seaAltitude = PlanetTools.KGlobalToAltitude(this.seaLevel);
+
+        console.log(this.kPosMax);
 		
         this.generator = createGenerator(this);
         if (!this.generator) {
