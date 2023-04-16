@@ -11,7 +11,6 @@ enum Neighbour {
 
 class PlanetChunck extends AbstractPlanetChunck {
     
-    public isDegreeLayerBottom: boolean;
     public isCorner: boolean;
     public Position(): { i: number; j: number; k: number } {
         return {
@@ -20,7 +19,7 @@ class PlanetChunck extends AbstractPlanetChunck {
             k: this.kPos,
         };
     }
-    protected _adjacents: PlanetChunck[][][][];
+    protected _adjacents: PlanetChunck[][][];
     public adjacentsAsArray: PlanetChunck[] = [];
     public findAdjacents(): void {
         this._adjacents = [];
@@ -36,14 +35,10 @@ class PlanetChunck extends AbstractPlanetChunck {
                             this._adjacents[1 + di][1 + dj] = [];
                         }
                         if (!this._adjacents[1 + di][1 + dj][1 + dk]) {
-                            let n = this.planetSide.getChunck(this.iPos + di, this.jPos + dj, this.kPos + dk, this.degree);
+                            let n = this.planetSide.getChunck(this.iPos + di, this.jPos + dj, this.kPos + dk);
                             if (n instanceof PlanetChunck) {
-                                this._adjacents[1 + di][1 + dj][1 + dk] = [n];
-                                this.adjacentsAsArray.push(n);
-                            }
-                            else if (n instanceof Array) {
                                 this._adjacents[1 + di][1 + dj][1 + dk] = n;
-                                this.adjacentsAsArray.push(...n);
+                                this.adjacentsAsArray.push(n);
                             }
                         }
                     }
@@ -188,23 +183,15 @@ class PlanetChunck extends AbstractPlanetChunck {
         planetSide: PlanetSide,
         parentGroup: PlanetChunckGroup
     ): PlanetChunck {
-        if (kPos < planetSide.kPosMax - 1) {
-            let degree = PlanetTools.KPosToDegree(kPos);
-            let chunckCount = PlanetTools.DegreeToChuncksCount(degree);
-            if (planetSide.side <= Side.Left || iPos > 0 && iPos < chunckCount - 1) {
-                if (jPos > 0 && jPos < chunckCount - 1) {
-                    let degreeBellow = PlanetTools.KPosToDegree(kPos - 1);
-                    if (degreeBellow === degree) {
-                        let degreeAbove = PlanetTools.KPosToDegree(kPos + 1);
-                        if (degreeAbove === degree) {
-                            PlanetChunck._DEBUG_NICE_CHUNCK_COUNT++;
-                            return new PlanetChunckNice(iPos, jPos, kPos, planetSide, parentGroup);
-                        }
-                        else {
-                            PlanetChunck._DEBUG_NICE_CHUNCK_COUNT++;
-                            return new PlanetChunckSemiNice(iPos, jPos, kPos, planetSide, parentGroup);
-                        }
-                    }
+        if (planetSide.side <= Side.Left || iPos > 0 && iPos < planetSide.chunckCount - 1) {
+            if (jPos > 0 && jPos < planetSide.chunckCount - 1) {
+                if (kPos < planetSide.kPosMax - 1) {
+                    PlanetChunck._DEBUG_NICE_CHUNCK_COUNT++;
+                    return new PlanetChunckNice(iPos, jPos, kPos, planetSide, parentGroup);
+                }
+                else {
+                    PlanetChunck._DEBUG_NICE_CHUNCK_COUNT++;
+                    return new PlanetChunckSemiNice(iPos, jPos, kPos, planetSide, parentGroup);
                 }
             }
         }
@@ -220,9 +207,7 @@ class PlanetChunck extends AbstractPlanetChunck {
         parentGroup: PlanetChunckGroup
     ) {
         super(iPos, jPos, kPos, planetSide, parentGroup);
-        this._degree = PlanetTools.KPosToDegree(this.kPos);
         this._size = PlanetTools.DegreeToSize(this.degree);
-        this._chunckCount = PlanetTools.DegreeToChuncksCount(this.degree);
         
         this.name = "chunck:" + this.side + ":" + this.iPos + "-" + this.jPos	+ "-" + this.kPos;
         this._barycenter = PlanetTools.EvaluateVertex(
@@ -230,7 +215,7 @@ class PlanetChunck extends AbstractPlanetChunck {
             PlanetTools.CHUNCKSIZE * (this.iPos + 0.5),
             PlanetTools.CHUNCKSIZE * (this.jPos + 0.5)
         ).scale(
-            PlanetTools.KGlobalToAltitude((this.kPos + 0.5) * PlanetTools.CHUNCKSIZE)
+            PlanetTools.KGlobalToAltitude((this.kPos + 0.5) * PlanetTools.CHUNCKSIZE, this.degree)
         );
         this._barycenter = BABYLON.Vector3.TransformCoordinates(
             this._barycenter,
@@ -246,7 +231,7 @@ class PlanetChunck extends AbstractPlanetChunck {
                     PlanetTools.CHUNCKSIZE * (this.jPos + j)
                 );
                 for (let k = 0; k <= 1; k++) {
-                    let p = v.scale(PlanetTools.KGlobalToAltitude((this.kPos + k) * PlanetTools.CHUNCKSIZE));
+                    let p = v.scale(PlanetTools.KGlobalToAltitude((this.kPos + k) * PlanetTools.CHUNCKSIZE, this.degree));
                     VMath.RotateVectorByQuaternionToRef(p, this.planetSide.rotationQuaternion, p);
                     this.aabbMin.x = Math.min(p.x, this.aabbMin.x);
                     this.aabbMin.y = Math.min(p.y, this.aabbMin.y);

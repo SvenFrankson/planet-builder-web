@@ -37,8 +37,8 @@ class PlanetChunckGroup extends AbstractPlanetChunck {
         let kMax = Math.floor((this.kOffset + (this.kPos + 1) * levelCoef) * PlanetTools.CHUNCKSIZE);
         kMax = Math.min(kMax, Math.floor(this.kOffsetNext * PlanetTools.CHUNCKSIZE));
 
-        let altMin = PlanetTools.KGlobalToAltitude(Math.floor((this.kOffset + (this.kPos) * levelCoef) * PlanetTools.CHUNCKSIZE));
-        let altMax = PlanetTools.KGlobalToAltitude(Math.floor((this.kOffset + (this.kPos + 1) * levelCoef) * PlanetTools.CHUNCKSIZE));
+        let altMin = PlanetTools.KGlobalToAltitude(Math.floor((this.kOffset + (this.kPos) * levelCoef) * PlanetTools.CHUNCKSIZE), this.degree);
+        let altMax = PlanetTools.KGlobalToAltitude(Math.floor((this.kOffset + (this.kPos + 1) * levelCoef) * PlanetTools.CHUNCKSIZE), this.degree);
 
         pts.push(PlanetTools.EvaluateVertex(this.size, PlanetTools.CHUNCKSIZE * (this.iPos + 0) * levelCoef, PlanetTools.CHUNCKSIZE * (this.jPos + 0) * levelCoef).scale(altMin));
         pts.push(PlanetTools.EvaluateVertex(this.size, PlanetTools.CHUNCKSIZE * (this.iPos + 1) * levelCoef, PlanetTools.CHUNCKSIZE * (this.jPos + 0) * levelCoef).scale(altMin));

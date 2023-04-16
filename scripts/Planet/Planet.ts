@@ -7,7 +7,7 @@ class Planet extends BABYLON.Mesh {
         return this.planetSides[side];
     }
 
-    public degree: number;
+    public kPosMax: number;
     public seaLevel: number;
     public seaAltitude: number;
 	
@@ -29,7 +29,7 @@ class Planet extends BABYLON.Mesh {
         public galaxy: Galaxy,
         name: string,
         position: BABYLON.Vector3,
-        public kPosMax: number,
+        public degree: number,
         public seaLevelRatio: number,
         public main: Main,
         createGenerator: (planet: Planet) => PlanetGenerator
@@ -43,11 +43,10 @@ class Planet extends BABYLON.Mesh {
         this.freezeWorldMatrix();
         Planet.DEBUG_INSTANCE = this;
         
-        this.kPosMax = kPosMax;
-        this.degree = PlanetTools.KPosToDegree(this.kPosMax);
+        this.kPosMax = PlanetTools.DegreeToKPosMax(this.degree);
 
         this.seaLevel = Math.floor(this.kPosMax * this.seaLevelRatio * PlanetTools.CHUNCKSIZE);
-        this.seaAltitude = PlanetTools.KGlobalToAltitude(this.seaLevel);
+        this.seaAltitude = PlanetTools.KGlobalToAltitude(this.seaLevel, this.degree);
 		
         this.generator = createGenerator(this);
         if (!this.generator) {

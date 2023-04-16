@@ -568,7 +568,7 @@ class Player extends BABYLON.Mesh {
                                 }
                             }
             
-                            PlanetTools.SkewVertexData(this.groundCollisionVData, localIJK.planetChunck.size, globalIJK.i, globalIJK.j, globalIJK.k).applyToMesh(this.groundCollisionMesh);
+                            PlanetTools.SkewVertexData(this.groundCollisionVData, localIJK.planetChunck.size, localIJK.planetChunck.degree, globalIJK.i, globalIJK.j, globalIJK.k).applyToMesh(this.groundCollisionMesh);
                             this.groundCollisionMesh.parent = localIJK.planetChunck.planetSide;
                             checkGroundCollision = true;
                         }
@@ -669,7 +669,7 @@ class Player extends BABYLON.Mesh {
                                     }
                                 }
                 
-                                PlanetTools.SkewVertexData(this.wallCollisionVData, localIJK.planetChunck.size, globalIJK.i, globalIJK.j, globalIJK.k).applyToMesh(this.wallCollisionMeshes[wallCount]);
+                                PlanetTools.SkewVertexData(this.wallCollisionVData, localIJK.planetChunck.size, localIJK.planetChunck.degree, globalIJK.i, globalIJK.j, globalIJK.k).applyToMesh(this.wallCollisionMeshes[wallCount]);
                                 this.wallCollisionMeshes[wallCount].parent = localIJK.planetChunck.planetSide;
                                 wallCount++;
                             }

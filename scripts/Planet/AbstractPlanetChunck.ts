@@ -21,9 +21,8 @@ abstract class AbstractPlanetChunck {
     public get degree(): number {
         return this._degree;
     }
-    protected _chunckCount: number = 0;
     public get chunckCount(): number {
-        return this._chunckCount;
+        return this.planetSide.chunckCount;
     }
     protected _size: number = 0;
     public get size(): number {

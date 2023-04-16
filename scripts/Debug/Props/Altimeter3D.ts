@@ -22,7 +22,7 @@ class Altimeter3D {
             let lines = [];
     
             for (let k = 0; k < this.player.planet.kPosMax * PlanetTools.CHUNCKSIZE; k++) {
-                let altitude = PlanetTools.KGlobalToAltitude(k);
+                let altitude = PlanetTools.KGlobalToAltitude(k, this.player.planet.degree);
                 lines.push([new BABYLON.Vector3(0, altitude, 0), new BABYLON.Vector3(1, altitude, 0)]);
             }
     
@@ -39,7 +39,7 @@ class Altimeter3D {
             this.lineMesh.layerMask = 0x1;
     
             for (let k = 0; k < this.player.planet.kPosMax * PlanetTools.CHUNCKSIZE; k++) {
-                let altitude = PlanetTools.KGlobalToAltitude(k);
+                let altitude = PlanetTools.KGlobalToAltitude(k, this.player.planet.degree);
                 let value = new Number3D("value-" + k, k, 0.5);
                 value.redraw();
                 value.position.x = 1;

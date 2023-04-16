@@ -76,8 +76,8 @@ class PlanetGeneratorCold extends PlanetGenerator {
             let ij = PlanetTools.PlanetDirectionToGlobalIJ(side, PlanetTools.DegreeToSize(planet.degree), p);
             let kGlobal = Math.floor(this.altitudeMap.getForSide(side, ij.i, ij.j) * PlanetTools.CHUNCKSIZE * this.planet.kPosMax);
 
-            let pBase = p.scale(PlanetTools.KGlobalToAltitude(kGlobal));
-            p.scaleInPlace(PlanetTools.KGlobalToAltitude(kGlobal + 7));
+            let pBase = p.scale(PlanetTools.KGlobalToAltitude(kGlobal, planet.degree));
+            p.scaleInPlace(PlanetTools.KGlobalToAltitude(kGlobal + 7, planet.degree));
 
             let w = 2 + 6 * planet.main.rand.getValue1D(planet.randSeed, randIndex++);
             let h = 1.5 + 3 * planet.main.rand.getValue1D(planet.randSeed, randIndex++);

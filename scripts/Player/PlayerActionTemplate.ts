@@ -160,10 +160,10 @@ class PlayerActionTemplate {
                         }
                         if (needRedrawMesh) {
                             if (previewMesh) {
-                                PlanetTools.SkewVertexData(previewMeshData, localIJK.planetChunck.size, globalIJK.i, globalIJK.j, globalIJK.k, localIJK.planetChunck.side, blockType).applyToMesh(previewMesh);
+                                PlanetTools.SkewVertexData(previewMeshData, localIJK.planetChunck.size, localIJK.planetChunck.degree, globalIJK.i, globalIJK.j, globalIJK.k, localIJK.planetChunck.side, blockType).applyToMesh(previewMesh);
                                 previewMesh.parent = localIJK.planetChunck.planetSide;
                             }
-                            PlanetTools.SkewVertexData(previewBoxData, localIJK.planetChunck.size, globalIJK.i, globalIJK.j, globalIJK.k, localIJK.planetChunck.side).applyToMesh(previewBox);
+                            PlanetTools.SkewVertexData(previewBoxData, localIJK.planetChunck.size, localIJK.planetChunck.degree, globalIJK.i, globalIJK.j, globalIJK.k, localIJK.planetChunck.side).applyToMesh(previewBox);
                             previewBox.parent = localIJK.planetChunck.planetSide;
                         }
 

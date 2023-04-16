@@ -104,14 +104,15 @@ class PlanetTools {
     public static SkewVertexData(
         vertexData: BABYLON.VertexData,
         size: number,
+        degree: number,
         i: number,
         j: number,
         k: number,
         side?: Side,
         blockType: BlockType = BlockType.Unknown,
     ): BABYLON.VertexData {
-        let h0 = PlanetTools.KGlobalToAltitude(k);
-        let h1 = PlanetTools.KGlobalToAltitude(k + 1);
+        let h0 = PlanetTools.KGlobalToAltitude(k, degree);
+        let h1 = PlanetTools.KGlobalToAltitude(k + 1, degree);
 
         let v0 = PlanetTools.tmpVertices[0];
         let v1 = PlanetTools.tmpVertices[1];
@@ -445,8 +446,7 @@ class PlanetTools {
         let planetSide = PlanetTools.PlanetPositionToPlanetSide(planet, planetDirection);
         let globalIJ = PlanetTools.PlanetDirectionToGlobalIJ(planetSide, planetDirection);
         let k = Math.ceil(planet.generator.altitudeMap.getForSide(planetSide.side, globalIJ.i, globalIJ.j) * planet.kPosMax * PlanetTools.CHUNCKSIZE);
-        let f = Math.pow(2, planet.degree - PlanetTools.KGlobalToDegree(k));
-        return { i: Math.floor(globalIJ.i / f), j: Math.floor(globalIJ.j / f), k: k };
+        return { i: Math.floor(globalIJ.i), j: Math.floor(globalIJ.j), k: k };
     }
 
     public static PlanetPositionToLocalIJK(
@@ -469,13 +469,13 @@ class PlanetTools {
     }
 
     public static GlobalIJKToPlanetPosition(planetSide: PlanetSide, globalIJK: { i: number; j: number; k: number }, middleAltitude?: boolean): BABYLON.Vector3 {
-        let size = PlanetTools.DegreeToSize(PlanetTools.KGlobalToDegree(globalIJK.k));
+        let size = PlanetTools.DegreeToSize(planetSide.degree);
         let p = PlanetTools.EvaluateVertex(size, globalIJK.i + 0.5, globalIJK.j + 0.5);
         if (middleAltitude) {
-            p.scaleInPlace(PlanetTools.KGlobalToAltitude(globalIJK.k) * 0.5 + PlanetTools.KGlobalToAltitude(globalIJK.k + 1) * 0.5);
+            p.scaleInPlace(PlanetTools.KGlobalToAltitude(globalIJK.k, planetSide.degree) * 0.5 + PlanetTools.KGlobalToAltitude(globalIJK.k + 1, planetSide.degree) * 0.5);
         }
         else {
-            p.scaleInPlace(PlanetTools.KGlobalToAltitude(globalIJK.k));
+            p.scaleInPlace(PlanetTools.KGlobalToAltitude(globalIJK.k, planetSide.degree));
         }
         VMath.RotateVectorByQuaternionToRef(p, planetSide.rotationQuaternion, p);
         return p;
@@ -497,8 +497,7 @@ class PlanetTools {
         global: { i: number; j: number; k: number }
     ): { planetChunck: PlanetChunck; i: number; j: number; k: number } {
         let kPos = Math.floor(global.k / PlanetTools.CHUNCKSIZE);
-        let degree = PlanetTools.KPosToDegree(kPos);
-        let chunck = planetSide.getChunck(Math.floor(global.i / PlanetTools.CHUNCKSIZE), Math.floor(global.j / PlanetTools.CHUNCKSIZE), kPos, degree) as PlanetChunck;
+        let chunck = planetSide.getChunck(Math.floor(global.i / PlanetTools.CHUNCKSIZE), Math.floor(global.j / PlanetTools.CHUNCKSIZE), kPos) as PlanetChunck;
         if (chunck) {
             return {
                 planetChunck: chunck,
@@ -546,18 +545,6 @@ class PlanetTools {
         }
         let globalIJK = PlanetTools.LocalIJKToGlobalIJK(planetChunck, localI, localJ, localK);
         return PlanetTools.GlobalIJKToPlanetPosition(planetChunck.planetSide, globalIJK, middleAltitude);
-    }
-
-    public static KGlobalToDegree(k: number): number {
-        return PlanetTools.KPosToDegree(Math.floor(k / PlanetTools.CHUNCKSIZE));
-    }
-
-    public static KPosToDegree(kPos: number): number {
-        return PlanetTools.KPosToDegree8(kPos);
-    }
-
-    public static KPosToSize(kPos: number): number {
-        return PlanetTools.DegreeToSize(PlanetTools.KPosToDegree(kPos));
     }
 
     private static _BSizes: number[][];
@@ -613,46 +600,10 @@ class PlanetTools {
                 degree++;
             }
         }
-    }
-
-    private static _KPosToDegree: Map<number, number> = new Map<number, number>();
-    private static KPosToDegree8(kPos: number): number {
-        let v = PlanetTools._KPosToDegree.get(kPos);
-        if (isFinite(v)) {
-            return v;
-        }
-        let degree = this.DEGREEMIN;
-        let tmpKpos = kPos;
-        while (degree < PlanetTools.BSizes.length) {
-            let size = PlanetTools.BSizes[degree].length / PlanetTools.CHUNCKSIZE;
-            if (tmpKpos < size) {
-                PlanetTools._KPosToDegree.set(kPos, degree);
-                return degree;
-            }
-            else {
-                tmpKpos -= size;
-                degree++;
-            }
-        }
-    }
-    private static KPosToDegree16(kPos: number): number {
-        let v = PlanetTools._KPosToDegree.get(kPos);
-        if (isFinite(v)) {
-            return v;
-        }
-        let degree = this.DEGREEMIN;
-        let tmpKpos = kPos;
-        while (degree < PlanetTools.BSizes.length) {
-            let size = PlanetTools.BSizes[degree].length / PlanetTools.CHUNCKSIZE;
-            if (tmpKpos < size) {
-                PlanetTools._KPosToDegree.set(kPos, degree);
-                return degree;
-            }
-            else {
-                tmpKpos -= size;
-                degree++;
-            }
-        }
+        console.log("SummedBSizesLength");
+        console.log(PlanetTools._SummedBSizesLength);
+        console.log("BSizes");
+        console.log(PlanetTools._BSizes);
     }
 
     public static RecursiveFind(data: number[], value: number, nMin: number, nMax: number): number {
@@ -693,25 +644,27 @@ class PlanetTools {
         return summedLength + PlanetTools.RecursiveFind(altitudes, altitude, 0, altitudes.length);
     }
 
-    public static KGlobalToAltitude(kGlobal: number): number {
+    public static KGlobalToAltitude(kGlobal: number, degree: number): number {
         if (kGlobal < 0) {
             return 13.4 - 0.5;
         }
-        let degree = PlanetTools.KGlobalToDegree(kGlobal);
         let altitudes = PlanetTools.Altitudes[degree];
         let summedLength = PlanetTools.SummedBSizesLength[degree];
         return altitudes[kGlobal - summedLength];
     }
 
     public static KLocalToAltitude(chunck: PlanetChunck, k: number): number {
-        let degree = PlanetTools.KGlobalToDegree(chunck.kPos * PlanetTools.CHUNCKSIZE + k);
-        let altitudes = PlanetTools.Altitudes[degree];
-        let summedLength = PlanetTools.SummedBSizesLength[degree];
+        let altitudes = PlanetTools.Altitudes[chunck.degree];
+        let summedLength = PlanetTools.SummedBSizesLength[chunck.degree];
         return altitudes[chunck.kPos * PlanetTools.CHUNCKSIZE + k - summedLength];
     }
 
     public static DegreeToKOffset(degree: number): number {
-        return PlanetTools._SummedBSizesLength[degree] / PlanetTools.CHUNCKSIZE;
+        return PlanetTools.SummedBSizesLength[degree] / PlanetTools.CHUNCKSIZE;
+    }
+
+    public static DegreeToKPosMax(degree: number): number {
+        return PlanetTools.BSizes[degree].length / PlanetTools.CHUNCKSIZE;
     }
 
     /*
