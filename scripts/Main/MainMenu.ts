@@ -89,7 +89,7 @@ class MainMenu extends Main {
 			this.universe = new Universe();
 			this.currentGalaxy = new Galaxy(this.universe);
 			
-			let mainMenuPlanet: Planet = PlanetGeneratorFactory.Create(this.currentGalaxy, BABYLON.Vector3.Zero(), PlanetGeneratorType.Earth, 6, this);
+			let mainMenuPlanet: Planet = PlanetGeneratorFactory.Create(this.currentGalaxy, BABYLON.Vector3.Zero(), PlanetGeneratorType.Earth, 7, this);
 			mainMenuPlanet.instantiate();
 			//mainMenuPlanet.generator.showDebug();
 			
@@ -183,7 +183,7 @@ class MainMenu extends Main {
 							setInterval(() => {
 								aiManager.debugWalking = !aiManager.debugWalking
 							}, 5000);
-						}, 200000);
+						}, 2000);
 
 						if (DebugDefine.SKIP_MAINMENU_PANEL) {
 							this.player.registerControl();

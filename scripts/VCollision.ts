@@ -10,8 +10,8 @@ class VPickInfo {
 class VCollision {
 
     private static _Tmp0: BABYLON.Vector3 = BABYLON.Vector3.One();
-    public static MedianNormalOnMeshes(worldPoint: BABYLON.Vector3, meshes: BABYLON.Mesh[], searchDist: number): BABYLON.Vector3 {
-        let worldNormal = BABYLON.Vector3.Zero();
+    public static MedianNormalOnMeshes(worldPoint: BABYLON.Vector3, meshes: BABYLON.Mesh[], searchDist: number, useOpposingFaces?: boolean): BABYLON.Vector3 {
+        let worldNormal = BABYLON.Vector3.Up();
 
         let sqrSearchDist = searchDist * searchDist;
 
@@ -23,22 +23,30 @@ class VCollision {
                 let positions = mesh.getVerticesData(BABYLON.VertexBuffer.PositionKind);
                 let normals = mesh.getVerticesData(BABYLON.VertexBuffer.NormalKind);
     
-                for (let i = 0; i < positions.length / 3; i++) {
-                    let dx = localPoint.x - positions[3 * i];
-                    let dy = localPoint.y - positions[3 * i + 1];
-                    let dz = localPoint.z - positions[3 * i + 2];
-        
-                    let sqrDist = dx * dx + dy * dy + dz * dz;
-                    if (sqrDist < sqrSearchDist) {
-                        let dist = Math.sqrt(sqrDist);
-    
-                        VCollision._Tmp0.copyFromFloats(normals[3 * i], normals[3 * i + 1], normals[3 * i + 2]);
-                        BABYLON.Vector3.TransformNormalToRef(VCollision._Tmp0, mesh.getWorldMatrix(), VCollision._Tmp0);
-                        VCollision._Tmp0.scaleInPlace(dist);
-    
-                        worldNormal.x += VCollision._Tmp0.x;
-                        worldNormal.y += VCollision._Tmp0.y;
-                        worldNormal.z += VCollision._Tmp0.z;
+                if (positions && normals) {
+                    for (let i = 0; i < positions.length / 3; i++) {
+                        let dx = localPoint.x - positions[3 * i];
+                        let dy = localPoint.y - positions[3 * i + 1];
+                        let dz = localPoint.z - positions[3 * i + 2];
+            
+                        let sqrDist = dx * dx + dy * dy + dz * dz;
+                        if (sqrDist < sqrSearchDist) {
+                            let nx = normals[3 * i];
+                            let ny = normals[3 * i + 1];
+                            let nz = normals[3 * i + 2];
+
+                            if (useOpposingFaces || nx * dx + ny * dy + nz * dz > 0) {
+                                let dist = Math.sqrt(sqrDist);
+            
+                                VCollision._Tmp0.copyFromFloats(nx, ny, nz);
+                                BABYLON.Vector3.TransformNormalToRef(VCollision._Tmp0, mesh.getWorldMatrix(), VCollision._Tmp0);
+                                VCollision._Tmp0.scaleInPlace(dist);
+            
+                                worldNormal.x += VCollision._Tmp0.x;
+                                worldNormal.y += VCollision._Tmp0.y;
+                                worldNormal.z += VCollision._Tmp0.z;
+                            }
+                        }
                     }
                 }
             }
@@ -56,27 +64,31 @@ class VCollision {
         let minIndex = -1;
         let minSqrDist = Infinity;
         let positions = mesh.getVerticesData(BABYLON.VertexBuffer.PositionKind);
-        for (let i = 0; i < positions.length / 3; i++) {
-            let dx = localPoint.x - positions[3 * i];
-            let dy = localPoint.y - positions[3 * i + 1];
-            let dz = localPoint.z - positions[3 * i + 2];
-
-            let sqrDist = dx * dx + dy * dy + dz * dz;
-            if (sqrDist < minSqrDist) {
-                minIndex = i;
-                minSqrDist = sqrDist;
+        if (positions) {
+            for (let i = 0; i < positions.length / 3; i++) {
+                let dx = localPoint.x - positions[3 * i];
+                let dy = localPoint.y - positions[3 * i + 1];
+                let dz = localPoint.z - positions[3 * i + 2];
+    
+                let sqrDist = dx * dx + dy * dy + dz * dz;
+                if (sqrDist < minSqrDist) {
+                    minIndex = i;
+                    minSqrDist = sqrDist;
+                }
             }
         }
 
         let triangles: number[] = [];
         let indices = mesh.getIndices();
-        for (let i = 0; i < indices.length / 3; i++) {
-            let i1 = indices[3 * i];
-            let i2 = indices[3 * i + 1];
-            let i3 = indices[3 * i + 2];
-
-            if (i1 === minIndex || i2 === minIndex || i3 === minIndex) {
-                triangles.push(i1, i2, i3);
+        if (indices) {
+            for (let i = 0; i < indices.length / 3; i++) {
+                let i1 = indices[3 * i];
+                let i2 = indices[3 * i + 1];
+                let i3 = indices[3 * i + 2];
+    
+                if (i1 === minIndex || i2 === minIndex || i3 === minIndex) {
+                    triangles.push(i1, i2, i3);
+                }
             }
         }
 
@@ -183,27 +195,31 @@ class VCollision {
         let minIndex = -1;
         let minSqrDist = Infinity;
         let positions = mesh.getVerticesData(BABYLON.VertexBuffer.PositionKind);
-        for (let i = 0; i < positions.length / 3; i++) {
-            let dx = localPoint.x - positions[3 * i];
-            let dy = localPoint.y - positions[3 * i + 1];
-            let dz = localPoint.z - positions[3 * i + 2];
-
-            let sqrDist = dx * dx + dy * dy + dz * dz;
-            if (sqrDist < minSqrDist) {
-                minIndex = i;
-                minSqrDist = sqrDist;
+        if (positions) {
+            for (let i = 0; i < positions.length / 3; i++) {
+                let dx = localPoint.x - positions[3 * i];
+                let dy = localPoint.y - positions[3 * i + 1];
+                let dz = localPoint.z - positions[3 * i + 2];
+    
+                let sqrDist = dx * dx + dy * dy + dz * dz;
+                if (sqrDist < minSqrDist) {
+                    minIndex = i;
+                    minSqrDist = sqrDist;
+                }
             }
         }
 
         let triangles: number[] = [];
         let indices = mesh.getIndices();
-        for (let i = 0; i < indices.length / 3; i++) {
-            let i1 = indices[3 * i];
-            let i2 = indices[3 * i + 1];
-            let i3 = indices[3 * i + 2];
-
-            if (i1 === minIndex || i2 === minIndex || i3 === minIndex) {
-                triangles.push(i1, i2, i3);
+        if (indices) {
+            for (let i = 0; i < indices.length / 3; i++) {
+                let i1 = indices[3 * i];
+                let i2 = indices[3 * i + 1];
+                let i3 = indices[3 * i + 2];
+    
+                if (i1 === minIndex || i2 === minIndex || i3 === minIndex) {
+                    triangles.push(i1, i2, i3);
+                }
             }
         }
 
