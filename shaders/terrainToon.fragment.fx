@@ -67,15 +67,15 @@ void main() {
       bool isSide = false;
 
       int d = int(vColor.a * 128. + 0.002);
-      if (d == 2 && flatness < 0.6) {
+      if (d == 2 && flatness < 0.8) {
          d = 3;
       }
 
       vec2 uv = vUv;
-      if (flatness < - 0.6) {
+      if (flatness < - 0.8) {
          uv = - vUv;
       }
-      else if (flatness < 0.6) {
+      else if (flatness < 0.8) {
          isSide = true;
          vec3 chunckDir = vColor.rgb;
          vec3 radialNorm = vNormalW - flatness * localUp;

@@ -392,7 +392,9 @@ class PlanetChunckVertexData {
         */
 
         data.positions = data.positions.map((p: number) => {
+            //p = p * 0.95;
             p += 0.5;
+            p = Math.round(p * 100) / 100;
             return p;
         });
         //data = PlanetChunckVertexData.SplitVertexDataTriangles(data);
