@@ -10,7 +10,7 @@ class VPickInfo {
 class VCollision {
 
     private static _Tmp0: BABYLON.Vector3 = BABYLON.Vector3.One();
-    public static MedianNormalOnMeshes(worldPoint: BABYLON.Vector3, meshes: BABYLON.Mesh[], searchDist: number, useOpposingFaces?: boolean): BABYLON.Vector3 {
+    public static MedianNormalOnMeshes(worldPoint: BABYLON.Vector3, meshes: BABYLON.Mesh[], searchDist: number, ignoreOpposedTo?: BABYLON.Vector3): BABYLON.Vector3 {
         let worldNormal = BABYLON.Vector3.Up();
 
         let sqrSearchDist = searchDist * searchDist;
@@ -19,6 +19,10 @@ class VCollision {
             let mesh = meshes[j];
             if (mesh) {
                 let localPoint = BABYLON.Vector3.TransformCoordinates(worldPoint, mesh.getWorldMatrix().clone().invert());
+                let localIgnoreOpposedTo: BABYLON.Vector3;
+                if (ignoreOpposedTo) {
+                    localIgnoreOpposedTo = BABYLON.Vector3.TransformNormal(ignoreOpposedTo, mesh.getWorldMatrix().clone().invert());
+                }
             
                 let positions = mesh.getVerticesData(BABYLON.VertexBuffer.PositionKind);
                 let normals = mesh.getVerticesData(BABYLON.VertexBuffer.NormalKind);
@@ -35,7 +39,7 @@ class VCollision {
                             let ny = normals[3 * i + 1];
                             let nz = normals[3 * i + 2];
 
-                            if (useOpposingFaces || nx * dx + ny * dy + nz * dz > 0) {
+                            if (!localIgnoreOpposedTo || nx * localIgnoreOpposedTo.x + ny * localIgnoreOpposedTo.y + nz * localIgnoreOpposedTo.z > 0) {
                                 let dist = Math.sqrt(sqrDist);
             
                                 VCollision._Tmp0.copyFromFloats(nx, ny, nz);
@@ -57,10 +61,15 @@ class VCollision {
         return worldNormal;
     }
 
-    public static ClosestPointOnMesh(worldPoint: BABYLON.Vector3, mesh: BABYLON.Mesh): VPickInfo {
+    public static ClosestPointOnMesh(worldPoint: BABYLON.Vector3, mesh: BABYLON.Mesh, ignoreOpposedTo?: BABYLON.Vector3): VPickInfo {
         let pickInfo = new VPickInfo();
 
         let localPoint = BABYLON.Vector3.TransformCoordinates(worldPoint, mesh.getWorldMatrix().clone().invert());
+        let localIgnoreOpposedTo: BABYLON.Vector3;
+        if (ignoreOpposedTo) {
+            localIgnoreOpposedTo = BABYLON.Vector3.TransformNormal(ignoreOpposedTo, mesh.getWorldMatrix().clone().invert());
+        }
+
         let minIndex = -1;
         let minSqrDist = Infinity;
         let positions = mesh.getVerticesData(BABYLON.VertexBuffer.PositionKind);
@@ -108,78 +117,79 @@ class VCollision {
             let v31 = p1.subtract(p3);
 
             let n = BABYLON.Vector3.Cross(p1.subtract(p2), p3.subtract(p2)).normalize();
-            let p1p = localPoint.subtract(p1);
-            let dot = BABYLON.Vector3.Dot(p1p, n);
+            if (!localIgnoreOpposedTo || n.x * localIgnoreOpposedTo.x + n.y * localIgnoreOpposedTo.y + n.z * localIgnoreOpposedTo.z > - Math.SQRT2 * 0.5) {
+                let p1p = localPoint.subtract(p1);
+                let dot = BABYLON.Vector3.Dot(p1p, n);
 
-            let projectedPoint = localPoint.subtract(n.scale(dot));
-            let projClone = projectedPoint.clone();
-            let projected = false;
+                let projectedPoint = localPoint.subtract(n.scale(dot));
+                let projected = false;
 
-            // check
-            // edge 12
-            let n12 = BABYLON.Vector3.Cross(v12, n);
-            let v1 = projectedPoint.subtract(p1);
-            if (!projected && BABYLON.Vector3.Dot(v1, n12) <= 0) {
-                let l = BABYLON.Vector3.Distance(p1, p2);
-                v12.scaleInPlace(1 / l);
-                let d = BABYLON.Vector3.Dot(v1, v12);
-                projectedPoint.copyFrom(v12).scaleInPlace(d).addInPlace(p1);
-                v1.copyFrom(projectedPoint).subtractInPlace(p1);
-                d = BABYLON.Vector3.Dot(v1, v12);
-                if (d < 0) {
-                    projectedPoint.copyFrom(p1);
+                // check
+                // edge 12
+                let n12 = BABYLON.Vector3.Cross(v12, n);
+                let v1 = projectedPoint.subtract(p1);
+                if (!projected && BABYLON.Vector3.Dot(v1, n12) <= 0) {
+                    let l = BABYLON.Vector3.Distance(p1, p2);
+                    v12.scaleInPlace(1 / l);
+                    let d = BABYLON.Vector3.Dot(v1, v12);
+                    projectedPoint.copyFrom(v12).scaleInPlace(d).addInPlace(p1);
+                    v1.copyFrom(projectedPoint).subtractInPlace(p1);
+                    d = BABYLON.Vector3.Dot(v1, v12);
+                    if (d < 0) {
+                        projectedPoint.copyFrom(p1);
+                    }
+                    else if (d > l) {
+                        projectedPoint.copyFrom(p2);
+                    }
+                    projected = true;
                 }
-                else if (d > l) {
-                    projectedPoint.copyFrom(p2);
-                }
-                projected = true;
-            }
 
-            let n23 = BABYLON.Vector3.Cross(v23, n);
-            let v2 = projectedPoint.subtract(p2);
-            if (!projected && BABYLON.Vector3.Dot(v2, n23) <= 0) {
-                let l = BABYLON.Vector3.Distance(p2, p3);
-                v23.scaleInPlace(1 / l);
-                let d = BABYLON.Vector3.Dot(v2, v23);
-                projectedPoint.copyFrom(v23).scaleInPlace(d).addInPlace(p2);
-                v2.copyFrom(projectedPoint).subtractInPlace(p2);
-                d = BABYLON.Vector3.Dot(v2, v23);
-                if (d < 0) {
-                    projectedPoint.copyFrom(p2);
+                let n23 = BABYLON.Vector3.Cross(v23, n);
+                let v2 = projectedPoint.subtract(p2);
+                if (!projected && BABYLON.Vector3.Dot(v2, n23) <= 0) {
+                    let l = BABYLON.Vector3.Distance(p2, p3);
+                    v23.scaleInPlace(1 / l);
+                    let d = BABYLON.Vector3.Dot(v2, v23);
+                    projectedPoint.copyFrom(v23).scaleInPlace(d).addInPlace(p2);
+                    v2.copyFrom(projectedPoint).subtractInPlace(p2);
+                    d = BABYLON.Vector3.Dot(v2, v23);
+                    if (d < 0) {
+                        projectedPoint.copyFrom(p2);
+                    }
+                    else if (d > l) {
+                        projectedPoint.copyFrom(p3);
+                    }
+                    projected = true;
                 }
-                else if (d > l) {
-                    projectedPoint.copyFrom(p3);
+                
+                let n31 = BABYLON.Vector3.Cross(v31, n);
+                let v3 = projectedPoint.subtract(p3);
+                if (!projected && BABYLON.Vector3.Dot(v3, n31) <= 0) {
+                    let l = BABYLON.Vector3.Distance(p3, p1);
+                    v31.scaleInPlace(1 / l);
+                    let d = BABYLON.Vector3.Dot(v3, v31);
+                    projectedPoint.copyFrom(v31).scaleInPlace(d).addInPlace(p3);
+                    v3.copyFrom(projectedPoint).subtractInPlace(p3);
+                    d = BABYLON.Vector3.Dot(v3, v31);
+                    if (d < 0) {
+                        projectedPoint.copyFrom(p3);
+                    }
+                    else if (d > l) {
+                        projectedPoint.copyFrom(p1);
+                    }
+                    projected = true;
                 }
-                projected = true;
-            }
-            
-            let n31 = BABYLON.Vector3.Cross(v31, n);
-            let v3 = projectedPoint.subtract(p3);
-            if (!projected && BABYLON.Vector3.Dot(v3, n31) <= 0) {
-                let l = BABYLON.Vector3.Distance(p3, p1);
-                v31.scaleInPlace(1 / l);
-                let d = BABYLON.Vector3.Dot(v3, v31);
-                projectedPoint.copyFrom(v31).scaleInPlace(d).addInPlace(p3);
-                v3.copyFrom(projectedPoint).subtractInPlace(p3);
-                d = BABYLON.Vector3.Dot(v3, v31);
-                if (d < 0) {
-                    projectedPoint.copyFrom(p3);
-                }
-                else if (d > l) {
-                    projectedPoint.copyFrom(p1);
-                }
-                projected = true;
-            }
 
-            let dist = BABYLON.Vector3.Distance(projectedPoint, localPoint);
-            if (dist < minDist) {
-                minDist = dist;
-                let worldProjected = BABYLON.Vector3.TransformCoordinates(projectedPoint, mesh.getWorldMatrix());
-                let worldN = BABYLON.Vector3.TransformNormal(n, mesh.getWorldMatrix());
-                pickInfo.worldPoint = worldProjected;
-                pickInfo.worldNormal = worldN;
-                pickInfo.distance = dist;
-                pickInfo.hit = true;
+                let dist = BABYLON.Vector3.Distance(projectedPoint, localPoint);
+                if (dist < minDist) {
+                    minDist = dist;
+                    let worldProjected = BABYLON.Vector3.TransformCoordinates(projectedPoint, mesh.getWorldMatrix());
+                    let worldN = BABYLON.Vector3.TransformNormal(n, mesh.getWorldMatrix());
+                    pickInfo.worldPoint = worldProjected;
+                    pickInfo.worldNormal = worldN;
+                    pickInfo.distance = dist;
+                    pickInfo.hit = true;
+                }
             }
         }
 

@@ -2,7 +2,8 @@ enum ArmManagerMode {
     Idle,
     Aim,
     Lean,
-    WristWatch
+    WristWatch,
+    Wait
 }
 
 class HumanArmManager {
@@ -28,6 +29,7 @@ class HumanArmManager {
     public aimedInteractionMode: InteractionMode = InteractionMode.None;
     public aimedDragMode: DragMode = DragMode.Static;
     public useWristWatch: boolean = false;
+    public useWait: boolean = false;
 
     private _aimingDistance: number = 0.1;
     private _currentAimingDistance: number = 0.1;
@@ -113,6 +115,10 @@ class HumanArmManager {
         if (this.mode === ArmManagerMode.WristWatch) {
             this._updateWristWatch();
         }
+        
+        if (this.mode === ArmManagerMode.Wait) {
+            this._updateWait();
+        }
     }
 
     private _updateIdle(): void {
@@ -135,6 +141,11 @@ class HumanArmManager {
                 
             }
             this.mode = ArmManagerMode.WristWatch;
+            return;
+        }
+
+        if (this.useWait) {
+            this.mode = ArmManagerMode.Wait;
             return;
         }
 
@@ -220,6 +231,32 @@ class HumanArmManager {
             this._aimingArm.handUp.copyFrom(this.human.up);
         }
         this._updateRequestedTargetIdle(this.other(this._aimingArm));
+    }
+
+    private _updateWait(): void {
+        if (!this.useWait) {
+            this.mode = ArmManagerMode.Idle;
+            return;
+        }
+
+        // 1 - Update the way the hand should interact.
+        if (this.leftArm.handMode != HandMode.Touch) {
+            this.leftArm.setHandMode(HandMode.Touch);
+        }
+        if (this.rightArm.handMode != HandMode.Touch) {
+            this.rightArm.setHandMode(HandMode.Touch);
+        }
+
+        // 2 - Update arm target position.
+        let posLeft = BABYLON.Vector3.TransformCoordinates(new BABYLON.Vector3(-0.02, 0.5, 0.3), this.leftParent.getWorldMatrix());
+        let left = this.leftParent.right.scale(-1);
+        this.leftArm.setTarget(posLeft);
+        this.leftArm.handUp = left;
+
+        let posRight = BABYLON.Vector3.TransformCoordinates(new BABYLON.Vector3(0.02, 0.5, 0.3), this.rightParent.getWorldMatrix());
+        let right = this.rightParent.right;
+        this.rightArm.setTarget(posRight);
+        this.rightArm.handUp = right;
     }
 
     private _updateWristWatch(): void {

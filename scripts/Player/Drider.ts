@@ -88,7 +88,7 @@ class Drider extends BABYLON.Mesh {
         let a = Math.PI / 3.5;
         let r = 1;
         let x = r * Math.cos(a);
-        let y = 0;
+        let y = 0.2;
         let z = r * Math.sin(a);
 
         this.footTargets[0] = new BABYLON.Mesh("foot-target-0");
@@ -159,10 +159,10 @@ class Drider extends BABYLON.Mesh {
         ];
         
         this.footTargets.forEach(mesh => {
-            mesh.isVisible = false;
+            //mesh.isVisible = false;
         })
         this.evaluatedFootTargetsDebugs.forEach(mesh => {
-            mesh.isVisible = false;
+            //mesh.isVisible = false;
         })
 
         for (let i = 0; i < 6; i++) {
@@ -407,7 +407,7 @@ class Drider extends BABYLON.Mesh {
 
         this.surfaceUp.copyFromFloats(0, 0, 0);
         if (this.isGrounded()) {
-            this.surfaceUp = VCollision.MedianNormalOnMeshes(this.position, this.meshes, 2 * this.bodyRadius);
+            this.surfaceUp = VCollision.MedianNormalOnMeshes(this.position, this.meshes, 2 * this.bodyRadius, this.up);
         }
         if (this.surfaceUp.lengthSquared() < 0.1) {
             this.surfaceUp = this.position.subtract(this.planet.position).normalize();

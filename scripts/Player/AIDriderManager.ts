@@ -40,16 +40,7 @@ class AIDriderManager {
             }
         }
 
-        if (this._timer > 3) {
-            let p = new BABYLON.Vector3(Math.random() - 0.5, Math.random() + 1, Math.random() * 0.6 + 0.6);
-            p.copyFromFloats(0, 0.3, 0.5)
-            BABYLON.Vector3.TransformCoordinatesToRef(p, this.drider.torsoHigh.getWorldMatrix(), p);
-            this.drider.armManager.aimedPosition = p;
-            this.drider.armManager.aimedNormal = this.drider.up;
-            this.drider.armManager.aimedInteractionMode = InteractionMode.Point;
-            this._timer = 0;
-        }
-
+        this.drider.armManager.useWait = true;
 
         let dir: BABYLON.Vector3;
         if (this.currentBait) {
