@@ -168,6 +168,7 @@ class PlanetChunckManager {
         }
     }
 
+    private _checkDuration: number = 1;
     private _update = () => {
         if (this.scene.activeCameras && this.scene.activeCameras.length > 0) {
             this._viewpoint.copyFrom(this.scene.activeCameras[0].globalPosition);
@@ -183,7 +184,7 @@ class PlanetChunckManager {
         let unsortedCount = 0;
 
         let todo = [];
-        while ((t - t0) < 1 && todo.length < 100) {
+        while ((t - t0) < this._checkDuration) {
             for (let prevLayerIndex = 0; prevLayerIndex < this._layersCount; prevLayerIndex++) {
                 let cursor = this._layersCursors[prevLayerIndex];
                 let chunck = this._layers[prevLayerIndex][cursor];
@@ -222,6 +223,9 @@ class PlanetChunckManager {
             t = performance.now();
         }
 
+        let newCheckDuration = (todo.length / 10) / 10 * 3.9 + 0.1;
+        this._checkDuration = this._checkDuration * 0.5 + newCheckDuration;
+
         for (let i = 0; i < todo.length; i++) {
             this.onChunckMovedToLayer(todo[i], todo[i].lod);
         }
@@ -246,7 +250,7 @@ class PlanetChunckManager {
         this._needRedraw = this._needRedraw.sort((r1, r2) => { return r2.chunck.sqrDistanceToViewpoint - r1.chunck.sqrDistanceToViewpoint; });
         // Recalculate chunck meshes.
         t0 = performance.now();
-        while (this._needRedraw.length > 0 && (t - t0) < 1000 / 120) {
+        while (this._needRedraw.length > 0 && (t - t0) < 1000 / 60) {
             let request = this._needRedraw.pop();
             if (request.chunck.lod === 0) {
                 request.chunck.initialize();
