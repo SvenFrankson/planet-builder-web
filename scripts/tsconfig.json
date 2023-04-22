@@ -7,14 +7,8 @@
         "strict": false
     },
     "exclude": [
-        "lib",
-        "node_modules",
-        "typings/browser",
-        "typings/browser.d.ts"
+        "lib"
     ],
     "compileOnSave": true,
-    "buildOnSave": true,
-    "atom": {
-        "rewriteTsconfig": false
-    }
+    "buildOnSave": true
 }
